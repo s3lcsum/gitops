@@ -1,0 +1,20 @@
+services:
+  wyl:
+    container_name: watchyourlan
+    image: aceberg/watchyourlan:latest
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - watchyourlan:/data/WatchYourLAN
+    environment:
+      TZ: Europe/Warsaw
+      IFACES: "eth0@if5"
+      INFLUX_ENABLE: "true"
+      INFLUX_ADDR: http://127.0.0.1:8428
+      INFLUX_BUCKET: watchyourlan
+      INFLUX_ORG: watchyourlan
+      INFLUX_TOKEN: ${INFLUX_TOKEN:-""}
+      PROMETHEUS_ENABLE: "true"
+
+volumes:
+  watchyourlan:
