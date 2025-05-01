@@ -1,0 +1,16 @@
+# Default admin credentials: print / print
+
+services:
+  cupsd:
+    container_name: cupsd
+    image: olbat/cupsd:latest
+    restart: unless-stopped
+    ports:
+      - "631:631"
+    volumes:
+      - cups_data:/etc/cups
+      - /var/run/dbus:/var/run/dbus  # Required for printer auto-detection
+      - /dev/bus/usb:/dev/bus/usb  # If using USB printers
+
+volumes:
+  cups_data:
