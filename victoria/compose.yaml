@@ -19,7 +19,7 @@ services:
       - "8428:8428"
       - "4242:4242"
     volumes:
-      - /portainer/Files/AppData/Config/victoria-metrics/data:/victoria-metrics-data
+      - victoria-metrics-data:/victoria-metrics-data
 
   victoria-logs:
     <<: *defaults
@@ -28,7 +28,7 @@ services:
     ports:
       - "9428:9428"
     volumes:
-      - /portainer/Files/AppData/Config/victoria-logs/data:/victoria-logs-data
+      - victoria-logs-data:/victoria-logs-data
 
   vmagent:
     <<: *defaults
@@ -41,3 +41,7 @@ services:
     command:
       - '-promscrape.config=/etc/vmagent/vmagent.yaml'
       - '-remoteWrite.url=http://victoria-metrics:8428/api/v1/write'
+
+volumes:
+  victoria-metrics-data:
+  victoria-logs-data:
