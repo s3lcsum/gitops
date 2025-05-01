@@ -1,0 +1,16 @@
+services:
+  mktxp:
+    container_name: mktxp
+    image: ghcr.io/akpw/mktxp:latest
+    restart: unless-stopped
+    user: root
+    environment:
+      - TZ=Europe/Warsaw
+    volumes:
+      - /portainer/Files/AppData/Config/mktxp/mktxp.conf:/root/mktxp/mktxp.conf
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    external: true
