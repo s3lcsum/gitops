@@ -1,0 +1,15 @@
+services:
+  upsnap:
+    container_name: upsnap
+    image: ghcr.io/seriousm4x/upsnap:4
+    restart: unless-stopped
+    network_mode: host
+    user: "1000:1000"
+    volumes:
+      - upstap-data:/app/pb_data
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:5000/api/health"]
+      interval: 10s
+
+volumes:
+  upstap-data:
