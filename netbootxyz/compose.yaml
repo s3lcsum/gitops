@@ -1,0 +1,31 @@
+services:
+  netbootxyz:
+    container_name: netbootxyz
+    image: lscr.io/linuxserver/netbootxyz:latest
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/Warsaw
+    volumes:
+      - netbootxyz-config:/config
+      - netbootxyz-assets:/assets
+    ports:
+      - "3123:3000"
+      - "69:69/udp"
+
+# iDRAC6 Controller – useful to access console without local Java install
+#  idrac6:
+#    container_name: idrac6
+#    image: domistyle/idrac6
+#    restart: unless-stopped
+#    environment:
+#      - IDRAC_HOST=192.168.0.1
+#      - IDRAC_USER=root
+#      - IDRAC_PASSWORD=calvin # Default password for iDRAC software
+#    ports:
+#      - "5800:5800"
+
+volumes:
+  netbootxyz-config:
+  netbootxyz-assets:
