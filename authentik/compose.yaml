@@ -1,0 +1,77 @@
+x-default: &default
+  restart: unless-stopped
+  networks:
+    - authentik
+    - metrics
+  env_file:
+    - stack.env
+  labels:
+    com.centurylinklabs.watchtower.enable: false
+
+x-healthchecks: &healthchecks
+  start_period: 20s
+  interval: 30s
+  retries: 5
+  timeout: 3s
+
+services:
+  server:
+    <<: *default
+    container_name: authentik
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG}
+    command: server
+    ports:
+      - "9000:9000"
+    volumes:
+      - /portainer/Files/AppData/Config/authentik/media/media
+      - /portainer/Files/AppData/Config/authentik/custom-templates:/templates
+    depends_on:
+      - postgresql
+      - redis
+
+  worker:
+    <<: *default
+    container_name: authentik_worker
+    image: ghcr.io/goauthentik/server:${AUTHENTIK_TAG}
+    command: worker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /portainer/Files/AppData/Config/authentik/media/media
+      - /portainer/Files/AppData/Config/authentik/certs:/certs
+      - /portainer/Files/AppData/Config/authentik/templates:/templates
+    depends_on:
+      - postgresql
+      - redis
+
+  postgresql:
+    <<: *default
+    container_name: authentik_postgresql
+    image: postgres:16-alpine
+    healthcheck:
+      <<: *healthchecks
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+    volumes:
+      - database:/var/lib/postgresql/data
+
+  redis:
+    <<: *default
+    container_name: authentik_redis
+    image: redis:alpine
+    command: --save 60 1 --loglevel warning
+    healthcheck:
+      <<: *healthchecks
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+    volumes:
+      - redis:/data
+
+networks:
+  metrics:
+    external: true
+  authentik:
+    driver: bridge
+
+volumes:
+  database:
+    driver: local
+  redis:
+    driver: local
