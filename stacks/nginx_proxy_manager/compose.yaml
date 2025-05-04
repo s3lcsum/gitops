@@ -1,5 +1,5 @@
 services:
-  nginx-proxy-manager:
+  nginx-proxy:
     container_name: nginx_proxy_manager
     image: jc21/nginx-proxy-manager:latest
     restart: unless-stopped
