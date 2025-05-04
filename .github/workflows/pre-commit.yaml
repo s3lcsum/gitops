@@ -3,12 +3,21 @@ name: pre-commit
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [precommit-test]
 
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/antonbabenko/pre-commit-terraform:latest
+    defaults:
+      run:
+        shell: bash
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v3
-    - uses: pre-commit/action@v3.0.1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - name: fix tar dependency in alpine container image
+        run: |
+          apk --no-cache add tar
+          python -m pip freeze --local
+      - uses: pre-commit/action@v3.0.1
