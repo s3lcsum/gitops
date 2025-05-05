@@ -7,4 +7,12 @@ resource "portainer_stack" "nginx_proxy_manager" {
 
   name                    = "nginx_proxy_manager"
   file_path_in_repository = "stacks/nginx_proxy_manager/compose.yaml"
+
+  dynamic "env" {
+    for_each = try(var.portainer_stacks_envs["nginx_proxy_manager"], {})
+    content {
+      name  = env.key
+      value = env.value
+    }
+  }
 }

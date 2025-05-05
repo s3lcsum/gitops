@@ -100,11 +100,11 @@ improvements. Contributions and suggestions are welcome.
     - [x] watchyourlan
 - [ ] Terraform
     - [ ] Portainer:
-        - [ ] stack_authentik
-        - [ ] stack_cloudflared
-        - [ ] stack_cups
-        - [ ] stack_mktxmp
-        - [ ] stack_watchtower
+        - [x] stack_authentik
+        - [x] stack_cloudflared
+        - [x] stack_cups
+        - [x] stack_mktxmp
+        - [x] stack_watchtower
         - [x] stack_dozzle
         - [x] stack_netbootxyz
         - [x] stack_nginx_proxy_manager

@@ -7,4 +7,12 @@ resource "portainer_stack" "authentik" {
 
   name                    = "authentik"
   file_path_in_repository = "stacks/authentik/compose.yaml"
+
+  dynamic "env" {
+    for_each = try(var.portainer_stacks_envs["authentik"], {})
+    content {
+      name  = env.key
+      value = env.value
+    }
+  }
 }

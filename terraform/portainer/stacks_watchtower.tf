@@ -7,4 +7,12 @@ resource "portainer_stack" "watchtower" {
 
   name                    = "watchtower"
   file_path_in_repository = "stacks/watchtower/compose.yaml"
+
+  dynamic "env" {
+    for_each = try(var.portainer_stacks_envs["watchtower"], {})
+    content {
+      name  = env.key
+      value = env.value
+    }
+  }
 }
