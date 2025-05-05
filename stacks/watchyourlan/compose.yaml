@@ -7,14 +7,13 @@ services:
     volumes:
       - watchyourlan:/data/WatchYourLAN
     environment:
-      TZ: Europe/Warsaw
-      IFACES: "eth0@if5"
-      INFLUX_ENABLE: "true"
-      INFLUX_ADDR: http://127.0.0.1:8428
-      INFLUX_BUCKET: watchyourlan
-      INFLUX_ORG: watchyourlan
+      TZ: ${TZ:-Europe/Warsaw}
+      INFLUX_ENABLE: ${INFLUX_ENABLE:-"false"}
+      INFLUX_ADDR: ${INFLUX_ADDR:-"http://127.0.0.1:8428"}
+      INFLUX_BUCKET: ${INFLUX_BUCKET:-watchyourlan}
+      INFLUX_ORG: ${INFLUX_ORG:-watchyourlan}
       INFLUX_TOKEN: ${INFLUX_TOKEN:-""}
-      PROMETHEUS_ENABLE: "true"
+      PROMETHEUS_ENABLE: ${PROMETHEUS_ENABLE:-true}
 
 volumes:
   watchyourlan:

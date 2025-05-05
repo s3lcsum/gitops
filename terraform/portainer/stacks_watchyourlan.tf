@@ -7,4 +7,12 @@ resource "portainer_stack" "watchyourlan" {
 
   name                    = "watchyourlan"
   file_path_in_repository = "stacks/watchyourlan/compose.yaml"
+
+  dynamic "env" {
+    for_each = try(var.portainer_stacks_envs["watchyourlan"], {})
+    content {
+      name  = env.key
+      value = env.value
+    }
+  }
 }
