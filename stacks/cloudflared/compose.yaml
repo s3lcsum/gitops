@@ -5,4 +5,4 @@ services:
     command: tunnel run
     restart: unless-stopped
     environment:
-      - TUNNEL_TOKEN=${CF_TOKEN}
+      - TUNNEL_TOKEN=${CLOUDFLARED_TUNNEL_TOKEN}

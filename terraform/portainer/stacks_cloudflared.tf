@@ -7,4 +7,12 @@ resource "portainer_stack" "cloudflared" {
 
   name                    = "cloudflared"
   file_path_in_repository = "stacks/cloudflared/compose.yaml"
+
+  dynamic "env" {
+    for_each = try(var.portainer_stacks_envs["cloudflared"], {})
+    content {
+      name  = env.key
+      value = env.value
+    }
+  }
 }
