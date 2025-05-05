@@ -4,6 +4,7 @@ resource "portainer_stack" "netbootxyz" {
   endpoint_id               = var.endpoint_id
   repository_url            = var.default_portainer_stack_repository_url
   repository_reference_name = "refs/heads/main"
+  update_interval           = "5m"
 
   name                    = "netbootxyz"
   file_path_in_repository = "stacks/netbootxyz/compose.yaml"

@@ -4,6 +4,7 @@ resource "portainer_stack" "nginx_proxy_manager" {
   endpoint_id               = var.endpoint_id
   repository_url            = var.default_portainer_stack_repository_url
   repository_reference_name = "refs/heads/main"
+  update_interval           = "5m"
 
   name                    = "nginx_proxy_manager"
   file_path_in_repository = "stacks/nginx_proxy_manager/compose.yaml"
