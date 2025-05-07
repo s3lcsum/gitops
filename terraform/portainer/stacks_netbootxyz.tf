@@ -7,4 +7,12 @@ resource "portainer_stack" "netbootxyz" {
 
   name                    = "netbootxyz"
   file_path_in_repository = "stacks/netbootxyz/compose.yaml"
+
+  dynamic "env" {
+    for_each = try(var.portainer_stacks_envs["netbootxyz"], {})
+    content {
+      name  = env.key
+      value = env.value
+    }
+  }
 }

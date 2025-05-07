@@ -7,4 +7,12 @@ resource "portainer_stack" "dozzle" {
 
   name                    = "dozzle"
   file_path_in_repository = "stacks/dozzle/compose.yaml"
+
+  dynamic "env" {
+    for_each = try(var.portainer_stacks_envs["dozzle"], {})
+    content {
+      name  = env.key
+      value = env.value
+    }
+  }
 }

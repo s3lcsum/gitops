@@ -7,4 +7,12 @@ resource "portainer_stack" "uptime_kuma" {
 
   name                    = "uptime_kuma"
   file_path_in_repository = "stacks/uptime_kuma/compose.yaml"
+
+  dynamic "env" {
+    for_each = try(var.portainer_stacks_envs["uptime_kuma"], {})
+    content {
+      name  = env.key
+      value = env.value
+    }
+  }
 }
