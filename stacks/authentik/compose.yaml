@@ -4,7 +4,7 @@ x-default: &default
     - authentik
     - metrics
   env_file:
-    - path: ./stack.env
+    - path: stack.env
       required: false
   labels:
     com.centurylinklabs.watchtower.enable: false
@@ -24,8 +24,8 @@ services:
     ports:
       - "9000:9000"
     volumes:
-      - /portainer/Files/AppData/Config/authentik/media/media
-      - /portainer/Files/AppData/Config/authentik/custom-templates:/templates
+      - /portainer/authentik/media/media
+      - /portainer/authentik/templates:/templates
     depends_on:
       - postgresql
       - redis
@@ -37,9 +37,9 @@ services:
     command: worker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /portainer/Files/AppData/Config/authentik/media/media
-      - /portainer/Files/AppData/Config/authentik/certs:/certs
-      - /portainer/Files/AppData/Config/authentik/templates:/templates
+      - /portainer/authentik/media/media
+      - /portainer/authentik/certs:/certs
+      - /portainer/authentik/templates:/templates
     depends_on:
       - postgresql
       - redis
@@ -50,7 +50,7 @@ services:
     image: postgres:16-alpine
     healthcheck:
       <<: *healthchecks
-      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      test: ["CMD-SHELL", "pg_isready -d $${PG_DB} -U $${PG_USER}"]
     volumes:
       - database:/var/lib/postgresql/data
 
@@ -61,7 +61,7 @@ services:
     command: --save 60 1 --loglevel warning
     healthcheck:
       <<: *healthchecks
-      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
     volumes:
       - redis:/data
 
