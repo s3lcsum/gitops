@@ -14,13 +14,6 @@ variable "endpoint_id" {
   type        = number
 }
 
-
-variable "default_portainer_stack_repository_url" {
-  description = "Default Portainer stack repository URL"
-  type        = string
-  default     = "https://github.com/s3lcsum/gitops"
-}
-
 variable "portainer_stacks_envs" {
   description = "Environment variables for the stacks"
   type        = map(map(string))
