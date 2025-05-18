@@ -1,0 +1,9 @@
+services:
+  authelia:
+    image: authelia/authelia
+    container_name: authelia
+    volumes:
+      - /portainer/authelia:/config:ro
+    ports:
+      - "9091:9091"
+    restart: unless-stopped
