@@ -84,13 +84,26 @@ provide a living reference for improvements. Contributions and suggestions are w
 
 ## Changelog
 
+### 20.05.2025
+
+I have just refactored Portainer stacks, so I won't have to deal with many
+resources, but have done it all in a single array. Before, I thought it would
+be better this way, but it wasn't worth it.
+
 ### 18.05.2025
 
-I'm reverting from Portainer's GitOps option that was automatically pulling stacks from this repository. The delay between commits and actual changes in Portainer was frustrating. Plus, I couldn't make any temporary changes in stacks. I'd rather execute `terraform apply` to keep everything in one place.
+I'm reverting from Portainer's GitOps option that was automatically pulling
+stacks from this repository. The delay between commits and actual changes in
+Portainer was frustrating. Plus, I couldn't make any temporary changes in
+stacks. I'd rather execute `terraform apply` to keep everything in one place.
 
 ### 17.05.2025
 
-Because I accidentally deleted my authentik environment variables, I decided to give authelia a shot. I've heard only good things about it, and it's fully configurable via YAML files. It seemed promising, but I felt like I was missing some options that worked perfectly out-of-the-box in authentik. I tried to configure it, but ended up restoring authentik from backup anyway.
+Because I accidentally deleted my authentik environment variables, I decided to
+give authelia a shot. I've heard only good things about it, and it's fully
+configurable via YAML files. It seemed promising, but I felt like I was missing
+some options that worked perfectly out-of-the-box in authentik. I tried to
+configure it, but ended up restoring authentik from backup anyway.
 
 ## 🧭 Roadmap
 
