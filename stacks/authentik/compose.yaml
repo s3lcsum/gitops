@@ -17,7 +17,7 @@ x-authentik: &authentik
   image: ghcr.io/goauthentik/server:2025.4
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
-    - /portainer/authentik/media/media
+    - /portainer/authentik/media:/media
     - /portainer/authentik/certs:/certs
     - /portainer/authentik/templates:/templates
   environment:
@@ -25,9 +25,9 @@ x-authentik: &authentik
     AUTHENTIK_LOG_LEVEL: "${AUTHENTIK_LOG_LEVEL}"
     AUTHENTIK_POSTGRESQL__HOST: "${AUTHENTIK_POSTGRESQL__HOST}"
     AUTHENTIK_POSTGRESQL__PORT: "${AUTHENTIK_POSTGRESQL__PORT}"
-    AUTHENTIK_POSTGRESQL__USER: "${PG_USER}"
-    AUTHENTIK_POSTGRESQL__PASSWORD: "${PG_PASS}"
-    AUTHENTIK_POSTGRESQL__NAME: "${PG_DB}"
+    AUTHENTIK_POSTGRESQL__USER: "${POSTGRES_USER}"
+    AUTHENTIK_POSTGRESQL__PASSWORD: "${POSTGRES_PASSWORD}"
+    AUTHENTIK_POSTGRESQL__NAME: "${POSTGRES_DB}"
     AUTHENTIK_REDIS__HOST: "${AUTHENTIK_REDIS__HOST}"
     AUTHENTIK_REDIS__PORT: "${AUTHENTIK_REDIS__PORT}"
     AUTHENTIK_EMAIL__HOST: "${AUTHENTIK_EMAIL__HOST}"
@@ -39,9 +39,12 @@ x-authentik: &authentik
     AUTHENTIK_EMAIL__TIMEOUT: "${AUTHENTIK_EMAIL__TIMEOUT}"
     AUTHENTIK_EMAIL__FROM: "${AUTHENTIK_EMAIL__FROM}"
     AUTHENTIK_ERROR_REPORTING__ENABLED: "${AUTHENTIK_ERROR_REPORTING__ENABLED}"
+    AUTHENTIK_BOOTSTRAP_TOKEN: "${AUTHENTIK_BOOTSTRAP_TOKEN}"
   depends_on:
-    - postgresql
-    - redis
+    postgresql:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
 
 services:
   server:
@@ -51,7 +54,7 @@ services:
     ports:
       - "9000:9000"
     volumes:
-      - /portainer/authentik/media/media
+      - /portainer/authentik/media:/media
       - /portainer/authentik/templates:/templates
 
   worker:
@@ -65,11 +68,11 @@ services:
     image: postgres:17-alpine
     healthcheck:
       <<: *healthchecks
-      test: ["CMD-SHELL", "pg_isready -d $${PG_DB} -U $${PG_USER}"]
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
     environment:
-      PG_USER: "${PG_USER}"
-      PG_PASS: "${PG_PASS}"
-      PG_DB: "${PG_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
     volumes:
       - database:/var/lib/postgresql/data
 
