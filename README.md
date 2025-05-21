@@ -84,6 +84,12 @@ provide a living reference for improvements. Contributions and suggestions are w
 
 ## Changelog
 
+### 21.05.2025
+
+I have configured the Google SSO for Authentik with the terraform. However, I
+did some changes manually in the UI for the flows/stages, as they're super
+difficult to configure via terraform.
+
 ### 20.05.2025
 
 I have just refactored Portainer stacks, so I won't have to deal with many

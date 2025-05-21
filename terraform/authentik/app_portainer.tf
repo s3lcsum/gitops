@@ -25,9 +25,16 @@ resource "authentik_provider_oauth2" "portainer" {
 resource "authentik_application" "portainer" {
   name               = "Portainer"
   slug               = "portainer"
-  meta_icon          = "/media/public/application-icons/portainer.png"
+  meta_icon          = "application-icons/portainer.png"
   policy_engine_mode = "all"
   protocol_provider  = authentik_provider_oauth2.portainer.id
+
+  lifecycle {
+    ignore_changes = [
+      # For some reasons the providers always adds /media/public to the path, and always triggers the change
+      meta_icon,
+    ]
+  }
 }
 
 output "portainer_oauth2_settings" {
