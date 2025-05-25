@@ -1,11 +1,29 @@
-resource "authentik_provider_oauth2" "portainer" {
-  name      = "portainer"
-  client_id = "portainer"
+locals {
+  authentik_oauth2_apps = {
+    portainer = {
+      urls = [
+        "https://portianer.wally.dominiksiejak.pl",
+      ]
+    }
+    routeros = {
+      urls = [
+        "https://routeros.wally.dominiksiejak.pl",
+      ]
+    }
+  }
+}
+
+resource "authentik_provider_oauth2" "apps" {
+  for_each = local.authentik_oauth2_apps
+
+  name      = title(each.key)
+  client_id = each.key
 
   allowed_redirect_uris = [
+    for url in each.value.urls :
     {
       matching_mode = "strict",
-      url           = "https://portainer.wally.dominiksiejak.pl/",
+      url           = url
     }
   ]
 
@@ -22,12 +40,14 @@ resource "authentik_provider_oauth2" "portainer" {
   ]
 }
 
-resource "authentik_application" "portainer" {
-  name               = "Portainer"
-  slug               = "portainer"
-  meta_icon          = "application-icons/portainer.png"
+resource "authentik_application" "apps" {
+  for_each = local.authentik_oauth2_apps
+
+  name               = each.key
+  slug               = each.key
+  meta_icon          = "application-icons/apps.png"
   policy_engine_mode = "all"
-  protocol_provider  = authentik_provider_oauth2.portainer.id
+  protocol_provider  = authentik_provider_oauth2.apps[each.key].id
 
   lifecycle {
     ignore_changes = [
@@ -37,15 +57,15 @@ resource "authentik_application" "portainer" {
   }
 }
 
-output "portainer_oauth2_settings" {
+output "apps_oauth2_settings" {
   sensitive = true
-  value = {
+  value = [for k, v in local.authentik_oauth2_apps : {
     issuer        = "${var.authentik_url}/application/o/"
-    client_id     = authentik_provider_oauth2.portainer.client_id
-    client_secret = authentik_provider_oauth2.portainer.client_secret
-    redirect_uri  = authentik_provider_oauth2.portainer.allowed_redirect_uris[0].url
+    client_id     = authentik_provider_oauth2.apps[k].client_id
+    client_secret = authentik_provider_oauth2.apps[k].client_secret
+    redirect_uri  = authentik_provider_oauth2.apps[k].allowed_redirect_uris[0].url
     auth_url      = "${var.authentik_url}/application/o/authorize/"
     token_url     = "${var.authentik_url}/application/o/token/"
     userinfo_url  = "${var.authentik_url}/application/o/userinfo/"
-  }
+  }]
 }
