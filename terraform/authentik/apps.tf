@@ -1,13 +1,18 @@
 locals {
   authentik_oauth2_apps = {
-    portainer = {
+    proxmox = {
       urls = [
-        "https://portianer.wally.dominiksiejak.pl",
+        "https://proxmox.wally.dominiksiejak.pl/",
       ]
     }
-    routeros = {
+    portainer = {
       urls = [
-        "https://routeros.wally.dominiksiejak.pl",
+        "https://portainer.wally.dominiksiejak.pl/",
+      ]
+    }
+    minio = {
+      urls = [
+        "https://minio.wally.dominiksiejak.pl/",
       ]
     }
   }
@@ -45,7 +50,7 @@ resource "authentik_application" "apps" {
 
   name               = each.key
   slug               = each.key
-  meta_icon          = "application-icons/apps.png"
+  meta_icon          = "application-icons/${each.key}.png"
   policy_engine_mode = "all"
   protocol_provider  = authentik_provider_oauth2.apps[each.key].id
 
