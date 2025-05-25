@@ -46,13 +46,13 @@ locals {
     "authentik",
     "cloudflared",
     "cups",
+    "dozzle",
     "mktxp",
     "netbootxyz",
     "nginx_proxy_manager",
     "upsnap",
     "uptime_kuma",
     "victoria",
-    # "watchtower",
     "watchyourlan",
   ]
 }
