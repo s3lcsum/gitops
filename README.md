@@ -84,6 +84,12 @@ provide a living reference for improvements. Contributions and suggestions are w
 
 ## Changelog
 
+### 25.05.2025
+
+Refactored the Terraform code slightly to reduce repetition. I also removed
+'watchtower' —it's a great tool, but I prefer to update everything manually,
+and RenovateBot will handle the rest.
+
 ### 21.05.2025
 
 I have configured the Google SSO for Authentik with the terraform. However, I
