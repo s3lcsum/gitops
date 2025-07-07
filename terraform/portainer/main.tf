@@ -4,7 +4,7 @@ terraform {
   required_providers {
     portainer = {
       source  = "portainer/portainer"
-      version = "1.4.3"
+      version = "1.4.5"
     }
   }
 
@@ -43,16 +43,17 @@ resource "portainer_settings" "default" {
 
 locals {
   portainer_stacks = [
+    "alloy",
     "authentik",
     "cloudflared",
     "cups",
     "dozzle",
+    "mediabox",
     "mktxp",
     "netbootxyz",
-    "nginx_proxy_manager",
     "upsnap",
     "uptime_kuma",
-    "victoria",
+    "traefik",
     "watchyourlan",
   ]
 }
@@ -65,7 +66,10 @@ resource "portainer_stack" "stacks" {
 
   endpoint_id = var.endpoint_id
 
-  name               = each.value
+  name       = each.value
+  pull_image = true
+  prune      = true
+
   stack_file_content = file("../../stacks/${each.value}/compose.yaml")
 
   dynamic "env" {

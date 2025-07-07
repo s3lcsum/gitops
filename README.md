@@ -30,20 +30,22 @@ provide a living reference for improvements. Contributions and suggestions are w
   - Pi-hole (deprecating)
   - AdGuard
 
-- **Apps on Portinaer:**
+- **Apps on Portainer:**
   - [authentik](https://github.com/goauthentik/authentik)
   - [cloudflared](https://github.com/cloudflare/cloudflared)
   - [dozzle](https://github.com/amir20/dozzle)
   - [netboot.xyz](https://github.com/netbootxyz/netboot.xyz)
-  - [Nginx Proxy Manager](https://github.com/NginxProxyManager/nginx-proxy-manager)
-  - [Watchtower](https://github.com/containrrr/watchtower)
+  - [Traefik](https://github.com/traefik/traefik) (reverse proxy with CrowdSec security)
   - [Upsnap](https://github.com/seriousm4x/UpSnap)
   - [CUPS](https://github.com/OpenPrinting/cups)
-  - [Victoria Metrics](https://github.com/VictoriaMetrics/VictoriaMetrics)
   - [Uptime Kuma](https://github.com/louislam/uptime-kuma)
+  - [mktxp](https://github.com/akpw/mktxp)
+  - [watchyourlan](https://github.com/aceberg/watchyourlan)
+  - [alloy](https://github.com/grafana/alloy) (Grafana Alloy agent for logs/metrics)
+  - mediabox (qBittorrent, Sonarr, Radarr, Jellyfin, etc. - media automation stack)
   - [Grafana](https://github.com/grafana/grafana)
   - [Grafana Synthetic Monitoring Agent](https://github.com/grafana/synthetic-monitoring-agent)
-  (I'm using Grafana Cloud for synthetic checks)
+    (I'm using Grafana Cloud for synthetic checks)
 
 - **Networking:**
   - IP Ranges:
@@ -74,15 +76,38 @@ provide a living reference for improvements. Contributions and suggestions are w
 
 ```
 ├── /stacks/
-│   └── {stack_name}/           # Docker Compose stacks managed by Portainer
+│   ├── alloy/                # Grafana Alloy agent
+│   ├── authentik/            # Authentik SSO
+│   ├── cloudflared/          # Cloudflare Tunnel
+│   ├── cups/                 # CUPS print server
+│   ├── dozzle/               # Dozzle log viewer
+│   ├── mediabox/             # Media automation stack (qBittorrent, Sonarr, Radarr, Jellyfin, etc.)
+│   ├── mktxp/                # Mikrotik Prometheus exporter
+│   ├── netbootxyz/           # Netboot.xyz PXE
+│   ├── traefik/              # Traefik reverse proxy with CrowdSec security
+│   ├── upsnap/               # Upsnap wake-on-LAN
+│   ├── uptime_kuma/          # Uptime Kuma monitoring
+│   └── watchyourlan/         # WatchYourLAN network scanner
 │
 └── /terraform/
-    └── {service_name}/         # Terraform code per component
+    ├── authentik/            # Authentik SSO infra
+    ├── portainer/            # Portainer infra
+    ├── proxmox/              # Proxmox infra
+    └── routeros/             # RouterOS infra
 ```
 
 ---
 
 ## Changelog
+
+### 7.07.2025
+
+Major infrastructure changes:
+- Replaced Nginx Proxy Manager with **Traefik** as the reverse proxy
+- Added **CrowdSec** security integration with Traefik
+- Added **mediabox** stack to start fun with home media server
+- Removed VictoriaMetrics stack (moved to Grafana Cloud)
+- Updated all stack configurations to use Traefik labels
 
 ### 25.05.2025
 
@@ -119,19 +144,39 @@ configure it, but ended up restoring authentik from backup anyway.
 
 ## 🧭 Roadmap
 
-- [ ] Portainer's stacks:
+- [x] Portainer's stacks:
   - [x] authentik
   - [x] cloudflared
   - [x] cups
   - [x] dozzle
-  - [x] mktxmp
+  - [x] mktxp
   - [x] netboot.xyz
-  - [x] nginx proxy manager
+  - [x] traefik (replaced nginx proxy manager)
   - [x] upsnap
   - [x] uptime kuma
-  - [x] victoria metrics
-  - [x] watchtower
   - [x] watchyourlan
+<<<<<<< Updated upstream
+  - [x] alloy
+  - [x] mediabox
+  - [ ] Terraform
+    - [ ] Portainer:
+      - [x] stack_authentik
+      - [x] stack_cloudflared
+      - [x] stack_cups
+      - [x] stack_mktxp
+      - [x] stack_dozzle
+      - [x] stack_netbootxyz
+      - [x] stack_traefik
+      - [x] stack_upsnap
+      - [x] stack_uptime_kuma
+      - [x] stack_watchyourlan
+      - [x] stack_alloy
+      - [x] stack_mediabox
+        > All stacks are created but some still miss advanced configuration
+        > (env variables, secrets, etc.)
+      - [ ] Users & Groups
+      - [ ] Host Settings
+||||||| Stash base
 - [ ] Terraform
   - [ ] Portainer:
     - [x] stack_authentik
@@ -150,6 +195,26 @@ configure it, but ended up restoring authentik from backup anyway.
       > (env variables, secrets, etc.)
     - [ ] Users & Groups
     - [ ] Host Settings
+=======
+- [ ] Terraform
+  - [ ] Portainer:
+    - [x] stack_authentik
+    - [x] stack_cloudflared
+    - [x] stack_cups
+    - [x] stack_mktxmp
+    - [x] stack_watchtower
+    - [x] stack_dozzle
+    - [x] stack_netbootxyz
+    - [x] stack_nginx_proxy_manager
+    - [x] stack_upsnap
+    - [x] stack_uptime_kuma
+    - [x] stack_victoria
+    - [x] stack_watchyourlan
+      > All stacks are created but some still miss advanced configuration
+      > (env variables, secrets, etc.)
+    - [x] ~Users & Groups~
+    - [x] Host Settings (just oAuth)
+>>>>>>> Stashed changes
   - [ ] Proxmox:
     - [ ] Host settings
     - [x] LXC: Portainer

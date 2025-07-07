@@ -1,0 +1,87 @@
+###############################
+#   Grafana Alloy Config      #
+#   For Homelab Telemetry     #
+###############################
+
+# ── Environment Variables from Docker Compose ──
+local prom_url  = getenv("PROM_REMOTE_WRITE_URL")
+local loki_url  = getenv("LOKI_WRITE_URL")
+local user      = getenv("GRAFANA_CLOUD_USERNAME")
+local api_key   = getenv("GRAFANA_CLOUD_API_KEY")
+
+########################################
+#  Metrics Collection - Prometheus     #
+########################################
+
+
+# ─ AdGuard ─
+prometheus.scrape "adguard" {
+  targets      = [{ address = "adguard.wally.dominiksiejak.pl" }]
+  metrics_path = "/control/metrics"
+  forward_to   = [prometheus.remote_write.cloud.receiver]
+}
+
+# ─ Traefik ─
+# Ensure Traefik metrics are enabled and accessible at this endpoint
+prometheus.scrape "traefik" {
+  targets      = [{ address = "192.168.89.253:9100" }]
+  metrics_path = "/metrics"
+  scrape_interval = "15s"
+  forward_to   = [prometheus.remote_write.cloud.receiver]
+}
+
+# ─ Uptime Kuma ─ (if you exposed metrics manually)
+prometheus.scrape "uptime_kuma" {
+  targets      = [{ address = "uptime.wally.dominiksiejak.pl" }]
+  forward_to   = [prometheus.remote_write.cloud.receiver]
+}
+
+# ─ Send metrics to Grafana Cloud ─
+prometheus.remote_write "cloud" {
+  endpoint {
+    url = prom_url
+    basic_auth {
+      username = user
+      password = api_key
+    }
+  }
+  external_labels = {
+    env = "homelab"
+    dc  = "wally"
+  }
+}
+
+########################################
+#  Logs Collection - Loki              #
+########################################
+
+# ─ Docker logs ─
+loki.source.docker "compose_logs" {
+  forward_to = [loki.process.compose.receiver]
+}
+
+# ─ Log processing ─
+loki.process "compose" {
+  stage.docker {
+    container_label = "com.docker.compose.service"
+  }
+  stage.labels {
+    values = {
+      source = "docker"
+      env    = "homelab"
+      dc     = "wally"
+    }
+  }
+  forward_to = [loki.write.cloud.receiver]
+}
+
+# ─ Send logs to Grafana Cloud ─
+loki.write "cloud" {
+  endpoint {
+    url = loki_url
+    basic_auth {
+      username = user
+      password = api_key
+    }
+  }
+}

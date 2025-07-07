@@ -1,10 +1,16 @@
 services:
   uptime_kuma:
     container_name: uptime_kuma
-    image: louislam/uptime-kuma:latest
-    restart: unless-stopped
+    image: louislam/uptime-kuma:1.23.16-alpine
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.uptime_kuma.rule=Host(`uptime-kuma.wally.dominiksiejak.pl`)"
+      - "traefik.http.routers.uptime_kuma.entrypoints=web,websecure"
+      - "traefik.http.routers.uptime_kuma.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.uptime_kuma.middlewares=redirect-to-https@file"
+      - "traefik.http.services.uptime_kuma.loadbalancer.server.port=3001"
     ports:
-      - "3002:3001"
+      - 3001:3001
     volumes:
       - uptime-kuma-data:/app/data
       - /var/run/docker.sock:/var/run/docker.sock:ro

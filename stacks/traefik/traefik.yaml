@@ -1,0 +1,59 @@
+log:
+  level: INFO
+
+accessLog: {}
+
+entryPoints:
+  web:
+    address: ":80"
+
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: wally.dominiksiejak.pl
+            sans:
+              - '*.wally.dominiksiejak.pl'
+
+  traefik:
+    address: ":8080"
+
+  metrics:
+    address: ":9100"
+
+api:
+  dashboard: true
+  insecure: false
+
+providers:
+  docker:
+    exposedByDefault: false
+  file:
+    filename: /etc/traefik/dynamic.yaml
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: dreewniak@gmail.com
+      storage: /letsencrypt/acme.json
+      dnsChallenge:
+        provider: cloudflare
+        delayBeforeCheck: "0"
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+        disablePropagationCheck: false
+
+metrics:
+  prometheus:
+    entryPoint: metrics
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0

@@ -1,0 +1,65 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik
+    restart: unless-stopped
+    user: root
+    networks:
+      - proxy
+    environment:
+      - CF_DNS_API_TOKEN=${CLOUDFLARE_DNS_API_TOKEN:?err}
+      - CF_ZONE_ID=${CLOUDFLARE_ZONE_ID:?err}
+    ports:
+      - 80:80
+      - 443:443
+      - 8081:8080 # Dashboard
+      - 9100:9100 # Prometheus metrics
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /Portainer/traefik/logs:/var/log
+      - /Portainer/traefik/config:/etc/traefik
+      - /Portainer/traefik/letsencrypt:/letsencrypt
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.wally.dominiksiejak.pl`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
+
+  traefik-certs-dumper:
+    image: ldez/traefik-certs-dumper:latest
+    container_name: traefik-certs-dumper
+    restart: unless-stopped
+    entrypoint: sh -c '
+      while ! [ -e /data/acme.json ]
+      || ! [ `jq ".[] | .Certificates | length" /data/acme.json | jq -s "add" ` != 0 ]; do
+      sleep 1
+      ; done
+      && traefik-certs-dumper file --version v2 --watch
+      --source /data/acme.json --dest /certs'
+    volumes:
+      - /Portainer/traefik/letsencrypt:/data:ro
+      - /Portainer/traefik-certs-dumper:/certs
+
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    restart: unless-stopped
+    networks:
+      - proxy
+    ports:
+      - 127.0.0.1:9080:8080
+      - 6060:6060
+      - 7422:7422
+    depends_on:
+      - traefik
+    volumes:
+      - /Portainer/crowdsec/config:/etc/crowdsec
+      - /Portainer/crowdsec/data:/var/lib/crowdsec/data/
+      - /Portainer/crowdsec/logs:/logs:ro
+
+networks:
+  proxy:
+    external: true

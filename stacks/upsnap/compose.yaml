@@ -1,15 +1,20 @@
 services:
   upsnap:
     container_name: upsnap
-    image: ghcr.io/seriousm4x/upsnap:5
+    image: ghcr.io/seriousm4x/upsnap:5.1.0
     restart: unless-stopped
     network_mode: host
-    user: "1000:1000"
     volumes:
-      - upstap-data:/app/pb_data
+      - upsnap-data:/app/pb_data
+      - upsnap-logs:/app/logs
+    entrypoint: /bin/sh -c "./upsnap serve --http 0.0.0.0:5000"
     healthcheck:
-      test: ["CMD", "curl", "-fs", "http://localhost:5000/api/health"]
-      interval: 10s
+      test: ["CMD-SHELL", "curl -fs http://localhost:5000/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
-  upstap-data:
+  upsnap-data:
+  upsnap-logs:

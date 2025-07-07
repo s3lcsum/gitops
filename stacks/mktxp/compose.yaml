@@ -4,6 +4,13 @@ services:
     image: ghcr.io/akpw/mktxp:latest
     restart: unless-stopped
     user: root
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mktxp.rule=Host(`mktxp.wally.dominiksiejak.pl`)"
+      - "traefik.http.routers.mktxp.entrypoints=web,websecure"
+      - "traefik.http.routers.mktxp.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.mktxp.middlewares=redirect-to-https@file"
+      - "traefik.http.services.mktxp.loadbalancer.server.port=49090"
     environment:
       - TZ=Europe/Warsaw
     volumes:

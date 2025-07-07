@@ -14,7 +14,7 @@ x-healthchecks: &healthchecks
 
 x-authentik: &authentik
   <<: *default
-  image: ghcr.io/goauthentik/server:2025.6
+  image: ghcr.io/goauthentik/server:2025.6.2
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - /portainer/authentik/media:/media
@@ -53,6 +53,13 @@ services:
     command: server
     ports:
       - "9000:9000"
+      - "9300:9300"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.authentik.rule=Host(`auth.wally.dominiksiejak.pl`)"
+      - "traefik.http.routers.authentik.entrypoints=websecure"
+      - "traefik.http.routers.authentik.tls.certresolver=letsencrypt"
+      - "traefik.http.services.authentik.loadbalancer.server.port=9000"
     volumes:
       - /portainer/authentik/media:/media
       - /portainer/authentik/templates:/templates

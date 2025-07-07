@@ -5,6 +5,13 @@ services:
     container_name: cupsd
     image: olbat/cupsd:latest
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cupsd.rule=Host(`cupsd.wally.dominiksiejak.pl`)"
+      - "traefik.http.routers.cupsd.entrypoints=web,websecure"
+      - "traefik.http.routers.cupsd.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.cupsd.middlewares=redirect-to-https@file"
+      - "traefik.http.services.cupsd.loadbalancer.server.port=631"
     ports:
       - "631:631"
     volumes:

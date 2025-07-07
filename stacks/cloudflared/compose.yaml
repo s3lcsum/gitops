@@ -4,5 +4,6 @@ services:
     container_name: cloudflare_tunnel
     command: tunnel run
     restart: unless-stopped
+    # Traefik labels are not added because this service does not expose a web UI.
     environment:
       - TUNNEL_TOKEN=${CLOUDFLARED_TUNNEL_TOKEN}

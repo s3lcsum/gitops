@@ -1,0 +1,103 @@
+http:
+  # Middlewares
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    authentik-forward-auth:
+      forwardAuth:
+        address: "https://auth.wally.dominiksiejak.pl/outpost.goauthentik.io/auth/traefik"
+        trustForwardHeader: true
+        authResponseHeaders:
+          - X-Authentik-Username
+          - X-Authentik-Groups
+          - X-Authentik-Email
+
+    secure-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        customFrameOptionsValue: "SAMEORIGIN"
+        referrerPolicy: "strict-origin-when-cross-origin"
+        permissionsPolicy: "geolocation=(), microphone=(), camera=()"
+        forceSTSHeader: true
+
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 50
+
+  # Routers
+  routers:
+    # Proxmox HTTPS Passthrough
+    proxmox:
+      rule: "Host(`proxmox.wally.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      service: proxmox
+      tls:
+        certResolver: letsencrypt
+
+    # Router (HTTP backend)
+    mikrotik:
+      rule: "Host(`router.wally.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      service: router
+      middlewares:
+        - secure-headers
+        - authentik-forward-auth
+        - rate-limit
+      tls:
+        certResolver: letsencrypt
+
+    portainer:
+      rule: "Host(`portainer.wally.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      service: portainer
+      middlewares:
+        - secure-headers
+        - authentik-forward-auth
+        - rate-limit
+      tls:
+        certResolver: letsencrypt
+
+    # Catch-all HTTP to HTTPS redirect
+    redirect-all:
+      entryPoints:
+        - web
+      rule: "HostRegexp(`{host:.+}`)"
+      middlewares:
+        - redirect-to-https
+      service: noop
+
+  # Services
+  services:
+    proxmox:
+      loadBalancer:
+        servers:
+          - url: "https://192.168.89.254:8006/"
+        passHostHeader: true
+        serversTransport: insecure
+    portainer:
+      loadBalancer:
+        servers:
+          - url: "https://192.168.89.253:9443/"
+        passHostHeader: true
+        serversTransport: insecure
+    mikrotik:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.89.1/"
+        passHostHeader: true
+
+  serversTransports:
+    insecure:
+      insecureSkipVerify: true

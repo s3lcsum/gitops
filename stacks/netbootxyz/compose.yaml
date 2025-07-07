@@ -1,30 +1,43 @@
 services:
   netbootxyz:
+    image: ghcr.io/netbootxyz/netbootxyz
     container_name: netbootxyz
-    image: lscr.io/linuxserver/netbootxyz:latest
-    restart: unless-stopped
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/Warsaw
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.netbootxyz.rule=Host(`netbootxyz.wally.dominiksiejak.pl`)"
+      - "traefik.http.routers.netbootxyz.entrypoints=web,websecure"
+      - "traefik.http.routers.netbootxyz.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.netbootxyz.middlewares=redirect-to-https@file"
+      - "traefik.http.services.netbootxyz.loadbalancer.server.port=3000"
     volumes:
       - netbootxyz-config:/config
       - netbootxyz-assets:/assets
     ports:
-      - "3123:3000"
-      - "69:69/udp"
+      - 3123:3000
+      - 69:69/udp
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
-# iDRAC6 Controller – useful to access console without local Java install
-#  idrac6:
-#    container_name: idrac6
-#    image: domistyle/idrac6
-#    restart: unless-stopped
-#    environment:
-#      - IDRAC_HOST=192.168.0.1
-#      - IDRAC_USER=root
-#      - IDRAC_PASSWORD=calvin # Default password for iDRAC software
-#    ports:
-#      - "5800:5800"
+  # Optional: iDRAC6 Controller for legacy console access without Java install
+  # idrac6:
+  #   container_name: idrac6
+  #   image: domistyle/idrac6
+  #   restart: unless-stopped
+  #   environment:
+  #     - IDRAC_HOST=192.168.0.1
+  #     - IDRAC_USER=${IDRAC_USER:-root}
+  #     - IDRAC_PASSWORD=${IDRAC_PASSWORD:-calvin}
+  #   ports:
+  #     - "5800:5800"  # Web-based console (VNC over noVNC)
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:5800"]
+  #     interval: 60s
+  #     timeout: 10s
+  #     retries: 3
 
 volumes:
   netbootxyz-config:
