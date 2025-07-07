@@ -14,7 +14,7 @@ x-healthchecks: &healthchecks
 
 x-authentik: &authentik
   <<: *default
-  image: ghcr.io/goauthentik/server:2025.6.2
+  image: ghcr.io/goauthentik/server:2025.6.3
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - /portainer/authentik/media:/media
