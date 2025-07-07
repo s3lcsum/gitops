@@ -1,6 +1,6 @@
 services:
   alloy:
-    image: grafana/alloy:v1.9.1
+    image: grafana/alloy:v1.9.2
     container_name: alloy
     labels:
       - "traefik.enable=true"
