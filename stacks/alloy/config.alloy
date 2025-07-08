@@ -1,87 +1,63 @@
-###############################
-#   Grafana Alloy Config      #
-#   For Homelab Telemetry     #
-###############################
-
-# ── Environment Variables from Docker Compose ──
-local prom_url  = getenv("PROM_REMOTE_WRITE_URL")
-local loki_url  = getenv("LOKI_WRITE_URL")
-local user      = getenv("GRAFANA_CLOUD_USERNAME")
-local api_key   = getenv("GRAFANA_CLOUD_API_KEY")
-
-########################################
-#  Metrics Collection - Prometheus     #
-########################################
-
-
-# ─ AdGuard ─
+// Prometheus scrape configurations
 prometheus.scrape "adguard" {
-  targets      = [{ address = "adguard.wally.dominiksiejak.pl" }]
+  targets = [
+    { __address__ = "adguard.wally.dominiksiejak.pl", job = "adguard" },
+  ]
   metrics_path = "/control/metrics"
   forward_to   = [prometheus.remote_write.cloud.receiver]
 }
 
-# ─ Traefik ─
-# Ensure Traefik metrics are enabled and accessible at this endpoint
 prometheus.scrape "traefik" {
-  targets      = [{ address = "192.168.89.253:9100" }]
-  metrics_path = "/metrics"
-  scrape_interval = "15s"
-  forward_to   = [prometheus.remote_write.cloud.receiver]
+  targets = [
+    { __address__ = "traeffik:9100", job = "traefik" },
+  ]
+  metrics_path     = "/metrics"
+  scrape_interval  = "15s"
+  forward_to       = [prometheus.remote_write.cloud.receiver]
 }
 
-# ─ Uptime Kuma ─ (if you exposed metrics manually)
 prometheus.scrape "uptime_kuma" {
-  targets      = [{ address = "uptime.wally.dominiksiejak.pl" }]
-  forward_to   = [prometheus.remote_write.cloud.receiver]
+  targets = [
+    { __address__ = "uptime_kuma:3001", job = "uptime_kuma" },
+  ]
+  forward_to = [prometheus.remote_write.cloud.receiver]
 }
 
-# ─ Send metrics to Grafana Cloud ─
+// Prometheus remote write configuration
 prometheus.remote_write "cloud" {
   endpoint {
-    url = prom_url
+    url = sys.env("PROM_REMOTE_WRITE_URL")
     basic_auth {
-      username = user
-      password = api_key
+      username = sys.env("GCLOUD_HOSTED_METRICS_ID")
+      password = sys.env("GCLOUD_RW_API_KEY")
     }
   }
-  external_labels = {
-    env = "homelab"
-    dc  = "wally"
-  }
+
 }
 
-########################################
-#  Logs Collection - Loki              #
-########################################
+// Loki source for Docker logs
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
 
-# ─ Docker logs ─
 loki.source.docker "compose_logs" {
+  host    = "unix:///var/run/docker.sock"
+  targets = discovery.docker.containers.targets
   forward_to = [loki.process.compose.receiver]
 }
 
-# ─ Log processing ─
+// Loki processing pipeline
 loki.process "compose" {
-  stage.docker {
-    container_label = "com.docker.compose.service"
-  }
-  stage.labels {
-    values = {
-      source = "docker"
-      env    = "homelab"
-      dc     = "wally"
-    }
-  }
   forward_to = [loki.write.cloud.receiver]
 }
 
-# ─ Send logs to Grafana Cloud ─
+// Loki write configuration
 loki.write "cloud" {
   endpoint {
-    url = loki_url
+    url = sys.env("LOKI_WRITE_URL")
     basic_auth {
-      username = user
-      password = api_key
+      username = sys.env("GCLOUD_HOSTED_LOGS_ID")
+      password = sys.env("GCLOUD_RW_API_KEY")
     }
   }
 }

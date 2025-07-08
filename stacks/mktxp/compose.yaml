@@ -1,23 +1,22 @@
+# MKTXP Stack
+# Mikrotik Prometheus exporter
+# Maintainer: Dominik Siejak
+
 services:
   mktxp:
+    image: ghcr.io/akpw/mktxp:1.2.0
     container_name: mktxp
-    image: ghcr.io/akpw/mktxp:latest
     restart: unless-stopped
-    user: root
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.mktxp.rule=Host(`mktxp.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.mktxp.entrypoints=web,websecure"
-      - "traefik.http.routers.mktxp.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.mktxp.middlewares=redirect-to-https@file"
-      - "traefik.http.services.mktxp.loadbalancer.server.port=49090"
-    environment:
-      - TZ=Europe/Warsaw
-    volumes:
-      - /portainer/Files/AppData/Config/mktxp/mktxp.conf:/root/mktxp/mktxp.conf
     networks:
-      - monitoring
+      - metrics
+    volumes:
+      - /Portainer/mktxp/mktxp.conf:/root/mktxp/mktxp.conf
+    healthcheck:
+      test: ["CMD", "mktxp", "--version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 networks:
-  monitoring:
+  metrics:
     external: true

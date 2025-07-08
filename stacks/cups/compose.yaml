@@ -1,23 +1,34 @@
+# CUPS Stack
+# Network printing via CUPS
 # Default admin credentials: print / print
+# Maintainer: Dominik Siejak
 
 services:
   cupsd:
+    image: olbat/cupsd:2.3.3
     container_name: cupsd
-    image: olbat/cupsd:latest
     restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.cupsd.rule=Host(`cupsd.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.cupsd.entrypoints=web,websecure"
-      - "traefik.http.routers.cupsd.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.cupsd.middlewares=redirect-to-https@file"
-      - "traefik.http.services.cupsd.loadbalancer.server.port=631"
-    ports:
-      - "631:631"
+    networks:
+      - proxy
     volumes:
-      - cups_data:/etc/cups
+      - cups-data:/etc/cups
       - /var/run/dbus:/var/run/dbus  # Required for printer auto-detection
       - /dev/bus/usb:/dev/bus/usb  # If using USB printers
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cupsd.rule=Host(`cups.wally.dominiksiejak.pl`)"
+      - "traefik.http.routers.cupsd.entrypoints=websecure"
+      - "traefik.http.routers.cupsd.tls.certresolver=letsencrypt"
+      - "traefik.http.services.cupsd.loadbalancer.server.port=631"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:631"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
-  cups_data:
+  cups-data:
+
+networks:
+  proxy:
+    external: true

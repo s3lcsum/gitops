@@ -1,20 +1,30 @@
+# WatchYourLAN Stack
+# Network device discovery and monitoring
+# Maintainer: Dominik Siejak
+
 services:
   wyl:
+    image: aceberg/watchyourlan:0.9.2
     container_name: watchyourlan
-    image: aceberg/watchyourlan:latest
-    network_mode: host
     restart: unless-stopped
-    # Traefik labels are not added because network_mode: host is used, which is not compatible with Traefik's container routing.
+    network_mode: host
     volumes:
       - watchyourlan:/data/WatchYourLAN
     environment:
-      TZ: ${TZ:-Europe/Warsaw}
-      INFLUX_ENABLE: ${INFLUX_ENABLE:-"false"}
-      INFLUX_ADDR: ${INFLUX_ADDR:-"http://127.0.0.1:8428"}
-      INFLUX_BUCKET: ${INFLUX_BUCKET:-watchyourlan}
-      INFLUX_ORG: ${INFLUX_ORG:-watchyourlan}
-      INFLUX_TOKEN: ${INFLUX_TOKEN:-""}
-      PROMETHEUS_ENABLE: ${PROMETHEUS_ENABLE:-true}
+      PORT: 8840
+      PROMETHEUS_ENABLE: true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wyl.rule=Host(`lan.wally.dominiksiejak.pl`)"
+      - "traefik.http.routers.wyl.entrypoints=websecure"
+      - "traefik.http.routers.wyl.tls.certresolver=letsencrypt"
+      - "traefik.http.services.wyl.loadbalancer.server.port=8840"
+      - "traefik.http.services.wyl.loadbalancer.server.url=http://192.168.89.253:8840"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8840"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   watchyourlan:

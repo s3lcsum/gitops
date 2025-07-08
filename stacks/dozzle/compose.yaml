@@ -1,16 +1,27 @@
+# Dozzle Stack
+# Real-time Docker log viewer
+# Maintainer: Dominik Siejak
+
 services:
   dozzle:
+    image: amir20/dozzle:7.3.0
     container_name: dozzle
-    image: amir20/dozzle:latest
     restart: unless-stopped
+    networks:
+      - proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dozzle.rule=Host(`dozzle.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.dozzle.entrypoints=web,websecure"
-      - "traefik.http.routers.dozzle.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.dozzle.middlewares=redirect-to-https@file"
+      - "traefik.http.routers.dozzle.entrypoints=websecure"
       - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
-    ports:
-      - "13452:8080"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  proxy:
+    external: true

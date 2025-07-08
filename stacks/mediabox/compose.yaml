@@ -1,18 +1,20 @@
+# Mediabox Stack
+# Media management and streaming suite
+# Maintainer: Dominik Siejak
+
 services:
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:5.1.1
     container_name: qbittorrent
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.qbittorrent.entrypoints=web,websecure"
-      - "traefik.http.routers.qbittorrent.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.qbittorrent.middlewares=redirect-to-https@file"
-      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+      - "traefik.http.routers.qbittorrent.entrypoints=websecure"
     environment:
-      - WEBUI_PORT=8080
-      - PUID=0
-      - PGID=0
+      WEBUI_PORT: 8080
+      PUID: 0
+      PGID: 0
     volumes:
       - /Portainer/mediabox:/Portainer/mediabox
       - /Portainer/mediabox/configs/qbittorrent:/config
@@ -21,7 +23,11 @@ services:
       - 8080:8080
       - 6881:6881
       - 6881:6881/udp
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:v3.3.25
@@ -29,10 +35,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.flaresolverr.rule=Host(`flaresolverr.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.flaresolverr.entrypoints=web,websecure"
-      - "traefik.http.routers.flaresolverr.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.flaresolverr.middlewares=redirect-to-https@file"
-      - "traefik.http.services.flaresolverr.loadbalancer.server.port=8191"
+      - "traefik.http.routers.flaresolverr.entrypoints=websecure"
     environment:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - LOG_HTML=${LOG_HTML:-false}
@@ -47,10 +50,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.prowlarr.entrypoints=web,websecure"
-      - "traefik.http.routers.prowlarr.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.prowlarr.middlewares=redirect-to-https@file"
-      - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
+      - "traefik.http.routers.prowlarr.entrypoints=websecure"
     environment:
       - PUID=0
       - PGID=0
@@ -66,10 +66,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jackett.rule=Host(`jackett.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.jackett.entrypoints=web,websecure"
-      - "traefik.http.routers.jackett.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.jackett.middlewares=redirect-to-https@file"
-      - "traefik.http.services.jackett.loadbalancer.server.port=9117"
+      - "traefik.http.routers.jackett.entrypoints=websecure"
     environment:
       - PUID=0
       - PGID=0
@@ -85,10 +82,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.sonarr.entrypoints=web,websecure"
-      - "traefik.http.routers.sonarr.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.sonarr.middlewares=redirect-to-https@file"
-      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+      - "traefik.http.routers.sonarr.entrypoints=websecure"
     environment:
       - PUID=0
       - PGID=0
@@ -107,10 +101,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.radarr.rule=Host(`radarr.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.radarr.entrypoints=web,websecure"
-      - "traefik.http.routers.radarr.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.radarr.middlewares=redirect-to-https@file"
-      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+      - "traefik.http.routers.radarr.entrypoints=websecure"
     environment:
       - PUID=0
       - PGID=0
@@ -129,10 +120,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.jellyfin.entrypoints=web,websecure"
-      - "traefik.http.routers.jellyfin.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.jellyfin.middlewares=redirect-to-https@file"
-      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+      - "traefik.http.routers.jellyfin.entrypoints=websecure"
     environment:
       - PUID=0
       - PGID=0
@@ -157,10 +145,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jellyseerr.rule=Host(`jellyseerr.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.jellyseerr.entrypoints=web,websecure"
-      - "traefik.http.routers.jellyseerr.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.jellyseerr.middlewares=redirect-to-https@file"
-      - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
+      - "traefik.http.routers.jellyseerr.entrypoints=websecure"
     environment:
       - LOG_LEVEL=debug
     ports:

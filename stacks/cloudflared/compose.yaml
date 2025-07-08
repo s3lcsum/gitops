@@ -1,9 +1,17 @@
+# Cloudflared Stack
+# Provides Cloudflare Tunnel
+# Maintainer: Dominik Siejak
+
 services:
   cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: cloudflare_tunnel
-    command: tunnel run
+    image: cloudflare/cloudflared:2024.6.0
+    container_name: cloudflared
     restart: unless-stopped
-    # Traefik labels are not added because this service does not expose a web UI.
+    command: tunnel run
     environment:
-      - TUNNEL_TOKEN=${CLOUDFLARED_TUNNEL_TOKEN}
+      TUNNEL_TOKEN: ${CLOUDFLARED_TUNNEL_TOKEN}
+    healthcheck:
+      test: ["CMD", "cloudflared", "tunnel", "info"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

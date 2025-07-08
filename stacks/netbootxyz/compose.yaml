@@ -1,13 +1,16 @@
+# NetbootXYZ Stack
+# Network boot server
+# Maintainer: Dominik Siejak
+
 services:
   netbootxyz:
-    image: ghcr.io/netbootxyz/netbootxyz
+    image: ghcr.io/netbootxyz/netbootxyz:0.7.0
     container_name: netbootxyz
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.netbootxyz.rule=Host(`netbootxyz.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.netbootxyz.entrypoints=web,websecure"
-      - "traefik.http.routers.netbootxyz.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.netbootxyz.middlewares=redirect-to-https@file"
+      - "traefik.http.routers.netbootxyz.entrypoints=websecure"
       - "traefik.http.services.netbootxyz.loadbalancer.server.port=3000"
     volumes:
       - netbootxyz-config:/config
@@ -15,7 +18,6 @@ services:
     ports:
       - 3123:3000
       - 69:69/udp
-    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 30s

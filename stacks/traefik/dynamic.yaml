@@ -69,15 +69,6 @@ http:
       tls:
         certResolver: letsencrypt
 
-    # Catch-all HTTP to HTTPS redirect
-    redirect-all:
-      entryPoints:
-        - web
-      rule: "HostRegexp(`{host:.+}`)"
-      middlewares:
-        - redirect-to-https
-      service: noop
-
   # Services
   services:
     proxmox:

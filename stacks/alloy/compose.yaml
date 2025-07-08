@@ -1,29 +1,41 @@
+# Alloy Stack
+# Exposes metrics and logs to Grafana Cloud
+# Maintainer: Dominik Siejak
+
 services:
   alloy:
     image: grafana/alloy:v1.9.1
     container_name: alloy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.alloy.rule=Host(`alloy.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.alloy.entrypoints=web,websecure"
-      - "traefik.http.routers.alloy.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.alloy.middlewares=redirect-to-https@file"
-      - "traefik.http.services.alloy.loadbalancer.server.port=12345"
+    restart: unless-stopped
+    networks:
+      - metrics
+      - proxy
+    environment:
+      GCLOUD_RW_API_KEY: ${GCLOUD_RW_API_KEY}
+      GCLOUD_HOSTED_METRICS_ID: ${GCLOUD_HOSTED_METRICS_ID}
+      GCLOUD_HOSTED_LOGS_ID: ${GCLOUD_HOSTED_LOGS_ID}
+      PROM_REMOTE_WRITE_URL: "https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push"
+      LOKI_WRITE_URL: "https://logs-prod-eu-west-0.grafana.net/loki/api/v1/push"
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     volumes:
-      - /portainer/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /Portainer/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /run/log/journal:/run/log/journal:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    ports:
-      - 12345:12345
-      - 4317:4317
-      - 4318:4318
-    environment:
-      GCLOUD_RW_API_KEY: $GCLOUD_RW_API_KEY
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.alloy.rule=Host(`alloy.wally.dominiksiejak.pl`)"
+      - "traefik.http.routers.alloy.entrypoints=websecure"
+      - "traefik.http.services.alloy.loadbalancer.server.port=12345"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:12345/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
-      GCLOUD_HOSTED_METRICS_ID: $GCLOUD_HOSTED_METRICS_ID
-      GCLOUD_HOSTED_LOGS_ID: $GCLOUD_HOSTED_LOGS_ID
-      PROM_REMOTE_WRITE_URL: "https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push"
-      LOKI_WRITE_URL: "https://logs-prod-eu-west-0.grafana.net/loki/api/v1/push"
+networks:
+  metrics:
+    external: true
+  proxy:
+    external: true

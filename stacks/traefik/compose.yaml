@@ -1,3 +1,7 @@
+# Traefik Stack
+# Reverse proxy and certificate management
+# Maintainer: Dominik Siejak
+
 version: "3.8"
 
 services:
@@ -7,10 +11,12 @@ services:
     restart: unless-stopped
     user: root
     networks:
+      - default
+      - metrics
       - proxy
     environment:
-      - CF_DNS_API_TOKEN=${CLOUDFLARE_DNS_API_TOKEN:?err}
-      - CF_ZONE_ID=${CLOUDFLARE_ZONE_ID:?err}
+      CF_DNS_API_TOKEN: ${CLOUDFLARE_DNS_API_TOKEN:?err}
+      CF_ZONE_ID: ${CLOUDFLARE_ZONE_ID:?err}
     ports:
       - 80:80
       - 443:443
@@ -27,6 +33,12 @@ services:
       - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
       - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.traefik-dashboard.loadbalancer.server.port=8081"
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   traefik-certs-dumper:
     image: ldez/traefik-certs-dumper:latest
@@ -47,8 +59,6 @@ services:
     image: crowdsecurity/crowdsec:latest
     container_name: crowdsec
     restart: unless-stopped
-    networks:
-      - proxy
     ports:
       - 127.0.0.1:9080:8080
       - 6060:6060
@@ -61,5 +71,7 @@ services:
       - /Portainer/crowdsec/logs:/logs:ro
 
 networks:
+  metrics:
+    external: true
   proxy:
     external: true

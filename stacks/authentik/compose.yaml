@@ -1,8 +1,13 @@
+# Authentik Stack
+# Identity provider and SSO
+# Maintainer: Dominik Siejak
+
 x-default: &default
   restart: unless-stopped
   networks:
     - authentik
     - metrics
+    - proxy
   labels:
     com.centurylinklabs.watchtower.enable: false
 
@@ -21,25 +26,25 @@ x-authentik: &authentik
     - /portainer/authentik/certs:/certs
     - /portainer/authentik/templates:/templates
   environment:
-    AUTHENTIK_SECRET_KEY: "${AUTHENTIK_SECRET_KEY}"
-    AUTHENTIK_LOG_LEVEL: "${AUTHENTIK_LOG_LEVEL}"
-    AUTHENTIK_POSTGRESQL__HOST: "${AUTHENTIK_POSTGRESQL__HOST}"
-    AUTHENTIK_POSTGRESQL__PORT: "${AUTHENTIK_POSTGRESQL__PORT}"
-    AUTHENTIK_POSTGRESQL__USER: "${POSTGRES_USER}"
-    AUTHENTIK_POSTGRESQL__PASSWORD: "${POSTGRES_PASSWORD}"
-    AUTHENTIK_POSTGRESQL__NAME: "${POSTGRES_DB}"
-    AUTHENTIK_REDIS__HOST: "${AUTHENTIK_REDIS__HOST}"
-    AUTHENTIK_REDIS__PORT: "${AUTHENTIK_REDIS__PORT}"
-    AUTHENTIK_EMAIL__HOST: "${AUTHENTIK_EMAIL__HOST}"
-    AUTHENTIK_EMAIL__PORT: "${AUTHENTIK_EMAIL__PORT}"
-    AUTHENTIK_EMAIL__USERNAME: "${AUTHENTIK_EMAIL__USERNAME}"
-    AUTHENTIK_EMAIL__PASSWORD: "${AUTHENTIK_EMAIL__PASSWORD}"
-    AUTHENTIK_EMAIL__USE_TLS: "${AUTHENTIK_EMAIL__USE_TLS}"
-    AUTHENTIK_EMAIL__USE_SSL: "${AUTHENTIK_EMAIL__USE_SSL}"
-    AUTHENTIK_EMAIL__TIMEOUT: "${AUTHENTIK_EMAIL__TIMEOUT}"
-    AUTHENTIK_EMAIL__FROM: "${AUTHENTIK_EMAIL__FROM}"
-    AUTHENTIK_ERROR_REPORTING__ENABLED: "${AUTHENTIK_ERROR_REPORTING__ENABLED}"
-    AUTHENTIK_BOOTSTRAP_TOKEN: "${AUTHENTIK_BOOTSTRAP_TOKEN}"
+    AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+    AUTHENTIK_LOG_LEVEL: ${AUTHENTIK_LOG_LEVEL}
+    AUTHENTIK_POSTGRESQL__HOST: ${AUTHENTIK_POSTGRESQL__HOST}
+    AUTHENTIK_POSTGRESQL__PORT: ${AUTHENTIK_POSTGRESQL__PORT}
+    AUTHENTIK_POSTGRESQL__USER: ${POSTGRES_USER}
+    AUTHENTIK_POSTGRESQL__PASSWORD: ${POSTGRES_PASSWORD}
+    AUTHENTIK_POSTGRESQL__NAME: ${POSTGRES_DB}
+    AUTHENTIK_REDIS__HOST: ${AUTHENTIK_REDIS__HOST}
+    AUTHENTIK_REDIS__PORT: ${AUTHENTIK_REDIS__PORT}
+    AUTHENTIK_EMAIL__HOST: ${AUTHENTIK_EMAIL__HOST}
+    AUTHENTIK_EMAIL__PORT: ${AUTHENTIK_EMAIL__PORT}
+    AUTHENTIK_EMAIL__USERNAME: ${AUTHENTIK_EMAIL__USERNAME}
+    AUTHENTIK_EMAIL__PASSWORD: ${AUTHENTIK_EMAIL__PASSWORD}
+    AUTHENTIK_EMAIL__USE_TLS: ${AUTHENTIK_EMAIL__USE_TLS}
+    AUTHENTIK_EMAIL__USE_SSL: ${AUTHENTIK_EMAIL__USE_SSL}
+    AUTHENTIK_EMAIL__TIMEOUT: ${AUTHENTIK_EMAIL__TIMEOUT}
+    AUTHENTIK_EMAIL__FROM: ${AUTHENTIK_EMAIL__FROM}
+    AUTHENTIK_ERROR_REPORTING__ENABLED: ${AUTHENTIK_ERROR_REPORTING__ENABLED}
+    AUTHENTIK_BOOTSTRAP_TOKEN: ${AUTHENTIK_BOOTSTRAP_TOKEN}
   depends_on:
     postgresql:
       condition: service_healthy
@@ -51,9 +56,6 @@ services:
     <<: *authentik
     container_name: authentik
     command: server
-    ports:
-      - "9000:9000"
-      - "9300:9300"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.authentik.rule=Host(`auth.wally.dominiksiejak.pl`)"
@@ -63,30 +65,40 @@ services:
     volumes:
       - /portainer/authentik/media:/media
       - /portainer/authentik/templates:/templates
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/-/health/live"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   worker:
     <<: *authentik
-    container_name: authentik_worker
+    container_name: authentik-worker
     command: worker
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/-/health/worker"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   postgresql:
     <<: *default
-    container_name: authentik_postgresql
+    container_name: authentik-postgresql
     image: postgres:17-alpine
     healthcheck:
       <<: *healthchecks
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
     environment:
-      POSTGRES_USER: "${POSTGRES_USER}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - database:/var/lib/postgresql/data
 
   redis:
     <<: *default
-    container_name: authentik_redis
-    image: redis:alpine
+    container_name: authentik-redis
+    image: redis:7-alpine
     command: --save 60 1 --loglevel warning
     healthcheck:
       <<: *healthchecks
@@ -96,6 +108,8 @@ services:
 
 networks:
   metrics:
+    external: true
+  proxy:
     external: true
   authentik:
     driver: bridge
