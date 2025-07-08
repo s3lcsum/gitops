@@ -18,7 +18,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.cupsd.rule=Host(`cups.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.cupsd.entrypoints=websecure"
-      - "traefik.http.routers.cupsd.middlewares=secure-headers,rate-limit"
+      - "traefik.http.routers.homarr.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.routers.cupsd.tls.certresolver=letsencrypt"
       - "traefik.http.services.cupsd.loadbalancer.server.port=631"
 
