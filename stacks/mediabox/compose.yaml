@@ -11,6 +11,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.qbittorrent.entrypoints=websecure"
+      - "traefik.http.routers.qbittorrent.middlewares=secure-headers@file,rate-limit@file"
     environment:
       WEBUI_PORT: 8080
       PUID: 0
@@ -36,6 +37,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.flaresolverr.rule=Host(`flaresolverr.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.flaresolverr.entrypoints=websecure"
+      - "traefik.http.routers.flaresolverr.middlewares=secure-headers@file,rate-limit@file"
     environment:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - LOG_HTML=${LOG_HTML:-false}
@@ -51,6 +53,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.prowlarr.entrypoints=websecure"
+      - "traefik.http.routers.prowlarr.middlewares=secure-headers@file,rate-limit@file"
     environment:
       - PUID=0
       - PGID=0
@@ -67,6 +70,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.jackett.rule=Host(`jackett.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.jackett.entrypoints=websecure"
+      - "traefik.http.routers.jackett.middlewares=secure-headers@file,rate-limit@file"
     environment:
       - PUID=0
       - PGID=0
@@ -83,6 +87,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.sonarr.entrypoints=websecure"
+      - "traefik.http.routers.sonarr.middlewares=secure-headers@file,rate-limit@file"
     environment:
       - PUID=0
       - PGID=0
@@ -102,6 +107,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.radarr.rule=Host(`radarr.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.radarr.entrypoints=websecure"
+      - "traefik.http.routers.radarr.middlewares=secure-headers@file,rate-limit@file"
     environment:
       - PUID=0
       - PGID=0
@@ -121,6 +127,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.jellyfin.entrypoints=websecure"
+      - "traefik.http.routers.jellyfin.middlewares=secure-headers@file,rate-limit@file"
     environment:
       - PUID=0
       - PGID=0
@@ -146,6 +153,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.jellyseerr.rule=Host(`jellyseerr.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.jellyseerr.entrypoints=websecure"
+      - "traefik.http.routers.jellyseerr.middlewares=secure-headers@file,rate-limit@file"
     environment:
       - LOG_LEVEL=debug
     ports:

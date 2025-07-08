@@ -1,0 +1,37 @@
+# Homarr Stack
+# Self-hosted dashboard for your services
+# Maintainer: Dominik Siejak
+
+services:
+  homarr:
+    image: ghcr.io/ajnart/homarr:latest
+    container_name: homarr
+    restart: unless-stopped
+    networks:
+      - proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - homarr-data:/app/data/configs
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Warsaw
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homarr.rule=Host(`homarr.wally.dominiksiejak.pl`)"
+      - "traefik.http.routers.homarr.entrypoints=websecure"
+      - "traefik.http.routers.homarr.middlewares=secure-headers@file,rate-limit@file"
+      - "traefik.http.routers.homarr.tls.certresolver=letsencrypt"
+      - "traefik.http.services.homarr.loadbalancer.server.port=7575"
+      # Homarr-specific labels for auto-discovery
+      - "homarr.name=Homarr"
+      - "homarr.description=Dashboard for all services"
+      - "homarr.icon=fas fa-tachometer-alt"
+      - "homarr.category=Dashboard"
+
+volumes:
+  homarr-data:
+
+networks:
+  proxy:
+    external: true

@@ -27,12 +27,8 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.alloy.rule=Host(`alloy.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.alloy.entrypoints=websecure"
+      - "traefik.http.routers.alloy.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.services.alloy.loadbalancer.server.port=12345"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:12345/metrics"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
 
 networks:
   metrics:

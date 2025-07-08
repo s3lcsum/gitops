@@ -11,6 +11,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.netbootxyz.rule=Host(`netbootxyz.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.netbootxyz.entrypoints=websecure"
+      - "traefik.http.routers.netbootxyz.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.services.netbootxyz.loadbalancer.server.port=3000"
     volumes:
       - netbootxyz-config:/config
@@ -18,11 +19,6 @@ services:
     ports:
       - 3123:3000
       - 69:69/udp
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
 
   # Optional: iDRAC6 Controller for legacy console access without Java install
   # idrac6:
@@ -35,11 +31,6 @@ services:
   #     - IDRAC_PASSWORD=${IDRAC_PASSWORD:-calvin}
   #   ports:
   #     - "5800:5800"  # Web-based console (VNC over noVNC)
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:5800"]
-  #     interval: 60s
-  #     timeout: 10s
-  #     retries: 3
 
 volumes:
   netbootxyz-config:

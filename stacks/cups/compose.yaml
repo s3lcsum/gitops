@@ -18,13 +18,9 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.cupsd.rule=Host(`cups.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.cupsd.entrypoints=websecure"
+      - "traefik.http.routers.cupsd.middlewares=secure-headers,rate-limit"
       - "traefik.http.routers.cupsd.tls.certresolver=letsencrypt"
       - "traefik.http.services.cupsd.loadbalancer.server.port=631"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:631"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
 
 volumes:
   cups-data:

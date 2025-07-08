@@ -27,6 +27,8 @@ api:
   dashboard: true
   insecure: false
 
+ping: {}
+
 providers:
   docker:
     exposedByDefault: false

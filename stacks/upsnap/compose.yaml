@@ -16,15 +16,9 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.upsnap.rule=Host(`upsnap.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.upsnap.entrypoints=websecure"
+      - "traefik.http.routers.upsnap.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.routers.upsnap.tls.certresolver=letsencrypt"
-      - "traefik.http.services.upsnap.loadbalancer.server.port=5000"
       - "traefik.http.services.upsnap.loadbalancer.server.url=http://192.168.89.253:5000"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fs http://localhost:5000/api/health || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
 
 volumes:
   upsnap-data:

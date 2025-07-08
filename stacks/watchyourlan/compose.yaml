@@ -17,14 +17,9 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.wyl.rule=Host(`lan.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.wyl.entrypoints=websecure"
+      - "traefik.http.routers.wyl.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.routers.wyl.tls.certresolver=letsencrypt"
-      - "traefik.http.services.wyl.loadbalancer.server.port=8840"
       - "traefik.http.services.wyl.loadbalancer.server.url=http://192.168.89.253:8840"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8840"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
 
 volumes:
   watchyourlan:
