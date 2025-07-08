@@ -4,7 +4,7 @@
 
 services:
   mktxp:
-    image: ghcr.io/akpw/mktxp:1.2.0
+    image: ghcr.io/akpw/mktxp:latest
     container_name: mktxp
     restart: unless-stopped
     networks:

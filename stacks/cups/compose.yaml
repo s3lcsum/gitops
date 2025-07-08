@@ -5,7 +5,7 @@
 
 services:
   cupsd:
-    image: olbat/cupsd:2.3.3
+    image: olbat/cupsd:latest
     container_name: cupsd
     restart: unless-stopped
     networks:

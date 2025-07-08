@@ -4,7 +4,7 @@
 
 services:
   netbootxyz:
-    image: ghcr.io/netbootxyz/netbootxyz:0.7.0
+    image: ghcr.io/netbootxyz/netbootxyz:latest
     container_name: netbootxyz
     restart: unless-stopped
     labels:
