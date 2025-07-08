@@ -18,7 +18,7 @@ services:
       - TZ=Europe/Warsaw
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.homarr.rule=Host(`homarr.wally.dominiksiejak.pl`)"
+      - "traefik.http.routers.homarr.rule=Host(`home.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.homarr.entrypoints=websecure"
       - "traefik.http.routers.homarr.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.routers.homarr.tls.certresolver=letsencrypt"

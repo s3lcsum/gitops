@@ -52,7 +52,6 @@ http:
       service: router
       middlewares:
         - secure-headers
-        - authentik-forward-auth
         - rate-limit
       tls:
         certResolver: letsencrypt
@@ -64,7 +63,6 @@ http:
       service: portainer
       middlewares:
         - secure-headers
-        - authentik-forward-auth
         - rate-limit
       tls:
         certResolver: letsencrypt
