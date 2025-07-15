@@ -34,6 +34,7 @@ provide a living reference for improvements. Contributions and suggestions are w
   - [authentik](https://github.com/goauthentik/authentik)
   - [cloudflared](https://github.com/cloudflare/cloudflared)
   - [dozzle](https://github.com/amir20/dozzle)
+  - [homarr](https://github.com/ajnart/homarr) (dashboard for homelab services)
   - [netboot.xyz](https://github.com/netbootxyz/netboot.xyz)
   - [Traefik](https://github.com/traefik/traefik) (reverse proxy with CrowdSec security)
   - [Upsnap](https://github.com/seriousm4x/UpSnap)
@@ -81,6 +82,7 @@ provide a living reference for improvements. Contributions and suggestions are w
 │   ├── cloudflared/          # Cloudflare Tunnel
 │   ├── cups/                 # CUPS print server
 │   ├── dozzle/               # Dozzle log viewer
+│   ├── homarr/               # Homarr dashboard for homelab services
 │   ├── mediabox/             # Media automation stack (qBittorrent, Sonarr, Radarr, Jellyfin, etc.)
 │   ├── mktxp/                # Mikrotik Prometheus exporter
 │   ├── netbootxyz/           # Netboot.xyz PXE
@@ -95,6 +97,63 @@ provide a living reference for improvements. Contributions and suggestions are w
     ├── proxmox/              # Proxmox infra
     └── routeros/             # RouterOS infra
 ```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Proxmox VE** - Hypervisor for running containers and VMs
+- **Terraform** - Infrastructure as Code tool
+- **Docker** & **Docker Compose** - Container runtime and orchestration
+- **Portainer** - Docker management UI (deployed via Terraform)
+
+### Setup
+
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd gitops
+   ```
+
+2. **Configure Terraform variables**:
+   - Copy `default.auto.tfvars` files in each terraform module
+   - Update variables according to your environment
+   - Set up authentication credentials for your providers
+
+3. **Deploy infrastructure**:
+   ```bash
+   # Deploy Proxmox infrastructure
+   cd terraform/proxmox
+   terraform init
+   terraform plan
+   terraform apply
+
+   # Deploy Portainer and stacks
+   cd ../portainer
+   terraform init
+   terraform plan
+   terraform apply
+
+   # Configure other modules as needed
+   cd ../authentik
+   terraform init
+   terraform apply
+   ```
+
+4. **Configure environment variables**:
+   - Each stack has `.env.example` files
+   - Copy to `.env` and configure according to your setup
+   - Update secrets and passwords
+
+### Usage
+
+- **Managing Stacks**: Use Portainer UI or Terraform to deploy/update stacks
+- **Monitoring**: Access services through Traefik reverse proxy
+- **Authentication**: Use Authentik for SSO across services
+- **Logs**: View container logs through Dozzle
+- **Metrics**: Monitor infrastructure through Grafana Cloud integration
 
 ---
 
@@ -155,66 +214,28 @@ configure it, but ended up restoring authentik from backup anyway.
   - [x] upsnap
   - [x] uptime kuma
   - [x] watchyourlan
-<<<<<<< Updated upstream
   - [x] alloy
   - [x] mediabox
-  - [ ] Terraform
-    - [ ] Portainer:
-      - [x] stack_authentik
-      - [x] stack_cloudflared
-      - [x] stack_cups
-      - [x] stack_mktxp
-      - [x] stack_dozzle
-      - [x] stack_netbootxyz
-      - [x] stack_traefik
-      - [x] stack_upsnap
-      - [x] stack_uptime_kuma
-      - [x] stack_watchyourlan
-      - [x] stack_alloy
-      - [x] stack_mediabox
-        > All stacks are created but some still miss advanced configuration
-        > (env variables, secrets, etc.)
-      - [ ] Users & Groups
-      - [ ] Host Settings
-||||||| Stash base
+  - [x] homarr
 - [ ] Terraform
   - [ ] Portainer:
     - [x] stack_authentik
     - [x] stack_cloudflared
     - [x] stack_cups
-    - [x] stack_mktxmp
-    - [x] stack_watchtower
+    - [x] stack_mktxp
     - [x] stack_dozzle
     - [x] stack_netbootxyz
-    - [x] stack_nginx_proxy_manager
+    - [x] stack_traefik
     - [x] stack_upsnap
     - [x] stack_uptime_kuma
-    - [x] stack_victoria
     - [x] stack_watchyourlan
+    - [x] stack_alloy
+    - [x] stack_mediabox
+    - [x] stack_homarr
       > All stacks are created but some still miss advanced configuration
       > (env variables, secrets, etc.)
     - [ ] Users & Groups
     - [ ] Host Settings
-=======
-- [ ] Terraform
-  - [ ] Portainer:
-    - [x] stack_authentik
-    - [x] stack_cloudflared
-    - [x] stack_cups
-    - [x] stack_mktxmp
-    - [x] stack_watchtower
-    - [x] stack_dozzle
-    - [x] stack_netbootxyz
-    - [x] stack_nginx_proxy_manager
-    - [x] stack_upsnap
-    - [x] stack_uptime_kuma
-    - [x] stack_victoria
-    - [x] stack_watchyourlan
-      > All stacks are created but some still miss advanced configuration
-      > (env variables, secrets, etc.)
-    - [x] ~Users & Groups~
-    - [x] Host Settings (just oAuth)
->>>>>>> Stashed changes
   - [ ] Proxmox:
     - [ ] Host settings
     - [x] LXC: Portainer
@@ -261,4 +282,177 @@ configure it, but ended up restoring authentik from backup anyway.
   - [ ] Create Cloud VM instance for CloudLab (for redundancy, nice to have
         some services deployed online, right?)
   - [ ] Use separated subnets (create serveral subnets, so IoT devices will never have access to PC or phones)
-  - [ ] Create diagram of the HomeLab Infrastructure
+  - [x] Create diagram of the HomeLab Infrastructure
+
+---
+
+## 🏗️ Infrastructure Architecture
+
+The following Mermaid diagram shows the relationships and dependencies between all components in the homelab:
+
+```mermaid
+graph TB
+    %% External Services
+    Internet[🌐 Internet]
+    Cloudflare[☁️ Cloudflare]
+    GrafanaCloud[📊 Grafana Cloud]
+
+    %% Network Infrastructure
+    Router[🔌 MikroTik hAP ac3<br/>Router/DHCP/DNS]
+    NAS[💾 Synology NAS<br/>2x4TB Storage]
+
+    %% Physical Servers
+    Wally1[🖥️ wally-1<br/>Dell Wyse Thin Client]
+    Edge1[🖥️ edge-1<br/>Dell PowerEdge R610<br/><i>mostly off</i>]
+
+    %% Proxmox Layer
+    ProxmoxWally[⚡ Proxmox VE<br/>wally-1]
+    ProxmoxEdge[⚡ Proxmox VE<br/>edge-1]
+
+    %% LXC Containers
+    PortainerLXC[📦 Portainer LXC<br/>192.168.89.253]
+    AdGuardLXC[🛡️ AdGuard LXC]
+
+    %% Docker Networks
+    ProxyNet[🔗 proxy network]
+    MetricsNet[📈 metrics network]
+    AuthentikNet[🔐 authentik network]
+
+    %% Core Services
+    Traefik[🚦 Traefik<br/>Reverse Proxy + SSL]
+    CrowdSec[🛡️ CrowdSec<br/>Security]
+    Authentik[🔐 Authentik<br/>SSO/Identity Provider]
+    AuthentikDB[(🗄️ PostgreSQL)]
+    AuthentikRedis[(📝 Redis)]
+
+    %% Dashboard & Monitoring
+    Homarr[🏠 Homarr<br/>Dashboard]
+    Dozzle[📋 Dozzle<br/>Log Viewer]
+    UptimeKuma[⏰ Uptime Kuma<br/>Monitoring]
+    Alloy[📊 Alloy<br/>Metrics/Logs Agent]
+
+    %% Utility Services
+    Cloudflared[☁️ Cloudflared<br/>Tunnel]
+    CUPS[🖨️ CUPS<br/>Print Server]
+    NetbootXYZ[💿 Netboot.xyz<br/>PXE Boot]
+    Upsnap[⚡ Upsnap<br/>Wake-on-LAN]
+    WatchYourLAN[👁️ WatchYourLAN<br/>Network Scanner]
+    MKTXP[📊 MKTXP<br/>MikroTik Exporter]
+
+    %% Media Stack
+    Mediabox[🎬 Mediabox<br/>qBittorrent, Sonarr<br/>Radarr, Jellyfin, etc.]
+
+    %% External Connections
+    Internet --> Router
+    Internet --> Cloudflare
+    Cloudflare --> Traefik
+
+    %% Physical Infrastructure
+    Router --> Wally1
+    Router --> Edge1
+    Router --> NAS
+
+    %% Proxmox Layer
+    Wally1 --> ProxmoxWally
+    Edge1 --> ProxmoxEdge
+
+    %% LXC Containers
+    ProxmoxWally --> PortainerLXC
+    ProxmoxWally --> AdGuardLXC
+
+    %% NAS Mounts
+    NAS -.-> PortainerLXC
+    NAS -.-> Mediabox
+
+    %% Docker Networks
+    PortainerLXC --> ProxyNet
+    PortainerLXC --> MetricsNet
+    PortainerLXC --> AuthentikNet
+
+    %% Core Services Connections
+    ProxyNet --> Traefik
+    Traefik --> CrowdSec
+
+    %% Authentication Flow
+    AuthentikNet --> Authentik
+    Authentik --> AuthentikDB
+    Authentik --> AuthentikRedis
+    ProxyNet --> Authentik
+
+    %% Services connected to Proxy Network (via Traefik)
+    ProxyNet --> Homarr
+    ProxyNet --> Dozzle
+    ProxyNet --> UptimeKuma
+    ProxyNet --> CUPS
+    ProxyNet --> Upsnap
+    ProxyNet --> WatchYourLAN
+    ProxyNet --> Mediabox
+    ProxyNet --> NetbootXYZ
+
+    %% Services connected to Metrics Network
+    MetricsNet --> Traefik
+    MetricsNet --> Authentik
+    MetricsNet --> Alloy
+    MetricsNet --> MKTXP
+
+    %% External Service Connections
+    Cloudflared --> Cloudflare
+    Alloy --> GrafanaCloud
+    MKTXP --> Router
+
+    %% Styling
+    classDef external fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef infrastructure fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef core fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef service fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef network fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef storage fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+
+    class Internet,Cloudflare,GrafanaCloud external
+    class Router,NAS,Wally1,Edge1,ProxmoxWally,ProxmoxEdge,PortainerLXC,AdGuardLXC infrastructure
+    class Traefik,CrowdSec,Authentik core
+    class Homarr,Dozzle,UptimeKuma,Alloy,Cloudflared,CUPS,NetbootXYZ,Upsnap,WatchYourLAN,MKTXP,Mediabox service
+    class ProxyNet,MetricsNet,AuthentikNet network
+    class AuthentikDB,AuthentikRedis storage
+```
+
+### Key Relationships:
+
+- **Infrastructure Layer**: Proxmox VE runs on physical servers, hosting LXC containers
+- **Container Layer**: Portainer LXC manages all Docker stacks and services
+- **Network Layer**: Services communicate through dedicated Docker networks:
+  - `proxy`: Routes traffic through Traefik reverse proxy
+  - `metrics`: Collects metrics and logs for monitoring
+  - `authentik`: Internal network for Authentik SSO components
+- **Security Layer**:
+  - Traefik handles SSL termination and routing
+  - CrowdSec provides DDoS protection and security
+  - Authentik provides SSO and identity management
+- **External Integration**:
+  - Cloudflare for DNS and CDN
+  - Grafana Cloud for metrics and monitoring
+  - NAS for storage and backups
+
+---
+
+## 🔒 Security Considerations
+
+- **Network Segmentation**: Services are isolated using Docker networks and Traefik routing
+- **Authentication**: Authentik provides SSO and MFA for all services
+- **Reverse Proxy**: Traefik with CrowdSec integration for DDoS protection
+- **Secrets Management**: Environment variables and Docker secrets (consider HashiCorp Vault for production)
+- **Updates**: Manual updates preferred over automatic for stability
+- **Backups**: Regular backups to Synology NAS
+
+## 🤝 Contributing
+
+This is a personal homelab repository, but suggestions and improvements are welcome:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request with a clear description
+
+## 📝 License
+
+This project is for educational and personal use. Feel free to adapt it for your own homelab setup.

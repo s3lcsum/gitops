@@ -12,10 +12,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - homarr-data:/app/data/configs
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Warsaw
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.homarr.rule=Host(`home.wally.dominiksiejak.pl`)"
@@ -23,11 +19,8 @@ services:
       - "traefik.http.routers.homarr.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.routers.homarr.tls.certresolver=letsencrypt"
       - "traefik.http.services.homarr.loadbalancer.server.port=7575"
-      # Homarr-specific labels for auto-discovery
-      - "homarr.name=Homarr"
-      - "homarr.description=Dashboard for all services"
-      - "homarr.icon=fas fa-tachometer-alt"
-      - "homarr.category=Dashboard"
+
+
 
 volumes:
   homarr-data:

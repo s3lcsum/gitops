@@ -56,29 +56,12 @@ http:
       tls:
         certResolver: letsencrypt
 
-    portainer:
-      rule: "Host(`portainer.wally.dominiksiejak.pl`)"
-      entryPoints:
-        - websecure
-      service: portainer
-      middlewares:
-        - secure-headers
-        - rate-limit
-      tls:
-        certResolver: letsencrypt
-
   # Services
   services:
     proxmox:
       loadBalancer:
         servers:
           - url: "https://192.168.89.254:8006/"
-        passHostHeader: true
-        serversTransport: insecure
-    portainer:
-      loadBalancer:
-        servers:
-          - url: "https://192.168.89.253:9443/"
         passHostHeader: true
         serversTransport: insecure
     mikrotik:

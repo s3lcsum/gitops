@@ -12,10 +12,8 @@ repos:
       - id: detect-aws-credentials
       - id: detect-private-key
       - id: double-quote-string-fixer
-      - id: end-of-file-fixer
       - id: forbid-new-submodules
       - id: mixed-line-ending
-      - id: trailing-whitespace
       - id: pretty-format-json
 
   # Terraform-specific hooks: formatting, linting, validation, security
@@ -25,4 +23,4 @@ repos:
       - id: terraform_fmt
       - id: terraform_validate
       - id: terraform_tflint
-      - id: terraform_tfsec
+      - id: terraform_trivy

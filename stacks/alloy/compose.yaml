@@ -10,10 +10,9 @@ services:
     networks:
       - metrics
       - proxy
+    env_file:
+      - /Portainer/alloy/.env
     environment:
-      GCLOUD_RW_API_KEY: ${GCLOUD_RW_API_KEY}
-      GCLOUD_HOSTED_METRICS_ID: ${GCLOUD_HOSTED_METRICS_ID}
-      GCLOUD_HOSTED_LOGS_ID: ${GCLOUD_HOSTED_LOGS_ID}
       PROM_REMOTE_WRITE_URL: "https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push"
       LOKI_WRITE_URL: "https://logs-prod-eu-west-0.grafana.net/loki/api/v1/push"
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
@@ -29,6 +28,7 @@ services:
       - "traefik.http.routers.alloy.entrypoints=websecure"
       - "traefik.http.routers.alloy.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.services.alloy.loadbalancer.server.port=12345"
+
 
 networks:
   metrics:

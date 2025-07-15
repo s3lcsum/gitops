@@ -20,10 +20,6 @@ variable "portainer_oauth2_enabled" {
   default     = false
 }
 
-variable "portainer_stacks_envs" {
-  description = "Environment variables for the stacks"
-  type        = map(map(string))
-}
 
 variable "portainer_oauth2_access_token_uri" {
   description = "Portainer OAuth2 access token URI"

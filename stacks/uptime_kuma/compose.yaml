@@ -23,6 +23,7 @@ services:
       - "traefik.http.routers.uptime-kuma.tls.certresolver=letsencrypt"
       - "traefik.http.services.uptime-kuma.loadbalancer.server.port=3001"
 
+
 volumes:
   uptime-kuma-data:
 

@@ -11,11 +11,7 @@ services:
       - metrics
     volumes:
       - /Portainer/mktxp/mktxp.conf:/root/mktxp/mktxp.conf
-    healthcheck:
-      test: ["CMD", "mktxp", "--version"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
+
 
 networks:
   metrics:

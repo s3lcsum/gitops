@@ -10,15 +10,15 @@ services:
     network_mode: host
     entrypoint: /bin/sh -c "./upsnap serve --http 0.0.0.0:5000"
     volumes:
-      - upsnap-data:/app/pb_data
-      - upsnap-logs:/app/logs
+      - upsnap-data:/Portainer/upsnap/pb_data
+      - upsnap-logs:/Portainer/upsnap/logs
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.upsnap.rule=Host(`upsnap.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.upsnap.entrypoints=websecure"
       - "traefik.http.routers.upsnap.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.routers.upsnap.tls.certresolver=letsencrypt"
-      - "traefik.http.services.upsnap.loadbalancer.server.url=http://192.168.89.253:5000"
+      - "traefik.http.services.upsnap.loadbalancer.server.url=http://192.168.89.253:5000/"
 
 volumes:
   upsnap-data:

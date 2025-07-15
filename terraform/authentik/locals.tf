@@ -10,10 +10,5 @@ locals {
         "https://portainer.wally.dominiksiejak.pl/",
       ]
     }
-    minio = {
-      urls = [
-        "https://minio.wally.dominiksiejak.pl/",
-      ]
-    }
   }
 }

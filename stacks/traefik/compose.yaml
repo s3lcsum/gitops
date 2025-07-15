@@ -14,6 +14,8 @@ services:
       - default
       - metrics
       - proxy
+    env_file:
+      - /Portainer/traefik/.env
     environment:
       CF_DNS_API_TOKEN: ${CLOUDFLARE_DNS_API_TOKEN:?err}
       CF_ZONE_ID: ${CLOUDFLARE_ZONE_ID:?err}
@@ -24,9 +26,9 @@ services:
       - 9100:9100 # Prometheus metrics
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /Portainer/traefik/logs:/var/log
-      - /Portainer/traefik/config:/etc/traefik
-      - /Portainer/traefik/letsencrypt:/letsencrypt
+      - /Portainer/traefik/traefik.yaml:/etc/traefik/traefik.yaml
+      - /Portainer/traefik/dynamic.yaml:/etc/traefik/dynamic.yaml
+      - traefik-letsencrypt:/letsencrypt
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.wally.dominiksiejak.pl`)"
@@ -35,26 +37,12 @@ services:
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
       - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.services.traefik-dashboard.loadbalancer.server.port=8081"
+
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
       interval: 30s
       timeout: 5s
       retries: 3
-
-  traefik-certs-dumper:
-    image: ldez/traefik-certs-dumper:latest
-    container_name: traefik-certs-dumper
-    restart: unless-stopped
-    entrypoint: sh -c '
-      while ! [ -e /data/acme.json ]
-      || ! [ `jq ".[] | .Certificates | length" /data/acme.json | jq -s "add" ` != 0 ]; do
-      sleep 1
-      ; done
-      && traefik-certs-dumper file --version v2 --watch
-      --source /data/acme.json --dest /certs'
-    volumes:
-      - /Portainer/traefik/letsencrypt:/data:ro
-      - /Portainer/traefik-certs-dumper:/certs
 
   crowdsec:
     image: crowdsecurity/crowdsec:latest
@@ -76,3 +64,7 @@ networks:
     external: true
   proxy:
     external: true
+
+
+volumes:
+  traefik-letsencrypt:

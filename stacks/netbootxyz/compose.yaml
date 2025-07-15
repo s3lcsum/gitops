@@ -7,6 +7,8 @@ services:
     image: ghcr.io/netbootxyz/netbootxyz:latest
     container_name: netbootxyz
     restart: unless-stopped
+    networks:
+      - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.netbootxyz.rule=Host(`netbootxyz.wally.dominiksiejak.pl`)"
@@ -35,3 +37,7 @@ services:
 volumes:
   netbootxyz-config:
   netbootxyz-assets:
+
+networks:
+  proxy:
+    external: true

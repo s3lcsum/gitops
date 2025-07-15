@@ -10,13 +10,14 @@ services:
     networks:
       - proxy
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /Portainer/dozzle/var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dozzle.rule=Host(`dozzle.wally.dominiksiejak.pl`)"
       - "traefik.http.routers.dozzle.entrypoints=websecure"
       - "traefik.http.routers.dozzle.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
+
 
 networks:
   proxy:

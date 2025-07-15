@@ -80,12 +80,4 @@ resource "portainer_stack" "stacks" {
   prune           = true
 
   stack_file_content = file("../../stacks/${each.value}/compose.yaml")
-
-  dynamic "env" {
-    for_each = try(var.portainer_stacks_envs[each.value], {})
-    content {
-      name  = env.key
-      value = env.value
-    }
-  }
 }

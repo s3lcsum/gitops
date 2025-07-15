@@ -18,26 +18,8 @@ x-healthchecks: &healthchecks
 x-authentik: &authentik
   <<: *default
   image: ghcr.io/goauthentik/server:2025.6.3
-  environment:
-    AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
-    AUTHENTIK_LOG_LEVEL: ${AUTHENTIK_LOG_LEVEL}
-    AUTHENTIK_POSTGRESQL__HOST: ${AUTHENTIK_POSTGRESQL__HOST}
-    AUTHENTIK_POSTGRESQL__PORT: ${AUTHENTIK_POSTGRESQL__PORT}
-    AUTHENTIK_POSTGRESQL__USER: ${POSTGRES_USER}
-    AUTHENTIK_POSTGRESQL__PASSWORD: ${POSTGRES_PASSWORD}
-    AUTHENTIK_POSTGRESQL__NAME: ${POSTGRES_DB}
-    AUTHENTIK_REDIS__HOST: ${AUTHENTIK_REDIS__HOST}
-    AUTHENTIK_REDIS__PORT: ${AUTHENTIK_REDIS__PORT}
-    AUTHENTIK_EMAIL__HOST: ${AUTHENTIK_EMAIL__HOST}
-    AUTHENTIK_EMAIL__PORT: ${AUTHENTIK_EMAIL__PORT}
-    AUTHENTIK_EMAIL__USERNAME: ${AUTHENTIK_EMAIL__USERNAME}
-    AUTHENTIK_EMAIL__PASSWORD: ${AUTHENTIK_EMAIL__PASSWORD}
-    AUTHENTIK_EMAIL__USE_TLS: ${AUTHENTIK_EMAIL__USE_TLS}
-    AUTHENTIK_EMAIL__USE_SSL: ${AUTHENTIK_EMAIL__USE_SSL}
-    AUTHENTIK_EMAIL__TIMEOUT: ${AUTHENTIK_EMAIL__TIMEOUT}
-    AUTHENTIK_EMAIL__FROM: ${AUTHENTIK_EMAIL__FROM}
-    AUTHENTIK_ERROR_REPORTING__ENABLED: ${AUTHENTIK_ERROR_REPORTING__ENABLED}
-    AUTHENTIK_BOOTSTRAP_TOKEN: ${AUTHENTIK_BOOTSTRAP_TOKEN}
+  env_file:
+    - "/Portainer/authentik/.env"
   depends_on:
     postgresql:
       condition: service_healthy
@@ -56,6 +38,7 @@ services:
       - "traefik.http.routers.authentik.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.routers.authentik.tls.certresolver=letsencrypt"
       - "traefik.http.services.authentik.loadbalancer.server.port=9000"
+
     volumes:
       - /Portainer/authentik/media:/media
       - /Portainer/authentik/templates:/templates
@@ -77,10 +60,8 @@ services:
     healthcheck:
       <<: *healthchecks
       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - "/Portainer/authentik/postgres.env"
     volumes:
       - database:/var/lib/postgresql/data
 
