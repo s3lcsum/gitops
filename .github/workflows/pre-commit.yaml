@@ -6,10 +6,10 @@ on:
     branches: [main]
 
 env:
-  TF_VERSION: 1.12.2
-  TFLINT_VERSION: v0.58.1
-  TRIVY_VERSION: v0.64.1
-  PRE_COMMIT_ACTION_VERSION: v3.0.1
+  TF_VERSION: "1.12.2"
+  TFLINT_VERSION: "v0.58.1"
+  TRIVY_VERSION: "v0.64.1"
+  PRE_COMMIT_ACTION_VERSION: "v3.0.1"
 
 jobs:
   pre-commit:
@@ -19,14 +19,14 @@ jobs:
       - uses: actions/setup-python@v5
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v${{ env.TF_VERSION }}
+        uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "${{ env.TF_VERSION }}"
+          terraform_version: ${{ env.TF_VERSION }}
 
       - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@${{ env.TFLINT_VERSION }}
+        uses: terraform-linters/setup-tflint@v4.1.1
         with:
-          tflint_version: "${{ env.TFLINT_VERSION }}"
+          tflint_version: ${{ env.TFLINT_VERSION }}
 
       - name: Install Trivy
         run: |
@@ -34,4 +34,4 @@ jobs:
             | sudo sh -s -- -b /usr/local/bin "${{ env.TRIVY_VERSION }}"
 
       - name: Run pre-commit
-        uses: pre-commit/action@${{ env.PRE_COMMIT_ACTION_VERSION }}
+        uses: pre-commit/action@v3.0.1
