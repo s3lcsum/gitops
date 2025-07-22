@@ -17,7 +17,7 @@ x-healthchecks: &healthchecks
 
 x-authentik: &authentik
   <<: *default
-  image: ghcr.io/goauthentik/server:2025.6.3
+  image: ghcr.io/goauthentik/server:2025.6.4
   env_file:
     - "/Portainer/authentik/.env"
   depends_on:
