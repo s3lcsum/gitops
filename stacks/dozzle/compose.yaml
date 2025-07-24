@@ -1,3 +1,7 @@
+# github.com/s3lcsum/gitops/stacks/dozzle/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
 # Dozzle Stack
 # Real-time Docker log viewer
 # Maintainer: Dominik Siejak
@@ -10,7 +14,7 @@ services:
     networks:
       - proxy
     volumes:
-      - /Portainer/dozzle/var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dozzle.rule=Host(`dozzle.wally.dominiksiejak.pl`)"

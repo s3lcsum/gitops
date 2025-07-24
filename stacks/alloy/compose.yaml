@@ -1,3 +1,7 @@
+# github.com/s3lcsum/gitops/stacks/alloy/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
 # Alloy Stack
 # Exposes metrics and logs to Grafana Cloud
 # Maintainer: Dominik Siejak
@@ -11,7 +15,7 @@ services:
       - metrics
       - proxy
     env_file:
-      - /Portainer/alloy/.env
+      - /Portainer/alloy/alloy.env
     environment:
       PROM_REMOTE_WRITE_URL: "https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push"
       LOKI_WRITE_URL: "https://logs-prod-eu-west-0.grafana.net/loki/api/v1/push"

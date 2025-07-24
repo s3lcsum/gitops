@@ -1,3 +1,7 @@
+# github.com/s3lcsum/gitops/stacks/upsnap/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
 # Upsnap Stack
 # Wake-on-LAN and device management
 # Maintainer: Dominik Siejak
@@ -9,6 +13,8 @@ services:
     restart: unless-stopped
     network_mode: host
     entrypoint: /bin/sh -c "./upsnap serve --http 0.0.0.0:5000"
+    healthcheck:
+      test: curl -fs "http://localhost:5000/api/health" || exit 1
     volumes:
       - upsnap-data:/Portainer/upsnap/pb_data
       - upsnap-logs:/Portainer/upsnap/logs

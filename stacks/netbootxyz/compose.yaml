@@ -1,3 +1,7 @@
+# github.com/s3lcsum/gitops/stacks/netbootxyz/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
 # NetbootXYZ Stack
 # Network boot server
 # Maintainer: Dominik Siejak
@@ -19,7 +23,6 @@ services:
       - netbootxyz-config:/config
       - netbootxyz-assets:/assets
     ports:
-      - 3123:3000
       - 69:69/udp
 
   # Optional: iDRAC6 Controller for legacy console access without Java install

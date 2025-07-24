@@ -31,6 +31,7 @@ override.tf.json
 
 # Ignore all files ending with .env recursively (e.g., .env, redis.env, postgres.env)
 **/*.env
+stacks/mktxp/mktxp.conf
 
 # Ignore JetBrains IDE project files
 .idea

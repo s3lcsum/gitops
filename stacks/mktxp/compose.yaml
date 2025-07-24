@@ -1,3 +1,7 @@
+# github.com/s3lcsum/gitops/stacks/mktxp/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
 # MKTXP Stack
 # Mikrotik Prometheus exporter
 # Maintainer: Dominik Siejak

@@ -1,3 +1,7 @@
+# github.com/s3lcsum/gitops/stacks/authentik/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
 # Authentik Stack
 # Identity provider and SSO
 # Maintainer: Dominik Siejak
@@ -19,7 +23,7 @@ x-authentik: &authentik
   <<: *default
   image: ghcr.io/goauthentik/server:2025.6.3
   env_file:
-    - "/Portainer/authentik/.env"
+    - "/Portainer/authentik/authentik.env"
   depends_on:
     postgresql:
       condition: service_healthy
@@ -38,10 +42,9 @@ services:
       - "traefik.http.routers.authentik.middlewares=secure-headers@file,rate-limit@file"
       - "traefik.http.routers.authentik.tls.certresolver=letsencrypt"
       - "traefik.http.services.authentik.loadbalancer.server.port=9000"
-
     volumes:
-      - /Portainer/authentik/media:/media
-      - /Portainer/authentik/templates:/templates
+      - media:/media
+      - templates:/templates
 
   worker:
     <<: *authentik
@@ -49,9 +52,9 @@ services:
     command: worker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /Portainer/authentik/media:/media
-      - /Portainer/authentik/certs:/certs
-      - /Portainer/authentik/templates:/templates
+      - media:/media
+      - certs:/certs
+      - templates:/templates
 
   postgresql:
     <<: *default
@@ -88,4 +91,10 @@ volumes:
   database:
     driver: local
   redis:
+    driver: local
+  media:
+    driver: local
+  templates:
+    driver: local
+  certs:
     driver: local

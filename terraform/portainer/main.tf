@@ -50,7 +50,7 @@ resource "portainer_docker_network" "networks" {
 
 # Stacks
 locals {
-  networks = ["proxy", "metrics"]
+  networks = ["proxy", "metrics", "database"]
 
   stacks = [
     "alloy",
@@ -62,6 +62,7 @@ locals {
     #"mediabox",
     "mktxp",
     "netbootxyz",
+    "n8n",
     "upsnap",
     "uptime_kuma",
     "traefik",

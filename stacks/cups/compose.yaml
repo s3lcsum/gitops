@@ -1,3 +1,7 @@
+# github.com/s3lcsum/gitops/stacks/cups/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
 # CUPS Stack
 # Network printing via CUPS
 # Default admin credentials: print / print

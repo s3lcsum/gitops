@@ -10,6 +10,7 @@ repos:
       - id: check-added-large-files
       - id: check-symlinks
       - id: detect-aws-credentials
+        args: [ --allow-missing-credentials ]
       - id: detect-private-key
       - id: double-quote-string-fixer
       - id: forbid-new-submodules
@@ -18,7 +19,7 @@ repos:
 
   # Terraform-specific hooks: formatting, linting, validation, security
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.99.0
+    rev: v1.99.5
     hooks:
       - id: terraform_fmt
       - id: terraform_validate

@@ -1,0 +1,29 @@
+#!/usr/lib/systemd/systemd
+
+[Unit]
+Description=Portainer Service
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/docker rm -f portainer
+ExecStart=/usr/bin/docker run \
+  --name=portainer \
+  --restart=always \
+  --publish=9443:9443 \
+  --network=proxy \
+  --volume=/var/run/docker.sock:/var/run/docker.sock \
+  --volume=portainer_data:/data \
+  --volume=/Portainer:/Portainer:ro \
+  --label="traefik.enable=true" \
+  --label="traefik.http.routers.portainer.rule=Host(`portainer.wally.dominiksiejak.pl`)" \
+  --label="traefik.http.routers.portainer.entrypoints=websecure" \
+  --label="traefik.http.routers.portainer.middlewares=secure-headers@file,rate-limit@file" \
+  --label="traefik.http.routers.portainer.tls.certresolver=letsencrypt" \
+  --label="traefik.http.services.portainer.loadbalancer.server.port=9000" \
+  portainer/portainer-ce:alpine-sts
+ExecStop=/usr/bin/docker stop portainer
+
+[Install]
+WantedBy=multi-user.target

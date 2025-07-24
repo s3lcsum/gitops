@@ -27,11 +27,15 @@ plan:
 
 # Sync stacks to Portainer host
 sync-portainer:
-	rsync -av $(ROOT)/stacks/ portainer:/Portainer
-#	rsync -av --delete $(ROOT)/../../stacks/ portainer:/Portainer
+	rsync -av --delete $(ROOT)/stacks/ portainer:/Portainer
+
+# Sync portainer.service to Portainer host and reload systemd
+sync-service:
+	rsync -av $(ROOT)/terraform/portainer/portainer.service portainer:/etc/systemd/system/
+	ssh portainer 'sudo systemctl daemon-reload &' || true
 
 # Apply configuration with auto-approve
-apply: sync-portainer
+apply: sync-portainer sync-service
 	terraform apply -auto-approve
 
 # Destroy infrastructure with auto-approve

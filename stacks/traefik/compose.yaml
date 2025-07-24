@@ -1,3 +1,7 @@
+# github.com/s3lcsum/gitops/stacks/traefik/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
 # Traefik Stack
 # Reverse proxy and certificate management
 # Maintainer: Dominik Siejak
@@ -15,10 +19,7 @@ services:
       - metrics
       - proxy
     env_file:
-      - /Portainer/traefik/.env
-    environment:
-      CF_DNS_API_TOKEN: ${CLOUDFLARE_DNS_API_TOKEN:?err}
-      CF_ZONE_ID: ${CLOUDFLARE_ZONE_ID:?err}
+      - /Portainer/traefik/traefik.env
     ports:
       - 80:80
       - 443:443
@@ -55,8 +56,8 @@ services:
     depends_on:
       - traefik
     volumes:
-      - /Portainer/crowdsec/config:/etc/crowdsec
-      - /Portainer/crowdsec/data:/var/lib/crowdsec/data/
+      - /Portainer/crowdsec/config/c:/etc/crowdsec
+      - crowdsec-data:/var/lib/crowdsec/data/
       - /Portainer/crowdsec/logs:/logs:ro
 
 networks:
@@ -68,3 +69,4 @@ networks:
 
 volumes:
   traefik-letsencrypt:
+  crowdsec-data:

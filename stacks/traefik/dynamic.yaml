@@ -43,13 +43,16 @@ http:
       service: proxmox
       tls:
         certResolver: letsencrypt
+      middlewares:
+        - secure-headers
+        - rate-limit
 
     # Router (HTTP backend)
     mikrotik:
       rule: "Host(`router.wally.dominiksiejak.pl`)"
       entryPoints:
         - websecure
-      service: router
+      service: mikrotik
       middlewares:
         - secure-headers
         - rate-limit

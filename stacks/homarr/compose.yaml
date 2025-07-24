@@ -1,3 +1,7 @@
+# github.com/s3lcsum/gitops/stacks/homarr/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
 # Homarr Stack
 # Self-hosted dashboard for your services
 # Maintainer: Dominik Siejak

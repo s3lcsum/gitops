@@ -1,3 +1,7 @@
+# github.com/s3lcsum/gitops/stacks/cloudflared/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
 # Cloudflared Stack
 # Provides Cloudflare Tunnel
 # Maintainer: Dominik Siejak
@@ -9,4 +13,4 @@ services:
     restart: unless-stopped
     command: tunnel run
     env_file:
-      - /Portainer/cloudflared/.env
+      - /Portainer/cloudflared/cloudflared.env

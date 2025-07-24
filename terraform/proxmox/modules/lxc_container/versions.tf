@@ -7,13 +7,4 @@ terraform {
       version = "0.80.0"
     }
   }
-
-  cloud {
-    workspaces {
-      name = "gitops-proxmox"
-    }
-  }
-}
-
-provider "proxmox" {
 }

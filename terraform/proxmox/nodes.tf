@@ -7,6 +7,7 @@ resource "proxmox_virtual_environment_dns" "default" {
   domain = "home"
   servers = [
     "192.168.89.251", # LXC: adguard
+    "fd00::53",       # LXC: adguard
     "1.1.1.1",
   ]
 }
