@@ -22,6 +22,9 @@ x-healthchecks: &healthchecks
 x-authentik: &authentik
   <<: *default
   image: ghcr.io/goauthentik/server:2025.6.3
+  environment:
+    AUTHENTIK_LOG_LEVEL: "debug"
+    AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
   env_file:
     - "/Portainer/authentik/authentik.env"
   depends_on:

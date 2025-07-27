@@ -63,6 +63,7 @@ locals {
     "mktxp",
     "netbootxyz",
     "n8n",
+    "postgres",
     "upsnap",
     "uptime_kuma",
     "traefik",

@@ -1,0 +1,28 @@
+DO $$
+BEGIN
+  CREATE ROLE n8n_user WITH LOGIN PASSWORD 'example';
+EXCEPTION WHEN duplicate_object THEN
+  RAISE NOTICE 'Role n8n_user already exists.';
+END$$;
+
+DO $$
+BEGIN
+  CREATE DATABASE n8n_db OWNER n8n_user;
+EXCEPTION WHEN duplicate_database THEN
+  RAISE NOTICE 'Database n8n_db already exists.';
+END$$;
+
+
+DO $$
+BEGIN
+  CREATE ROLE authentik_user WITH LOGIN PASSWORD 'example';
+EXCEPTION WHEN duplicate_object THEN
+  RAISE NOTICE 'Role authentik_user already exists.';
+END$$;
+
+DO $$
+BEGIN
+  CREATE DATABASE authentik_db OWNER authentik_user;
+EXCEPTION WHEN duplicate_database THEN
+  RAISE NOTICE 'Database authentik_db already exists.';
+END$$;

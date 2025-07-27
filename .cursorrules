@@ -1,0 +1,62 @@
+exclude:
+  - '**/secrets.*'
+  - '**/private.*'
+  - '**/id_rsa*'
+  - '**/id_ed25519*'
+  - '**/vault.*'
+  - '**/passwords.*'
+  - '**/credentials.*'
+  - '**/config.json'
+  - '**/config.yaml'
+  - '**/config.yml'
+  - '**/docker-compose.override.yml'
+  - '**/terraform.tfstate*'
+  - '**/.terraform/'
+  - '**/.DS_Store'
+  - '**/node_modules/'
+  - '**/.git/'
+  - '**/.venv/'
+  - '**/__pycache__/'
+  - '**/*.pyc'
+  - '**/*.log'
+  - '**/*.bak'
+  - '**/*.swp'
+  - '**/*.tmp'
+  - '**/tmp/'
+  - '**/dist/'
+  - '**/build/'
+  - '**/.next/'
+  - '**/.cache/'
+  - '**/.idea/'
+  - '**/.vscode/'
+
+include:
+  - 'stacks/'
+  - 'terraform/'
+  - 'README.md'
+  - '*.md'
+  - '*.tf'
+  - '*.yaml'
+  - '*.yml'
+  - '*.sh'
+  - '*.sql'
+  - '*.env.example'
+
+metadata:
+  homelab_deployment:
+    description: >
+      All stacks in the 'stacks/' directory are always deployed on the homelab machine.
+      When referencing env_files or mounting volumes, the base path on the homelab is always /Portainer/{stack_name}.
+    env_file_path_pattern: "/Portainer/{stack_name}/.env"
+    volume_mount_base: "/Portainer/{stack_name}/"
+    stack_root: "/Portainer/"
+    stack_name_from_path: true
+    notes:
+      - "Cursor should assume that any stack in stacks/{stack_name} is deployed at /Portainer/{stack_name} on the homelab."
+      - "When suggesting volume mounts or env_file paths, use this convention."
+  automation:
+    on_change:
+      - path: "stacks/"
+        action:
+          description: "After any change inside stacks/, run 'make apply' in ./terraform/portainer to apply changes on the homelab server."
+          command: "cd ./terraform/portainer && make apply"

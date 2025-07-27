@@ -1,0 +1,46 @@
+# github.com/s3lcsum/gitops/stacks/postgres/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
+# PostgreSQL Stack
+# Database server
+# Maintainer: Dominik Siejak
+
+x-default: &default
+  restart: unless-stopped
+  networks:
+    - database
+    - metrics
+
+x-healthchecks: &healthchecks
+  start_period: 30s
+  interval: 30s
+  retries: 5
+  timeout: 5s
+
+services:
+  postgres:
+    <<: *default
+    image: postgres:17
+    container_name: postgres
+    user: "999:999"
+    env_file:
+      - /Portainer/postgres/postgres.env
+    volumes:
+      - data:/var/lib/postgresql/data
+      - /Portainer/postgres/00-init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+    healthcheck:
+      <<: *healthchecks
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-postgres}"]
+    labels:
+      - "traefik.enable=false"
+
+networks:
+  database:
+    external: true
+  metrics:
+    external: true
+
+volumes:
+  data:
+    driver: local

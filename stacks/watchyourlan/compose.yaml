@@ -14,9 +14,9 @@ services:
     network_mode: host
     volumes:
       - watchyourlan:/data/WatchYourLAN
-    env_file:
-      - /Portainer/watchyourlan/watchyourlan.env
     environment:
+      TZ: "Europe/Warsaw"
+      PROMETHEUS_ENABLE: "true"
       PORT: 8840
     labels:
       - "traefik.enable=true"
