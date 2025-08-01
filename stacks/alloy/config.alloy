@@ -23,6 +23,15 @@ prometheus.scrape "uptime_kuma" {
   forward_to = [prometheus.remote_write.cloud.receiver]
 }
 
+prometheus.scrape "grafana_synthetic_monitoring" {
+  targets = [
+    { __address__ = "grafana-synthetic-agent:4050", job = "grafana_synthetic_monitoring" },
+  ]
+  metrics_path     = "/metrics"
+  scrape_interval  = "15s"
+  forward_to       = [prometheus.remote_write.cloud.receiver]
+}
+
 // Prometheus remote write configuration
 prometheus.remote_write "cloud" {
   endpoint {
@@ -48,7 +57,15 @@ loki.source.docker "compose_logs" {
 
 // Loki processing pipeline
 loki.process "compose" {
+  forward_to = [loki.process.drop_old.receiver]
+}
+
+loki.process "drop_old" {
   forward_to = [loki.write.cloud.receiver]
+  stage.drop {
+    older_than          = "1h"
+    drop_counter_reason = "too old"
+  }
 }
 
 // Loki write configuration

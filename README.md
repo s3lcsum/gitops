@@ -47,6 +47,8 @@ provide a living reference for improvements. Contributions and suggestions are w
   - [Grafana](https://github.com/grafana/grafana)
   - [Grafana Synthetic Monitoring Agent](https://github.com/grafana/synthetic-monitoring-agent)
     (I'm using Grafana Cloud for synthetic checks)
+  - [n8n](https://github.com/n8n-io/n8n) (workflow automation platform)
+  - [PostgreSQL](https://github.com/postgres/postgres) (database server)
 
 - **Networking:**
   - IP Ranges:
@@ -82,20 +84,28 @@ provide a living reference for improvements. Contributions and suggestions are w
 │   ├── cloudflared/          # Cloudflare Tunnel
 │   ├── cups/                 # CUPS print server
 │   ├── dozzle/               # Dozzle log viewer
+│   ├── grafana-synthetic-agent/ # Grafana Synthetic Monitoring Agent
 │   ├── homarr/               # Homarr dashboard for homelab services
 │   ├── mediabox/             # Media automation stack (qBittorrent, Sonarr, Radarr, Jellyfin, etc.)
 │   ├── mktxp/                # Mikrotik Prometheus exporter
+│   ├── n8n/                  # n8n workflow automation platform
 │   ├── netbootxyz/           # Netboot.xyz PXE
+│   ├── postgres/             # PostgreSQL database server
 │   ├── traefik/              # Traefik reverse proxy with CrowdSec security
 │   ├── upsnap/               # Upsnap wake-on-LAN
 │   ├── uptime_kuma/          # Uptime Kuma monitoring
 │   └── watchyourlan/         # WatchYourLAN network scanner
 │
-└── /terraform/
-    ├── authentik/            # Authentik SSO infra
-    ├── portainer/            # Portainer infra
-    ├── proxmox/              # Proxmox infra
-    └── routeros/             # RouterOS infra
+├── /terraform/
+│   ├── authentik/            # Authentik SSO infra
+│   ├── portainer/            # Portainer infra
+│   ├── proxmox/              # Proxmox infra
+│   └── routeros/             # RouterOS infra
+│
+├── /.github/
+│   └── /workflows/           # GitHub Actions workflows
+│
+└── /.pre-commit-config.yaml  # Pre-commit hooks configuration
 ```
 
 ---
@@ -108,6 +118,7 @@ provide a living reference for improvements. Contributions and suggestions are w
 - **Terraform** - Infrastructure as Code tool
 - **Docker** & **Docker Compose** - Container runtime and orchestration
 - **Portainer** - Docker management UI (deployed via Terraform)
+- **Pre-commit** - Git hooks for code quality (optional but recommended)
 
 ### Setup
 
@@ -121,6 +132,11 @@ provide a living reference for improvements. Contributions and suggestions are w
    - Copy `default.auto.tfvars` files in each terraform module
    - Update variables according to your environment
    - Set up authentication credentials for your providers
+
+3. **Set up pre-commit hooks** (optional but recommended):
+   ```bash
+   pre-commit install
+   ```
 
 3. **Deploy infrastructure**:
    ```bash
@@ -154,10 +170,39 @@ provide a living reference for improvements. Contributions and suggestions are w
 - **Authentication**: Use Authentik for SSO across services
 - **Logs**: View container logs through Dozzle
 - **Metrics**: Monitor infrastructure through Grafana Cloud integration
+- **Workflow Automation**: Use n8n for automating tasks and integrations
+- **Database**: PostgreSQL provides persistent storage for applications
 
 ---
 
 ## Changelog
+
+### 31.07.2025
+
+>>> VibeCoding started all that mess <<<
+Major infrastructure and development improvements:
+- **New Services Added:**
+  - Added **n8n** workflow automation platform for task automation
+  - Added **PostgreSQL** database server for persistent storage
+  - Added **Grafana Synthetic Monitoring Agent** for synthetic monitoring
+- **Development Tools:**
+  - Added **pre-commit hooks** for code quality and Terraform validation
+  - Added **GitHub Actions workflow** for automated pre-commit checks
+  - Enhanced CI/CD pipeline with parameterized tool versions
+- **Infrastructure Improvements:**
+  - Enhanced Traefik routing with middlewares and improved security
+  - Added Docker network resource configuration in Terraform
+  - Updated all Docker images to latest versions across services
+  - Enhanced stack configurations with healthchecks and secure routing
+  - Improved service management and configuration files
+- **Removed Services:**
+  - Removed **mktxp** stack (MikroTik Prometheus exporter)
+  - Removed **.cursorrules** file
+- **Configuration Updates:**
+  - Updated Homarr Traefik routing rule
+  - Fixed CUPS Traefik middleware configuration
+  - Enhanced environment variable management across stacks
+  - Updated repository structure documentation
 
 ### 7.07.2025
 
@@ -208,15 +253,18 @@ configure it, but ended up restoring authentik from backup anyway.
   - [x] cloudflared
   - [x] cups
   - [x] dozzle
-  - [x] mktxp
+  - [x] grafana-synthetic-agent
+  - [x] homarr
+  - [x] mediabox
+  - [x] n8n
   - [x] netboot.xyz
+  - [x] postgres
   - [x] traefik (replaced nginx proxy manager)
   - [x] upsnap
   - [x] uptime kuma
   - [x] watchyourlan
   - [x] alloy
-  - [x] mediabox
-  - [x] homarr
+  - ~~mktxp~~ (removed - replaced by Grafana Cloud integration)
 - [ ] Terraform
   - [ ] Portainer:
     - [x] stack_authentik
@@ -232,6 +280,10 @@ configure it, but ended up restoring authentik from backup anyway.
     - [x] stack_alloy
     - [x] stack_mediabox
     - [x] stack_homarr
+    - [x] stack_n8n
+    - [x] stack_postgres
+    - [x] stack_grafana_synthetic_agent
+    - ~~stack_mktxp~~ (removed)
       > All stacks are created but some still miss advanced configuration
       > (env variables, secrets, etc.)
     - [ ] Users & Groups
@@ -337,7 +389,10 @@ graph TB
     NetbootXYZ[💿 Netboot.xyz<br/>PXE Boot]
     Upsnap[⚡ Upsnap<br/>Wake-on-LAN]
     WatchYourLAN[👁️ WatchYourLAN<br/>Network Scanner]
-    MKTXP[📊 MKTXP<br/>MikroTik Exporter]
+
+    %% Database & Automation
+    PostgreSQL[(🗄️ PostgreSQL<br/>Database)]
+    N8N[🤖 n8n<br/>Workflow Automation]
 
     %% Media Stack
     Mediabox[🎬 Mediabox<br/>qBittorrent, Sonarr<br/>Radarr, Jellyfin, etc.]
@@ -388,17 +443,17 @@ graph TB
     ProxyNet --> WatchYourLAN
     ProxyNet --> Mediabox
     ProxyNet --> NetbootXYZ
+    ProxyNet --> N8N
 
     %% Services connected to Metrics Network
     MetricsNet --> Traefik
     MetricsNet --> Authentik
     MetricsNet --> Alloy
-    MetricsNet --> MKTXP
+    MetricsNet --> PostgreSQL
 
     %% External Service Connections
     Cloudflared --> Cloudflare
     Alloy --> GrafanaCloud
-    MKTXP --> Router
 
     %% Styling
     classDef external fill:#e1f5fe,stroke:#01579b,stroke-width:2px
@@ -411,48 +466,7 @@ graph TB
     class Internet,Cloudflare,GrafanaCloud external
     class Router,NAS,Wally1,Edge1,ProxmoxWally,ProxmoxEdge,PortainerLXC,AdGuardLXC infrastructure
     class Traefik,CrowdSec,Authentik core
-    class Homarr,Dozzle,UptimeKuma,Alloy,Cloudflared,CUPS,NetbootXYZ,Upsnap,WatchYourLAN,MKTXP,Mediabox service
+    class Homarr,Dozzle,UptimeKuma,Alloy,Cloudflared,CUPS,NetbootXYZ,Upsnap,WatchYourLAN,Mediabox,N8N service
     class ProxyNet,MetricsNet,AuthentikNet network
-    class AuthentikDB,AuthentikRedis storage
+    class AuthentikDB,AuthentikRedis,PostgreSQL storage
 ```
-
-### Key Relationships:
-
-- **Infrastructure Layer**: Proxmox VE runs on physical servers, hosting LXC containers
-- **Container Layer**: Portainer LXC manages all Docker stacks and services
-- **Network Layer**: Services communicate through dedicated Docker networks:
-  - `proxy`: Routes traffic through Traefik reverse proxy
-  - `metrics`: Collects metrics and logs for monitoring
-  - `authentik`: Internal network for Authentik SSO components
-- **Security Layer**:
-  - Traefik handles SSL termination and routing
-  - CrowdSec provides DDoS protection and security
-  - Authentik provides SSO and identity management
-- **External Integration**:
-  - Cloudflare for DNS and CDN
-  - Grafana Cloud for metrics and monitoring
-  - NAS for storage and backups
-
----
-
-## 🔒 Security Considerations
-
-- **Network Segmentation**: Services are isolated using Docker networks and Traefik routing
-- **Authentication**: Authentik provides SSO and MFA for all services
-- **Reverse Proxy**: Traefik with CrowdSec integration for DDoS protection
-- **Secrets Management**: Environment variables and Docker secrets (consider HashiCorp Vault for production)
-- **Updates**: Manual updates preferred over automatic for stability
-- **Backups**: Regular backups to Synology NAS
-
-## 🤝 Contributing
-
-This is a personal homelab repository, but suggestions and improvements are welcome:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request with a clear description
-
-## 📝 License
-
-This project is for educational and personal use. Feel free to adapt it for your own homelab setup.

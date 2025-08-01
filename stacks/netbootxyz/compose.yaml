@@ -14,15 +14,14 @@ services:
     networks:
       - proxy
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.netbootxyz.rule=Host(`netbootxyz.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.netbootxyz.entrypoints=websecure"
-      - "traefik.http.routers.netbootxyz.middlewares=secure-headers@file,rate-limit@file"
-      - "traefik.http.services.netbootxyz.loadbalancer.server.port=3000"
+      traefik.enable: "true"
+      traefik.http.routers.netbootxyz.entrypoints: websecure
+      traefik.http.services.netbootxyz.loadbalancer.server.port: 3000
     volumes:
       - netbootxyz-config:/config
       - netbootxyz-assets:/assets
     ports:
+      - 3000:3000
       - 69:69/udp
 
   # Optional: iDRAC6 Controller for legacy console access without Java install

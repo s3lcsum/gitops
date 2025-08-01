@@ -54,20 +54,21 @@ locals {
 
   stacks = [
     "alloy",
-    "authentik",
+    #    "authentik",
     "cloudflared",
     "cups",
     "dozzle",
+    "grafana-synthetic-agent",
     "homarr",
-    #"mediabox",
-    "mktxp",
+    "mediabox",
     "netbootxyz",
     "n8n",
     "postgres",
     "upsnap",
     "uptime_kuma",
     "traefik",
-    "watchyourlan"
+    "watchyourlan",
+    "zitadel"
   ]
 }
 

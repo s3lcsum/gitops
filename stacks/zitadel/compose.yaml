@@ -1,0 +1,118 @@
+# github.com/s3lcsum/gitops/stacks/zitadel/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
+# Zitadel Stack
+# Identity and access management platform
+# Maintainer: Dominik Siejak
+#
+# This stack deploys Zitadel with the following components:
+# - init: Initializes the database schema
+# - setup: Configures Zitadel with initial settings
+# - zitadel: Main Zitadel application
+# - login: Zitadel login UI
+
+# Common service configuration
+x-default: &default
+  user: "502:502"
+  restart: unless-stopped
+  environment:
+    ZITADEL_MASTERKEY: "f7e666b8ae73cacccd822ada17dd2d72"
+  networks:
+    - database
+  volumes:
+    - /Portainer/zitadel/config.yaml:/config.yaml:ro
+    - /Portainer/zitadel/init.yaml:/init.yaml:ro
+    - /Portainer/zitadel/secrets.yaml:/secrets.yaml:ro
+    - data:/data
+
+services:
+  # Initialize database schema
+  init:
+    <<: *default
+    image: ghcr.io/zitadel/zitadel:v4.0.0
+    container_name: zitadel-init
+    restart: "no"
+    command:
+      - init
+      - --config
+      - /config.yaml
+      - --config
+      - /secrets.yaml
+
+  # Setup Zitadel with initial configuration
+  setup:
+    <<: *default
+    image: ghcr.io/zitadel/zitadel:v4.0.0
+    container_name: zitadel-setup
+    restart: "no"
+    command:
+      - setup
+      - --config
+      - /config.yaml
+      - --config
+      - /secrets.yaml
+      - --steps
+      - /init.yaml
+      - --masterkey
+      - $${ZITADEL_MASTERKEY}
+    depends_on:
+      init:
+        condition: service_completed_successfully
+        restart: false
+
+  # Main Zitadel application
+  zitadel:
+    <<: *default
+    image: ghcr.io/zitadel/zitadel:v4.0.0
+    container_name: zitadel
+    command:
+      - start
+      - --config
+      - /config.yaml
+      - --config
+      - /secrets.yaml
+      - --masterkey
+      - $${ZITADEL_MASTERKEY}
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+        restart: true
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.zitadel.entrypoints: websecure
+      traefik.http.routers.zitadel.rule: "!PathPrefix(`/ui/v2/login`)"
+      traefik.http.services.zitadel.loadbalancer.passhostheader: "true"
+      traefik.http.services.zitadel.loadbalancer.server.scheme: h2c
+      traefik.http.services.zitadel.loadbalancer.server.port: "8080"
+
+  # Zitadel login UI
+  login:
+    image: ghcr.io/zitadel/zitadel-login:v4.0.0
+    container_name: zitadel-login
+    restart: unless-stopped
+    network_mode: service:zitadel
+    environment:
+      ZITADEL_API_URL: http://localhost:8080
+      NEXT_PUBLIC_BASE_PATH: /ui/v2/login
+      ZITADEL_SERVICE_USER_TOKEN_FILE: /data/login-client-pat
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+        restart: false
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.login.entrypoints: websecure
+      traefik.http.routers.login.rule: "PathPrefix(`/ui/v2/login`)"
+      traefik.http.services.login.loadbalancer.passhostheader: "true"
+      traefik.http.services.login.loadbalancer.server.port: "3000"
+
+networks:
+  proxy:
+    external: true
+  database:
+    external: true
+
+volumes:
+  data:
+    driver: local

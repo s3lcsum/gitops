@@ -17,10 +17,7 @@ ExecStart=/usr/bin/docker run \
   --volume=portainer_data:/data \
   --volume=/Portainer:/Portainer:ro \
   --label="traefik.enable=true" \
-  --label="traefik.http.routers.portainer.rule=Host(`portainer.wally.dominiksiejak.pl`)" \
   --label="traefik.http.routers.portainer.entrypoints=websecure" \
-  --label="traefik.http.routers.portainer.middlewares=secure-headers@file,rate-limit@file" \
-  --label="traefik.http.routers.portainer.tls.certresolver=letsencrypt" \
   --label="traefik.http.services.portainer.loadbalancer.server.port=9000" \
   portainer/portainer-ce:alpine-sts
 ExecStop=/usr/bin/docker stop portainer

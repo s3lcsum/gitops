@@ -1,0 +1,29 @@
+# github.com/s3lcsum/gitops/stacks/grafana-synthetic-agent/compose.yaml
+# WARNING: This file should not be edited anywhere except the git repository
+# Any local changes will be overwritten by the git repository
+#
+# Grafana Synthetic Monitoring Agent Stack
+# Runs the Grafana Synthetic Monitoring Agent for private probe checks
+# Maintainer: Dominik Siejak
+
+services:
+  grafana-synthetic-agent:
+    image: grafana/synthetic-monitoring-agent:latest
+    container_name: grafana-synthetic-agent
+    restart: unless-stopped
+    env_file:
+      - /Portainer/grafana-synthetic-agent/grafana-synthetic-agent.env
+    # Note: Arguments must be passed without quotes to work properly
+    # The metrics endpoint by default only accepts connections from localhost
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      /usr/local/bin/synthetic-monitoring-agent
+      -api-server-address=synthetic-monitoring-grpc-eu-west.grafana.net:443
+      -api-token=$${API_TOKEN}
+      -listen-address=0.0.0.0:4050
+    networks:
+      - metrics
+
+networks:
+  metrics:
+    external: true

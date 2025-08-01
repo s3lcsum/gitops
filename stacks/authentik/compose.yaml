@@ -21,7 +21,7 @@ x-healthchecks: &healthchecks
 
 x-authentik: &authentik
   <<: *default
-  image: ghcr.io/goauthentik/server:2025.6.3
+  image: ghcr.io/goauthentik/server:2025.6.4
   environment:
     AUTHENTIK_LOG_LEVEL: "debug"
     AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
@@ -38,13 +38,12 @@ services:
     <<: *authentik
     container_name: authentik
     command: server
+    ports:
+      - "9000:9000"
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.authentik.rule=Host(`auth.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.authentik.entrypoints=websecure"
-      - "traefik.http.routers.authentik.middlewares=secure-headers@file,rate-limit@file"
-      - "traefik.http.routers.authentik.tls.certresolver=letsencrypt"
-      - "traefik.http.services.authentik.loadbalancer.server.port=9000"
+      traefik.enable: "true"
+      traefik.http.routers.authentik.entrypoints: websecure
+      traefik.http.routers.authentik.rule: Host(`auth.wally.dominiksiejak.pl`)
     volumes:
       - media:/media
       - templates:/templates

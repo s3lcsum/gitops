@@ -1,60 +1,48 @@
 #!/usr/bin/make -f
-.PHONY: help init plan apply destroy validate fmt check clean
+.PHONY: help init plan apply destroy validate fmt check clean sync-portainer watch-portainer sync-service
 
 # Define the root directory
 ROOT := $(shell git rev-parse --show-toplevel)
 
-# Default target
 help:
 	@echo "Available targets:"
-	@echo "  init           - Initialize Terraform"
-	@echo "  plan           - Create an execution plan"
-	@echo "  sync-portainer - Rsync stacks/ to ssh portainer:/Portainer"
-	@echo "  apply          - Apply the configuration (with auto-approve)"
-	@echo "  destroy        - Destroy the infrastructure (with auto-approve)"
-	@echo "  validate       - Validate the configuration"
-	@echo "  fmt            - Format the configuration files"
-	@echo "  check          - Run validate and fmt"
-	@echo "  clean          - Clean up temporary files"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s - %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-# Initialize Terraform
-init:
+init: ## Initialize Terraform
 	terraform init
 
-# Create execution plan
-plan:
+plan: ## Create an execution plan
 	terraform plan
 
-# Sync stacks to Portainer host
-sync-portainer:
+sync-portainer: ## Rsync stacks/ to ssh portainer:/Portainer
 	rsync -av --delete $(ROOT)/stacks/ portainer:/Portainer
 
-# Sync portainer.service to Portainer host and reload systemd
-sync-service:
+watch-portainer: ## Watch for changes and sync automatically
+	fswatch -r --exclude '.*\.swp$$' --exclude '\.git' "$(ROOT)/stacks" | \
+	while read -r _; do \
+		echo "[fswatch] Change detected. Syncing..."; \
+		make sync-portainer; \
+	done
+
+sync-service: ## Sync portainer.service and reload systemd
 	rsync -av $(ROOT)/terraform/portainer/portainer.service portainer:/etc/systemd/system/
 	ssh portainer 'sudo systemctl daemon-reload &' || true
 
-# Apply configuration with auto-approve
-apply: sync-portainer sync-service
+apply: sync-portainer sync-service ## Apply the configuration (with auto-approve)
 	terraform apply -auto-approve
 
-# Destroy infrastructure with auto-approve
-destroy:
+destroy: ## Destroy the infrastructure (with auto-approve)
 	terraform destroy -auto-approve
 
-# Validate configuration
-validate:
+validate: ## Validate the configuration
 	terraform validate
 
-# Format configuration files
-fmt:
+fmt: ## Format the configuration files
 	terraform fmt
 
-# Run validation and formatting checks
-check: validate fmt
+check: validate fmt ## Run validate and fmt
 
-# Clean up temporary files
-clean:
+clean: ## Clean up temporary files
 	rm -rf .terraform/
 	rm -f terraform.tfstate.backup
 	rm -f .terraform.lock.hcl

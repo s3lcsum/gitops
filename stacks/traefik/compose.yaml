@@ -23,7 +23,7 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 8081:8080 # Dashboard
+      - 8081:8080 # Dashboar
       - 9100:9100 # Prometheus metrics
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -31,13 +31,9 @@ services:
       - /Portainer/traefik/dynamic.yaml:/etc/traefik/dynamic.yaml
       - traefik-letsencrypt:/letsencrypt
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
-      - "traefik.http.routers.traefik-dashboard.middlewares=secure-headers@file,rate-limit@file"
-      - "traefik.http.routers.traefik-dashboard.service=api@internal"
-      - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
-      - "traefik.http.services.traefik-dashboard.loadbalancer.server.port=8081"
+      traefik.enable: "true"
+      traefik.http.routers.traefik-dashboard.entrypoints: websecure
+      traefik.http.routers.traefik-dashboard.service: api@internal
 
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
@@ -45,20 +41,6 @@ services:
       timeout: 5s
       retries: 3
 
-  crowdsec:
-    image: crowdsecurity/crowdsec:latest
-    container_name: crowdsec
-    restart: unless-stopped
-    ports:
-      - 127.0.0.1:9080:8080
-      - 6060:6060
-      - 7422:7422
-    depends_on:
-      - traefik
-    volumes:
-      - /Portainer/crowdsec/config/c:/etc/crowdsec
-      - crowdsec-data:/var/lib/crowdsec/data/
-      - /Portainer/crowdsec/logs:/logs:ro
 
 networks:
   metrics:
@@ -66,7 +48,5 @@ networks:
   proxy:
     external: true
 
-
 volumes:
   traefik-letsencrypt:
-  crowdsec-data:

@@ -13,10 +13,10 @@ x-default: &default
     - metrics
 
 x-healthchecks: &healthchecks
-  start_period: 30s
-  interval: 30s
-  retries: 5
-  timeout: 5s
+  start_period: 3s
+  interval: 15s
+  retries: 3
+  timeout: 3s
 
 services:
   postgres:
@@ -31,9 +31,21 @@ services:
       - /Portainer/postgres/00-init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
     healthcheck:
       <<: *healthchecks
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+
+  adminer:
+    <<: *default
+    image: adminer:latest
+    container_name: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
     labels:
-      - "traefik.enable=false"
+      traefik.enable: "true"
+      traefik.http.routers.adminer.entrypoints: websecure
+      traefik.http.services.adminer.loadbalancer.server.port: "8080"
 
 networks:
   database:
@@ -44,3 +56,7 @@ networks:
 volumes:
   data:
     driver: local
+    driver_opts:
+      type: none
+      device: /var/lib/postgresql/data
+      o: bind

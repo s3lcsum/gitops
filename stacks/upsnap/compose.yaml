@@ -19,12 +19,9 @@ services:
       - upsnap-data:/Portainer/upsnap/pb_data
       - upsnap-logs:/Portainer/upsnap/logs
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.upsnap.rule=Host(`upsnap.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.upsnap.entrypoints=websecure"
-      - "traefik.http.routers.upsnap.middlewares=secure-headers@file,rate-limit@file"
-      - "traefik.http.routers.upsnap.tls.certresolver=letsencrypt"
-      - "traefik.http.services.upsnap.loadbalancer.server.url=http://192.168.89.253:5000/"
+      traefik.enable: "true"
+      traefik.http.routers.upsnap.entrypoints: websecure
+      traefik.http.services.upsnap.loadbalancer.server.url: http://192.168.89.253:5000
 
 volumes:
   upsnap-data:

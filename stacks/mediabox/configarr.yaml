@@ -1,0 +1,74 @@
+# Configarr Configuration for MediaBox Stack
+# Based on official documentation: https://github.com/raydak-labs/configarr/blob/main/examples/full/config/config.yml
+
+# Global settings
+log_level: INFO
+watch_interval: 300
+backup_enabled: true
+backup_retention: 7
+
+# Application configurations
+applications:
+  # Sonarr - TV Series Management
+  sonarr:
+    type: sonarr
+    url: http://sonarr:8989
+    api_key: ${SONARR_API_KEY}
+    backup_enabled: true
+    config_path: /config
+    containers:
+      - sonarr
+
+  # Radarr - Movie Management
+  radarr:
+    type: radarr
+    url: http://radarr:7878
+    api_key: ${RADARR_API_KEY}
+    backup_enabled: true
+    config_path: /config
+    containers:
+      - radarr
+
+  # Lidarr - Music Management
+  lidarr:
+    type: lidarr
+    url: http://lidarr:8686
+    api_key: ${LIDARR_API_KEY}
+    backup_enabled: true
+    config_path: /config
+    containers:
+      - lidarr
+
+  # Prowlarr - Indexer Management
+  prowlarr:
+    type: prowlarr
+    url: http://prowlarr:9696
+    api_key: ${PROWLARR_API_KEY}
+    backup_enabled: true
+    config_path: /config
+    containers:
+      - prowlarr
+
+  # Bazarr - Subtitle Management
+  bazarr:
+    type: bazarr
+    url: http://bazarr:6767
+    api_key: ${BAZARR_API_KEY}
+    backup_enabled: true
+    config_path: /config
+    containers:
+      - bazarr
+
+# Backup configuration
+backup:
+  enabled: true
+  retention_days: 7
+  compression: true
+  include_logs: false
+
+# Notification settings
+notifications:
+  enabled: false
+  # Add notification configuration here if needed
+  # webhook_url: ""
+  # email: ""

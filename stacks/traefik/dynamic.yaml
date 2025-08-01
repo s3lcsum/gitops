@@ -35,17 +35,19 @@ http:
 
   # Routers
   routers:
+    # Synology HTTPS Passthrough
+    synology:
+      rule: "Host(`synology.wally.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      service: synology
+
     # Proxmox HTTPS Passthrough
     proxmox:
       rule: "Host(`proxmox.wally.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: proxmox
-      tls:
-        certResolver: letsencrypt
-      middlewares:
-        - secure-headers
-        - rate-limit
 
     # Router (HTTP backend)
     mikrotik:
@@ -53,14 +55,15 @@ http:
       entryPoints:
         - websecure
       service: mikrotik
-      middlewares:
-        - secure-headers
-        - rate-limit
-      tls:
-        certResolver: letsencrypt
 
   # Services
   services:
+    synology:
+      loadBalancer:
+        servers:
+          - url: "https://192.168.89.210:5001/"
+        passHostHeader: true
+        serversTransport: insecure
     proxmox:
       loadBalancer:
         servers:

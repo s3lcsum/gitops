@@ -19,12 +19,10 @@ services:
       PROMETHEUS_ENABLE: "true"
       PORT: 8840
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.wyl.rule=Host(`lan.wally.dominiksiejak.pl`)"
-      - "traefik.http.routers.wyl.entrypoints=websecure"
-      - "traefik.http.routers.wyl.middlewares=secure-headers@file,rate-limit@file"
-      - "traefik.http.routers.wyl.tls.certresolver=letsencrypt"
-      - "traefik.http.services.wyl.loadbalancer.server.url=http://192.168.89.253:8840"
+      traefik.enable: "true"
+      traefik.http.routers.wyl.rule: Host(`lan.wally.dominiksiejak.pl`)
+      traefik.http.routers.wyl.entrypoints: websecure
+      traefik.http.services.wyl.loadbalancer.server.url: http://192.168.89.253:8840
 
 
 volumes:

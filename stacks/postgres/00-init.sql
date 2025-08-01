@@ -26,3 +26,17 @@ BEGIN
 EXCEPTION WHEN duplicate_database THEN
   RAISE NOTICE 'Database authentik_db already exists.';
 END$$;
+
+DO $$
+BEGIN
+  CREATE ROLE zitadel_user WITH LOGIN PASSWORD 'k606beArO1cHzVYqi72ZEz9rGdXSw49AHn!';
+EXCEPTION WHEN duplicate_object THEN
+  RAISE NOTICE 'Role zitadel_user already exists.';
+END$$;
+
+DO $$
+BEGIN
+  CREATE DATABASE zitadel_db OWNER zitadel_user;
+EXCEPTION WHEN duplicate_database THEN
+  RAISE NOTICE 'Database zitadel_db already exists.';
+END$$;

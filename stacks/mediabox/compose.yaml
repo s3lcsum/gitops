@@ -1,172 +1,199 @@
-x-common: &common
+x-service-defaults: &service-defaults
   restart: unless-stopped
+  environment:
+    - PUID=1000
+    - PGID=1000
+    - TZ=Europe/Warsaw
+  networks:
+    - proxy
+    - arr
 
-x-vpn-service: &vpn-service
-  <<: *common
-  network_mode: "service:gluetun"
-  depends_on:
-    gluetun:
-      condition: service_healthy
-      restart: true
-  volumes:
-    - /Portainer/mediabox/media:/data
-    - /mnt/NAS_Shared_Media:/mnt/NAS_Shared_Media
+x-vpn-defaults: &vpn-defaults
+  <<: *service-defaults
+  # networks: []
+  # network_mode: container:gluetun
+  # depends_on:
+  #   gluetun:
+  #     condition: service_healthy
+  # labels:
+  #   traefik.enable: "false"
 
 services:
+  # 🔒 VPN gateway (WireGuard via Mullvad)
   gluetun:
-    <<: *common
-    image: qmcgaw/gluetun:latest
+    <<: *service-defaults
+    image: qmcgaw/gluetun
     container_name: gluetun
-    cap_add:
-      - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
-    volumes:
-      - /Portainer/mediabox/config/gluetun:/gluetun
+    shm_size: "1gb"
+    networks:
+      - default
+      - proxy
+    cap_add:
+      - NET_ADMIN
     env_file:
-      - /Portainer/mediabox/config/gluetun.env
-    environment:
-      VPN_SERVICE_PROVIDER: "nordvpn"
-      VPN_TYPE: "openvpn"
-      SERVER_COUNTRIES: "Poland"
-    ports:
-      - 6881:6881
-      - 6881:6881/udp
-      - 8080:8080
-      - 9999:9999
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.gluetun.rule: Host(`gluetun.wally.dominiksiejak.pl`)
-      traefik.http.routers.gluetun.entrypoints: websecure
-      traefik.http.routers.gluetun.middlewares: secure-headers@file,rate-limit@file
-      traefik.http.routers.gluetun.tls.certresolver: letsencrypt
-      traefik.http.services.gluetun.loadbalancer.server.port: 9999
-
-  bazarr:
-    <<: *vpn-service
-    image: lscr.io/linuxserver/bazarr:latest
-    container_name: bazarr
+      - /Portainer/mediabox/gluetun.env
     volumes:
-      - /Portainer/mediabox/config/bazarr:/config
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.bazarr.rule: Host(`gluetun.wally.dominiksiejak.pl`)
-      traefik.http.routers.bazarr.entrypoints: websecure
-      traefik.http.routers.bazarr.middlewares: secure-headers@file,rate-limit@file
-      traefik.http.routers.bazarr.tls.certresolver: letsencrypt
-      traefik.http.services.bazarr.loadbalancer.server.port: 6767
-
-  flaresolverr:
-    <<: *vpn-service
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    container_name: flaresolverr
-    environment:
-      LOG_LEVEL: "info"
-      LOG_HTML: "false"
-      CAPTCHA_SOLVER: "none"
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.flaresolverr.rule: Host(`flaresolverr.wally.dominiksiejak.pl`)
-      traefik.http.routers.flaresolverr.entrypoints: websecure
-      traefik.http.routers.flaresolverr.middlewares: secure-headers@file,rate-limit@file
-      traefik.http.routers.flaresolverr.tls.certresolver: letsencrypt
-      traefik.http.services.flaresolverr.loadbalancer.server.port: 8191
-
-  jellyfin:
-    <<: *vpn-service
-    image: lscr.io/linuxserver/jellyfin:latest
-    container_name: jellyfin
-    volumes:
-      - /Portainer/mediabox/media/media:/data/media
-      - /Portainer/mediabox/config/jellyfin:/config
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.jellyfin.rule: Host(`gluetun.wally.dominiksiejak.pl`)
-      traefik.http.routers.jellyfin.entrypoints: websecure
-      traefik.http.routers.jellyfin.middlewares: secure-headers@file,rate-limit@file
-      traefik.http.routers.jellyfin.tls.certresolver: letsencrypt
-      traefik.http.services.jellyfin.loadbalancer.server.port: 8096
-
-  jellyseerr:
-    <<: *vpn-service
-    image: fallenbagel/jellyseerr:latest
-    container_name: jellyseerr
-    volumes:
-      - /Portainer/mediabox/config/jellyseerr:/app/config
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.jellyseerr.rule: Host(`jellyseerr.wally.dominiksiejak.pl`)
-      traefik.http.routers.jellyseerr.entrypoints: websecure
-      traefik.http.routers.jellyseerr.middlewares: secure-headers@file,rate-limit@file
-      traefik.http.routers.jellyseerr.tls.certresolver: letsencrypt
-      traefik.http.services.jellyseerr.loadbalancer.server.port: 5055
-
-  prowlarr:
-    <<: *vpn-service
-    image: lscr.io/linuxserver/prowlarr:develop
-    container_name: prowlarr
-    environment:
-      DOCKER_MODS: "ghcr.io/themepark-dev/theme.park:prowlarr"
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.prowlarr.rule: Host(`prowlarr.wally.dominiksiejak.pl`)
-      traefik.http.routers.prowlarr.entrypoints: websecure
-      traefik.http.routers.prowlarr.middlewares: secure-headers@file,rate-limit@file
-      traefik.http.routers.prowlarr.tls.certresolver: letsencrypt
-      traefik.http.services.prowlarr.loadbalancer.server.port: 9696
-
-  qbittorrent:
-    <<: *vpn-service
-    image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent
-    volumes:
-      - /Portainer/mediabox/config/qbittorrent:/config
+      - gluetun:/gluetun
     labels:
       traefik.enable: "true"
       traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.wally.dominiksiejak.pl`)
       traefik.http.routers.qbittorrent.entrypoints: websecure
-      traefik.http.routers.qbittorrent.middlewares: secure-headers@file,rate-limit@file
-      traefik.http.routers.qbittorrent.tls.certresolver: letsencrypt
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
 
+      traefik.http.routers.jackett.rule: Host(`jackett.wally.dominiksiejak.pl`)
+      traefik.http.routers.jackett.entrypoints: websecure
+      traefik.http.services.jackett.loadbalancer.server.port: 9117
+
+      traefik.http.routers.prowlarr.rule: Host(`prowlarr.wally.dominiksiejak.pl`)
+      traefik.http.routers.prowlarr.entrypoints: websecure
+      traefik.http.services.prowlarr.loadbalancer.server.port: 9696
+    healthcheck:
+      test: ["CMD", "curl", "-f", "https://1.1.1.1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # 🔍 Torrent indexer
+  jackett:
+    <<: *vpn-defaults
+    container_name: jackett
+    image: linuxserver/jackett
+    volumes:
+      - jackett_config:/config
+
+  # 🔍 Unified indexer manager
+  prowlarr:
+    <<: *vpn-defaults
+    container_name: prowlarr
+    image: linuxserver/prowlarr
+    volumes:
+      - prowlarr_config:/config
+
+  # 🔒 Torrent client (VPN-routed)
+  qbittorrent:
+    <<: *vpn-defaults
+    container_name: qbittorrent
+    image: linuxserver/qbittorrent
+    volumes:
+      - qbittorrent_config:/config
+      - /media/NAS_Shared_Media/downloads:/downloads
+
+  # 🎥 Movie automation
   radarr:
-    <<: *vpn-service
-    image: lscr.io/linuxserver/radarr:latest
+    <<: *service-defaults
     container_name: radarr
+    image: linuxserver/radarr
     volumes:
-      - /Portainer/mediabox/config/radarr:/config
+      - radarr_config:/config
+      - /media/NAS_Shared_Media/downloads:/downloads
+      - /media/NAS_Shared_Media/movies:/movies
     labels:
-      traefik.enable: "true"
-      traefik.http.routers.radarr.rule: Host(`radarr.wally.dominiksiejak.pl`)
       traefik.http.routers.radarr.entrypoints: websecure
-      traefik.http.routers.radarr.middlewares: secure-headers@file,rate-limit@file
-      traefik.http.routers.radarr.tls.certresolver: letsencrypt
-      traefik.http.services.radarr.loadbalancer.server.port: 7878
 
-  sabnzbd:
-    <<: *vpn-service
-    image: lscr.io/linuxserver/sabnzbd:latest
-    container_name: sabnzbd
-    volumes:
-      - /Portainer/mediabox/config/sabnzbd:/config
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.sabnzbd.rule: Host(`sabnzbd.wally.dominiksiejak.pl`)
-      traefik.http.routers.sabnzbd.entrypoints: websecure
-      traefik.http.routers.sabnzbd.middlewares: secure-headers@file,rate-limit@file
-      traefik.http.routers.sabnzbd.tls.certresolver: letsencrypt
-      traefik.http.services.sabnzbd.loadbalancer.server.port: 8090
-
+  # 📺 TV series automation
   sonarr:
-    <<: *vpn-service
-    image: lscr.io/linuxserver/sonarr:latest
+    <<: *service-defaults
     container_name: sonarr
+    image: linuxserver/sonarr
     volumes:
-      - /Portainer/mediabox/config/sonarr:/config
+      - sonarr_config:/config
+      - /media/NAS_Shared_Media/downloads:/downloads
+      - /media/NAS_Shared_Media/tv:/tv
     labels:
       traefik.enable: "true"
-      traefik.http.routers.sonarr.rule: Host(`sonarr.wally.dominiksiejak.pl`)
       traefik.http.routers.sonarr.entrypoints: websecure
-      traefik.http.routers.sonarr.middlewares: secure-headers@file,rate-limit@file
-      traefik.http.routers.sonarr.tls.certresolver: letsencrypt
-      traefik.http.services.sonarr.loadbalancer.server.port: 8989
+
+  # 🔄 Subtitle management
+  bazarr:
+    <<: *service-defaults
+    container_name: bazarr
+    image: linuxserver/bazarr
+    volumes:
+      - bazarr_config:/config
+      - /media/NAS_Shared_Media/downloads:/downloads
+      - /media/NAS_Shared_Media/tv:/tv
+      - /media/NAS_Shared_Media/movies:/movies
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.bazarr.entrypoints: websecure
+
+  # 📺 Media server
+  jellyfin:
+    <<: *service-defaults
+    container_name: jellyfin
+    image: linuxserver/jellyfin
+    volumes:
+      - jellyfin_config:/config
+      - /media/NAS_Shared_Media/tv:/data/tv
+      - /media/NAS_Shared_Media/movies:/data/movies
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.jellyfin.entrypoints: websecure
+
+  # 📥 Request manager
+  jellyseerr:
+    <<: *service-defaults
+    container_name: jellyseerr
+    image: fallenbagel/jellyseerr
+    volumes:
+      - jellyseerr_config:/app/config
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.jellyseerr.entrypoints: websecure
+
+  # 🎵 Music automation
+  lidarr:
+    <<: *service-defaults
+    container_name: lidarr
+    image: linuxserver/lidarr
+    volumes:
+      - lidarr_config:/config
+      - /media/NAS_Shared_Media/downloads:/downloads
+      - /media/NAS_Shared_Media/music:/music
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.lidarr.entrypoints: websecure
+
+  # ⚙️ Configuration management for *arr applications
+  configarr:
+    <<: *service-defaults
+    container_name: configarr
+    image: ghcr.io/raydak-labs/configarr:latest
+    ports:
+      - 8080:8080
+    volumes:
+      - configarr_data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /Portainer/mediabox/configarr.yaml:/app/config/config.yml:ro
+    env_file:
+      - /Portainer/mediabox/configarr.env
+    environment:
+      CONFIGARR_LOG_LEVEL: "INFO"
+      CONFIGARR_WATCH_INTERVAL: "300"
+      CONFIGARR_BACKUP_ENABLED: "true"
+      CONFIGARR_BACKUP_RETENTION: "7"
+    labels:
+      traefik.enable: "false"
+
+
+networks:
+  arr:
+    driver: bridge
+  proxy:
+    external: true
+
+volumes:
+  gluetun:
+  jackett_config:
+  qbittorrent_config:
+  radarr_config:
+  sonarr_config:
+  bazarr_config:
+  jellyfin_config:
+  jellyseerr_config:
+  lidarr_config:
+  prowlarr_config:
+  configarr_data:

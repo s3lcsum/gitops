@@ -4,12 +4,12 @@ log:
 accessLog: {}
 
 entryPoints:
-  web:
-    address: ":80"
-
   websecure:
     address: ":443"
     http:
+      middlewares:
+        - secure-headers@file
+        - rate-limit@file
       tls:
         certResolver: letsencrypt
         domains:
@@ -32,6 +32,7 @@ ping: {}
 providers:
   docker:
     exposedByDefault: false
+    defaultRule: "Host(`{{ .ContainerName }}.wally.dominiksiejak.pl`)"
   file:
     filename: /etc/traefik/dynamic.yaml
 
@@ -59,9 +60,3 @@ metrics:
       - 0.3
       - 1.2
       - 5.0
-
-experimental:
-  plugins:
-    crowdsec-bouncer:
-      moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
-      version: v1.4.4
