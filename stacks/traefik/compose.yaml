@@ -19,8 +19,8 @@ services:
       - 9100:9100 # Prometheus metrics
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /Portainer/traefik/traefik.yaml:/etc/traefik/traefik.yaml
-      - /Portainer/traefik/dynamic.yaml:/etc/traefik/dynamic.yaml
+      - /Portainer/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - /Portainer/traefik/dynamic.yaml:/etc/traefik/dynamic.yaml:ro
       - traefik-letsencrypt:/letsencrypt
     labels:
       traefik.enable: "true"

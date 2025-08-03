@@ -12,7 +12,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
       traefik.enable: "true"
-      traefik.http.routers.dozzle.entrypoints: websecure
 
 networks:
   proxy:

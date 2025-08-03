@@ -31,6 +31,8 @@ volumes:
   config:
 
 networks:
+  metrics:
+    external: true
   proxy:
     external: true
   database:
