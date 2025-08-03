@@ -1,102 +1,63 @@
+#!compose -f
 # github.com/s3lcsum/gitops/stacks/authentik/compose.yaml
-# WARNING: This file should not be edited anywhere except the git repository
-# Any local changes will be overwritten by the git repository
-#
-# Authentik Stack
-# Identity provider and SSO
-# Maintainer: Dominik Siejak
 
-x-default: &default
-  restart: unless-stopped
-  networks:
-    - authentik
-    - metrics
-    - proxy
-
-x-healthchecks: &healthchecks
-  start_period: 20s
-  interval: 30s
-  retries: 5
-  timeout: 3s
-
-x-authentik: &authentik
-  <<: *default
+x-defaults: &defaults
   image: ghcr.io/goauthentik/server:2025.6.4
+  restart: unless-stopped
   environment:
     AUTHENTIK_LOG_LEVEL: "debug"
     AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
   env_file:
     - "/Portainer/authentik/authentik.env"
-  depends_on:
-    postgresql:
-      condition: service_healthy
-    redis:
-      condition: service_healthy
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - media:/media
+    - certs:/certs
+    - templates:/templates
+  networks:
+    - proxy
+    - database
 
 services:
   server:
-    <<: *authentik
+    <<: *defaults
     container_name: authentik
     command: server
     ports:
       - "9000:9000"
     labels:
       traefik.enable: "true"
+      traefik.http.routers.authentik.rule: "Host(`auth.wally.dominiksiejak.pl`)"
       traefik.http.routers.authentik.entrypoints: websecure
-      traefik.http.routers.authentik.rule: Host(`auth.wally.dominiksiejak.pl`)
-    volumes:
-      - media:/media
-      - templates:/templates
 
   worker:
-    <<: *authentik
+    <<: *defaults
     container_name: authentik-worker
     command: worker
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - media:/media
-      - certs:/certs
-      - templates:/templates
 
-  postgresql:
-    <<: *default
-    container_name: authentik-postgresql
-    image: postgres:17-alpine
-    healthcheck:
-      <<: *healthchecks
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
-    env_file:
-      - "/Portainer/authentik/postgres.env"
+  valkey:
+    image: valkey/valkey:7-alpine
+    container_name: authentik-valkey
+    restart: unless-stopped
+    command: valkey-server --appendonly yes
     volumes:
-      - database:/var/lib/postgresql/data
-
-  redis:
-    <<: *default
-    container_name: authentik-redis
-    image: redis:alpine
-    command: --save 60 1 --loglevel warning
+      - valkey_data:/data
+    networks:
+      - database
     healthcheck:
-      <<: *healthchecks
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-    volumes:
-      - redis:/data
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
-  metrics:
-    external: true
   proxy:
     external: true
-  authentik:
-    driver: bridge
+  database:
+    external: true
 
 volumes:
-  database:
-    driver: local
-  redis:
-    driver: local
   media:
-    driver: local
   templates:
-    driver: local
   certs:
-    driver: local
+  valkey_data:

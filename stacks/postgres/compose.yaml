@@ -1,56 +1,80 @@
+#!compose -f
 # github.com/s3lcsum/gitops/stacks/postgres/compose.yaml
-# WARNING: This file should not be edited anywhere except the git repository
-# Any local changes will be overwritten by the git repository
-#
-# PostgreSQL Stack
-# Database server
-# Maintainer: Dominik Siejak
-
-x-default: &default
-  restart: unless-stopped
-  networks:
-    - database
-    - metrics
-
-x-healthchecks: &healthchecks
-  start_period: 3s
-  interval: 15s
-  retries: 3
-  timeout: 3s
 
 services:
   postgres:
-    <<: *default
     image: postgres:17
     container_name: postgres
-    user: "999:999"
+    restart: unless-stopped
+    networks:
+      - database
+      - metrics
     env_file:
       - /Portainer/postgres/postgres.env
     volumes:
       - data:/var/lib/postgresql/data
-      - /Portainer/postgres/00-init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
     healthcheck:
-      <<: *healthchecks
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
 
-  adminer:
-    <<: *default
-    image: adminer:latest
-    container_name: adminer
-    ports:
-      - "8080:8080"
+  postgres-init:
+    image: postgres:17
+    container_name: postgres-init
+    restart: "no"
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - database
+    env_file:
+      - /Portainer/postgres/postgres.env
+    volumes:
+      - /Portainer/postgres/init.sh:/docker-entrypoint-initdb.d/init.sh
+    command: ["sh", "-c", "/docker-entrypoint-initdb.d/init.sh"]
+    # TODO: Check if this file watches are even working
+    develop:
+      watch:
+        - action: sync+restart
+          path: /Portainer/postgres/init.sh
+          target: /docker-entrypoint-initdb.d/init.sh
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    networks:
+      - database
+      - proxy
+    ports:
+      - 8999:8080
     labels:
       traefik.enable: "true"
       traefik.http.routers.adminer.entrypoints: websecure
-      traefik.http.services.adminer.loadbalancer.server.port: "8080"
+      # TODO: I guess traefk by default tries to use https, but we want http here!
+      traefik.http.services.adminer.loadbalancer.server.url: "http://adminer:8080"
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter
+    restart: unless-stopped
+    env_file:
+      - /Portainer/postgres/postgres.env
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
+    networks:
+      - database
+      - metrics
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 networks:
   database:
     external: true
   metrics:
+    external: true
+  proxy:
     external: true
 
 volumes:
@@ -58,5 +82,5 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /var/lib/postgresql/data
+      device: /var/lib/postgresql
       o: bind

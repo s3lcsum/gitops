@@ -1,10 +1,5 @@
+#!compose -f
 # github.com/s3lcsum/gitops/stacks/cloudflared/compose.yaml
-# WARNING: This file should not be edited anywhere except the git repository
-# Any local changes will be overwritten by the git repository
-#
-# Cloudflared Stack
-# Provides Cloudflare Tunnel
-# Maintainer: Dominik Siejak
 
 services:
   cloudflared:

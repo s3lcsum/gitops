@@ -1,3 +1,6 @@
+#!compose -f
+# github.com/s3lcsum/gitops/stacks/mediabox/compose.yaml
+
 x-service-defaults: &service-defaults
   restart: unless-stopped
   environment:

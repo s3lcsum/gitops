@@ -1,10 +1,5 @@
+#!compose -f
 # github.com/s3lcsum/gitops/stacks/netbootxyz/compose.yaml
-# WARNING: This file should not be edited anywhere except the git repository
-# Any local changes will be overwritten by the git repository
-#
-# NetbootXYZ Stack
-# Network boot server
-# Maintainer: Dominik Siejak
 
 services:
   netbootxyz:
@@ -16,12 +11,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.netbootxyz.entrypoints: websecure
-      traefik.http.services.netbootxyz.loadbalancer.server.port: 3000
+      traefik.http.services.netbootxyz.loadbalancer.server.port: 3111
     volumes:
       - netbootxyz-config:/config
       - netbootxyz-assets:/assets
     ports:
-      - 3000:3000
+      - 3111:3000
       - 69:69/udp
 
   # Optional: iDRAC6 Controller for legacy console access without Java install

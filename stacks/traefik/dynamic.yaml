@@ -6,15 +6,6 @@ http:
         scheme: https
         permanent: true
 
-    authentik-forward-auth:
-      forwardAuth:
-        address: "https://auth.wally.dominiksiejak.pl/outpost.goauthentik.io/auth/traefik"
-        trustForwardHeader: true
-        authResponseHeaders:
-          - X-Authentik-Username
-          - X-Authentik-Groups
-          - X-Authentik-Email
-
     secure-headers:
       headers:
         frameDeny: true

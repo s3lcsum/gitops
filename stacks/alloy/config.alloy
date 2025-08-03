@@ -1,7 +1,7 @@
 // Prometheus scrape configurations
 prometheus.scrape "adguard" {
   targets = [
-    { __address__ = "adguard.wally.dominiksiejak.pl", job = "adguard" },
+    { __address__ = "adguard.wally.dominiksiejak.pl", job = "adguard", source = "alloy" },
   ]
   metrics_path = "/control/metrics"
   forward_to   = [prometheus.remote_write.cloud.receiver]
@@ -9,23 +9,41 @@ prometheus.scrape "adguard" {
 
 prometheus.scrape "traefik" {
   targets = [
-    { __address__ = "traeffik:9100", job = "traefik" },
+    { __address__ = "traefik:9100", job = "traefik", source = "alloy", source_label = "source" },
   ]
   metrics_path     = "/metrics"
-  scrape_interval  = "15s"
+  scrape_interval  = "1m"
+  forward_to       = [prometheus.remote_write.cloud.receiver]
+}
+
+prometheus.scrape "authentik" {
+  targets = [
+    { __address__ = "authentik:9300", job = "authentik", source = "alloy", source_label = "source" },
+  ]
+  metrics_path     = "/metrics"
+  scrape_interval  = "1m"
+  forward_to       = [prometheus.remote_write.cloud.receiver]
+}
+
+prometheus.scrape "postgres" {
+  targets = [
+    { __address__ = "postgres-exporter:9187", job = "postgres", source = "alloy", source_label = "source" },
+  ]
+  metrics_path     = "/metrics"
+  scrape_interval  = "1m"
   forward_to       = [prometheus.remote_write.cloud.receiver]
 }
 
 prometheus.scrape "uptime_kuma" {
   targets = [
-    { __address__ = "uptime_kuma:3001", job = "uptime_kuma" },
+    { __address__ = "uptime_kuma:3001", job = "uptime_kuma", source = "alloy", source_label = "source" },
   ]
   forward_to = [prometheus.remote_write.cloud.receiver]
 }
 
 prometheus.scrape "grafana_synthetic_monitoring" {
   targets = [
-    { __address__ = "grafana-synthetic-agent:4050", job = "grafana_synthetic_monitoring" },
+    { __address__ = "grafana-synthetic-agent:4050", job = "grafana_synthetic_monitoring", source = "alloy", source_label = "source" },
   ]
   metrics_path     = "/metrics"
   scrape_interval  = "15s"

@@ -54,7 +54,7 @@ locals {
 
   stacks = [
     "alloy",
-    #    "authentik",
+    "authentik",
     "cloudflared",
     "cups",
     "dozzle",
@@ -68,7 +68,6 @@ locals {
     "uptime_kuma",
     "traefik",
     "watchyourlan",
-    "zitadel"
   ]
 }
 

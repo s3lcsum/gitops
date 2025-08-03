@@ -1,10 +1,5 @@
+#!compose -f
 # github.com/s3lcsum/gitops/stacks/upsnap/compose.yaml
-# WARNING: This file should not be edited anywhere except the git repository
-# Any local changes will be overwritten by the git repository
-#
-# Upsnap Stack
-# Wake-on-LAN and device management
-# Maintainer: Dominik Siejak
 
 services:
   upsnap:

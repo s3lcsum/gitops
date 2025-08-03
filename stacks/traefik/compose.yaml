@@ -1,12 +1,5 @@
+#!compose -f
 # github.com/s3lcsum/gitops/stacks/traefik/compose.yaml
-# WARNING: This file should not be edited anywhere except the git repository
-# Any local changes will be overwritten by the git repository
-#
-# Traefik Stack
-# Reverse proxy and certificate management
-# Maintainer: Dominik Siejak
-
-version: "3.8"
 
 services:
   traefik:
@@ -23,7 +16,6 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 8081:8080 # Dashboar
       - 9100:9100 # Prometheus metrics
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -34,13 +26,30 @@ services:
       traefik.enable: "true"
       traefik.http.routers.traefik-dashboard.entrypoints: websecure
       traefik.http.routers.traefik-dashboard.service: api@internal
-
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
       interval: 30s
       timeout: 5s
       retries: 3
 
+  # error-pages:
+  #   image: ghcr.io/tarampampam/error-pages:3
+  #   restart: unless-stopped
+  #   container_name: error-pages
+  #   networks:
+  #     - proxy
+  #   environment:
+  #     TEMPLATE_NAME: "lost-in-space"
+  #   labels:
+  #     traefik.enable: true
+  #     traefik.http.routers.error-pages-router.rule: "HostRegexp(`{host:.+}`)"
+  #     traefik.http.routers.error-pages-router.priority: 10
+  #     traefik.http.routers.error-pages-router.entrypoints: web,websecure
+  #     traefik.http.routers.error-pages-router.middlewares: error-pages-middleware
+  #     traefik.http.middlewares.error-pages-middleware.errors.status: 400-599
+  #     traefik.http.middlewares.error-pages-middleware.errors.service: error-pages-service
+  #     traefik.http.middlewares.error-pages-middleware.errors.query: /{status}.html
+  #     traefik.http.services.error-pages-service.loadbalancer.server.port: 8080
 
 networks:
   metrics:
