@@ -59,7 +59,7 @@ locals {
     "cups",
     "dozzle",
     "grafana-synthetic-agent",
-    "homarr",
+    "homepage",
     "mediabox",
     "netbootxyz",
     "n8n",

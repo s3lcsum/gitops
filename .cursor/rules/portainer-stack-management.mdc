@@ -1,0 +1,24 @@
+# Portainer Stack Management Rules
+
+## Stack Addition/Removal Protocol
+
+**CRITICAL RULE**: When adding or removing any stack in the `stacks/` directory, you MUST also update the `terraform/portainer/main.tf` file to ensure all stacks are properly configured in the Terraform configuration.
+
+### Required Actions:
+
+1. **Adding a Stack**:
+   - Create the stack files in `stacks/<stack-name>/`
+   - Update `terraform/portainer/main.tf` to include the new stack configuration
+   - Ensure all dependencies and environment variables are properly defined
+
+2. **Removing a Stack**:
+   - Remove the stack directory from `stacks/<stack-name>/`
+   - Remove the corresponding stack configuration from `terraform/portainer/main.tf`
+   - Clean up any orphaned resources or dependencies
+
+### Purpose:
+This maintains consistency between the actual stack deployments and the infrastructure-as-code definition, ensuring that Terraform can properly manage and track all deployed stacks.
+
+### Files to Monitor:
+- `stacks/*/` - All stack directories and their compose.yaml files
+- `terraform/portainer/main.tf` - Terraform configuration for Portainer stacks

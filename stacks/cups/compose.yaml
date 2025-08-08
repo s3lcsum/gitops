@@ -14,8 +14,6 @@ services:
       - /dev/bus/usb:/dev/bus/usb  # If using USB printers
     labels:
       traefik.enable: "true"
-      traefik.http.routers.cups.entrypoints: websecure
-
 
 volumes:
   cups-data:

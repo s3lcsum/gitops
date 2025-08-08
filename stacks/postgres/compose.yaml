@@ -50,7 +50,6 @@ services:
       - 8999:8080
     labels:
       traefik.enable: "true"
-      traefik.http.routers.adminer.entrypoints: websecure
       # TODO: I guess traefk by default tries to use https, but we want http here!
       traefik.http.services.adminer.loadbalancer.server.url: "http://adminer:8080"
 
@@ -60,8 +59,6 @@ services:
     restart: unless-stopped
     env_file:
       - /Portainer/postgres/postgres.env
-    environment:
-      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable"
     networks:
       - database
       - metrics

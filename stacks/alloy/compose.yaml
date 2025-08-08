@@ -25,8 +25,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       traefik.enable: "true"
-      traefik.http.routers.alloy.entrypoints: websecure
-
 
 networks:
   metrics:

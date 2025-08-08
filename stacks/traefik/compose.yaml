@@ -24,7 +24,6 @@ services:
       - traefik-letsencrypt:/letsencrypt
     labels:
       traefik.enable: "true"
-      traefik.http.routers.traefik-dashboard.entrypoints: websecure
       traefik.http.routers.traefik-dashboard.service: api@internal
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]

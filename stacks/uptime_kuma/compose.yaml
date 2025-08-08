@@ -17,8 +17,6 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.uptime-kuma.rule: Host(`uptime.wally.dominiksiejak.pl`)
-      traefik.http.routers.uptime-kuma.entrypoints: websecure
-
 
 volumes:
   uptime-kuma-data:

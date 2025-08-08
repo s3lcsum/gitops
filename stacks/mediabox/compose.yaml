@@ -42,22 +42,13 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.wally.dominiksiejak.pl`)
-      traefik.http.routers.qbittorrent.entrypoints: websecure
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
 
       traefik.http.routers.jackett.rule: Host(`jackett.wally.dominiksiejak.pl`)
-      traefik.http.routers.jackett.entrypoints: websecure
       traefik.http.services.jackett.loadbalancer.server.port: 9117
 
       traefik.http.routers.prowlarr.rule: Host(`prowlarr.wally.dominiksiejak.pl`)
-      traefik.http.routers.prowlarr.entrypoints: websecure
       traefik.http.services.prowlarr.loadbalancer.server.port: 9696
-    healthcheck:
-      test: ["CMD", "curl", "-f", "https://1.1.1.1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
 
   # 🔍 Torrent indexer
   jackett:
@@ -107,7 +98,6 @@ services:
       - /media/NAS_Shared_Media/tv:/tv
     labels:
       traefik.enable: "true"
-      traefik.http.routers.sonarr.entrypoints: websecure
 
   # 🔄 Subtitle management
   bazarr:
@@ -121,7 +111,6 @@ services:
       - /media/NAS_Shared_Media/movies:/movies
     labels:
       traefik.enable: "true"
-      traefik.http.routers.bazarr.entrypoints: websecure
 
   # 📺 Media server
   jellyfin:
@@ -134,7 +123,6 @@ services:
       - /media/NAS_Shared_Media/movies:/data/movies
     labels:
       traefik.enable: "true"
-      traefik.http.routers.jellyfin.entrypoints: websecure
 
   # 📥 Request manager
   jellyseerr:
@@ -145,7 +133,6 @@ services:
       - jellyseerr_config:/app/config
     labels:
       traefik.enable: "true"
-      traefik.http.routers.jellyseerr.entrypoints: websecure
 
   # 🎵 Music automation
   lidarr:
@@ -158,7 +145,6 @@ services:
       - /media/NAS_Shared_Media/music:/music
     labels:
       traefik.enable: "true"
-      traefik.http.routers.lidarr.entrypoints: websecure
 
   # ⚙️ Configuration management for *arr applications
   configarr:
@@ -178,9 +164,6 @@ services:
       CONFIGARR_WATCH_INTERVAL: "300"
       CONFIGARR_BACKUP_ENABLED: "true"
       CONFIGARR_BACKUP_RETENTION: "7"
-    labels:
-      traefik.enable: "false"
-
 
 networks:
   arr:

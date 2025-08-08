@@ -10,7 +10,6 @@ services:
       - proxy
     labels:
       traefik.enable: "true"
-      traefik.http.routers.netbootxyz.entrypoints: websecure
       traefik.http.services.netbootxyz.loadbalancer.server.port: 3111
     volumes:
       - netbootxyz-config:/config

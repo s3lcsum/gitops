@@ -1,0 +1,22 @@
+#!compose -f
+# github.com/s3lcsum/gitops/stacks/homepage/compose.yaml
+
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    networks:
+      - proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /Portainer/homepage/config.yaml:/app/config/settings.yaml:ro
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.homepage.rule: Host(`home.wally.dominiksiejak.pl`)
+
+networks:
+  proxy:
+    external: true

@@ -16,9 +16,7 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.wyl.rule: Host(`lan.wally.dominiksiejak.pl`)
-      traefik.http.routers.wyl.entrypoints: websecure
       traefik.http.services.wyl.loadbalancer.server.url: http://192.168.89.253:8840
-
 
 volumes:
   watchyourlan:

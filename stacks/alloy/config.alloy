@@ -59,7 +59,6 @@ prometheus.remote_write "cloud" {
       password = sys.env("GCLOUD_RW_API_KEY")
     }
   }
-
 }
 
 // Loki source for Docker logs

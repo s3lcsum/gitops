@@ -28,7 +28,6 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.authentik.rule: "Host(`auth.wally.dominiksiejak.pl`)"
-      traefik.http.routers.authentik.entrypoints: websecure
 
   worker:
     <<: *defaults

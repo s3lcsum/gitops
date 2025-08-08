@@ -6,9 +6,12 @@ accessLog: {}
 entryPoints:
   web:
     address: ":80"
+    asDefault: false
 
   websecure:
     address: ":443"
+    asDefault: true
+    http3: {}
     http:
       middlewares:
         - secure-headers@file
@@ -22,9 +25,11 @@ entryPoints:
 
   traefik:
     address: ":8080"
+    asDefault: false
 
   metrics:
     address: ":9100"
+    asDefault: false
 
 api:
   dashboard: true
