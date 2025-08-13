@@ -7,5 +7,5 @@ appVersion: "0.38.1"
 
 dependencies:
 - name: grafana-agent
-  version: "0.25.0"
+  version: "0.44.2"
   repository: https://grafana.github.io/helm-charts
