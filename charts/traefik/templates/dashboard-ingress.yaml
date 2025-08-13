@@ -1,0 +1,47 @@
+{{- if .Values.dashboard.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: traefik-dashboard
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+    {{- if .Values.dashboard.auth.basic }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-dashboard-auth@kubernetescrd
+    {{- end }}
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - {{ .Values.dashboard.domain }}
+    secretName: wally-dominiksiejak-pl-tls
+  rules:
+  - host: {{ .Values.dashboard.domain }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: traefik
+            port:
+              number: 8080
+{{- end }}
+
+{{- if and .Values.dashboard.enabled .Values.dashboard.auth.basic }}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: dashboard-auth
+  namespace: {{ .Release.Namespace }}
+spec:
+  basicAuth:
+    users:
+      - {{ .Values.dashboard.auth.basic.users | quote }}
+{{- end }}

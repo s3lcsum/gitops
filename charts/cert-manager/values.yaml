@@ -1,0 +1,39 @@
+# ClusterIssuer for Let's Encrypt production with Cloudflare DNS-01
+clusterIssuer:
+  create: true
+  name: letsencrypt-prod
+  spec:
+    acme:
+      server: https://acme-v02.api.letsencrypt.org/directory
+      email: admin@dominiksiejak.pl  # Replace with your email
+      privateKeySecretRef:
+        name: letsencrypt-prod-private-key
+      solvers:
+      - dns01:
+          cloudflare:
+            email: admin@dominiksiejak.pl  # Replace with your Cloudflare email
+            apiTokenSecretRef:
+              name: cloudflare-api-token
+              key: api-token
+        selector:
+          dnsNames:
+          - "*.wally.dominiksiejak.pl"
+          - "wally.dominiksiejak.pl"
+
+# Default wildcard certificate
+defaultCertificate:
+  create: true
+  name: wally-dominiksiejak-pl-tls
+  spec:
+    secretName: wally-dominiksiejak-pl-tls
+    issuerRef:
+      name: letsencrypt-prod
+      kind: ClusterIssuer
+    dnsNames:
+    - "*.wally.dominiksiejak.pl"
+    - "wally.dominiksiejak.pl"
+
+# Create Cloudflare API token secret:
+# kubectl create secret generic cloudflare-api-token \
+#   --from-literal=api-token=YOUR_CLOUDFLARE_API_TOKEN \
+#   -n cert-manager

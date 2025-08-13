@@ -1,0 +1,103 @@
+# Device roles for different types of infrastructure
+resource "netbox_device_role" "hypervisor" {
+  name        = "Hypervisor"
+  slug        = "hypervisor"
+  description = "Proxmox hypervisor nodes"
+  color       = "2196f3"
+  vm_role     = false
+
+  tags = [
+    netbox_tag.proxmox.name,
+    netbox_tag.infrastructure.name
+  ]
+}
+
+resource "netbox_device_role" "container_host" {
+  name        = "Container Host"
+  slug        = "container-host"
+  description = "LXC container host"
+  color       = "4caf50"
+  vm_role     = true
+
+  tags = [
+    netbox_tag.lxc.name,
+    netbox_tag.infrastructure.name
+  ]
+}
+
+resource "netbox_device_role" "virtual_machine" {
+  name        = "Virtual Machine"
+  slug        = "virtual-machine"
+  description = "Virtual machine instances"
+  color       = "ff9800"
+  vm_role     = true
+
+  tags = [
+    netbox_tag.vm.name
+  ]
+}
+
+resource "netbox_device_role" "kubernetes_node" {
+  name        = "Kubernetes Node"
+  slug        = "kubernetes-node"
+  description = "Kubernetes cluster nodes"
+  color       = "326ce5"
+  vm_role     = true
+
+  tags = [
+    netbox_tag.kubernetes.name,
+    netbox_tag.vm.name
+  ]
+}
+
+resource "netbox_device_role" "network_device" {
+  name        = "Network Device"
+  slug        = "network-device"
+  description = "Network switches, routers, and access points"
+  color       = "607d8b"
+  vm_role     = false
+
+  tags = [
+    netbox_tag.network.name,
+    netbox_tag.infrastructure.name
+  ]
+}
+
+resource "netbox_device_role" "storage_device" {
+  name        = "Storage Device"
+  slug        = "storage-device"
+  description = "NAS and storage systems"
+  color       = "795548"
+  vm_role     = false
+
+  tags = [
+    netbox_tag.storage.name,
+    netbox_tag.infrastructure.name
+  ]
+}
+
+resource "netbox_device_role" "dns_server" {
+  name        = "DNS Server"
+  slug        = "dns-server"
+  description = "DNS and DHCP servers"
+  color       = "00bcd4"
+  vm_role     = true
+
+  tags = [
+    netbox_tag.dns.name,
+    netbox_tag.lxc.name
+  ]
+}
+
+resource "netbox_device_role" "database_server" {
+  name        = "Database Server"
+  slug        = "database-server"
+  description = "Database servers"
+  color       = "3f51b5"
+  vm_role     = true
+
+  tags = [
+    netbox_tag.database.name,
+    netbox_tag.lxc.name
+  ]
+}

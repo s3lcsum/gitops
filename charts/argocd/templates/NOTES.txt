@@ -1,0 +1,34 @@
+1. ArgoCD has been deployed with two projects:
+   - argocd: For ArgoCD self-management
+   - homelab: For all your homelab infrastructure and applications
+
+2. Access ArgoCD UI:
+   - Get the admin password:
+     kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+   - Port forward to access UI:
+     kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+   - Login at: https://localhost:8080
+     Username: admin
+     Password: (from step above)
+
+3. ApplicationSets created:
+   - homelab-applicationsets: Automatically deploys all charts from your repo
+   - Applications will be named: homelab-{chart-name}
+
+4. Verify deployment:
+   kubectl get applications -n argocd
+   kubectl get applicationsets -n argocd
+   kubectl get appprojects -n argocd
+
+5. All charts in your repo will be automatically deployed to their respective namespaces:
+   {{- $charts := list "cert-manager" "traefik" "kyverno" "tailscale" "postgres" "n8n" "grafana-agent" }}
+   {{- range $charts }}
+   - homelab-{{ . }}: deployed to {{ . }} namespace
+   {{- end }}
+
+6. Monitor sync status:
+   kubectl get applications -n argocd -w
+
+The homelab project has full cluster access and will manage all your infrastructure!

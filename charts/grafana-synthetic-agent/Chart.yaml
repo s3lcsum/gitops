@@ -1,0 +1,25 @@
+apiVersion: v2
+name: grafana-synthetic-agent
+description: Grafana Synthetic Monitoring Agent for uptime monitoring
+type: application
+version: 0.1.0
+appVersion: "1.1.0"
+
+dependencies:
+  - name: synthetic-monitoring-agent
+    version: "0.2.8"
+    repository: "https://grafana.github.io/helm-charts"
+
+keywords:
+  - grafana
+  - synthetic-monitoring
+  - uptime
+  - monitoring
+  - observability
+
+maintainers:
+  - name: homelab
+    email: dreewniak@gmail.com
+
+annotations:
+  category: Monitoring

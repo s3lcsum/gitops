@@ -1,0 +1,61 @@
+# Cloudflare Tunnel Configuration for Homelab
+# This file should be placed at ~/.cloudflared/config.yml on the tunnel host
+
+tunnel: your-tunnel-id-here
+credentials-file: /home/cloudflared/.cloudflared/your-tunnel-id-here.json
+
+# Ingress rules - processed in order, first match wins
+ingress:
+  # Portainer - Container Management
+  - hostname: portainer.wally.dominiksiejak.pl
+    service: http://[fd89:3::253]:9000
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+      tlsTimeout: 30s
+
+  # AdGuard Home - DNS Management
+  - hostname: adguard.wally.dominiksiejak.pl
+    service: http://[fd89:1::53]:80
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+
+  # K3s Dashboard (if deployed)
+  - hostname: k3s.wally.dominiksiejak.pl
+    service: https://[fd89:2::100]:6443
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+      tlsTimeout: 30s
+
+  # PostgreSQL Admin Interface (pgAdmin or similar)
+  - hostname: pgadmin.wally.dominiksiejak.pl
+    service: http://[fd89:1::252]:5050
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+
+  # Grafana (if deployed)
+  - hostname: grafana.wally.dominiksiejak.pl
+    service: http://[fd89:1::200]:3000
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+
+  # Wildcard for K3s ingress
+  - hostname: "*.k3s.wally.dominiksiejak.pl"
+    service: http://[fd89:2::100]:80
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+
+  # Default catch-all (required)
+  - service: http_status:404
+
+# Optional: Metrics and logging
+metrics: 0.0.0.0:8080
+loglevel: info
+
+# Optional: Auto-update
+autoupdate-freq: 24h

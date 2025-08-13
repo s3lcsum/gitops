@@ -1,0 +1,28 @@
+1. Deploy PostgreSQL first (if using the postgres chart):
+
+   helm upgrade --install postgres ./charts/postgres -n postgres --create-namespace
+
+2. The following secrets are automatically created:
+   - n8n-credentials: Database connection details (by postgres chart)
+   - n8n-encryption: Random encryption key (by this chart)
+
+3. Manual secret creation (if not using postgres chart):
+
+   kubectl create secret generic n8n-credentials \
+     --from-literal=username=n8n_user \
+     --from-literal=password=your_db_password \
+     --from-literal=database=n8n \
+     --from-literal=host=your_db_host \
+     --from-literal=port=5432 \
+     -n {{ .Release.Namespace }}
+
+4. Access n8n:
+   - Web UI: https://nodemation.wally.dominiksiejak.pl
+   - Webhooks: https://nodemation.wally.dominiksiejak.pl/webhook/
+
+5. Verify deployment:
+   kubectl get pods -n {{ .Release.Namespace }}
+   kubectl logs -f deployment/n8n -n {{ .Release.Namespace }}
+
+6. Check database connection:
+   kubectl exec -it deployment/n8n -n {{ .Release.Namespace }} -- n8n --help

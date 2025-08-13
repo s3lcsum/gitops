@@ -1,0 +1,11 @@
+apiVersion: v2
+name: traefik
+description: Traefik reverse proxy and load balancer
+type: application
+version: 0.1.0
+appVersion: "3.0"
+
+dependencies:
+- name: traefik
+  version: "26.0.0"
+  repository: https://traefik.github.io/charts

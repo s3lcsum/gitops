@@ -1,0 +1,24 @@
+1. No secrets required - Kyverno is ready to use!
+
+2. Installed security policies:
+   - require-pod-resources: Enforces CPU/memory requests and limits
+   - disallow-privileged-containers: Blocks privileged containers
+   - require-non-root-user: Ensures containers run as non-root
+   - disallow-host-namespaces: Blocks host network/PID/IPC access
+
+3. Check policy status:
+   kubectl get clusterpolicies
+   kubectl get policyreports -A
+
+4. View policy violations:
+   kubectl describe policyreport -n your-namespace
+
+5. Test a policy (should be blocked):
+   kubectl run test-privileged --image=nginx --privileged
+
+6. Verify Kyverno is running:
+   kubectl get pods -n {{ .Release.Namespace }}
+   kubectl logs -f deployment/kyverno -n {{ .Release.Namespace }}
+
+All policies are set to 'enforce' mode - non-compliant resources will be blocked.
+Change validationFailureAction to 'audit' in templates for warning-only mode.

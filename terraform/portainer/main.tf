@@ -1,26 +1,3 @@
-terraform {
-  required_version = ">= 1.11.0"
-
-  required_providers {
-    portainer = {
-      source  = "portainer/portainer"
-      version = "1.4.5"
-    }
-  }
-
-  cloud {
-    workspaces {
-      name = "gitops-portainer"
-    }
-  }
-}
-
-provider "portainer" {
-  endpoint        = var.portainer_endpoint
-  api_key         = var.portainer_api_key
-  skip_ssl_verify = true
-}
-
 resource "portainer_settings" "default" {
   authentication_method = 3
   enable_telemetry      = true
@@ -55,17 +32,17 @@ locals {
   stacks = [
     "alloy",
     "authentik",
-    "cloudflared",
-    "cups",
+    #"cloudflared",
+    #"cups",
     "dozzle",
     "grafana-synthetic-agent",
-    "homepage",
-    "mediabox",
+    #"homepage",
+    #"mediabox",
     "netbootxyz",
     "n8n",
     "postgres",
     "upsnap",
-    "uptime_kuma",
+    #"uptime_kuma",
     "traefik",
     "watchyourlan",
   ]
@@ -82,4 +59,6 @@ resource "portainer_stack" "stacks" {
   prune           = true
 
   stack_file_content = file("../../stacks/${each.value}/compose.yaml")
+
+  depends_on = [local.networks]
 }

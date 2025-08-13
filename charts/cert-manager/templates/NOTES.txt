@@ -1,0 +1,22 @@
+1. Create the Cloudflare API token secret for DNS-01 challenge:
+
+   kubectl create secret generic cloudflare-api-token \
+     --from-literal=api-token=YOUR_CLOUDFLARE_API_TOKEN \
+     -n {{ .Release.Namespace }}
+
+2. Get your Cloudflare API token:
+   - Go to Cloudflare Dashboard → My Profile → API Tokens
+   - Create token with Zone:DNS:Edit permissions for dominiksiejak.pl
+
+3. Update email addresses in values.yaml:
+   - Replace admin@dominiksiejak.pl with your actual email
+
+4. Verify certificate creation:
+   kubectl get certificates -n {{ .Release.Namespace }}
+   kubectl get clusterissuers
+
+5. Check certificate status:
+   kubectl describe certificate wally-dominiksiejak-pl-tls -n {{ .Release.Namespace }}
+
+The wildcard certificate *.wally.dominiksiejak.pl will be automatically created
+and can be used by Traefik and other ingress controllers.

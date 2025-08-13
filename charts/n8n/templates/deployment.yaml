@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: n8n
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: n8n
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+      - name: n8n
+        image: "{{ .Values.n8n.image.repository }}:{{ .Values.n8n.image.tag }}"
+        imagePullPolicy: {{ .Values.n8n.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 5678
+          protocol: TCP
+        env:
+        - name: N8N_METRICS
+          value: {{ .Values.n8n.config.metrics | quote }}
+        - name: N8N_RUNNERS_ENABLED
+          value: {{ .Values.n8n.config.runnersEnabled | quote }}
+        - name: N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS
+          value: {{ .Values.n8n.config.enforceSettingsFilePermissions | quote }}
+        - name: N8N_EDITOR_BASE_URL
+          value: {{ .Values.n8n.config.editorBaseUrl | quote }}
+        - name: WEBHOOK_URL
+          value: {{ .Values.n8n.config.webhookUrl | quote }}
+        - name: DB_TYPE
+          value: {{ .Values.n8n.database.type | quote }}
+        - name: DB_POSTGRESDB_HOST
+          value: {{ .Values.n8n.database.host | quote }}
+        - name: DB_POSTGRESDB_DATABASE
+          value: {{ .Values.n8n.database.database | quote }}
+        - name: DB_POSTGRESDB_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.n8n.database.existingSecret }}
+              key: username
+        - name: DB_POSTGRESDB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.n8n.database.existingSecret }}
+              key: password
+        - name: N8N_ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: n8n-encryption
+              key: encryption-key
+        volumeMounts:
+        - name: n8n-data
+          mountPath: /home/node/.n8n
+        resources:
+          {{- toYaml .Values.n8n.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: n8n-data
+        {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: n8n-data
+        {{- else }}
+        emptyDir: {}
+        {{- end }}

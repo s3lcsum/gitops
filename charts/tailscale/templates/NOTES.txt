@@ -1,0 +1,25 @@
+1. Create OAuth credentials in Tailscale Admin Console:
+   - Go to Settings → OAuth clients → Generate OAuth client
+   - Scopes: device and all
+
+2. Create the OAuth secret:
+
+   kubectl create secret generic operator-oauth \
+     --from-literal=client_id=your-client-id \
+     --from-literal=client_secret=your-client-secret \
+     -n {{ .Release.Namespace }}
+
+3. Update advertised routes in values.yaml:
+   - Adjust subnetRouter.advertiseRoutes to match your cluster CIDRs
+   - Default: "10.42.0.0/16,10.43.0.0/16"
+
+4. Verify deployment:
+   kubectl get pods -n {{ .Release.Namespace }}
+   kubectl get connectors -n {{ .Release.Namespace }}
+
+5. Check Tailscale admin console:
+   - Your cluster should appear as a subnet router
+   - Routes should be advertised automatically
+
+The Tailscale operator will create a subnet router that makes your
+Kubernetes cluster accessible through your Tailscale network.

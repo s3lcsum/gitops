@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: homelab-applicationsets
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/s3lcsum/gitops.git
+        revision: main
+        directories:
+          - path: charts/*
+          - path: charts/argocd
+            exclude: true
+  template:
+    metadata:
+      name: 'homelab-{{path.basename}}'
+    spec:
+      project: homelab
+      source:
+        repoURL: https://github.com/s3lcsum/gitops.git
+        targetRevision: main
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path.basename}}'
+      managedNamespaceMetadata:
+        labels:
+          layer: homelab
+          managed-by: argocd
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - PruneLast=true
+          - ServerSideApply=true
+        retry:
+          limit: 3
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m

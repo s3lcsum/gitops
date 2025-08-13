@@ -1,0 +1,13 @@
+{{- if .Values.subnetRouter.enabled }}
+apiVersion: tailscale.com/v1alpha1
+kind: Connector
+metadata:
+  name: {{ .Values.subnetRouter.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  subnetRouter:
+    advertiseRoutes:
+    {{- range (split "," .Values.subnetRouter.advertiseRoutes) }}
+    - {{ . | trim }}
+    {{- end }}
+{{- end }}

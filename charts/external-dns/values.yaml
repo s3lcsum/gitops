@@ -1,0 +1,112 @@
+external-dns:
+  # IPv6-only configuration
+  image:
+    registry: registry.k8s.io
+    repository: external-dns/external-dns
+    tag: v0.15.0
+
+  # Cloudflare provider configuration
+  provider: cloudflare
+
+  # IPv6-only domain filter
+  domainFilters:
+    - "wally.dominiksiejak.pl"
+
+  # Policy for record management
+  policy: sync
+
+  # Registry for tracking managed records
+  registry: txt
+  txtOwnerId: "k3s-homelab"
+  txtPrefix: "external-dns-"
+
+  # IPv6-only configuration
+  env:
+    - name: CF_API_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: cloudflare-api-token
+          key: api-token
+    - name: EXTERNAL_DNS_IPV6_ONLY
+      value: "false"  # Support both IPv4 and IPv6
+    - name: EXTERNAL_DNS_TRAEFIK_DISABLE_LEGACY
+      value: "false"
+
+  # Sources to watch for DNS records (Traefik ingresses and services)
+  sources:
+    - service
+    - ingress
+    - traefik-proxy
+
+  # Watch all ingresses and services with external-dns annotations
+  # No annotation filter - will process all ingresses with hostnames
+  publishInternalServices: true
+  publishHostIP: true
+
+  # Log configuration
+  logLevel: info
+  logFormat: text
+
+  # Metrics
+  metrics:
+    enabled: true
+    port: 7979
+
+  # Security context for IPv6
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    fsGroup: 65534
+    capabilities:
+      drop:
+        - ALL
+
+  # Pod configuration for IPv6
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "7979"
+
+  # IPv6 network policy
+  networkPolicy:
+    enabled: true
+    ingress:
+      - from: []
+        ports:
+          - protocol: TCP
+            port: 7979
+    egress:
+      - to: []
+        ports:
+          - protocol: TCP
+            port: 443  # Cloudflare API
+          - protocol: TCP
+            port: 53   # DNS
+          - protocol: UDP
+            port: 53   # DNS
+
+  # Resource limits
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+  # Service configuration for metrics
+  service:
+    type: ClusterIP
+    port: 7979
+
+  # Deployment configuration
+  replicas: 1
+
+  # Node selector for IPv6 nodes
+  nodeSelector:
+    kubernetes.io/arch: amd64
+
+  # Tolerations for IPv6-only nodes
+  tolerations:
+    - key: "node.kubernetes.io/ipv6-only"
+      operator: "Exists"
+      effect: "NoSchedule"

@@ -1,0 +1,25 @@
+apiVersion: v2
+name: netbox
+description: NetBox IPAM and network documentation platform
+type: application
+version: 0.1.0
+appVersion: "4.3.6"
+
+dependencies:
+  - name: netbox
+    version: "4.1.0"
+    repository: "https://charts.beryju.io"
+
+keywords:
+  - netbox
+  - ipam
+  - network
+  - documentation
+  - infrastructure
+
+maintainers:
+  - name: homelab
+    email: dreewniak@gmail.com
+
+annotations:
+  category: Infrastructure

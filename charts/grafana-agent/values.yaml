@@ -1,0 +1,131 @@
+# IPv6-Only Grafana Agent configuration for Grafana Cloud
+grafana-agent:
+  # IPv6-only service configuration
+  service:
+    type: ClusterIP
+    ipFamilyPolicy: SingleStack
+    ipFamilies:
+      - IPv6
+
+  # Agent configuration
+  agent:
+    mode: 'flow'
+    clustering:
+      enabled: false
+
+    # Security context
+    securityContext:
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 473
+      runAsGroup: 473
+
+    # Resources
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  # Controller configuration
+  controller:
+    type: 'daemonset'
+
+    # Volumes for log collection
+    volumes:
+      extra:
+        - name: varlog
+          hostPath:
+            path: /var/log
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+        - name: etcmachineid
+          hostPath:
+            path: /etc/machine-id
+
+    volumeMounts:
+      extra:
+        - name: varlog
+          mountPath: /var/log
+          readOnly: true
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        - name: etcmachineid
+          mountPath: /etc/machine-id
+          readOnly: true
+
+    # Host network for better metrics collection
+    hostNetwork: false
+    hostPID: false
+
+    # Tolerations to run on all nodes including IPv6-only
+    tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      - key: "node.kubernetes.io/ipv6-only"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+  # Service account
+  serviceAccount:
+    create: true
+    name: grafana-agent
+
+# Kubernetes monitoring configuration
+monitoring:
+  # Collect cluster metrics
+  cluster:
+    enabled: true
+
+  # Collect node metrics
+  node:
+    enabled: true
+
+  # Collect pod metrics
+  pods:
+    enabled: true
+
+  # Collect service metrics
+  services:
+    enabled: true
+
+  # Collect ingress metrics (Traefik)
+  ingress:
+    enabled: true
+
+  # Collect persistent volume metrics
+  persistentVolumes:
+    enabled: true
+
+# Log collection configuration
+logging:
+  # Collect container logs
+  containers:
+    enabled: true
+
+  # Collect system logs
+  system:
+    enabled: true
+
+  # Collect Kubernetes events
+  events:
+    enabled: true
+
+  # Log filtering
+  filters:
+    # Exclude noisy logs
+    excludeNamespaces:
+      - kube-system
+      - kube-public
+    # Include specific log levels
+    includeLevels:
+      - error
+      - warn
+      - info

@@ -35,3 +35,6 @@ stacks/mktxp/mktxp.conf
 
 # Ignore JetBrains IDE project files
 .idea
+
+
+*.tgz*

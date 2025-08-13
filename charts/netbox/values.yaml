@@ -1,0 +1,247 @@
+# NetBox Configuration for Homelab
+netbox:
+  # Image configuration
+  image:
+    repository: netboxcommunity/netbox
+    tag: "v4.3.6"
+    pullPolicy: IfNotPresent
+
+  # Deployment configuration
+  replicaCount: 1
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 8080
+    annotations:
+      external-dns.alpha.kubernetes.io/hostname: "netbox.wally.dominiksiejak.pl"
+
+  # Ingress configuration
+  ingress:
+    enabled: true
+    className: "traefik"
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      cert-manager.io/cluster-issuer: letsencrypt
+      external-dns.alpha.kubernetes.io/hostname: "netbox.wally.dominiksiejak.pl"
+    hosts:
+      - host: netbox.wally.dominiksiejak.pl
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: netbox-tls
+        hosts:
+          - netbox.wally.dominiksiejak.pl
+
+  # NetBox configuration
+  netboxConfiguration:
+    # Basic settings
+    allowedHosts:
+      - "*"
+    debug: false
+
+    # Database configuration (uses external PostgreSQL)
+    database:
+      name: netbox
+      user: netbox
+      host: postgresql.wally.dominiksiejak.pl  # Your PostgreSQL LXC
+      port: 5432
+      sslMode: prefer
+      connMaxAge: 300
+
+    # Redis configuration
+    redis:
+      host: netbox-redis
+      port: 6379
+      database: 0
+      ssl: false
+
+    # Cache configuration
+    cache:
+      host: netbox-redis
+      port: 6379
+      database: 1
+      ssl: false
+
+    # Email configuration (optional)
+    email:
+      server: localhost
+      port: 25
+      username: ""
+      password: ""
+      useSSL: false
+      useTLS: false
+      timeout: 10
+      from: netbox@wally.dominiksiejak.pl
+
+    # Security settings
+    secretKey: ""  # Will be generated automatically
+    allowedHosts:
+      - netbox.wally.dominiksiejak.pl
+      - localhost
+      - 127.0.0.1
+
+    # Media and static files
+    mediaRoot: /opt/netbox/netbox/media
+    staticRoot: /opt/netbox/netbox/static
+
+    # Logging
+    logging:
+      disable_existing_loggers: false
+      version: 1
+      formatters:
+        normal:
+          format: "%(asctime)s %(levelname)-8s %(name)-15s %(message)s"
+      handlers:
+        console:
+          class: logging.StreamHandler
+          formatter: normal
+      loggers:
+        netbox:
+          handlers:
+            - console
+          level: INFO
+      root:
+        handlers:
+          - console
+        level: INFO
+
+  # Environment variables
+  env:
+    - name: SUPERUSER_NAME
+      value: "admin"
+    - name: SUPERUSER_EMAIL
+      value: "dreewniak@gmail.com"
+    - name: SUPERUSER_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: netbox-superuser
+          key: password
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: netbox-database
+          key: password
+
+  # Persistence for media files
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    mountPath: /opt/netbox/netbox/media
+
+  # Resources
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    runAsGroup: 999
+    fsGroup: 999
+
+  # Pod security context
+  podSecurityContext:
+    fsGroup: 999
+
+  # Node tolerations for IPv6
+  tolerations:
+    - key: "node.kubernetes.io/ipv6-only"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+  # Liveness and readiness probes
+  livenessProbe:
+    httpGet:
+      path: /api/
+      port: 8080
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /api/
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+# Redis dependency for NetBox
+redis:
+  enabled: true
+  fullnameOverride: netbox-redis
+
+  # Redis configuration
+  auth:
+    enabled: false
+
+  # Master configuration
+  master:
+    service:
+      type: ClusterIP
+      port: 6379
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+    # IPv6 tolerations
+    tolerations:
+      - key: "node.kubernetes.io/ipv6-only"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+  # Disable replica for homelab
+  replica:
+    replicaCount: 0
+
+# PostgreSQL connection (external)
+postgresql:
+  enabled: false  # Using external PostgreSQL LXC
+
+# NetBox worker for background tasks
+worker:
+  enabled: true
+  replicaCount: 1
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  tolerations:
+    - key: "node.kubernetes.io/ipv6-only"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+# Housekeeping job
+housekeeping:
+  enabled: true
+  schedule: "0 0 * * *"  # Daily at midnight
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi

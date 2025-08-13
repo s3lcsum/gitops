@@ -1,0 +1,26 @@
+1. Create the Cloudflare API secret for Let's Encrypt DNS challenge:
+
+   kubectl create secret generic traefik-cloudflare \
+     --from-literal=api-token=your_cloudflare_api_token \
+     --from-literal=zone-id=your_cloudflare_zone_id \
+     -n {{ .Release.Namespace }}
+
+2. Get your Cloudflare API token:
+   - Go to Cloudflare Dashboard → My Profile → API Tokens
+   - Create token with Zone:DNS:Edit permissions for your domain
+
+3. Access points after deployment:
+   - Dashboard: https://traefik.wally.dominiksiejak.pl
+   - Metrics: http://traefik:9100/metrics (internal)
+   {{- if .Values.tailscale.enabled }}
+   - Tailscale Dashboard: https://traefik.{{ .Values.tailscale.domain }}
+   {{- end }}
+
+4. Infrastructure services available:
+   {{- range .Values.staticRoutes.routes }}
+   - {{ .name | title }}: https://{{ .host }}
+   {{- end }}
+
+5. Verify deployment:
+   kubectl get pods -n {{ .Release.Namespace }}
+   kubectl logs -f deployment/traefik -n {{ .Release.Namespace }}
