@@ -17,8 +17,8 @@
      -n {{ .Release.Namespace }}
 
 4. Access n8n:
-   - Web UI: https://nodemation.wally.dominiksiejak.pl
-   - Webhooks: https://nodemation.wally.dominiksiejak.pl/webhook/
+   - Web UI: https://nodemation.lake.dominiksiejak.pl
+   - Webhooks: https://nodemation.lake.dominiksiejak.pl/webhook/
 
 5. Verify deployment:
    kubectl get pods -n {{ .Release.Namespace }}

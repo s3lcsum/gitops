@@ -11,8 +11,8 @@ services:
     healthcheck:
       test: curl -fs "http://localhost:5000/api/health" || exit 1
     volumes:
-      - upsnap-data:/Portainer/upsnap/pb_data
-      - upsnap-logs:/Portainer/upsnap/logs
+      - upsnap-data:/opt/upsnap/pb_data
+      - upsnap-logs:/opt/upsnap/logs
     labels:
       traefik.enable: "true"
       traefik.http.services.upsnap.loadbalancer.server.url: http://192.168.89.253:5000

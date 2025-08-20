@@ -8,4 +8,4 @@ services:
     restart: unless-stopped
     command: tunnel run
     env_file:
-      - /Portainer/cloudflared/cloudflared.env
+      - /opt/cloudflared/cloudflared.env

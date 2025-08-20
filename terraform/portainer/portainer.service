@@ -2,25 +2,27 @@
 
 [Unit]
 Description=Portainer Service
-After=docker.service
-Requires=docker.service
+After=podman.service
+Requires=podman.service
 
 [Service]
 Restart=always
-ExecStartPre=-/usr/bin/docker rm -f portainer
-ExecStart=/usr/bin/docker run \
+ExecStartPre=-/usr/bin/podman network create proxy
+ExecStartPre=-/usr/bin/podman rm -f portainer
+ExecStartPre=-/usr/bin/podman rmi portainer/portainer-ce:alpine-sts
+ExecStart=/usr/bin/podman run \
   --name=portainer \
   --restart=always \
   --publish=9443:9443 \
   --network=proxy \
-  --volume=/var/run/docker.sock:/var/run/docker.sock \
+  --volume=/run/podman/podman.sock:/var/run/docker.sock \
   --volume=portainer_data:/data \
-  --volume=/Portainer:/Portainer:ro \
+  --volume=/opt:/opt:ro \
   --label="traefik.enable=true" \
   --label="traefik.http.routers.portainer.entrypoints=websecure" \
   --label="traefik.http.services.portainer.loadbalancer.server.port=9000" \
   portainer/portainer-ce:alpine-sts
-ExecStop=/usr/bin/docker stop portainer
+ExecStop=/usr/bin/podman stop portainer
 
 [Install]
 WantedBy=multi-user.target

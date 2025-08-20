@@ -35,9 +35,9 @@ traefik:
         options: ""
         certResolver: "letsencrypt"
         domains:
-          - main: "wally.dominiksiejak.pl"
+          - main: "lake.dominiksiejak.pl"
             sans:
-              - "*.wally.dominiksiejak.pl"
+              - "*.lake.dominiksiejak.pl"
       http3:
         enabled: true
     traefik:
@@ -143,22 +143,22 @@ traefik:
 # Dashboard ingress
 dashboard:
   enabled: true
-  domain: "traefik.wally.dominiksiejak.pl"
+  domain: "traefik.lake.dominiksiejak.pl"
 
 # Static routes for your infrastructure
 staticRoutes:
   enabled: true
   routes:
     - name: synology
-      host: "synology.wally.dominiksiejak.pl"
+      host: "synology.lake.dominiksiejak.pl"
       service: "https://192.168.89.210:5001/"
       insecure: true
     - name: proxmox
-      host: "proxmox.wally.dominiksiejak.pl"
+      host: "proxmox.lake.dominiksiejak.pl"
       service: "https://192.168.89.254:8006/"
       insecure: true
     - name: mikrotik
-      host: "router.wally.dominiksiejak.pl"
+      host: "router.lake.dominiksiejak.pl"
       service: "http://192.168.89.1/"
       insecure: false# Tails
 cale configuration

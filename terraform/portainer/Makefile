@@ -14,8 +14,8 @@ init: ## Initialize Terraform
 plan: ## Create an execution plan
 	terraform plan
 
-sync-portainer: ## Rsync stacks/ to ssh portainer:/Portainer
-	rsync -av --delete $(ROOT)/stacks/ portainer:/Portainer
+sync-portainer: ## Rsync stacks/ to ssh portainer:/opt
+	rsync -av --delete $(ROOT)/stacks/ portainer:/opt
 
 watch-portainer: ## Watch for changes and sync automatically
 	fswatch -r --exclude '.*\.swp$$' --exclude '\.git' "$(ROOT)/stacks" | \

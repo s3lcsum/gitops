@@ -10,7 +10,7 @@ services:
       - database
       - metrics
     env_file:
-      - /Portainer/postgres/postgres.env
+      - /opt/postgres/postgres.env
     volumes:
       - data:/var/lib/postgresql/data
     healthcheck:
@@ -26,15 +26,15 @@ services:
     networks:
       - database
     env_file:
-      - /Portainer/postgres/postgres.env
+      - /opt/postgres/postgres.env
     volumes:
-      - /Portainer/postgres/init.sh:/docker-entrypoint-initdb.d/init.sh
+      - /opt/postgres/init.sh:/docker-entrypoint-initdb.d/init.sh
     command: ["sh", "-c", "/docker-entrypoint-initdb.d/init.sh"]
     # TODO: Check if this file watches are even working
     develop:
       watch:
         - action: sync+restart
-          path: /Portainer/postgres/init.sh
+          path: /opt/postgres/init.sh
           target: /docker-entrypoint-initdb.d/init.sh
 
   adminer:
@@ -58,7 +58,7 @@ services:
     container_name: postgres-exporter
     restart: unless-stopped
     env_file:
-      - /Portainer/postgres/postgres.env
+      - /opt/postgres/postgres.env
     networks:
       - database
       - metrics

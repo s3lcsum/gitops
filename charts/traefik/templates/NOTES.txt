@@ -10,7 +10,7 @@
    - Create token with Zone:DNS:Edit permissions for your domain
 
 3. Access points after deployment:
-   - Dashboard: https://traefik.wally.dominiksiejak.pl
+   - Dashboard: https://traefik.lake.dominiksiejak.pl
    - Metrics: http://traefik:9100/metrics (internal)
    {{- if .Values.tailscale.enabled }}
    - Tailscale Dashboard: https://traefik.{{ .Values.tailscale.domain }}

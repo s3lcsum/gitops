@@ -25,21 +25,21 @@ argocd:
       ipFamilies:
         - IPv6
       annotations:
-        external-dns.alpha.kubernetes.io/hostname: "argocd.wally.dominiksiejak.pl"
+        external-dns.alpha.kubernetes.io/hostname: "argocd.lake.dominiksiejak.pl"
 
     # Ingress for external access
     ingress:
       enabled: true
       annotations:
-        external-dns.alpha.kubernetes.io/hostname: "argocd.wally.dominiksiejak.pl"
+        external-dns.alpha.kubernetes.io/hostname: "argocd.lake.dominiksiejak.pl"
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
         nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
       hosts:
-        - argocd.wally.dominiksiejak.pl
+        - argocd.lake.dominiksiejak.pl
       tls:
         - secretName: argocd-server-tls
           hosts:
-            - argocd.wally.dominiksiejak.pl
+            - argocd.lake.dominiksiejak.pl
 
     # IPv6 node tolerations
     tolerations:

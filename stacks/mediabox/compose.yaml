@@ -36,18 +36,18 @@ services:
     cap_add:
       - NET_ADMIN
     env_file:
-      - /Portainer/mediabox/gluetun.env
+      - /opt/mediabox/gluetun.env
     volumes:
       - gluetun:/gluetun
     labels:
       traefik.enable: "true"
-      traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.wally.dominiksiejak.pl`)
+      traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.lake.dominiksiejak.pl`)
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
 
-      traefik.http.routers.jackett.rule: Host(`jackett.wally.dominiksiejak.pl`)
+      traefik.http.routers.jackett.rule: Host(`jackett.lake.dominiksiejak.pl`)
       traefik.http.services.jackett.loadbalancer.server.port: 9117
 
-      traefik.http.routers.prowlarr.rule: Host(`prowlarr.wally.dominiksiejak.pl`)
+      traefik.http.routers.prowlarr.rule: Host(`prowlarr.lake.dominiksiejak.pl`)
       traefik.http.services.prowlarr.loadbalancer.server.port: 9696
 
   # 🔍 Torrent indexer
@@ -155,10 +155,10 @@ services:
       - 8080:8080
     volumes:
       - configarr_data:/app/data
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /Portainer/mediabox/configarr.yaml:/app/config/config.yml:ro
+      - /run/podman/podman.sock:/var/run/docker.sock:ro
+      - /opt/mediabox/configarr.yaml:/app/config/config.yml:ro
     env_file:
-      - /Portainer/mediabox/configarr.env
+      - /opt/mediabox/configarr.env
     environment:
       CONFIGARR_LOG_LEVEL: "INFO"
       CONFIGARR_WATCH_INTERVAL: "300"

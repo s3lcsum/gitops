@@ -10,7 +10,7 @@ external-dns:
 
   # IPv6-only domain filter
   domainFilters:
-    - "wally.dominiksiejak.pl"
+    - "lake.dominiksiejak.pl"
 
   # Policy for record management
   policy: sync

@@ -7,7 +7,7 @@ services:
     container_name: grafana-synthetic-agent
     restart: unless-stopped
     env_file:
-      - /Portainer/grafana-synthetic-agent/grafana-synthetic-agent.env
+      - /opt/grafana-synthetic-agent/grafana-synthetic-agent.env
     # Note: Arguments must be passed without quotes to work properly
     # The metrics endpoint by default only accepts connections from localhost
     entrypoint: ["/bin/sh", "-c"]

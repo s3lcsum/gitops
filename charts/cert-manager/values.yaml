@@ -17,21 +17,21 @@ clusterIssuer:
               key: api-token
         selector:
           dnsNames:
-          - "*.wally.dominiksiejak.pl"
-          - "wally.dominiksiejak.pl"
+          - "*.lake.dominiksiejak.pl"
+          - "lake.dominiksiejak.pl"
 
 # Default wildcard certificate
 defaultCertificate:
   create: true
-  name: wally-dominiksiejak-pl-tls
+  name: lake-dominiksiejak-pl-tls
   spec:
-    secretName: wally-dominiksiejak-pl-tls
+    secretName: lake-dominiksiejak-pl-tls
     issuerRef:
       name: letsencrypt-prod
       kind: ClusterIssuer
     dnsNames:
-    - "*.wally.dominiksiejak.pl"
-    - "wally.dominiksiejak.pl"
+    - "*.lake.dominiksiejak.pl"
+    - "lake.dominiksiejak.pl"
 
 # Create Cloudflare API token secret:
 # kubectl create secret generic cloudflare-api-token \

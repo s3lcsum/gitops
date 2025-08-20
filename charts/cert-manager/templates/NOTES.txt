@@ -18,5 +18,5 @@
 5. Check certificate status:
    kubectl describe certificate wally-dominiksiejak-pl-tls -n {{ .Release.Namespace }}
 
-The wildcard certificate *.wally.dominiksiejak.pl will be automatically created
+The wildcard certificate *.lake.dominiksiejak.pl will be automatically created
 and can be used by Traefik and other ingress controllers.

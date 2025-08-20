@@ -12,17 +12,17 @@ services:
       - metrics
       - proxy
     env_file:
-      - /Portainer/alloy/alloy.env
+      - /opt/alloy/alloy.env
     environment:
       PROM_REMOTE_WRITE_URL: "https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push"
       LOKI_WRITE_URL: "https://logs-prod-eu-west-0.grafana.net/loki/api/v1/push"
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     volumes:
-      - /Portainer/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /opt/alloy/config.alloy:/etc/alloy/config.alloy:ro
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /run/log/journal:/run/log/journal:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /run/podman/podman.sock:/var/run/docker.sock:ro
     labels:
       traefik.enable: "true"
 

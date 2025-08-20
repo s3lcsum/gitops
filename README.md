@@ -14,7 +14,7 @@ provide a living reference for improvements. Contributions and suggestions are w
 
 - **Router**: MikroTik hAP ac3
 
-- **Main Server (wally-1)**: Dell Wyse thin client
+- **Main Server (lake-1)**: Mini PC FIREBAT T8 Pro Plus Intel N100 16GB DDR5 / 512GB
   - Runs **Proxmox VE**
   - Hosts containers and VMs
 
@@ -26,7 +26,7 @@ provide a living reference for improvements. Contributions and suggestions are w
   - Storage + backups
 
 - **LXC Containers (on Proxmox):**
-  - Docker/Portainer
+  - Docker/Podman
   - Pi-hole (deprecating)
   - AdGuard
 
@@ -176,6 +176,17 @@ provide a living reference for improvements. Contributions and suggestions are w
 ---
 
 ## Changelog
+
+### 20.08.2025
+
+**Infrastructure Upgrade and Domain Migration:**
+- **Hardware Migration:** Deprecated old wally-1 terminal (Dell Wyse thin client) and migrated to new **lake-1** server
+  - New Hardware: Mini PC FIREBAT T8 Pro Plus Intel N100 16GB DDR5 / 512GB
+  - Significant performance improvement with modern Intel N100 processor and DDR5 memory
+- **Domain Migration:** Completed full domain migration from `wally.dominiksiejak.pl` to `lake.dominiksiejak.pl`
+  - Updated 25+ configuration files across Docker stacks, Helm charts, and Terraform modules
+  - Updated all Traefik routing, SSL certificates, DNS, and service discovery configurations
+  - Updated all monitoring, authentication, and automation service URLs
 
 ### 31.07.2025
 

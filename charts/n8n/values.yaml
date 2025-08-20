@@ -8,8 +8,8 @@ n8n:
   # Environment configuration
   config:
     # Base URLs - update these for your domain
-    editorBaseUrl: "https://nodemation.wally.dominiksiejak.pl"
-    webhookUrl: "https://nodemation.wally.dominiksiejak.pl"
+    editorBaseUrl: "https://nodemation.lake.dominiksiejak.pl"
+    webhookUrl: "https://nodemation.lake.dominiksiejak.pl"
 
     # Features
     metrics: true
@@ -55,14 +55,14 @@ ingress:
   annotations:
     traefik.ingress.kubernetes.io/router.tls: "true"
   hosts:
-    - host: nodemation.wally.dominiksiejak.pl
+    - host: nodemation.lake.dominiksiejak.pl
       paths:
         - path: /
           pathType: Prefix
   tls:
-    - secretName: wally-dominiksiejak-pl-tls
+    - secretName: lake-dominiksiejak-pl-tls
       hosts:
-        - nodemation.wally.dominiksiejak.pl
+        - nodemation.lake.dominiksiejak.pl
 
 # Persistence for n8n data
 persistence:

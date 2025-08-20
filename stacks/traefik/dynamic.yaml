@@ -28,21 +28,21 @@ http:
   routers:
     # Synology HTTPS Passthrough
     synology:
-      rule: "Host(`synology.wally.dominiksiejak.pl`)"
+      rule: "Host(`synology.lake.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: synology
 
     # Proxmox HTTPS Passthrough
     proxmox:
-      rule: "Host(`proxmox.wally.dominiksiejak.pl`)"
+      rule: "Host(`proxmox.lake.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: proxmox
 
     # Router (HTTP backend)
     mikrotik:
-      rule: "Host(`router.wally.dominiksiejak.pl`)"
+      rule: "Host(`router.lake.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: mikrotik

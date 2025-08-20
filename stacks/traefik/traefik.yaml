@@ -19,9 +19,9 @@ entryPoints:
       tls:
         certResolver: letsencrypt
         domains:
-          - main: wally.dominiksiejak.pl
+          - main: lake.dominiksiejak.pl
             sans:
-              - '*.wally.dominiksiejak.pl'
+              - '*.lake.dominiksiejak.pl'
 
   traefik:
     address: ":8080"
@@ -40,7 +40,7 @@ ping: {}
 providers:
   docker:
     exposedByDefault: false
-    defaultRule: "Host(`{{ .ContainerName }}.wally.dominiksiejak.pl`)"
+    defaultRule: "Host(`{{ .ContainerName }}.lake.dominiksiejak.pl`)"
   file:
     filename: /etc/traefik/dynamic.yaml
 

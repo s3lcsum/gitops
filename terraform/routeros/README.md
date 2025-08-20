@@ -92,7 +92,7 @@ Key Devices:
 ├── 192.168.89.30-32 → TP-Link Deco (3× units with ethernet backhaul)
 ├── 192.168.89.40  → Raspberry Pi (SDR Radio, 3D Printer control)
 └── 192.168.89.251 → AdGuard DNS
-├── 192.168.89.253 → Docker/Portainer host
+├── 192.168.89.253 → Docker/Podman host
 ├── 192.168.89.254 → wally/wally-0 (Dell Wyse - Main Proxmox)
 ```
 

@@ -12,15 +12,15 @@ services:
       - metrics
       - proxy
     env_file:
-      - /Portainer/traefik/traefik.env
+      - /opt/traefik/traefik.env
     ports:
       - 80:80
       - 443:443
       - 9100:9100 # Prometheus metrics
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /Portainer/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
-      - /Portainer/traefik/dynamic.yaml:/etc/traefik/dynamic.yaml:ro
+      - /run/podman/podman.sock:/var/run/docker.sock:ro
+      - /opt/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - /opt/traefik/dynamic.yaml:/etc/traefik/dynamic.yaml:ro
       - traefik-letsencrypt:/letsencrypt
     labels:
       traefik.enable: "true"

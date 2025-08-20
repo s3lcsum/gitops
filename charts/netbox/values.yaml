@@ -14,7 +14,7 @@ netbox:
     type: ClusterIP
     port: 8080
     annotations:
-      external-dns.alpha.kubernetes.io/hostname: "netbox.wally.dominiksiejak.pl"
+      external-dns.alpha.kubernetes.io/hostname: "netbox.lake.dominiksiejak.pl"
 
   # Ingress configuration
   ingress:
@@ -24,16 +24,16 @@ netbox:
       traefik.ingress.kubernetes.io/router.entrypoints: websecure
       traefik.ingress.kubernetes.io/router.tls: "true"
       cert-manager.io/cluster-issuer: letsencrypt
-      external-dns.alpha.kubernetes.io/hostname: "netbox.wally.dominiksiejak.pl"
+      external-dns.alpha.kubernetes.io/hostname: "netbox.lake.dominiksiejak.pl"
     hosts:
-      - host: netbox.wally.dominiksiejak.pl
+      - host: netbox.lake.dominiksiejak.pl
         paths:
           - path: /
             pathType: Prefix
     tls:
       - secretName: netbox-tls
         hosts:
-          - netbox.wally.dominiksiejak.pl
+          - netbox.lake.dominiksiejak.pl
 
   # NetBox configuration
   netboxConfiguration:
@@ -46,7 +46,7 @@ netbox:
     database:
       name: netbox
       user: netbox
-      host: postgresql.wally.dominiksiejak.pl  # Your PostgreSQL LXC
+      host: postgresql.lake.dominiksiejak.pl  # Your PostgreSQL LXC
       port: 5432
       sslMode: prefer
       connMaxAge: 300
@@ -74,12 +74,12 @@ netbox:
       useSSL: false
       useTLS: false
       timeout: 10
-      from: netbox@wally.dominiksiejak.pl
+      from: netbox@lake.dominiksiejak.pl
 
     # Security settings
     secretKey: ""  # Will be generated automatically
     allowedHosts:
-      - netbox.wally.dominiksiejak.pl
+      - netbox.lake.dominiksiejak.pl
       - localhost
       - 127.0.0.1
 

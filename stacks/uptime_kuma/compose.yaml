@@ -13,10 +13,10 @@ services:
       - 3001:3001
     volumes:
       - uptime-kuma-data:/app/data
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /run/podman/podman.sock:/var/run/docker.sock:ro
     labels:
       traefik.enable: "true"
-      traefik.http.routers.uptime-kuma.rule: Host(`uptime.wally.dominiksiejak.pl`)
+      traefik.http.routers.uptime-kuma.rule: Host(`uptime.lake.dominiksiejak.pl`)
 
 volumes:
   uptime-kuma-data:

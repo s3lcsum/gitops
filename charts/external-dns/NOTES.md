@@ -11,10 +11,10 @@ External-DNS watches for:
 2. **LoadBalancer services** (like your Traefik service)
 3. **Services with external-dns annotations**
 
-When you create an ingress with a hostname like `app.wally.dominiksiejak.pl`, external-dns will:
+When you create an ingress with a hostname like `app.lake.dominiksiejak.pl`, external-dns will:
 1. Detect the ingress
 2. Find the Traefik LoadBalancer service IP
-3. Create DNS records pointing `app.wally.dominiksiejak.pl` to your Traefik IP
+3. Create DNS records pointing `app.lake.dominiksiejak.pl` to your Traefik IP
 
 ## Required Secrets
 
@@ -35,7 +35,7 @@ stringData:
 
 Your API token needs these permissions:
 - **Zone:Zone:Read** - for all zones
-- **Zone:DNS:Edit** - for `wally.dominiksiejak.pl`
+- **Zone:DNS:Edit** - for `lake.dominiksiejak.pl`
 
 ## Example Usage
 
@@ -52,7 +52,7 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt
 spec:
   rules:
-  - host: myapp.wally.dominiksiejak.pl  # DNS record created automatically
+  - host: myapp.lake.dominiksiejak.pl  # DNS record created automatically
     http:
       paths:
       - path: /
@@ -64,7 +64,7 @@ spec:
               number: 80
   tls:
   - hosts:
-    - myapp.wally.dominiksiejak.pl
+    - myapp.lake.dominiksiejak.pl
     secretName: myapp-tls
 ```
 
@@ -76,7 +76,7 @@ kind: Service
 metadata:
   name: my-service
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: api.wally.dominiksiejak.pl
+    external-dns.alpha.kubernetes.io/hostname: api.lake.dominiksiejak.pl
 spec:
   type: LoadBalancer
   ports:
@@ -94,12 +94,12 @@ kind: Ingress
 metadata:
   name: multi-host-app
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: app1.wally.dominiksiejak.pl,app2.wally.dominiksiejak.pl
+    external-dns.alpha.kubernetes.io/hostname: app1.lake.dominiksiejak.pl,app2.lake.dominiksiejak.pl
 spec:
   rules:
-  - host: app1.wally.dominiksiejak.pl
+  - host: app1.lake.dominiksiejak.pl
     # ... rules
-  - host: app2.wally.dominiksiejak.pl
+  - host: app2.lake.dominiksiejak.pl
     # ... rules
 ```
 
@@ -128,8 +128,8 @@ kubectl logs -n external-dns deployment/external-dns -f
 ### Verify DNS Records
 ```bash
 # Check if records were created
-dig myapp.wally.dominiksiejak.pl
-dig AAAA myapp.wally.dominiksiejak.pl
+dig myapp.lake.dominiksiejak.pl
+dig AAAA myapp.lake.dominiksiejak.pl
 ```
 
 ### Common Issues

@@ -33,7 +33,7 @@ variable "dns_servers" {
 variable "domain_name" {
   description = "Local domain name"
   type        = string
-  default     = "wally.dominiksiejak.pl"
+  default     = "lake.dominiksiejak.pl"
 }
 
 variable "ntp_servers" {

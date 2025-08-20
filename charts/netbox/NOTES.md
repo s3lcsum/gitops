@@ -51,7 +51,7 @@ stringData:
 ## Access NetBox
 
 After deployment, NetBox will be available at:
-- **URL**: https://netbox.wally.dominiksiejak.pl
+- **URL**: https://netbox.lake.dominiksiejak.pl
 - **Username**: admin
 - **Password**: (from netbox-superuser secret)
 
@@ -125,11 +125,11 @@ NetBox provides a comprehensive REST API:
 ```bash
 # Get all devices
 curl -H "Authorization: Token YOUR_API_TOKEN" \
-  https://netbox.wally.dominiksiejak.pl/api/dcim/devices/
+  https://netbox.lake.dominiksiejak.pl/api/dcim/devices/
 
 # Get IP addresses
 curl -H "Authorization: Token YOUR_API_TOKEN" \
-  https://netbox.wally.dominiksiejak.pl/api/ipam/ip-addresses/
+  https://netbox.lake.dominiksiejak.pl/api/ipam/ip-addresses/
 ```
 
 ## Backup and Maintenance

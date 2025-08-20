@@ -8,9 +8,9 @@ x-defaults: &defaults
     AUTHENTIK_LOG_LEVEL: "debug"
     AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
   env_file:
-    - "/Portainer/authentik/authentik.env"
+    - "/opt/authentik/authentik.env"
   volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
+    - /run/podman/podman.sock:/var/run/docker.sock
     - media:/media
     - certs:/certs
     - templates:/templates
@@ -27,7 +27,7 @@ services:
       - "9000:9000"
     labels:
       traefik.enable: "true"
-      traefik.http.routers.authentik.rule: "Host(`auth.wally.dominiksiejak.pl`)"
+      traefik.http.routers.authentik.rule: "Host(`auth.lake.dominiksiejak.pl`)"
 
   worker:
     <<: *defaults

@@ -2,12 +2,12 @@ locals {
   authentik_oauth2_apps = {
     proxmox = {
       urls = [
-        "https://proxmox.wally.dominiksiejak.pl/",
+        "https://proxmox.lake.dominiksiejak.pl/",
       ]
     }
     portainer = {
       urls = [
-        "https://portainer.wally.dominiksiejak.pl/",
+        "https://portainer.lake.dominiksiejak.pl/",
       ]
     }
   }

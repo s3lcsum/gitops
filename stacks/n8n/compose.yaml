@@ -7,13 +7,13 @@ services:
     image: n8nio/n8n:latest
     restart: unless-stopped
     env_file:
-      - "/Portainer/n8n/n8n.env"
+      - "/opt/n8n/n8n.env"
     environment:
       N8N_METRICS: true
       N8N_RUNNERS_ENABLED: true
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: true
-      N8N_EDITOR_BASE_URL: https://nodemation.wally.dominiksiejak.pl
-      WEBHOOK_URL: https://nodemation.wally.dominiksiejak.pl
+      N8N_EDITOR_BASE_URL: https://nodemation.lake.dominiksiejak.pl
+      WEBHOOK_URL: https://nodemation.lake.dominiksiejak.pl
     volumes:
       - config:/home/node/.n8n
     ports:
@@ -24,7 +24,7 @@ services:
       - metrics
     labels:
       traefik.enable: true
-      traefik.http.routers.n8n.rule: Host(`nodemation.wally.dominiksiejak.pl`)
+      traefik.http.routers.n8n.rule: Host(`nodemation.lake.dominiksiejak.pl`)
 
 volumes:
   config:

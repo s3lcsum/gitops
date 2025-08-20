@@ -1,7 +1,7 @@
 // Prometheus scrape configurations
 prometheus.scrape "adguard" {
   targets = [
-    { __address__ = "adguard.wally.dominiksiejak.pl", job = "adguard", source = "alloy" },
+    { __address__ = "adguard.lake.dominiksiejak.pl", job = "adguard", source = "alloy" },
   ]
   metrics_path = "/control/metrics"
   forward_to   = [prometheus.remote_write.cloud.receiver]
@@ -63,11 +63,11 @@ prometheus.remote_write "cloud" {
 
 // Loki source for Docker logs
 discovery.docker "containers" {
-  host = "unix:///var/run/docker.sock"
+  host = "unix:///run/podman/podman.sock"
 }
 
 loki.source.docker "compose_logs" {
-  host    = "unix:///var/run/docker.sock"
+  host    = "unix:///run/podman/podman.sock"
   targets = discovery.docker.containers.targets
   forward_to = [loki.process.compose.receiver]
 }

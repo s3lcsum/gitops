@@ -16,7 +16,6 @@ resource "portainer_settings" "default" {
   }
 }
 
-# Networks
 resource "portainer_docker_network" "networks" {
   for_each = toset(local.networks)
 
@@ -24,30 +23,6 @@ resource "portainer_docker_network" "networks" {
   endpoint_id = var.endpoint_id
   driver      = "bridge"
 }
-
-# Stacks
-locals {
-  networks = ["proxy", "metrics", "database"]
-
-  stacks = [
-    "alloy",
-    "authentik",
-    #"cloudflared",
-    #"cups",
-    "dozzle",
-    "grafana-synthetic-agent",
-    #"homepage",
-    #"mediabox",
-    "netbootxyz",
-    "n8n",
-    "postgres",
-    "upsnap",
-    #"uptime_kuma",
-    "traefik",
-    "watchyourlan",
-  ]
-}
-
 resource "portainer_stack" "stacks" {
   for_each = toset(local.stacks)
 
@@ -60,5 +35,5 @@ resource "portainer_stack" "stacks" {
 
   stack_file_content = file("../../stacks/${each.value}/compose.yaml")
 
-  depends_on = [local.networks]
+  depends_on = [portainer_docker_network.networks]
 }

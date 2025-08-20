@@ -99,10 +99,10 @@ Once the agent is running, create checks in Grafana Cloud:
 ### 1. HTTP/HTTPS Checks
 
 Monitor your homelab services:
-- **Traefik Dashboard**: `https://traefik.wally.dominiksiejak.pl`
-- **Portainer**: `https://portainer.wally.dominiksiejak.pl`
-- **NetBox**: `https://netbox.wally.dominiksiejak.pl`
-- **ArgoCD**: `https://argocd.wally.dominiksiejak.pl`
+- **Traefik Dashboard**: `https://traefik.lake.dominiksiejak.pl`
+- **Portainer**: `https://portainer.lake.dominiksiejak.pl`
+- **NetBox**: `https://netbox.lake.dominiksiejak.pl`
+- **ArgoCD**: `https://argocd.lake.dominiksiejak.pl`
 
 ### 2. DNS Checks
 
@@ -130,7 +130,7 @@ In Grafana Cloud Synthetic Monitoring:
 ```json
 {
   "job": "http_check_traefik",
-  "target": "https://traefik.wally.dominiksiejak.pl",
+  "target": "https://traefik.lake.dominiksiejak.pl",
   "frequency": 60000,
   "timeout": 10000,
   "probes": ["your-private-probe-id"],

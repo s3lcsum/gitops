@@ -1,7 +1,7 @@
 variable "netbox_url" {
   description = "NetBox server URL"
   type        = string
-  default     = "https://netbox.wally.dominiksiejak.pl"
+  default     = "https://netbox.lake.dominiksiejak.pl"
 }
 
 variable "netbox_api_token" {
@@ -19,5 +19,5 @@ variable "site_name" {
 variable "domain_name" {
   description = "Domain name for the homelab"
   type        = string
-  default     = "wally.dominiksiejak.pl"
+  default     = "lake.dominiksiejak.pl"
 }
