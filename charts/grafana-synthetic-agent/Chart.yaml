@@ -7,7 +7,7 @@ appVersion: "1.1.0"
 
 dependencies:
   - name: synthetic-monitoring-agent
-    version: "0.2.8"
+    version: "0.6.0"
     repository: "https://grafana.github.io/helm-charts"
 
 keywords:
