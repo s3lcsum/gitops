@@ -1,11 +1,10 @@
-#!compose -f
+
 # github.com/s3lcsum/gitops/stacks/alloy/compose.yaml
 
 services:
   alloy:
     image: grafana/alloy:latest
     container_name: alloy
-    restart: unless-stopped
     ports:
       - "12345:12345"
     networks:
@@ -22,7 +21,7 @@ services:
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /run/log/journal:/run/log/journal:ro
-      - /run/podman/podman.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       traefik.enable: "true"
 

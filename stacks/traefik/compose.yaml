@@ -1,11 +1,9 @@
-#!compose -f
 # github.com/s3lcsum/gitops/stacks/traefik/compose.yaml
 
 services:
   traefik:
     image: traefik:latest
     container_name: traefik
-    restart: unless-stopped
     user: root
     networks:
       - default
@@ -18,7 +16,7 @@ services:
       - 443:443
       - 9100:9100 # Prometheus metrics
     volumes:
-      - /run/podman/podman.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /opt/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
       - /opt/traefik/dynamic.yaml:/etc/traefik/dynamic.yaml:ro
       - traefik-letsencrypt:/letsencrypt
@@ -33,7 +31,7 @@ services:
 
   # error-pages:
   #   image: ghcr.io/tarampampam/error-pages:3
-  #   restart: unless-stopped
+  #   restart: always
   #   container_name: error-pages
   #   networks:
   #     - proxy

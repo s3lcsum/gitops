@@ -23,6 +23,13 @@ resource "portainer_docker_network" "networks" {
   endpoint_id = var.endpoint_id
   driver      = "bridge"
 }
+
+# This is always been created along with portainer.service
+import {
+  to = portainer_docker_network.networks["proxy"]
+  id = "${var.endpoint_id}:proxy"
+}
+
 resource "portainer_stack" "stacks" {
   for_each = toset(local.stacks)
 
@@ -30,8 +37,8 @@ resource "portainer_stack" "stacks" {
   method          = "string"
   endpoint_id     = var.endpoint_id
   name            = each.value
-  pull_image      = true
-  prune           = true
+  pull_image      = false
+  prune           = false
 
   stack_file_content = file("../../stacks/${each.value}/compose.yaml")
 

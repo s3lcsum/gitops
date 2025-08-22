@@ -1,8 +1,7 @@
-#!compose -f
+
 # github.com/s3lcsum/gitops/stacks/mediabox/compose.yaml
 
 x-service-defaults: &service-defaults
-  restart: unless-stopped
   environment:
     - PUID=1000
     - PGID=1000
@@ -27,8 +26,6 @@ services:
     <<: *service-defaults
     image: qmcgaw/gluetun
     container_name: gluetun
-    devices:
-      - /dev/net/tun:/dev/net/tun
     shm_size: "1gb"
     networks:
       - default
@@ -44,12 +41,6 @@ services:
       traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.lake.dominiksiejak.pl`)
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
 
-      traefik.http.routers.jackett.rule: Host(`jackett.lake.dominiksiejak.pl`)
-      traefik.http.services.jackett.loadbalancer.server.port: 9117
-
-      traefik.http.routers.prowlarr.rule: Host(`prowlarr.lake.dominiksiejak.pl`)
-      traefik.http.services.prowlarr.loadbalancer.server.port: 9696
-
   # 🔍 Torrent indexer
   jackett:
     <<: *vpn-defaults
@@ -57,6 +48,10 @@ services:
     image: linuxserver/jackett
     volumes:
       - jackett_config:/config
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.jackett.rule: Host(`jackett.lake.dominiksiejak.pl`)
+      traefik.http.services.jackett.loadbalancer.server.port: 9117
 
   # 🔍 Unified indexer manager
   prowlarr:
@@ -65,6 +60,10 @@ services:
     image: linuxserver/prowlarr
     volumes:
       - prowlarr_config:/config
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.prowlarr.rule: Host(`prowlarr.lake.dominiksiejak.pl`)
+      traefik.http.services.prowlarr.loadbalancer.server.port: 9696
 
   # 🔒 Torrent client (VPN-routed)
   qbittorrent:
@@ -155,7 +154,7 @@ services:
       - 8080:8080
     volumes:
       - configarr_data:/app/data
-      - /run/podman/podman.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /opt/mediabox/configarr.yaml:/app/config/config.yml:ro
     env_file:
       - /opt/mediabox/configarr.env

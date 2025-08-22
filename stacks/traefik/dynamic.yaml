@@ -47,6 +47,20 @@ http:
         - websecure
       service: mikrotik
 
+    # OctoPrint
+    octoprint:
+      rule: "Host(`octoprint.lake.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      service: octoprint
+
+    # OpenWebRX
+    openwebrx:
+      rule: "Host(`openwebrx.lake.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      service: openwebrx
+
   # Services
   services:
     synology:
@@ -65,6 +79,16 @@ http:
       loadBalancer:
         servers:
           - url: "http://192.168.89.1/"
+        passHostHeader: true
+    octoprint:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.89.206:5000/"
+        passHostHeader: true
+    openwebrx:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.89.206:8073/"
         passHostHeader: true
 
   serversTransports:

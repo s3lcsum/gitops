@@ -1,22 +1,17 @@
-#!compose -f
+
 # github.com/s3lcsum/gitops/stacks/upsnap/compose.yaml
 
 services:
   upsnap:
     image: ghcr.io/seriousm4x/upsnap:latest
     container_name: upsnap
-    restart: unless-stopped
     network_mode: host
     entrypoint: /bin/sh -c "./upsnap serve --http 0.0.0.0:5000"
-    healthcheck:
-      test: curl -fs "http://localhost:5000/api/health" || exit 1
     volumes:
       - upsnap-data:/opt/upsnap/pb_data
-      - upsnap-logs:/opt/upsnap/logs
     labels:
       traefik.enable: "true"
       traefik.http.services.upsnap.loadbalancer.server.url: http://192.168.89.253:5000
 
 volumes:
   upsnap-data:
-  upsnap-logs:

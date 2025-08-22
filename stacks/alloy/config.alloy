@@ -63,11 +63,11 @@ prometheus.remote_write "cloud" {
 
 // Loki source for Docker logs
 discovery.docker "containers" {
-  host = "unix:///run/podman/podman.sock"
+  host = "unix:///var/run/docker.sock"
 }
 
 loki.source.docker "compose_logs" {
-  host    = "unix:///run/podman/podman.sock"
+  host    = "unix:///var/run/docker.sock"
   targets = discovery.docker.containers.targets
   forward_to = [loki.process.compose.receiver]
 }

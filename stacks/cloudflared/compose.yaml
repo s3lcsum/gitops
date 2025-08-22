@@ -1,11 +1,10 @@
-#!compose -f
+
 # github.com/s3lcsum/gitops/stacks/cloudflared/compose.yaml
 
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
-    restart: unless-stopped
     command: tunnel run
     env_file:
       - /opt/cloudflared/cloudflared.env

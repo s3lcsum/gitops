@@ -1,11 +1,10 @@
-#!compose -f
+
 # github.com/s3lcsum/gitops/stacks/uptime_kuma/compose.yaml
 
 services:
   uptime-kuma:
     image: louislam/uptime-kuma:latest
     container_name: uptime-kuma
-    restart: unless-stopped
     networks:
       - metrics
       - proxy
@@ -13,7 +12,7 @@ services:
       - 3001:3001
     volumes:
       - uptime-kuma-data:/app/data
-      - /run/podman/podman.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       traefik.enable: "true"
       traefik.http.routers.uptime-kuma.rule: Host(`uptime.lake.dominiksiejak.pl`)

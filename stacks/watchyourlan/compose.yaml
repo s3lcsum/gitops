@@ -1,18 +1,22 @@
-#!compose -f
+
 # github.com/s3lcsum/gitops/stacks/watchyourlan/compose.yaml
 
 services:
   wyl:
     image: aceberg/watchyourlan:latest
     container_name: watchyourlan
-    restart: unless-stopped
     network_mode: host
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
     volumes:
       - watchyourlan:/data/WatchYourLAN
     environment:
+      LOG_LEVEL: debug
       TZ: "Europe/Warsaw"
       PROMETHEUS_ENABLE: "true"
       PORT: 8840
+      ARP_STRS_JOINED: "-gNx 192.168.89.0/24 -I eth0, -gNx 192.168.8.0/24 -I eth0"
     labels:
       traefik.enable: "true"
       traefik.http.routers.wyl.rule: Host(`lan.lake.dominiksiejak.pl`)

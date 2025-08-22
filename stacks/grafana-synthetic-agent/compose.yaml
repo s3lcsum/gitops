@@ -1,11 +1,10 @@
-#!compose -f
+
 # github.com/s3lcsum/gitops/stacks/grafana-synthetic-agent/compose.yaml
 
 services:
   grafana-synthetic-agent:
     image: grafana/synthetic-monitoring-agent:latest
     container_name: grafana-synthetic-agent
-    restart: unless-stopped
     env_file:
       - /opt/grafana-synthetic-agent/grafana-synthetic-agent.env
     # Note: Arguments must be passed without quotes to work properly

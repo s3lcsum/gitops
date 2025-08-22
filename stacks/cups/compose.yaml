@@ -1,11 +1,10 @@
-#!compose -f
+
 # github.com/s3lcsum/gitops/stacks/cups/compose.yaml
 
 services:
   cups:
     image: olbat/cupsd:latest
     container_name: cups
-    restart: unless-stopped
     networks:
       - proxy
     volumes:

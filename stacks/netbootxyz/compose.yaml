@@ -1,11 +1,10 @@
-#!compose -f
+
 # github.com/s3lcsum/gitops/stacks/netbootxyz/compose.yaml
 
 services:
   netbootxyz:
     image: ghcr.io/netbootxyz/netbootxyz:latest
     container_name: netbootxyz
-    restart: unless-stopped
     networks:
       - proxy
     labels:
@@ -22,7 +21,7 @@ services:
   # idrac6:
   #   container_name: idrac6
   #   image: domistyle/idrac6
-  #   restart: unless-stopped
+  #   restart: always
   #   environment:
   #     - IDRAC_HOST=192.168.0.1
   #     - IDRAC_USER=${IDRAC_USER:-root}

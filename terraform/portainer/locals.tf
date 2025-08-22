@@ -21,5 +21,6 @@ locals {
     "uptime_kuma",
     "traefik",
     "watchyourlan",
+    "zitadel",
   ]
 }

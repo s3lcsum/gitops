@@ -1,11 +1,10 @@
-#!compose -f
+
 # github.com/s3lcsum/gitops/stacks/n8n/compose.yaml
 
 services:
   n8n:
     container_name: n8n
     image: n8nio/n8n:latest
-    restart: unless-stopped
     env_file:
       - "/opt/n8n/n8n.env"
     environment:

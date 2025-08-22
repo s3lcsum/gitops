@@ -34,4 +34,7 @@ setup_user_and_database "${N8N_DB_USER}" "${N8N_DB_PASSWORD}" "${N8N_DB_NAME}"
 # Setup authentik user and database
 setup_user_and_database "${AUTHENTIK_DB_USER}" "${AUTHENTIK_DB_PASSWORD}" "${AUTHENTIK_DB_NAME}"
 
+# Setup zitadel user and database
+setup_user_and_database "${ZITADEL_DB_USER}" "${ZITADEL_DB_PASSWORD}" "${ZITADEL_DB_NAME}"
+
 echo "PostgreSQL database initialization completed successfully!"
