@@ -1,0 +1,64 @@
+---
+globs: **/providers.tf
+alwaysApply: false
+---
+# Terraform providers.tf Structure Guidelines
+
+## Purpose and Scope
+- **File focus**: `providers.tf` must contain only the top-level `terraform {}` block and provider configuration blocks.
+- **Extracted rule**: From the general Terraform rules, keep files single-purpose; `providers.tf` is only for provider configs and the terraform block.
+
+## Required Template (use as baseline)
+```hcl
+terraform {
+  required_version = ">= 1.11.0" # hardcoded min terraform version
+
+  required_providers {
+    zitadel = {
+      source  = "zitadel/zitadel"
+      version = "1.0.0" # exact version, no wildcards
+    }
+  }
+
+  cloud {
+    workspaces {
+      name = "gitops-{submodule}"
+    }
+  }
+}
+
+
+provider "zitadel" {
+
+}
+```
+
+## Provider Version Management
+- **Never use wildcard versions** in `required_providers`. Always pin exact versions.
+- ✅ Correct example:
+```hcl
+required_providers {
+  zitadel = {
+    source  = "zitadel/zitadel"
+    version = "1.0.0"
+  }
+}
+```
+- ❌ Incorrect example:
+```hcl
+required_providers {
+  zitadel = {
+    source  = "zitadel/zitadel"
+    version = "~> 1.0" # avoid ranges/wildcards
+  }
+}
+```
+
+## Terraform Cloud Workspace
+- Use the workspace naming pattern: `gitops-{submodule}`.
+- Do not include tags or other metadata here; keep this block minimal.
+
+## Validation
+- After edits, run:
+  - `terraform fmt`
+  - `terraform validate`

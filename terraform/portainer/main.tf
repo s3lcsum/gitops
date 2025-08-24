@@ -3,14 +3,18 @@ resource "portainer_settings" "default" {
   enable_telemetry      = true
 
   dynamic "oauth_settings" {
-    for_each = var.portainer_oauth2_enabled ? [1] : []
+    for_each = var.portainer_oauth2.client_secret != null ? [1] : []
     content {
-      access_token_uri        = var.portainer_oauth2_access_token_uri
-      authorization_uri       = var.portainer_oauth2_authorization_uri
-      client_id               = var.portainer_oauth2_client_id
-      client_secret           = var.portainer_oauth2_client_secret
-      logout_uri              = var.portainer_oauth2_logout_uri
-      redirect_uri            = var.portainer_oauth2_redirect_uri
+      sso                     = true
+      client_id               = var.portainer_oauth2.client_id
+      client_secret           = var.portainer_oauth2.client_secret
+      access_token_uri        = var.portainer_oauth2.access_token_uri
+      authorization_uri       = var.portainer_oauth2.authorization_uri
+      logout_uri              = var.portainer_oauth2.logout_uri
+      redirect_uri            = var.portainer_oauth2.redirect_uri
+      resource_uri            = var.portainer_oauth2.resource_uri
+      user_identifier         = "email"
+      scopes                  = "openid profile email"
       oauth_auto_create_users = true
     }
   }

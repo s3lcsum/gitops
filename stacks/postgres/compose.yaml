@@ -48,6 +48,7 @@ services:
       - 8999:8080
     labels:
       traefik.enable: "true"
+      traefik.docker.network: proxy
       # TODO: I guess traefk by default tries to use https, but we want http here!
       traefik.http.services.adminer.loadbalancer.server.url: "http://adminer:8080"
 

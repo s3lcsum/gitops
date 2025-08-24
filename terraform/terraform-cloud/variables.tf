@@ -9,9 +9,3 @@ variable "github_oauth_token_id" {
   type        = string
   default     = ""
 }
-
-variable "github_repo" {
-  description = "GitHub repository for GitOps"
-  type        = string
-  default     = "s3lcsum/gitops"
-}

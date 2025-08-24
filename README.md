@@ -177,6 +177,11 @@ provide a living reference for improvements. Contributions and suggestions are w
 
 ## Changelog
 
+### 29.01.2025
+
+**Container Runtime Switch:**
+- **Switching back from Podman to Docker:** Too many compatibility issues with Podman that work out-of-the-box with Docker. Moving back to Docker for better ecosystem support and fewer configuration headaches.
+
 ### 20.08.2025
 
 **Infrastructure Upgrade and Domain Migration:**

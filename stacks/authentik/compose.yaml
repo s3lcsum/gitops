@@ -25,6 +25,7 @@ services:
       - "9000:9000"
     labels:
       traefik.enable: "true"
+      traefik.docker.network: proxy
       traefik.http.routers.authentik.rule: "Host(`auth.lake.dominiksiejak.pl`)"
 
   worker:

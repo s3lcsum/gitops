@@ -23,6 +23,7 @@ services:
       - metrics
     labels:
       traefik.enable: true
+      traefik.docker.network: proxy
       traefik.http.routers.n8n.rule: Host(`nodemation.lake.dominiksiejak.pl`)
 
 volumes:

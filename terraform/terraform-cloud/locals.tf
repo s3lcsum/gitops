@@ -37,6 +37,12 @@ locals {
       vcs_repo          = "s3lcsum/gitops"
       working_directory = "terraform/routeros"
     }
+    zitadel = {
+      name              = "gitops-zitadel"
+      description       = "Zitadel SSO and identity management"
+      vcs_repo          = "s3lcsum/gitops"
+      working_directory = "terraform/zitadel"
+    }
     terraform_cloud = {
       name              = "gitops-terraform-cloud"
       description       = "Terraform Cloud workspace and organization management"

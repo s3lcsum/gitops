@@ -38,6 +38,7 @@ services:
       - gluetun:/gluetun
     labels:
       traefik.enable: "true"
+      traefik.docker.network: proxy
       traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.lake.dominiksiejak.pl`)
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
 
@@ -50,6 +51,7 @@ services:
       - jackett_config:/config
     labels:
       traefik.enable: "true"
+      traefik.docker.network: proxy
       traefik.http.routers.jackett.rule: Host(`jackett.lake.dominiksiejak.pl`)
       traefik.http.services.jackett.loadbalancer.server.port: 9117
 
@@ -62,6 +64,7 @@ services:
       - prowlarr_config:/config
     labels:
       traefik.enable: "true"
+      traefik.docker.network: proxy
       traefik.http.routers.prowlarr.rule: Host(`prowlarr.lake.dominiksiejak.pl`)
       traefik.http.services.prowlarr.loadbalancer.server.port: 9696
 
@@ -97,6 +100,7 @@ services:
       - /media/NAS_Shared_Media/tv:/tv
     labels:
       traefik.enable: "true"
+      traefik.docker.network: proxy
 
   # 🔄 Subtitle management
   bazarr:
@@ -110,6 +114,7 @@ services:
       - /media/NAS_Shared_Media/movies:/movies
     labels:
       traefik.enable: "true"
+      traefik.docker.network: proxy
 
   # 📺 Media server
   jellyfin:

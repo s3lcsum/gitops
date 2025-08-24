@@ -13,9 +13,12 @@ resource "tfe_workspace" "workspaces" {
 
   working_directory = try(each.value.working_directory, null)
 
-  vcs_repo {
-    identifier     = each.value.vcs_repo
-    oauth_token_id = var.github_oauth_token_id
+  dynamic "vcs_repo" {
+    for_each = var.github_oauth_token_id != "" ? [1] : []
+    content {
+      identifier     = each.value.vcs_repo
+      oauth_token_id = var.github_oauth_token_id
+    }
   }
 
   auto_apply = false
