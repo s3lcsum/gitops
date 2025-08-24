@@ -1,0 +1,39 @@
+---
+globs: terraform/**/*.tf
+alwaysApply: false
+---
+# Terraform File Organization Guidelines
+
+## Required File Structure
+Always organize Terraform configurations with these specific files:
+
+- **`main.tf`** - Primary infrastructure resources and configuration
+- **`variables.tf`** - Variable declarations (especially for sensitive/secret values)
+- **`locals.tf`** - Local values and computed expressions (heavily used for single-environment setups)
+- **`providers.tf`** - Provider configurations with explicit version pins
+- **`outputs.tf`** - Output values for external consumption (only create if you need to expose values from state)
+- **`data.tf`** - Data source definitions
+- **`default.auto.tfvars`** - Default variable values (automatically loaded)
+- **`Makefile`** - Build automation with default targets (preferred over shell scripts)
+
+## Script and Documentation Preferences
+**❌ Avoid `.sh` scripts** - If you need to save instructions or setup commands, use `README.md` instead:
+- Documentation in README is more discoverable and maintainable
+- Shell scripts can become outdated and are hard to maintain
+- README instructions can include context and explanations
+- Use `Makefile` for automation tasks with proper default targets
+
+**✅ Use `Makefile` for automation:**
+- Define default targets for common operations
+- Include help target showing available commands
+- Keep commands simple and well-documented
+- Use `.PHONY` targets appropriately
+
+## File Organization Best Practices
+**Keep files focused and single-purpose:**
+- `main.tf` - Core infrastructure (instances, networks, storage)
+- `data.tf` - Data sources and lookups
+- `outputs.tf` - Values to expose (IDs, endpoints, connection strings; only create if you need to expose values from state)
+- `providers.tf` - Only provider configurations and terraform block
+
+**Avoid mixing concerns within files** - each file should have a clear, single responsibility.

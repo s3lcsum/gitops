@@ -1,0 +1,44 @@
+---
+globs: terraform/**/*.tf
+alwaysApply: false
+---
+# Terraform Resource Creation Best Practices
+
+## Resource Creation Best Practices
+**Always prefer `for_each` over multiple similar resources:**
+
+**✅ Preferred (using for_each):**
+```hcl
+resource "aws_security_group" "services" {
+  for_each = local.service_ports
+
+  name_prefix = "${each.key}-sg-"
+  description = "Security group for ${each.key}"
+
+  ingress {
+    from_port   = each.value.port
+    to_port     = each.value.port
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/8"]
+  }
+
+  tags = merge(local.common_tags, {
+    Service = each.key
+  })
+}
+```
+
+**❌ Avoid (multiple separate resources):**
+```hcl
+resource "aws_security_group" "web" {
+  # ... configuration
+}
+
+resource "aws_security_group" "api" {
+  # ... configuration
+}
+
+resource "aws_security_group" "database" {
+  # ... configuration
+}
+```

@@ -1,0 +1,44 @@
+---
+globs: stacks/**/compose.yaml
+alwaysApply: false
+---
+# Docker Compose Environment Variables Guidelines
+
+## Sensitive vs. Configuration Values:
+- **Use `env_file:`** for sensitive values (secrets, passwords, API keys, tokens)
+- **Use `environment:`** for simple configuration values (log levels, feature flags, public settings)
+
+## Environment File Documentation:
+- **Always provide `.env.example` files:** Every `.env` file must have a corresponding `.env.example` file
+- **Same keys, example values:** The `.env.example` should contain the same environment variable keys as the actual `.env` file, but with example/placeholder values instead of real sensitive data
+- **Clear documentation:** Use descriptive example values that show the expected format
+
+## Standardized Path Patterns:
+- **env_file paths:** Always use `/opt/{stack_name}/{service}.env`
+- **Volume mount paths:** Always use `/opt/{stack_name}/file.xxx`
+
+**Example:**
+```yaml
+services:
+  app:
+    environment:
+      - LOG_LEVEL=info
+      - DEBUG_MODE=false
+    env_file:
+      - /opt/mystack/app.env  # Contains sensitive data like API_KEY, DB_PASSWORD
+    volumes:
+      - /opt/mystack/config.yml:/app/config.yml
+```
+
+**Environment file examples:**
+```bash
+# app.env (actual file - not committed to git)
+API_KEY=sk-1234567890abcdef
+DB_PASSWORD=MyS3cur3P@ssw0rd
+JWT_SECRET=super-secret-jwt-key-here
+
+# app.env.example (committed to git)
+API_KEY=sk-your-api-key-here
+DB_PASSWORD=your-secure-database-password
+JWT_SECRET=your-jwt-secret-key
+```

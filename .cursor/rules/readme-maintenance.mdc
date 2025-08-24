@@ -1,0 +1,53 @@
+---
+globs: README.md
+alwaysApply: false
+---
+# README Maintenance Rules
+
+## Changelog updates
+
+- Always maintain a `Changelog` section in `README.md` and add a new dated entry whenever you make a meaningful update.
+- Start each entry with a markdown date header in the form `### DD.MM.YYYY` (day may be 1–2 digits).
+- Under the date, use short paragraphs and/or bullet lists. Bold for key terms is fine. Code fences are optional but uncommon.
+- Keep entries concise; multiple short paragraphs are acceptable when helpful. (a few sentences)
+- Record infrastructure/architecture/hardware updates here as well; do not create a separate section.
+- Use Markdown styling rarely.
+- Use language more like me - throw in some slang and keep it casual. You can freely use IT terminology.
+
+Example entry:
+```markdown
+### 7.07.2025
+
+Ditched Nginx Proxy Manager for Traefik as the reverse proxy and threw in CrowdSec for that sweet security vibe. Added mediabox stack to handle all my home media server needs. Kicked VictoriaMetrics to the curb since I'm all about that Grafana Cloud life now. Slapped Traefik labels on all the stack configs like a boss.
+
+### 25.05.2025
+
+Gave the Terraform code a quick refactor to cut down on the repetition drama. Also yeeted 'watchtower' - it's a solid tool, but I like doing updates manually, and RenovateBot's got my back for the rest.
+
+### 21.05.2025
+
+Finally got Google SSO working for Authentik with Terraform. But yeah, had to hack around in the UI for the flows/stages because they're a total pain to configure via Terraform. Like, seriously complicated stuff.
+
+### 20.05.2025
+
+Just refactored all the Portainer stacks so I don't have to deal with a million resources anymore. Threw everything into a single array. Thought that'd be the move before, but nah, it was kinda meh.
+
+### 18.05.2025
+
+Bailing on Portainer's GitOps thing that was auto-pulling stacks from this repo. The lag between commits and actual changes was driving me nuts. Plus, couldn't make any quick temporary changes in stacks. Way better to just run `terraform apply` and keep everything in one spot.
+
+### 17.05.2025
+
+Screwed up and deleted my authentik env vars by accident, so I thought I'd give authelia a whirl. Heard nothing but good vibes about it, and it's 100% configurable via YAML files. Seemed pretty promising, but I was kinda missing some features that worked perfectly out-of-the-box in authentik. Spent time configuring it, but ended up restoring authentik from backup anyway. Oh well!
+```
+
+## TODO tracking within README
+
+- If a change completes an item listed in a README TODO section, mark it as done in the same commit (e.g., `- [x] ...`).
+- If you made a change that wasn’t on the TODO list, create a new TODO item and mark it as completed with a short note like “(retroactively added)”.
+- Keep the TODO concise and action-oriented. Prefer short, verifiable items over broad goals.
+
+## Scope and exclusions
+
+- Public, but personal repository. Do not add sections about CONTRIBUTING or creating Pull Requests.
+- License is open; readers may use the code without contribution gating language.

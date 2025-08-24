@@ -26,25 +26,21 @@ provide a living reference for improvements. Contributions and suggestions are w
   - Storage + backups
 
 - **LXC Containers (on Proxmox):**
-  - Docker/Podman
-  - Pi-hole (deprecating)
+  - Docker
   - AdGuard
 
 - **Apps on Portainer:**
-  - [authentik](https://github.com/goauthentik/authentik)
+  - [ZITADEL](https://github.com/zitadel/zitadel)
   - [cloudflared](https://github.com/cloudflare/cloudflared)
   - [dozzle](https://github.com/amir20/dozzle)
-  - [homarr](https://github.com/ajnart/homarr) (dashboard for homelab services)
   - [netboot.xyz](https://github.com/netbootxyz/netboot.xyz)
   - [Traefik](https://github.com/traefik/traefik) (reverse proxy with CrowdSec security)
   - [Upsnap](https://github.com/seriousm4x/UpSnap)
   - [CUPS](https://github.com/OpenPrinting/cups)
   - [Uptime Kuma](https://github.com/louislam/uptime-kuma)
-  - [mktxp](https://github.com/akpw/mktxp)
   - [watchyourlan](https://github.com/aceberg/watchyourlan)
   - [alloy](https://github.com/grafana/alloy) (Grafana Alloy agent for logs/metrics)
   - mediabox (qBittorrent, Sonarr, Radarr, Jellyfin, etc. - media automation stack)
-  - [Grafana](https://github.com/grafana/grafana)
   - [Grafana Synthetic Monitoring Agent](https://github.com/grafana/synthetic-monitoring-agent)
     (I'm using Grafana Cloud for synthetic checks)
   - [n8n](https://github.com/n8n-io/n8n) (workflow automation platform)
@@ -78,156 +74,57 @@ provide a living reference for improvements. Contributions and suggestions are w
 ## 📁 Repository Structure
 
 ```
-├── /stacks/
-│   ├── alloy/                # Grafana Alloy agent
-│   ├── authentik/            # Authentik SSO
-│   ├── cloudflared/          # Cloudflare Tunnel
-│   ├── cups/                 # CUPS print server
-│   ├── dozzle/               # Dozzle log viewer
-│   ├── grafana-synthetic-agent/ # Grafana Synthetic Monitoring Agent
-│   ├── homarr/               # Homarr dashboard for homelab services
-│   ├── mediabox/             # Media automation stack (qBittorrent, Sonarr, Radarr, Jellyfin, etc.)
-│   ├── mktxp/                # Mikrotik Prometheus exporter
-│   ├── n8n/                  # n8n workflow automation platform
-│   ├── netbootxyz/           # Netboot.xyz PXE
-│   ├── postgres/             # PostgreSQL database server
-│   ├── traefik/              # Traefik reverse proxy with CrowdSec security
-│   ├── upsnap/               # Upsnap wake-on-LAN
-│   ├── uptime_kuma/          # Uptime Kuma monitoring
-│   └── watchyourlan/         # WatchYourLAN network scanner
+├── charts/                         # Helm charts (ArgoCD, Traefik, cert-manager, etc.)
+├── stacks/                         # Docker Compose stacks
+│   ├── alloy/
+│   ├── authentik/
+│   ├── cloudflared/
+│   ├── cups/
+│   ├── dozzle/
+│   ├── grafana-synthetic-agent/
+│   ├── mediabox/
+│   ├── n8n/
+│   ├── netbootxyz/
+│   ├── postgres/
+│   ├── traefik/
+│   ├── upsnap/
+│   ├── uptime_kuma/
+│   ├── watchyourlan/
+│   └── zitadel/
 │
-├── /terraform/
-│   ├── authentik/            # Authentik SSO infra
-│   ├── portainer/            # Portainer infra
-│   ├── proxmox/              # Proxmox infra
-│   └── routeros/             # RouterOS infra
+├── terraform/                     # Infrastructure as Code modules
+│   ├── backblaze/
+│   ├── netbox/
+│   ├── portainer/
+│   ├── proxmox/
+│   ├── routeros/
+│   ├── terraform-cloud/
+│   └── zitadel/
 │
-├── /.github/
-│   └── /workflows/           # GitHub Actions workflows
-│
-└── /.pre-commit-config.yaml  # Pre-commit hooks configuration
+└── README.md
 ```
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- **Proxmox VE** - Hypervisor for running containers and VMs
-- **Terraform** - Infrastructure as Code tool
-- **Docker** & **Docker Compose** - Container runtime and orchestration
-- **Portainer** - Docker management UI (deployed via Terraform)
-- **Pre-commit** - Git hooks for code quality (optional but recommended)
-
-### Setup
-
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd gitops
-   ```
-
-2. **Configure Terraform variables**:
-   - Copy `default.auto.tfvars` files in each terraform module
-   - Update variables according to your environment
-   - Set up authentication credentials for your providers
-
-3. **Set up pre-commit hooks** (optional but recommended):
-   ```bash
-   pre-commit install
-   ```
-
-3. **Deploy infrastructure**:
-   ```bash
-   # Deploy Proxmox infrastructure
-   cd terraform/proxmox
-   terraform init
-   terraform plan
-   terraform apply
-
-   # Deploy Portainer and stacks
-   cd ../portainer
-   terraform init
-   terraform plan
-   terraform apply
-
-   # Configure other modules as needed
-   cd ../authentik
-   terraform init
-   terraform apply
-   ```
-
-4. **Configure environment variables**:
-   - Each stack has `.env.example` files
-   - Copy to `.env` and configure according to your setup
-   - Update secrets and passwords
-
-### Usage
-
-- **Managing Stacks**: Use Portainer UI or Terraform to deploy/update stacks
-- **Monitoring**: Access services through Traefik reverse proxy
-- **Authentication**: Use Authentik for SSO across services
-- **Logs**: View container logs through Dozzle
-- **Metrics**: Monitor infrastructure through Grafana Cloud integration
-- **Workflow Automation**: Use n8n for automating tasks and integrations
-- **Database**: PostgreSQL provides persistent storage for applications
-
----
 
 ## Changelog
 
-### 29.01.2025
+### 23.08.2025
 
-**Container Runtime Switch:**
-- **Switching back from Podman to Docker:** Too many compatibility issues with Podman that work out-of-the-box with Docker. Moving back to Docker for better ecosystem support and fewer configuration headaches.
+Swapped Authentik with ZITADEL due to ongoing configuration issues. Despite limited documentation for ZITADEL, it's an actively growing project with promising potential.
+
+### 22.08.2025
+
+Switched back from Podman to Docker due to too many compatibility issues. Docker has better ecosystem support and fewer configuration headaches.
 
 ### 20.08.2025
 
-**Infrastructure Upgrade and Domain Migration:**
-- **Hardware Migration:** Deprecated old wally-1 terminal (Dell Wyse thin client) and migrated to new **lake-1** server
-  - New Hardware: Mini PC FIREBAT T8 Pro Plus Intel N100 16GB DDR5 / 512GB
-  - Significant performance improvement with modern Intel N100 processor and DDR5 memory
-- **Domain Migration:** Completed full domain migration from `wally.dominiksiejak.pl` to `lake.dominiksiejak.pl`
-  - Updated 25+ configuration files across Docker stacks, Helm charts, and Terraform modules
-  - Updated all Traefik routing, SSL certificates, DNS, and service discovery configurations
-  - Updated all monitoring, authentication, and automation service URLs
+Upgraded hardware by replacing old wally-1 terminal with new lake-1 server (Mini PC FIREBAT T8 Pro Plus Intel N100 16GB DDR5 / 512GB) for better performance. Also migrated domain from wally.dominiksiejak.pl to lake.dominiksiejak.pl, updating 25+ configuration files across Docker stacks, Helm charts, and Terraform modules. Updated all Traefik routing, SSL certificates, DNS, and service URLs.
 
 ### 31.07.2025
 
->>> VibeCoding started all that mess <<<
-Major infrastructure and development improvements:
-- **New Services Added:**
-  - Added **n8n** workflow automation platform for task automation
-  - Added **PostgreSQL** database server for persistent storage
-  - Added **Grafana Synthetic Monitoring Agent** for synthetic monitoring
-- **Development Tools:**
-  - Added **pre-commit hooks** for code quality and Terraform validation
-  - Added **GitHub Actions workflow** for automated pre-commit checks
-  - Enhanced CI/CD pipeline with parameterized tool versions
-- **Infrastructure Improvements:**
-  - Enhanced Traefik routing with middlewares and improved security
-  - Added Docker network resource configuration in Terraform
-  - Updated all Docker images to latest versions across services
-  - Enhanced stack configurations with healthchecks and secure routing
-  - Improved service management and configuration files
-- **Removed Services:**
-  - Removed **mktxp** stack (MikroTik Prometheus exporter)
-  - Removed **.cursorrules** file
-- **Configuration Updates:**
-  - Updated Homarr Traefik routing rule
-  - Fixed CUPS Traefik middleware configuration
-  - Enhanced environment variable management across stacks
-  - Updated repository structure documentation
+Major infrastructure improvements: added n8n for workflow automation, PostgreSQL for database storage, and Grafana Synthetic Monitoring Agent. Enhanced development tools with pre-commit hooks, GitHub Actions, and improved CI/CD pipeline. Improved Traefik routing and security, updated Docker images, added healthchecks. Removed mktxp stack and .cursorrules file. Updated various configurations and documentation.
 
 ### 7.07.2025
 
-Major infrastructure changes:
-- Replaced Nginx Proxy Manager with **Traefik** as the reverse proxy
-- Added **CrowdSec** security integration with Traefik
-- Added **mediabox** stack to start fun with home media server
-- Removed VictoriaMetrics stack (moved to Grafana Cloud)
-- Updated all stack configurations to use Traefik labels
+Replaced Nginx Proxy Manager with Traefik as the reverse proxy and added CrowdSec security integration. Added mediabox stack for home media server setup. Removed VictoriaMetrics stack since moving to Grafana Cloud. Updated all stack configurations to use Traefik labels.
 
 ### 25.05.2025
 
@@ -261,6 +158,7 @@ give authelia a shot. I've heard only good things about it, and it's fully
 configurable via YAML files. It seemed promising, but I felt like I was missing
 some options that worked perfectly out-of-the-box in authentik. I tried to
 configure it, but ended up restoring authentik from backup anyway.
+
 
 ## 🧭 Roadmap
 
@@ -350,139 +248,3 @@ configure it, but ended up restoring authentik from backup anyway.
   - [ ] Create Cloud VM instance for CloudLab (for redundancy, nice to have
         some services deployed online, right?)
   - [ ] Use separated subnets (create serveral subnets, so IoT devices will never have access to PC or phones)
-  - [x] Create diagram of the HomeLab Infrastructure
-
----
-
-## 🏗️ Infrastructure Architecture
-
-The following Mermaid diagram shows the relationships and dependencies between all components in the homelab:
-
-```mermaid
-graph TB
-    %% External Services
-    Internet[🌐 Internet]
-    Cloudflare[☁️ Cloudflare]
-    GrafanaCloud[📊 Grafana Cloud]
-
-    %% Network Infrastructure
-    Router[🔌 MikroTik hAP ac3<br/>Router/DHCP/DNS]
-    NAS[💾 Synology NAS<br/>2x4TB Storage]
-
-    %% Physical Servers
-    Wally1[🖥️ wally-1<br/>Dell Wyse Thin Client]
-    Edge1[🖥️ edge-1<br/>Dell PowerEdge R610<br/><i>mostly off</i>]
-
-    %% Proxmox Layer
-    ProxmoxWally[⚡ Proxmox VE<br/>wally-1]
-    ProxmoxEdge[⚡ Proxmox VE<br/>edge-1]
-
-    %% LXC Containers
-    PortainerLXC[📦 Portainer LXC<br/>192.168.89.253]
-    AdGuardLXC[🛡️ AdGuard LXC]
-
-    %% Docker Networks
-    ProxyNet[🔗 proxy network]
-    MetricsNet[📈 metrics network]
-    AuthentikNet[🔐 authentik network]
-
-    %% Core Services
-    Traefik[🚦 Traefik<br/>Reverse Proxy + SSL]
-    CrowdSec[🛡️ CrowdSec<br/>Security]
-    Authentik[🔐 Authentik<br/>SSO/Identity Provider]
-    AuthentikDB[(🗄️ PostgreSQL)]
-    AuthentikRedis[(📝 Redis)]
-
-    %% Dashboard & Monitoring
-    Homarr[🏠 Homarr<br/>Dashboard]
-    Dozzle[📋 Dozzle<br/>Log Viewer]
-    UptimeKuma[⏰ Uptime Kuma<br/>Monitoring]
-    Alloy[📊 Alloy<br/>Metrics/Logs Agent]
-
-    %% Utility Services
-    Cloudflared[☁️ Cloudflared<br/>Tunnel]
-    CUPS[🖨️ CUPS<br/>Print Server]
-    NetbootXYZ[💿 Netboot.xyz<br/>PXE Boot]
-    Upsnap[⚡ Upsnap<br/>Wake-on-LAN]
-    WatchYourLAN[👁️ WatchYourLAN<br/>Network Scanner]
-
-    %% Database & Automation
-    PostgreSQL[(🗄️ PostgreSQL<br/>Database)]
-    N8N[🤖 n8n<br/>Workflow Automation]
-
-    %% Media Stack
-    Mediabox[🎬 Mediabox<br/>qBittorrent, Sonarr<br/>Radarr, Jellyfin, etc.]
-
-    %% External Connections
-    Internet --> Router
-    Internet --> Cloudflare
-    Cloudflare --> Traefik
-
-    %% Physical Infrastructure
-    Router --> Wally1
-    Router --> Edge1
-    Router --> NAS
-
-    %% Proxmox Layer
-    Wally1 --> ProxmoxWally
-    Edge1 --> ProxmoxEdge
-
-    %% LXC Containers
-    ProxmoxWally --> PortainerLXC
-    ProxmoxWally --> AdGuardLXC
-
-    %% NAS Mounts
-    NAS -.-> PortainerLXC
-    NAS -.-> Mediabox
-
-    %% Docker Networks
-    PortainerLXC --> ProxyNet
-    PortainerLXC --> MetricsNet
-    PortainerLXC --> AuthentikNet
-
-    %% Core Services Connections
-    ProxyNet --> Traefik
-    Traefik --> CrowdSec
-
-    %% Authentication Flow
-    AuthentikNet --> Authentik
-    Authentik --> AuthentikDB
-    Authentik --> AuthentikRedis
-    ProxyNet --> Authentik
-
-    %% Services connected to Proxy Network (via Traefik)
-    ProxyNet --> Homarr
-    ProxyNet --> Dozzle
-    ProxyNet --> UptimeKuma
-    ProxyNet --> CUPS
-    ProxyNet --> Upsnap
-    ProxyNet --> WatchYourLAN
-    ProxyNet --> Mediabox
-    ProxyNet --> NetbootXYZ
-    ProxyNet --> N8N
-
-    %% Services connected to Metrics Network
-    MetricsNet --> Traefik
-    MetricsNet --> Authentik
-    MetricsNet --> Alloy
-    MetricsNet --> PostgreSQL
-
-    %% External Service Connections
-    Cloudflared --> Cloudflare
-    Alloy --> GrafanaCloud
-
-    %% Styling
-    classDef external fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef infrastructure fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef core fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef service fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef network fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef storage fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-
-    class Internet,Cloudflare,GrafanaCloud external
-    class Router,NAS,Wally1,Edge1,ProxmoxWally,ProxmoxEdge,PortainerLXC,AdGuardLXC infrastructure
-    class Traefik,CrowdSec,Authentik core
-    class Homarr,Dozzle,UptimeKuma,Alloy,Cloudflared,CUPS,NetbootXYZ,Upsnap,WatchYourLAN,Mediabox,N8N service
-    class ProxyNet,MetricsNet,AuthentikNet network
-    class AuthentikDB,AuthentikRedis,PostgreSQL storage
-```

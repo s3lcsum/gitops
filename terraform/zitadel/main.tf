@@ -15,7 +15,7 @@ resource "zitadel_human_user" "users" {
   last_name  = each.value.last_name
 
   is_email_verified = true
-  initial_password  = "Password1!"
+  initial_password  = var.initial_password
 }
 
 resource "zitadel_org_member" "user_members" {
@@ -47,10 +47,10 @@ resource "zitadel_project" "projects" {
 
   org_id                   = zitadel_org.home_lab.id
   name                     = each.value.name
-  project_role_assertion   = each.value.project_role_assertion
-  project_role_check       = each.value.project_role_check
-  has_project_check        = each.value.has_project_check
-  private_labeling_setting = each.value.private_labeling_setting
+  project_role_assertion   = lookup(each.value, "project_role_assertion", null)
+  project_role_check       = lookup(each.value, "project_role_check", null)
+  has_project_check        = lookup(each.value, "has_project_check", null)
+  private_labeling_setting = lookup(each.value, "private_labeling_setting", null)
 }
 
 # OIDC Applications
@@ -58,13 +58,14 @@ resource "zitadel_application_oidc" "oidc_apps" {
   for_each = local.oidc_applications
 
   org_id                    = zitadel_org.home_lab.id
-  project_id                = zitadel_project.projects[each.value.project_key].id
+  project_id                = zitadel_project.projects["homelab"].id
   name                      = each.value.name
   redirect_uris             = each.value.redirect_uris
-  response_types            = each.value.response_types
-  grant_types               = each.value.grant_types
+  response_types            = try(each.value.response_types, ["OIDC_RESPONSE_TYPE_CODE"])
+  grant_types               = try(each.value.grant_types, ["OIDC_GRANT_TYPE_AUTHORIZATION_CODE", "OIDC_GRANT_TYPE_REFRESH_TOKEN"])
   post_logout_redirect_uris = each.value.post_logout_redirect_uris
-  app_type                  = each.value.app_type
+  app_type                  = try(each.value.app_type, "OIDC_APP_TYPE_WEB")
+  access_token_type         = try(each.value.access_token_type, "OIDC_TOKEN_TYPE_JWT")
 }
 
 # Security Policies
@@ -87,6 +88,7 @@ resource "zitadel_login_policy" "homelab_login_policy" {
   mfa_init_skip_lifetime        = "720h0m0s" # 30 days
   multi_factor_check_lifetime   = "12h0m0s"
   second_factor_check_lifetime  = "18h0m0s"
+
   # There's a bug right now with IDP from ZITADEL app
   # idps = [zitadel_org_idp_google.google_sso.id]
 }

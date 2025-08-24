@@ -1,0 +1,23 @@
+---
+globs: terraform/**/*.tf
+alwaysApply: false
+---
+# Terraform Module Creation Guidelines
+
+## Module Creation Guidelines
+**Only create modules when:**
+- Main.tf would exceed 100 lines
+- The module requires multiple resources (3+)
+- Logic is truly reusable across environments
+- Complexity justifies the abstraction
+
+**❌ Don't create modules for:**
+- Single resource abstractions
+- Simple configurations under 100 lines
+- One-off resources that won't be reused
+
+## Module Placement and Usage
+- Place shared modules under `terraform/modules/<module_name>`.
+- In root modules, reference local modules with `source = "../modules/<module_name>"`.
+- Keep the root module thin: pass variables in, compose modules, and expose outputs.
+- Document module inputs/outputs clearly in `README.md` inside the module directory.

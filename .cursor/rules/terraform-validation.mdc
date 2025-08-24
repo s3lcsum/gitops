@@ -1,0 +1,74 @@
+---
+globs: terraform/**/*.tf
+alwaysApply: false
+---
+# Terraform Code Validation and Formatting Requirements
+
+## Provider Version Management
+**NEVER use wildcard versions** - always specify explicit version numbers:
+
+**✅ Correct:**
+```hcl
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.40.0"  # Pin exact provider version for reproducibility
+    }
+  }
+}
+```
+
+**❌ Incorrect:**
+```hcl
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"  # Never use version ranges
+    }
+  }
+}
+```
+
+## Code Validation and Formatting Requirements
+**ALWAYS validate and format code after any terraform modifications:**
+
+### Required Validation Steps:
+1. **Format Check**: Run `terraform fmt` to ensure consistent formatting
+2. **Syntax Validation**: Run `terraform validate` to check for syntax and configuration errors
+3. **Plan Validation**: Run `terraform plan` to verify resource configurations are valid
+
+### Common Commands to Run:
+```bash
+# Format your code
+terraform fmt -recursive
+
+# Validate syntax and configuration
+terraform validate
+
+# Check if changes are valid (optional but recommended)
+terraform plan
+```
+
+### Resource/Data Source Validation:
+**⚠️ CRITICAL**: Always validate that resource and data source options match the provider version being used:
+
+**✅ Always verify provider documentation:**
+- Resource arguments may change between versions
+- Deprecated arguments may be removed
+- New required arguments may be added
+- Data source outputs may be modified
+
+**❌ Common mistakes to avoid:**
+- Using deprecated resource arguments
+- Missing required arguments in newer provider versions
+- Incorrect argument names due to API changes
+- Using data source outputs that no longer exist
+
+**📋 Validation checklist:**
+- [ ] Run `terraform validate` after any code changes
+- [ ] Check provider documentation for version-specific changes
+- [ ] Verify all required arguments are present
+- [ ] Ensure no deprecated arguments are used
+- [ ] Test with `terraform plan` to catch configuration errors

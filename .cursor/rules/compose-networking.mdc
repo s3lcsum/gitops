@@ -1,0 +1,69 @@
+---
+globs: stacks/**/compose.yaml
+alwaysApply: false
+---
+# Docker Compose Networking Guidelines
+
+## LAN context (for reference when wiring stacks)
+- Primary LAN: 192.168.89.0/24 (e.g., Portainer LXC 192.168.89.253)
+- Auxiliary/IoT LAN: 192.168.8.0/24
+- Addressing policy (from README):
+  - .0–.9: network devices
+  - .10–.99: static IPs
+  - .100–.199: DHCP
+  - .200–.254: homelab interfaces
+- DHCP + NTP: handled on RouterOS
+
+This section is contextual; Compose networks remain Docker bridges and do not map to these LAN subnets.
+
+## Standard networks
+- proxy: shared external network for Traefik-exposed services
+- metrics (optional): shared external network for telemetry between services (e.g., Alloy, Traefik, DB)
+- <stack>_net: stack-local internal network for intra-stack communication
+
+Naming rules:
+- Use short, lowercase names; prefer shared names only when cross-stack traffic is required.
+- Keep `proxy` reserved for Traefik routing; avoid placing databases there.
+
+## Rules
+- Services exposed via Traefik must join `proxy` and should not publish `ports:` (use Traefik instead).
+- If a service joins multiple networks and is routed by Traefik, set `traefik.docker.network: proxy`.
+- Use `expose:` for container-to-container ports; avoid `ports:` unless host-level access is explicitly needed.
+- Keep databases and sensitive backends off `proxy`; place them on a stack-local `<stack>_net` and/or `metrics` if needed.
+- Define shared networks (`proxy`, `metrics`) as external to avoid duplicate creation across stacks.
+
+## Examples
+
+Minimal service behind Traefik:
+```yaml
+services:
+  myservice:
+    image: ghcr.io/example/myservice:latest
+    labels:
+      traefik.enable: true
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+```
+
+Service on proxy + metrics (explicit Traefik network):
+```yaml
+services:
+  myservice:
+    image: ghcr.io/example/myservice:latest
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+    networks:
+      - proxy
+      - metrics
+
+networks:
+  proxy:
+    external: true
+  metrics:
+    external: true
+```

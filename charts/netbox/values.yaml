@@ -38,8 +38,6 @@ netbox:
   # NetBox configuration
   netboxConfiguration:
     # Basic settings
-    allowedHosts:
-      - "*"
     debug: false
 
     # Database configuration (uses external PostgreSQL)

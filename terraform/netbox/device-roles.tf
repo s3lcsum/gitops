@@ -3,7 +3,7 @@ resource "netbox_device_role" "hypervisor" {
   name        = "Hypervisor"
   slug        = "hypervisor"
   description = "Proxmox hypervisor nodes"
-  color       = "2196f3"
+  color_hex   = "2196f3"
   vm_role     = false
 
   tags = [
@@ -16,7 +16,7 @@ resource "netbox_device_role" "container_host" {
   name        = "Container Host"
   slug        = "container-host"
   description = "LXC container host"
-  color       = "4caf50"
+  color_hex   = "4caf50"
   vm_role     = true
 
   tags = [
@@ -29,7 +29,7 @@ resource "netbox_device_role" "virtual_machine" {
   name        = "Virtual Machine"
   slug        = "virtual-machine"
   description = "Virtual machine instances"
-  color       = "ff9800"
+  color_hex   = "ff9800"
   vm_role     = true
 
   tags = [
@@ -41,7 +41,7 @@ resource "netbox_device_role" "kubernetes_node" {
   name        = "Kubernetes Node"
   slug        = "kubernetes-node"
   description = "Kubernetes cluster nodes"
-  color       = "326ce5"
+  color_hex   = "326ce5"
   vm_role     = true
 
   tags = [
@@ -54,7 +54,7 @@ resource "netbox_device_role" "network_device" {
   name        = "Network Device"
   slug        = "network-device"
   description = "Network switches, routers, and access points"
-  color       = "607d8b"
+  color_hex   = "607d8b"
   vm_role     = false
 
   tags = [
@@ -67,7 +67,7 @@ resource "netbox_device_role" "storage_device" {
   name        = "Storage Device"
   slug        = "storage-device"
   description = "NAS and storage systems"
-  color       = "795548"
+  color_hex   = "795548"
   vm_role     = false
 
   tags = [
@@ -80,7 +80,7 @@ resource "netbox_device_role" "dns_server" {
   name        = "DNS Server"
   slug        = "dns-server"
   description = "DNS and DHCP servers"
-  color       = "00bcd4"
+  color_hex   = "00bcd4"
   vm_role     = true
 
   tags = [
@@ -93,7 +93,7 @@ resource "netbox_device_role" "database_server" {
   name        = "Database Server"
   slug        = "database-server"
   description = "Database servers"
-  color       = "3f51b5"
+  color_hex   = "3f51b5"
   vm_role     = true
 
   tags = [

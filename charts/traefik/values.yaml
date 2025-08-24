@@ -160,8 +160,8 @@ staticRoutes:
     - name: mikrotik
       host: "router.lake.dominiksiejak.pl"
       service: "http://192.168.89.1/"
-      insecure: false# Tails
-cale configuration
+      insecure: false
+# Tailscale configuration
 tailscale:
   enabled: true
   # Tailscale domain suffix (your tailnet name)

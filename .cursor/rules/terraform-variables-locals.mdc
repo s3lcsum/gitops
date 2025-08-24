@@ -1,0 +1,53 @@
+---
+globs: terraform/**/*.tf
+alwaysApply: false
+---
+# Terraform Variables and Locals Guidelines
+
+## Variable Usage Guidelines
+**Use `variables.tf` primarily for sensitive/secret values:**
+- API keys and tokens
+- Database passwords
+- Private keys and certificates
+- Access credentials
+- Internal URLs/endpoints
+
+**✅ Example:**
+```hcl
+variable "database_password" {
+  description = "Database master password"
+  type        = string
+  sensitive   = true
+}
+
+variable "api_secret_key" {
+  description = "API authentication secret"
+  type        = string
+  sensitive   = true
+}
+```
+
+## Local Values Strategy
+**Since this is single-environment focused, heavily use `locals.tf`:**
+- Environment-specific configurations
+- Computed resource names and identifiers
+- Common tags and metadata
+- Derived values from variables
+- Resource configuration templates
+
+**✅ Example:**
+```hcl
+locals {
+  environment = "production"
+  region      = "us-west-2"
+
+  common_tags = {
+    Environment = local.environment
+    Project     = "homelab"
+    ManagedBy   = "terraform"
+  }
+
+  resource_prefix = "${local.environment}-${local.region}"
+  database_name   = "${local.resource_prefix}-postgres"
+}
+```

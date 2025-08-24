@@ -1,5 +1,5 @@
 ---
-globs: **/providers.tf
+globs: terraform/**/providers.tf
 alwaysApply: false
 ---
 # Terraform providers.tf Structure Guidelines
@@ -11,7 +11,7 @@ alwaysApply: false
 ## Required Template (use as baseline)
 ```hcl
 terraform {
-  required_version = ">= 1.11.0" # hardcoded min terraform version
+  required_version = ">= 1.11.0" # minimum supported Terraform version
 
   required_providers {
     zitadel = {
@@ -56,7 +56,7 @@ required_providers {
 
 ## Terraform Cloud Workspace
 - Use the workspace naming pattern: `gitops-{submodule}`.
-- Do not include tags or other metadata here; keep this block minimal.
+- Do not include tags or other metadata here; keep this block minimal and tag-free.
 
 ## Validation
 - After edits, run:

@@ -1,0 +1,45 @@
+---
+globs: stacks/**/compose.yaml
+alwaysApply: false
+---
+# Docker Compose Traefik Configuration Guidelines
+
+## Minimal Traefik Labels:
+- **Always include:** `traefik.enable: true`
+- **Only add hostname label** if different from default pattern: `{service}.lake.dominiksiejak.pl`
+- **Required network:** If using Traefik, always include the `proxy` network
+- **Multiple networks:** If attached to more than one network, add `traefik.docker.network: proxy`
+- **Use object format** for labels with key-value pairs
+
+**Example with default hostname (no extra label needed):**
+```yaml
+services:
+  myservice:
+    labels:
+      traefik.enable: true
+    networks:
+      - proxy
+```
+
+**Example with custom hostname:**
+```yaml
+services:
+  myservice:
+    labels:
+      traefik.enable: true
+      traefik.http.routers.myservice.rule: Host(`custom.lake.dominiksiejak.pl`)
+    networks:
+      - proxy
+```
+
+**Example with multiple networks (explicit Traefik network):**
+```yaml
+services:
+  myservice:
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+    networks:
+      - proxy
+      - internal
+```

@@ -37,3 +37,9 @@ variable "google_sso" {
   })
   sensitive = true
 }
+
+variable "initial_password" {
+  description = "Default initial password for newly created users"
+  type        = string
+  sensitive   = true
+}
