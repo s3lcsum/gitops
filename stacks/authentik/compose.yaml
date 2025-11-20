@@ -1,7 +1,7 @@
 # github.com/s3lcsum/gitops/stacks/authentik/compose.yaml
 
 x-defaults: &defaults
-  image: ghcr.io/goauthentik/server:2025.6.4
+  image: ghcr.io/goauthentik/server:2025.10.2
   environment:
     AUTHENTIK_LOG_LEVEL: "debug"
     AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
