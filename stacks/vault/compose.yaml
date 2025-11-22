@@ -1,0 +1,67 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/vault/compose.yaml
+
+services:
+  vault:
+    image: hashicorp/vault
+    container_name: vault
+    restart: unless-stopped
+    environment:
+      VAULT_ADDR: http://127.0.0.1:8200
+      VAULT_API_ADDR: http://127.0.0.1:8200
+      VAULT_CLUSTER_ADDR: http://127.0.0.1:8201
+      VAULT_LOG_LEVEL: debug
+      VAULT_LOCAL_CONFIG: >-
+        {
+          "backend": {
+              "raft": {
+                  "path": "/vault/data"
+              }
+          },
+          "listener": {
+              "tcp": {
+                  "address": "0.0.0.0:8200",
+                  "tls_disable": "1"
+              }
+          },
+          "seal": {
+              "gcpckms": {
+                  "project": "dominiksiejak",
+                  "region": "global",
+                  "key_ring": "vault-keyring",
+                  "crypto_key": "vault-auto-unseal",
+                  "credentials": "/vault/data/config/vault-service-account.json"
+              }
+          },
+          "telemetry": {
+              "disable_hostname": true,
+              "prometheus_retention_time": "30s",
+              "enable_hostname_label": true
+          },
+          "ui": true,
+          "default_lease_ttl": "168h",
+          "max_lease_ttl": "720h",
+          "disable_mlock": true
+        }
+    volumes:
+      - data:/vault/data
+    networks:
+      - proxy
+      - database
+      - metrics
+    command: server
+    cap_add:
+      - IPC_LOCK
+    labels:
+      traefik.enable: true
+      traefik.http.services.vault.loadbalancer.server.port: 8200
+
+networks:
+  proxy:
+    external: true
+  database:
+    external: true
+  metrics:
+    external: true
+
+volumes:
+  data:

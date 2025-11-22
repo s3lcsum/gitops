@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-set -e
 
-# Function to create user and database
+# 🛠️ Function to create user and database
 setup_user_and_database() {
     local username=$1
     local password=$2
     local db_name=$3
 
-    echo "Setting up $username user and database..."
+    echo "🔧 Setting up user: $username | database: $db_name"
     PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --host postgres --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
         -- Create user if not exists, update password if exists
         DO \$\$
@@ -24,17 +23,40 @@ setup_user_and_database() {
         SELECT 'CREATE DATABASE ${db_name} OWNER ${username}'
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${db_name}')\gexec
 EOSQL
+    echo "✅ Successfully configured: $username → $db_name"
 }
 
-echo "Starting PostgreSQL database initialization..."
+echo "🚀 Starting PostgreSQL database initialization..."
 
-# Setup n8n user and database
-setup_user_and_database "${N8N_DB_USER}" "${N8N_DB_PASSWORD}" "${N8N_DB_NAME}"
+# 🔍 Auto-discover all DBINIT_*_USER environment variables
+services_found=0
 
-# Setup authentik user and database
-setup_user_and_database "${AUTHENTIK_DB_USER}" "${AUTHENTIK_DB_PASSWORD}" "${AUTHENTIK_DB_NAME}"
+for user_var in $(env | grep "^DBINIT_.*_USER=" | cut -d'=' -f1); do
+    # Extract service name from DBINIT_<SERVICE>_USER
+    service_name=$(echo "$user_var" | sed 's/^DBINIT_//; s/_USER$//')
 
-# Setup zitadel user and database
-setup_user_and_database "${ZITADEL_DB_USER}" "${ZITADEL_DB_PASSWORD}" "${ZITADEL_DB_NAME}"
+    # Get variable values
+    password_var="DBINIT_${service_name}_PASSWORD"
+    name_var="DBINIT_${service_name}_NAME"
+    user_value=$(eval echo \$${user_var})
+    password_value=$(eval echo \$${password_var})
+    name_value=$(eval echo \$${name_var})
 
-echo "PostgreSQL database initialization completed successfully!"
+    # Check if all required variables are set
+    if [[ -n "$user_value" && -n "$password_value" && -n "$name_value" ]]; then
+        echo "📦 Found service: $service_name"
+        setup_user_and_database "$user_value" "$password_value" "$name_value"
+        ((services_found++))
+    else
+        echo "⚠️  Incomplete config for $service_name:"
+        echo "   👤 User: ${user_value:-❌ MISSING}"
+        echo "   🔐 Password: ${password_value:+✅ SET}${password_value:-❌ MISSING}"
+        echo "   📁 Database: ${name_value:-❌ MISSING}"
+    fi
+done
+
+if [ $services_found -eq 0 ]; then
+    echo "😴 No database services found with DBINIT_*_USER pattern"
+else
+    echo "🎉 PostgreSQL initialization completed! ($services_found services configured)"
+fi

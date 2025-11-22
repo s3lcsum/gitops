@@ -1,38 +1,44 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/netbootxyz/compose.yaml
 
-# github.com/s3lcsum/gitops/stacks/netbootxyz/compose.yaml
+x-defaults: &defaults
+  restart: unless-stopped
+  networks:
+    - proxy
+  labels:
+    traefik.enable: true
 
 services:
   netbootxyz:
+    <<: *defaults
     image: ghcr.io/netbootxyz/netbootxyz:latest
     container_name: netbootxyz
-    networks:
-      - proxy
+    ports:
+      - "69:69/udp"
+    volumes:
+      - config:/config
+      - assets:/assets
     labels:
       traefik.enable: "true"
-      traefik.http.services.netbootxyz.loadbalancer.server.port: 3111
-    volumes:
-      - netbootxyz-config:/config
-      - netbootxyz-assets:/assets
+      traefik.http.services.netbootxyz.loadbalancer.server.port: 3000
+
+  idrac6:
+    container_name: idrac6
+    image: domistyle/idrac6
+    restart: always
+    environment:
+      - IDRAC_HOST=192.168.89.210
+      - IDRAC_USER=${IDRAC_USER:-root}
+      - IDRAC_PASSWORD=${IDRAC_PASSWORD:-calvin}
     ports:
-      - 3111:3000
-      - 69:69/udp
-
-  # Optional: iDRAC6 Controller for legacy console access without Java install
-  # idrac6:
-  #   container_name: idrac6
-  #   image: domistyle/idrac6
-  #   restart: always
-  #   environment:
-  #     - IDRAC_HOST=192.168.0.1
-  #     - IDRAC_USER=${IDRAC_USER:-root}
-  #     - IDRAC_PASSWORD=${IDRAC_PASSWORD:-calvin}
-  #   ports:
-  #     - "5800:5800"  # Web-based console (VNC over noVNC)
-
-volumes:
-  netbootxyz-config:
-  netbootxyz-assets:
+      - "5800:5800"  # Web-based console (VNC over noVNC)
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.idrac6.rule: Host(`idrac.lake.dominiksiejak.pl`)
 
 networks:
   proxy:
     external: true
+
+volumes:
+  config:
+  assets:

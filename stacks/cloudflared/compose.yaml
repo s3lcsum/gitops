@@ -1,10 +1,10 @@
-
-# github.com/s3lcsum/gitops/stacks/cloudflared/compose.yaml
+# https://github.com/s3lcsum/gitops/blob/main/stacks/cloudflared/compose.yaml
 
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
-    command: tunnel run
+    restart: unless-stopped
     env_file:
       - /opt/cloudflared/cloudflared.env
+    command: tunnel run

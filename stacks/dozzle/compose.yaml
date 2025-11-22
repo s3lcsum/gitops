@@ -1,16 +1,16 @@
-
-# github.com/s3lcsum/gitops/stacks/dozzle/compose.yaml
+# https://github.com/s3lcsum/gitops/blob/main/stacks/dozzle/compose.yaml
 
 services:
   dozzle:
     image: amir20/dozzle:latest
     container_name: dozzle
-    networks:
-      - proxy
+    restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - proxy
     labels:
-      traefik.enable: "true"
+      traefik.enable: true
 
 networks:
   proxy:

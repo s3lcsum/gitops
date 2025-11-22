@@ -1,60 +1,49 @@
-
-# github.com/s3lcsum/gitops/stacks/postgres/compose.yaml
+# https://github.com/s3lcsum/gitops/blob/main/stacks/postgres/compose.yaml
 
 services:
   postgres:
     image: postgres:17
     container_name: postgres
-    networks:
-      - database
-      - metrics
+    restart: always
     env_file:
       - /opt/postgres/postgres.env
     volumes:
       - data:/var/lib/postgresql/data
+    networks:
+      - database
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
 
-  postgres-init:
+  init:
     image: postgres:17
     container_name: postgres-init
-    restart: "no"
+    restart: no
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - /opt/postgres/init.sh:/init.sh
+      - /opt/postgres/postgres.env:/postgres.env
     networks:
       - database
-    env_file:
-      - /opt/postgres/postgres.env
-    volumes:
-      - /opt/postgres/init.sh:/docker-entrypoint-initdb.d/init.sh
-    command: ["sh", "-c", "/docker-entrypoint-initdb.d/init.sh"]
-    # TODO: Check if this file watches are even working
-    develop:
-      watch:
-        - action: sync+restart
-          path: /opt/postgres/init.sh
-          target: /docker-entrypoint-initdb.d/init.sh
+    command: ["sh", "-c", "chmod +x /init.sh && set -a && . /postgres.env && set +a && /init.sh"]
 
   adminer:
     image: adminer:latest
     container_name: adminer
+    restart: unless-stopped
     environment:
       ADMINER_DEFAULT_SERVER: postgres
     networks:
-      - database
       - proxy
-    ports:
-      - 8999:8080
+      - database
     labels:
-      traefik.enable: "true"
-      traefik.docker.network: proxy
-      # TODO: I guess traefk by default tries to use https, but we want http here!
-      traefik.http.services.adminer.loadbalancer.server.url: "http://adminer:8080"
+      traefik.enable: true
 
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest
     container_name: postgres-exporter
+    restart: unless-stopped
     env_file:
       - /opt/postgres/postgres.env
     networks:

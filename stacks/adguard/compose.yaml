@@ -1,0 +1,35 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/adguard/compose.yaml
+
+x-defaults: &defaults
+  restart: unless-stopped
+
+services:
+  adguard:
+    <<: *defaults
+    image: adguard/adguardhome:latest
+    container_name: adguard
+    env_file:
+      - /opt/adguard/adguard.env
+    volumes:
+      - data:/opt/adguardhome/work
+      - conf:/opt/adguardhome/conf
+    networks:
+      - proxy
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp" # DHCP server
+      - "68:68/tcp"
+      - "68:68/udp"
+    labels:
+      traefik.enable: true
+      traefik.http.services.adguard.loadbalancer.server.port: 3000
+      traefik.http.routers.adguard.rule: Host(`adguard.lake.dominiksiejak.pl`) || Host(`adguard.hello.dominiksiejak.pl`)
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  data:
+  conf:

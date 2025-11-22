@@ -30,8 +30,9 @@ resource "portainer_docker_network" "networks" {
 
 # This is always been created along with portainer.service
 import {
-  to = portainer_docker_network.networks["proxy"]
-  id = "${var.endpoint_id}:proxy"
+  for_each = toset(local.networks)
+  to = portainer_docker_network.networks[each.value]
+  id = "${var.endpoint_id}:${each.value}"
 }
 
 resource "portainer_stack" "stacks" {

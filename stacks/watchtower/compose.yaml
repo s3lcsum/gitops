@@ -1,0 +1,31 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/watchtower/compose.yaml
+
+services:
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    env_file:
+      - /opt/watchtower/watchtower.env
+    environment:
+      WATCHTOWER_CLEANUP: true
+      WATCHTOWER_INCLUDE_STOPPED: true
+      WATCHTOWER_REVIVE_STOPPED: false
+      WATCHTOWER_DEBUG: false
+      WATCHTOWER_MONITOR_ONLY: false
+      WATCHTOWER_RUN_ONCE: false
+      WATCHTOWER_NOTIFICATIONS: email
+      WATCHTOWER_NOTIFICATION_EMAIL_FROM_HEADER: X-Watchtower-Sender
+      WATCHTOWER_NO_STARTUP_MESSAGE: true
+      WATCHTOWER_SCHEDULE: "0 0 9 * * *" # Run at 9:00 AM every day (cron expression in 6 fields)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - proxy
+      - metrics
+
+networks:
+  proxy:
+    external: true
+  metrics:
+    external: true

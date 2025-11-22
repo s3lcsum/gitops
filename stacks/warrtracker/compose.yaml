@@ -1,0 +1,26 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/warrtracker/compose.yaml
+
+services:
+  warrtracker:
+    image: ghcr.io/sassanix/warracker/main:latest
+    container_name: warrtracker
+    restart: unless-stopped
+    env_file:
+      - /opt/warrtracker/warrtracker.env
+    volumes:
+      - uploads:/data/uploads
+    networks:
+      - proxy
+      - database
+    labels:
+      traefik.enable: true
+
+networks:
+  proxy:
+    external: true
+  database:
+    external: true
+
+volumes:
+  uploads:
+

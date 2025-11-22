@@ -7,6 +7,13 @@ entryPoints:
   web:
     address: ":80"
     asDefault: false
+    http:
+      middlewares:
+        - redirect-to-https@file
+        - crowdsec-bouncer@file
+        - secure-headers@file
+        - rate-limit@file
+        - error-pages-middleware@docker
 
   websecure:
     address: ":443"
@@ -14,14 +21,17 @@ entryPoints:
     http3: {}
     http:
       middlewares:
+        - crowdsec-bouncer@file
         - secure-headers@file
         - rate-limit@file
+        - error-pages-middleware@docker
       tls:
         certResolver: letsencrypt
         domains:
-          - main: lake.dominiksiejak.pl
+          - main: dominiksiejak.pl
             sans:
               - '*.lake.dominiksiejak.pl'
+              - '*.hello.dominiksiejak.pl'
 
   traefik:
     address: ":8080"
@@ -40,6 +50,7 @@ ping: {}
 providers:
   docker:
     exposedByDefault: false
+    network: proxy
     defaultRule: "Host(`{{ .ContainerName }}.lake.dominiksiejak.pl`)"
   file:
     filename: /etc/traefik/dynamic.yaml
@@ -68,3 +79,9 @@ metrics:
       - 0.3
       - 1.2
       - 5.0
+
+experimental:
+  plugins:
+    crowdsec-bouncer-traefik-plugin:
+      moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
+      version: "v1.4.4"

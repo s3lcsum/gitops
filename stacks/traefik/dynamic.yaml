@@ -8,25 +8,68 @@ http:
 
     secure-headers:
       headers:
-        frameDeny: true
         browserXssFilter: true
         contentTypeNosniff: true
-        stsSeconds: 31536000
+        customFrameOptionsValue: "SAMEORIGIN"
+        customResponseHeaders:
+          server: ""
+          x-powered-by: ""
+        forceSTSHeader: true
+        frameDeny: true
+        permissionsPolicy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
+        referrerPolicy: "strict-origin-when-cross-origin"
         stsIncludeSubdomains: true
         stsPreload: true
-        customFrameOptionsValue: "SAMEORIGIN"
-        referrerPolicy: "strict-origin-when-cross-origin"
-        permissionsPolicy: "geolocation=(), microphone=(), camera=()"
-        forceSTSHeader: true
+        stsSeconds: 63072000  # 2 years, recommended for HSTS preload
 
     rate-limit:
       rateLimit:
-        average: 100
-        burst: 50
+        average: 500
+        burst: 200
+
+    crowdsec-bouncer:
+      plugin:
+        crowdsec-bouncer-traefik-plugin:
+          enabled: true
+          crowdsecLapiUrl: "http://crowdsec:8080"
+          crowdsecLapiKey: "UcZOxeahJ/+uDvsYdCA+Y/a15iTDlyCzK6em4seCGEI"
+          forwardedHeadersCustomName: "X-Forwarded-For"
+          forwardedHeadersTrustedIPs:
+            - "127.0.0.1/32"
+            - "10.0.0.0/8"
+            - "172.16.0.0/12"
+            - "192.168.89.0/24"
+          clientTrustedIPs:
+            - "127.0.0.1/32"
+            - "10.0.0.0/8"
+            - "172.16.0.0/12"
+            - "192.168.89.0/24"
+          remediation:
+            ban:
+              enabled: true
+              defaultRemediation: ban
+            captcha:
+              enabled: false
+          logLevel: "INFO"
 
   # Routers
   routers:
-    # Synology HTTPS Passthrough
+    redirect-to-https:
+      rule: "HostRegexp(`{host:.+}`)"
+      priority: 1 # Lower priority to catch-all, but won't overwrite other routers
+      entryPoints:
+        - web
+      middlewares:
+        - error-pages-middleware@docker
+      service: error-pages-service@docker
+
+    block-external-ip:
+      rule: "HostRegexp(`{host:.+}`)"
+      priority: 1 # Lower priority to catch-all, but won't overwrite other routers
+      entryPoints:
+        - websecure
+      service: error-pages-service@docker
+
     synology:
       rule: "Host(`synology.lake.dominiksiejak.pl`)"
       entryPoints:
@@ -80,6 +123,8 @@ http:
         servers:
           - url: "http://192.168.89.1/"
         passHostHeader: true
+
+    # Raspberry PI
     octoprint:
       loadBalancer:
         servers:

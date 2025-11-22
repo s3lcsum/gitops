@@ -1,6 +1,0 @@
-apiVersion: v2
-name: n8n
-description: n8n workflow automation platform
-type: application
-version: 0.1.0
-appVersion: "latest"

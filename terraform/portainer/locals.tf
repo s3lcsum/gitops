@@ -7,19 +7,23 @@ locals {
   ]
 
   stacks = [
-    "alloy",
-    "authentik",
+    "adguard",
+    # "calibre",
     "cloudflared",
     "cups",
     "dozzle",
     "grafana-synthetic-agent",
     "mediabox",
-    "netbootxyz",
     "n8n",
+    "netbootxyz",
+    "netbox",
     "postgres",
+    "traefik",
     "upsnap",
     "uptime_kuma",
-    "traefik",
+    "vault",
+    "warrtracker",
+    "watchtower",
     "watchyourlan",
     "zitadel",
   ]

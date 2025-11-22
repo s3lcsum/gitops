@@ -1,12 +1,13 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/n8n/compose.yaml
 
-# github.com/s3lcsum/gitops/stacks/n8n/compose.yaml
 
 services:
   n8n:
-    container_name: n8n
     image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
     env_file:
-      - "/opt/n8n/n8n.env"
+      - /opt/n8n/n8n.env
     environment:
       N8N_METRICS: true
       N8N_RUNNERS_ENABLED: true
@@ -15,24 +16,22 @@ services:
       WEBHOOK_URL: https://nodemation.lake.dominiksiejak.pl
     volumes:
       - config:/home/node/.n8n
-    ports:
-      - 5678:5678
     networks:
       - proxy
       - database
       - metrics
     labels:
       traefik.enable: true
-      traefik.docker.network: proxy
-      traefik.http.routers.n8n.rule: Host(`nodemation.lake.dominiksiejak.pl`)
-
-volumes:
-  config:
+      traefik.http.services.n8n.loadbalancer.server.port: 5678
+      traefik.http.routers.n8n.rule: Host(`nodemation.lake.dominiksiejak.pl`) || Host(`nodemation.hello.dominiksiejak.pl`)
 
 networks:
-  metrics:
-    external: true
   proxy:
     external: true
   database:
     external: true
+  metrics:
+    external: true
+
+volumes:
+  config:

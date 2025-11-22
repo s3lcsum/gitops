@@ -1,173 +1,229 @@
-
-# github.com/s3lcsum/gitops/stacks/mediabox/compose.yaml
+# https://github.com/s3lcsum/gitops/blob/main/stacks/mediabox/compose.yaml
+# Description: Media server stack with VPN, torrent client, and automation tools
+# DISCLAIMER: This require a lot of manual configuration.
+# You can find the guide here: https://github.com/Morzomb/All-jellyfin-media-server/blob/Main/README.md
 
 x-service-defaults: &service-defaults
-  environment:
-    - PUID=1000
-    - PGID=1000
-    - TZ=Europe/Warsaw
-  networks:
-    - proxy
-    - arr
-
-x-vpn-defaults: &vpn-defaults
-  <<: *service-defaults
-  # networks: []
-  # network_mode: container:gluetun
-  # depends_on:
-  #   gluetun:
-  #     condition: service_healthy
-  # labels:
-  #   traefik.enable: "false"
+  restart: unless-stopped
+  networks: [proxy, arr]
+  environment: &environment
+    PUID: 0
+    PGID: 0
+    TZ: Europe/Warsaw
 
 services:
   # 🔒 VPN gateway (WireGuard via Mullvad)
   gluetun:
-    <<: *service-defaults
     image: qmcgaw/gluetun
     container_name: gluetun
-    shm_size: "1gb"
+    restart: unless-stopped
+    env_file:
+      - /opt/mediabox/gluetun.env
     networks:
-      - default
       - proxy
     cap_add:
       - NET_ADMIN
-    env_file:
-      - /opt/mediabox/gluetun.env
-    volumes:
-      - gluetun:/gluetun
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: proxy
-      traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.lake.dominiksiejak.pl`)
-      traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
-
-  # 🔍 Torrent indexer
-  jackett:
-    <<: *vpn-defaults
-    container_name: jackett
-    image: linuxserver/jackett
-    volumes:
-      - jackett_config:/config
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: proxy
-      traefik.http.routers.jackett.rule: Host(`jackett.lake.dominiksiejak.pl`)
-      traefik.http.services.jackett.loadbalancer.server.port: 9117
-
-  # 🔍 Unified indexer manager
-  prowlarr:
-    <<: *vpn-defaults
-    container_name: prowlarr
-    image: linuxserver/prowlarr
-    volumes:
-      - prowlarr_config:/config
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: proxy
-      traefik.http.routers.prowlarr.rule: Host(`prowlarr.lake.dominiksiejak.pl`)
-      traefik.http.services.prowlarr.loadbalancer.server.port: 9696
+    shm_size: 1gb
+    healthcheck: &healthcheck
+      test: ["CMD-SHELL", "nc -z localhost 8000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   # 🔒 Torrent client (VPN-routed)
   qbittorrent:
-    <<: *vpn-defaults
-    container_name: qbittorrent
+    <<: *service-defaults
     image: linuxserver/qbittorrent
+    container_name: qbittorrent
+    environment: *environment
+    depends_on:
+      gluetun:
+        condition: service_healthy
     volumes:
       - qbittorrent_config:/config
-      - /media/NAS_Shared_Media/downloads:/downloads
+      - /mnt/LOCAL_MEDIA/qbittorrent:/data/qbittorrent
+    networks: []  # Override to empty since using network_mode
+    network_mode: service:gluetun
+    labels:
+      traefik.enable: true
+      traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
+      traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.hello.dominiksiejak.pl`) || Host(`qbittorrent.lake.dominiksiejak.pl`)
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+
+  # 📥 Usenet downloader (VPN-routed)
+  sabnzbd:
+    <<: *service-defaults
+    image: linuxserver/sabnzbd
+    container_name: sabnzbd
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    env_file:
+      - /opt/mediabox/sabnzbd.env
+    volumes:
+      - sabnzbd_config:/config
+      - /mnt/LOCAL_MEDIA/usenet:/data/usenet
+      - /mnt/LOCAL_MEDIA/usenet/incomplete:/data/incomplete-downloads
+    networks: []
+    network_mode: service:gluetun
+    labels:
+      traefik.enable: true
+      traefik.http.services.sabnzbd.loadbalancer.server.port: 8085
+      traefik.http.routers.sabnzbd.rule: Host(`sabnzbd.hello.dominiksiejak.pl`) || Host(`sabnzbd.lake.dominiksiejak.pl`)
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8085/api?mode=version"]
+
+  # 🌐 Cloudflare bypass for indexers
+  flaresolverr:
+    <<: *service-defaults
+    image: flaresolverr/flaresolverr
+    container_name: flaresolverr
+    volumes:
+      - flaresolverr_config:/app/data
+    labels:
+      traefik.enable: true
+      traefik.http.services.flaresolverr.loadbalancer.server.port: 8191
+      traefik.http.routers.flaresolverr.rule: Host(`flaresolverr.hello.dominiksiejak.pl`) || Host(`flaresolverr.lake.dominiksiejak.pl`)
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8191/"]
+
+  prowlarr:
+    <<: *service-defaults
+    image: linuxserver/prowlarr
+    container_name: prowlarr
+    depends_on:
+      flaresolverr:
+        condition: service_healthy
+    volumes:
+      - prowlarr_config:/config
+    labels:
+      traefik.enable: true
+      traefik.http.services.prowlarr.loadbalancer.server.port: 9696
+      traefik.http.routers.prowlarr.rule: Host(`prowlarr.hello.dominiksiejak.pl`) || Host(`prowlarr.lake.dominiksiejak.pl`)
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:9696/ping"]
 
   # 🎥 Movie automation
   radarr:
     <<: *service-defaults
-    container_name: radarr
     image: linuxserver/radarr
+    container_name: radarr
+    depends_on:
+      qbittorrent:
+        condition: service_healthy
+      sabnzbd:
+        condition: service_healthy
+      prowlarr:
+        condition: service_healthy
     volumes:
       - radarr_config:/config
-      - /media/NAS_Shared_Media/downloads:/downloads
-      - /media/NAS_Shared_Media/movies:/movies
+      - /mnt/LOCAL_MEDIA:/data
     labels:
-      traefik.http.routers.radarr.entrypoints: websecure
+      traefik.enable: true
+      traefik.http.services.radarr.loadbalancer.server.port: 7878
+      traefik.http.routers.radarr.rule: Host(`radarr.hello.dominiksiejak.pl`) || Host(`radarr.lake.dominiksiejak.pl`)
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:7878/"]
 
   # 📺 TV series automation
   sonarr:
     <<: *service-defaults
-    container_name: sonarr
     image: linuxserver/sonarr
+    container_name: sonarr
+    depends_on:
+      qbittorrent:
+        condition: service_healthy
+      sabnzbd:
+        condition: service_healthy
+      prowlarr:
+        condition: service_healthy
     volumes:
       - sonarr_config:/config
-      - /media/NAS_Shared_Media/downloads:/downloads
-      - /media/NAS_Shared_Media/tv:/tv
+      - /mnt/LOCAL_MEDIA:/data
     labels:
-      traefik.enable: "true"
-      traefik.docker.network: proxy
+      traefik.enable: true
+      traefik.http.services.sonarr.loadbalancer.server.port: 8989
+      traefik.http.routers.sonarr.rule: Host(`sonarr.hello.dominiksiejak.pl`) || Host(`sonarr.lake.dominiksiejak.pl`)
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8989/"]
+
+  # configarr:
+  #   <<: *service-defaults
+  #   restart: no
+  #   image: configarr/configarr:latest
+  #   container_name: configarr
+  #   depends_on:
+  #     sonarr:
+  #       condition: service_healthy
+  #     radarr:
+  #       condition: service_healthy
+  #   volumes:
+  #     - /opt/mediabox/configarr.yaml:/app/config/config.yml
+  #     - /opt/mediabox/configarr-secrets.yaml.env:/app/config/secrets.yml
 
   # 🔄 Subtitle management
   bazarr:
     <<: *service-defaults
-    container_name: bazarr
     image: linuxserver/bazarr
+    container_name: bazarr
     volumes:
       - bazarr_config:/config
-      - /media/NAS_Shared_Media/downloads:/downloads
-      - /media/NAS_Shared_Media/tv:/tv
-      - /media/NAS_Shared_Media/movies:/movies
+      - /mnt/LOCAL_MEDIA:/data
     labels:
-      traefik.enable: "true"
-      traefik.docker.network: proxy
+      traefik.enable: true
+      traefik.http.services.bazarr.loadbalancer.server.port: 6767
+      traefik.http.routers.bazarr.rule: Host(`bazarr.hello.dominiksiejak.pl`) || Host(`bazarr.lake.dominiksiejak.pl`)
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:6767/"]
 
   # 📺 Media server
   jellyfin:
     <<: *service-defaults
-    container_name: jellyfin
     image: linuxserver/jellyfin
+    container_name: jellyfin
     volumes:
       - jellyfin_config:/config
-      - /media/NAS_Shared_Media/tv:/data/tv
-      - /media/NAS_Shared_Media/movies:/data/movies
+      - /mnt/LOCAL_MEDIA/tv:/data/tv
+      - /mnt/LOCAL_MEDIA/movies:/data/movies
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - "44"
+      - "104"
     labels:
-      traefik.enable: "true"
+      traefik.enable: true
+      traefik.http.services.jellyfin.loadbalancer.server.port: 8096
+      traefik.http.routers.jellyfin.rule: Host(`jellyfin.hello.dominiksiejak.pl`) || Host(`jellyfin.lake.dominiksiejak.pl`)
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8096/"]
 
   # 📥 Request manager
   jellyseerr:
     <<: *service-defaults
     container_name: jellyseerr
     image: fallenbagel/jellyseerr
+    depends_on:
+      jellyfin:
+        condition: service_healthy
+      sonarr:
+        condition: service_healthy
+      radarr:
+        condition: service_healthy
     volumes:
       - jellyseerr_config:/app/config
     labels:
-      traefik.enable: "true"
-
-  # 🎵 Music automation
-  lidarr:
-    <<: *service-defaults
-    container_name: lidarr
-    image: linuxserver/lidarr
-    volumes:
-      - lidarr_config:/config
-      - /media/NAS_Shared_Media/downloads:/downloads
-      - /media/NAS_Shared_Media/music:/music
-    labels:
-      traefik.enable: "true"
-
-  # ⚙️ Configuration management for *arr applications
-  configarr:
-    <<: *service-defaults
-    container_name: configarr
-    image: ghcr.io/raydak-labs/configarr:latest
-    ports:
-      - 8080:8080
-    volumes:
-      - configarr_data:/app/data
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /opt/mediabox/configarr.yaml:/app/config/config.yml:ro
-    env_file:
-      - /opt/mediabox/configarr.env
-    environment:
-      CONFIGARR_LOG_LEVEL: "INFO"
-      CONFIGARR_WATCH_INTERVAL: "300"
-      CONFIGARR_BACKUP_ENABLED: "true"
-      CONFIGARR_BACKUP_RETENTION: "7"
+      traefik.enable: true
+      traefik.http.routers.jellyseerr.rule: 'Host(`jellyseerr.hello.dominiksiejak.pl`) || Host(`jellyseerr.lake.dominiksiejak.pl`)'
 
 networks:
   arr:
@@ -176,14 +232,12 @@ networks:
     external: true
 
 volumes:
-  gluetun:
-  jackett_config:
   qbittorrent_config:
+  sabnzbd_config:
   radarr_config:
   sonarr_config:
   bazarr_config:
   jellyfin_config:
   jellyseerr_config:
-  lidarr_config:
   prowlarr_config:
-  configarr_data:
+  flaresolverr_config:

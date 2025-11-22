@@ -1,0 +1,64 @@
+
+x-defaults: &defaults
+  image: netboxcommunity/netbox
+  restart: unless-stopped
+  user: "unit:root"
+  env_file:
+    - /opt/netbox/netbox.env
+  networks:
+    - proxy
+    - database
+    - netbox
+  volumes:
+    - media:/opt/netbox/netbox/media:rw
+    - reports:/opt/netbox/netbox/reports:rw
+    - scripts:/opt/netbox/netbox/scripts:rw
+  healthcheck:
+    start_period: 40s
+    timeout: 3s
+    interval: 15s
+
+services:
+  netbox:
+    <<: *defaults
+    container_name: netbox
+    healthcheck:
+      test: curl -f http://localhost:8080/login/ || exit 1
+    labels:
+      traefik.enable: true
+      traefik.http.services.netbox.loadbalancer.server.port: 8080
+      traefik.http.routers.netbox.rule: Host(`netbox.lake.dominiksiejak.pl`) || Host(`netbox.hello.dominiksiejak.pl`)
+
+  netbox-worker:
+    <<: *defaults
+    container_name: netbox-worker
+    command:
+      - /opt/netbox/venv/bin/python
+      - /opt/netbox/netbox/manage.py
+      - rqworker
+    healthcheck:
+      test: ps -aux | grep -v grep | grep -q rqworker || exit 1
+
+
+  redis:
+    image: docker.io/valkey/valkey:8.1-alpine
+    container_name: netbox-redis
+    restart: unless-stopped
+    networks:
+      - netbox
+    volumes:
+      - cache:/data
+
+networks:
+  netbox:
+    driver: bridge
+  proxy:
+    external: true
+  database:
+    external: true
+
+volumes:
+  media:
+  reports:
+  scripts:
+  cache:

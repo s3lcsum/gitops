@@ -1,28 +1,33 @@
-
-# github.com/s3lcsum/gitops/stacks/uptime_kuma/compose.yaml
+# https://github.com/s3lcsum/gitops/blob/main/stacks/uptime_kuma/compose.yaml
 
 services:
   uptime-kuma:
     image: louislam/uptime-kuma:latest
     container_name: uptime-kuma
+    restart: unless-stopped
+    env_file:
+      - /opt/uptime_kuma/uptime_kuma.env
+    environment:
+      DATABASE_URL: postgresql://${UPTIME_KUMA_DB_USER}:${UPTIME_KUMA_DB_PASSWORD}@postgres:5432/${UPTIME_KUMA_DB_NAME}
+    volumes:
+      - data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
+      - database
       - metrics
       - proxy
-    ports:
-      - 3001:3001
-    volumes:
-      - uptime-kuma-data:/app/data
-      - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
-      traefik.enable: "true"
       traefik.docker.network: proxy
-      traefik.http.routers.uptime-kuma.rule: Host(`uptime.lake.dominiksiejak.pl`)
-
-volumes:
-  uptime-kuma-data:
+      traefik.enable: true
+      traefik.http.routers.uptime-kuma.rule: "Host(`uptime.lake.dominiksiejak.pl`) || Host(`uptime.hello.dominiksiejak.pl`)"
 
 networks:
+  database:
+    external: true
   metrics:
     external: true
   proxy:
     external: true
+
+volumes:
+  data:

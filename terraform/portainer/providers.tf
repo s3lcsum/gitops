@@ -8,13 +8,13 @@ terraform {
     }
   }
 
-  cloud {
-    workspaces {
-      name = "gitops-portainer"
-    }
+  backend "local" {
+    path = "terraform.tfstate"
   }
 }
 
 provider "portainer" {
+  endpoint        = var.portainer_endpoint
+  api_key         = var.portainer_api_key
   skip_ssl_verify = true
 }

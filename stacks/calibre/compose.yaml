@@ -1,0 +1,59 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/calibre/compose.yaml
+
+x-defaults: &defaults
+  restart: unless-stopped
+  networks:
+    - proxy
+
+services:
+  # 📚 Calibre - Full ebook management application
+  calibre:
+    <<: *defaults
+    image: linuxserver/calibre:latest
+    container_name: calibre
+    ports:
+      - 12800:8080
+    environment:
+      DRINODE: /dev/dri/renderD128
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - calibre_config:/config
+      - /mnt/LOCAL_MEDIA/books:/books
+    labels:
+      traefik.enable: true
+      # Main GUI interface
+      traefik.http.routers.calibre-gui.rule: Host(`calibre-gui.lake.dominiksiejak.pl`)
+      traefik.http.routers.calibre-gui.service: calibre-gui
+      traefik.http.services.calibre-gui.loadbalancer.server.port: 8080
+
+      # WebServer for API
+      
+      traefik.http.routers.calibre-api.rule: Host(`calibre-api.lake.dominiksiejak.pl`)
+      traefik.http.routers.calibre-api.service: calibre-gui
+      traefik.http.services.calibre-api.loadbalancer.server.port: 8083
+
+  # # 🌐 Calibre-Web - Web interface for browsing and reading ebooks
+  # calibre-web:
+  #   <<: *defaults
+  #   image: linuxserver/calibre-web:latest
+  #   container_name: calibre-web
+  #   environment:
+  #     DOCKER_MODS: linuxserver/mods:universal-calibre
+  #   volumes:
+  #     - calibre_web_config:/config
+  #     - /mnt/LOCAL_MEDIA/books:/books
+  #   labels:
+  #     traefik.enable: true
+  #     traefik.http.services.calibre-web.loadbalancer.server.port: 8083
+  #     traefik.http.routers.calibre-web.rule: Host(`calibre.hello.dominiksiejak.pl`) || Host(`calibre.lake.dominiksiejak.pl`)
+  #   depends_on:
+  #     - calibre
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  calibre_config:
+  calibre_web_config:

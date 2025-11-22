@@ -1,10 +1,10 @@
-# github.com/s3lcsum/gitops/stacks/zitadel/compose.yaml
+# https://github.com/s3lcsum/gitops/blob/main/stacks/zitadel/compose.yaml
 
 services:
   zitadel:
     image: ghcr.io/zitadel/zitadel:latest
     container_name: zitadel
-    user: "0"
+    restart: unless-stopped
     env_file:
       - /opt/zitadel/zitadel.env
     environment:
@@ -39,54 +39,51 @@ services:
       # Logging configuration
       #ZITADEL_LOG_LEVEL: debug
       #ZITADEL_LOGSTORE_ACCESS_STDOUT_ENABLED: true
-
+    volumes:
+      - data:/opt/zitadel
+    networks:
+      - proxy
+      - zitadel
+      - database
+    user: "0"
     command: ["start-from-init", "--masterkeyFromEnv"]
-
     healthcheck:
       test: ["CMD", "/app/zitadel", "ready"]
       interval: 10s
       timeout: 60s
       retries: 5
       start_period: 10s
-
-    volumes:
-      - zitadel_data:/opt/zitadel
-
-    networks:
-      - proxy
-      - zitadel
-      - database
-
     labels:
-      traefik.enable: "true"
-      traefik.docker.network: proxy
-      traefik.http.routers.zitadel.rule: Host(`auth.lake.dominiksiejak.pl`) && !PathPrefix(`/ui/v2/login`)
+      traefik.enable: true
+      traefik.http.routers.zitadel.rule: (Host(`auth.lake.dominiksiejak.pl`) && !PathPrefix(`/ui/v2/login`)) || (Host(`auth.hello.dominiksiejak.pl`) && !PathPrefix(`/ui/v2/login`))
       traefik.http.services.zitadel.loadbalancer.server.port: 8080
       traefik.http.services.zitadel.loadbalancer.server.scheme: h2c
       traefik.http.services.zitadel.loadbalancer.passHostHeader: true
+
   login:
     image: ghcr.io/zitadel/zitadel-login:latest
     container_name: zitadel-login
-    user: "0"
+    restart: unless-stopped
     environment:
       ZITADEL_API_URL: http://zitadel:8080
       ZITADEL_SERVICE_USER_TOKEN_FILE: /opt/zitadel/login-client.pat
       CUSTOM_REQUEST_HEADERS: Host:auth.lake.dominiksiejak.pl
       NEXT_PUBLIC_BASE_PATH: /ui/v2/login
-    networks:
-      - proxy
-      - zitadel
-    volumes:
-      - zitadel_data:/opt/zitadel:ro
     depends_on:
       zitadel:
         condition: service_healthy
         restart: false
+    volumes:
+      - data:/opt/zitadel:ro
+    networks:
+      - proxy
+      - zitadel
+    user: "0"
     labels:
-      traefik.enable: "true"
-      traefik.docker.network: proxy
-      traefik.http.routers.login.rule: Host(`auth.lake.dominiksiejak.pl`) && PathPrefix(`/ui/v2/login`)
+      traefik.enable: true
+      traefik.http.routers.login.rule: (Host(`auth.lake.dominiksiejak.pl`) || Host(`auth.hello.dominiksiejak.pl`)) && PathPrefix(`/ui/v2/login`)
       traefik.http.services.login.loadbalancer.server.port: 3000
+
 networks:
   database:
     external: true
@@ -96,4 +93,4 @@ networks:
     driver: bridge
 
 volumes:
-  zitadel_data:
+  data:
