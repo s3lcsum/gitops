@@ -54,6 +54,8 @@ providers:
     defaultRule: "Host(`{{ .ContainerName }}.lake.dominiksiejak.pl`)"
   file:
     filename: /etc/traefik/dynamic.yaml
+    watch: true
+
 
 certificatesResolvers:
   letsencrypt:

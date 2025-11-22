@@ -155,19 +155,6 @@ services:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8989/"]
 
-  # configarr:
-  #   <<: *service-defaults
-  #   restart: no
-  #   image: configarr/configarr:latest
-  #   container_name: configarr
-  #   depends_on:
-  #     sonarr:
-  #       condition: service_healthy
-  #     radarr:
-  #       condition: service_healthy
-  #   volumes:
-  #     - /opt/mediabox/configarr.yaml:/app/config/config.yml
-  #     - /opt/mediabox/configarr-secrets.yaml.env:/app/config/secrets.yml
 
   # 🔄 Subtitle management
   bazarr:

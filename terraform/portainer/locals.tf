@@ -22,6 +22,7 @@ locals {
     "upsnap",
     "uptime_kuma",
     "vault",
+    "vaultwarden",
     "warrtracker",
     "watchtower",
     "watchyourlan",

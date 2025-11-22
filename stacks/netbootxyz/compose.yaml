@@ -22,9 +22,9 @@ services:
       traefik.http.services.netbootxyz.loadbalancer.server.port: 3000
 
   idrac6:
+    <<: *defaults
     container_name: idrac6
     image: domistyle/idrac6
-    restart: always
     environment:
       - IDRAC_HOST=192.168.89.210
       - IDRAC_USER=${IDRAC_USER:-root}

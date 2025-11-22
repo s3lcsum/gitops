@@ -32,7 +32,7 @@ http:
         crowdsec-bouncer-traefik-plugin:
           enabled: true
           crowdsecLapiUrl: "http://crowdsec:8080"
-          crowdsecLapiKey: "UcZOxeahJ/+uDvsYdCA+Y/a15iTDlyCzK6em4seCGEI"
+          crowdsecLapiKey: "{{ env \"CROWDSEC_API_KEY\" }}"
           forwardedHeadersCustomName: "X-Forwarded-For"
           forwardedHeadersTrustedIPs:
             - "127.0.0.1/32"
@@ -104,6 +104,13 @@ http:
         - websecure
       service: openwebrx
 
+    # HomeAssistant
+    homeassistant:
+      rule: "Host(`hass.hello.dominiksiejak.pl`) || Host(`hass.lake.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      service: homeassistant
+
   # Services
   services:
     synology:
@@ -134,6 +141,13 @@ http:
       loadBalancer:
         servers:
           - url: "http://192.168.89.206:8073/"
+        passHostHeader: true
+
+    # HomeAssistant
+    homeassistant:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.89.251:8123/"
         passHostHeader: true
 
   serversTransports:
