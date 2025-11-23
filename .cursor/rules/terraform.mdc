@@ -1,0 +1,18 @@
+---
+description: Terraform Configuration Rules
+globs: terraform/**/*
+---
+# Terraform Rules (`terraform/`)
+
+## File Structure
+Organize Terraform configurations as follows:
+- **`main.tf`**: Primary resources.
+- **`variables.tf`**: Variable declarations (primarily for secrets/sensitive data).
+- **`locals.tf`**: Local values and computed expressions (heavily used for single-env setups).
+- **`providers.tf`**: Provider configurations.
+- **`outputs.tf`**: Output values (only if exposed values are used in other places).
+- **`Makefile`**: Automation (preferred over shell commands).
+
+## Constraints
+- **Avoid Shell Scripts**: Use `Makefile` for automation.
+- **No README.md**: Do not create documentation files.

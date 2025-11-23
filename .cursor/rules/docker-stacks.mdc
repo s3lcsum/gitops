@@ -1,0 +1,73 @@
+---
+description: Docker Stacks and Compose Rules
+globs: stacks/**/*
+---
+# Docker Stacks (`stacks/`)
+
+## Context
+- Files in `stacks/` run on a remote Proxmox server.
+- The `stacks/` directory is `rsynced` to the Portainer host.
+- **NO DATA** should be stored in this directory.
+
+## File Structure
+For a stack named `{stack_name}`:
+- `stacks/{stack_name}/compose.yaml`
+- `stacks/{stack_name}/{service_name}.env` (for secrets)
+- `stacks/{stack_name}/{service_name}.example.env` (example for secrets)
+
+## Tools
+- Use **`docker-mcp`** to view logs or restart containers on the remote server.
+
+## `compose.yaml` Style Guide
+
+### Field Ordering
+Follow this order for service definitions:
+1. `image`
+2. `container_name`
+3. `restart`
+4. `env_file`
+5. `environment`
+6. `volumes`
+7. `networks`
+8. `ports`
+9. `user`
+10. `healthcheck`
+11. `labels`
+
+### Environment Variables & Volumes
+- **`env_file`**: Use for **SENSITIVE/SECRET** values (passwords, API keys).
+  - Path convention: `/opt/{stack_name}/{service_name}.env` (Absolute path on the remote host).
+- **`environment`**: Use for **CONFIGURATION** values (log level, domains, flags).
+  - **Syntax**: ALWAYS use **Object/Map syntax** (key-value), NEVER array syntax (`- KEY=VALUE`).
+  ```yaml
+  environment:
+    LOG_LEVEL: info
+    DOMAIN: example.com
+  ```
+- **Volumes & Env Files**: Every volume mount or env file reference within `compose.yaml` should use `/opt/{stack_name}/...` paths so they point at the remote stack folder.
+  - Example: `/opt/{stack_name}/traefik.yaml:/etc/traefik/traefik.yaml:ro`
+
+### Networks
+- `proxy`: External network for Traefik.
+- `database`: External network for centralized PostgreSQL access.
+- `metrics`: External network for telemetry (optional).
+- `{stack_name}`: Internal stack network (if needed).
+
+### Database
+- **Single Instance**: A centralized PostgreSQL instance is used for all services.
+- **Requirement**: Any service requiring a database connection **MUST** join the `database` network.
+- **When granting access**:
+  - Add credentials to `stacks/postgres/postgres.env`.
+  - Update `stacks/postgres/init.sh` via `setup_user_and_database "$USER" "$PASS" "$DB"`.
+  - Reference the resulting variables inside your stack's config (e.g., `DB_URL=postgresql://${USER}:${PASS}@postgres:5432/${DB}`).
+
+### Labels (Traefik)
+- Traefik ships a default `websecure` router that already handles TLS certificates, so you do not need to repeat TLS-related labels unless you override behavior.
+- Every Traefik-accessible service still needs `traefik.enable: true`.
+- Add router rules only when you need a custom hostname (use `traefik.http.routers.<service>.rule: Host(\`...\`)`).
+- Remember that `*.lake.dominiksiejak.pl` resolves to the internal/VPN network (`192.168.89.0/24`), whereas `*.hello.dominiksiejak.pl` targets the public IP mapped to Traefik (ports 80/443).
+- Use object syntax for labels.
+
+## Sync Requirement
+**CRITICAL**: When adding or removing a stack in `stacks/`, you **MUST** update `terraform/portainer/main.tf` to reflect the change in the Portainer configuration.
+If you modify any files under `stacks/` and want to sync/apply the changes, run the automation inside `terraform/portainer` (this rsyncs the stacks and runs `terraform apply` to reconcile Portainer).

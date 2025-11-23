@@ -1,7 +1,3 @@
----
-globs: stacks/**/compose.yaml,terraform/portainer/*.tf
-alwaysApply: false
----
 # Portainer Stack Management Rules
 
 ## Stack Addition/Removal Protocol
@@ -25,4 +21,4 @@ This maintains consistency between the actual stack deployments and the infrastr
 
 ### Files to Monitor:
 - `stacks/*/` - All stack directories and their compose.yaml files
-- `terraform/portainer/*.tf` - Terraform configuration for Portainer stacks (e.g., `main.tf`, `locals.tf`)
+- `terraform/portainer/main.tf` - Terraform configuration for Portainer stacks

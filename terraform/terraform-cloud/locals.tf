@@ -11,7 +11,6 @@ locals {
       description       = "Backblaze B2 backup storage management"
       vcs_repo          = "s3lcsum/gitops"
       working_directory = "terraform/backblaze"
-      execution_mode    = "remote"
     }
     netbox = {
       name              = "gitops-netbox"
@@ -48,7 +47,6 @@ locals {
       description       = "Terraform Cloud workspace and organization management"
       vcs_repo          = "s3lcsum/gitops"
       working_directory = "terraform/terraform-cloud"
-      execution_mode    = "remote"
     }
     terraform_cloudflare = {
       name           = "terraform-cloudflare"

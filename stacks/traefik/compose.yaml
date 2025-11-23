@@ -1,70 +1,76 @@
-# https://github.com/s3lcsum/gitops/blob/main/stacks/traefik/compose.yaml
-
-x-defaults: &defaults
-  restart: unless-stopped
-  networks:
-    - proxy
+# github.com/s3lcsum/gitops/stacks/traefik/compose.yaml
 
 services:
   traefik:
-    <<: *defaults
     image: traefik:latest
     container_name: traefik
+    user: root
+    networks:
+      - default
+      - metrics
+      - proxy
     env_file:
       - /opt/traefik/traefik.env
+    ports:
+      - 80:80
+      - 443:443
+      - 9100:9100 # Prometheus metrics
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /opt/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
       - /opt/traefik/dynamic.yaml:/etc/traefik/dynamic.yaml:ro
       - traefik-letsencrypt:/letsencrypt
-    networks:
-      - default
-      - metrics
-      - proxy
-    ports:
-      - "80:80/tcp"
-      - "443:443/tcp"
-      - "9100:9100/tcp" # Prometheus metrics
-    user: root
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.traefik-dashboard.service: api@internal
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
       interval: 30s
       timeout: 5s
       retries: 3
-    labels:
-      traefik.enable: true
-      traefik.http.routers.traefik-dashboard.service: api@internal
+
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    restart: unless-stopped
+    networks:
+      - proxy
+    environment:
+      - COLLECTIONS=crowdsecurity/traefik
+      - CROWDSEC_BOUNCER_KEY=${CROWDSEC_BOUNCER_KEY:-}
+    volumes:
+      - crowdsec-config:/etc/crowdsec
+      - crowdsec-data:/var/lib/crowdsec/data
+    command:
+      - cscli
+      - machines
+      - add
+      - --auto
+      - traefik
+    healthcheck:
+      test: ["CMD", "crowdsec", "-t"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   error-pages:
-    <<: *defaults
     image: ghcr.io/tarampampam/error-pages:3
+    restart: always
     container_name: error-pages
+    networks:
+      - proxy
     environment:
-      TEMPLATE_NAME: lost-in-space
+      TEMPLATE_NAME: "lost-in-space"
     labels:
       traefik.enable: true
-      traefik.http.routers.error-pages-router.rule: HostRegexp(`{host:.+}`)
+      traefik.http.routers.error-pages-router.rule: "HostRegexp(`{host:.+}`)"
       traefik.http.routers.error-pages-router.priority: 10
+      traefik.http.routers.error-pages-router.entrypoints: web,websecure
       traefik.http.routers.error-pages-router.middlewares: error-pages-middleware
       traefik.http.middlewares.error-pages-middleware.errors.status: 400-599
       traefik.http.middlewares.error-pages-middleware.errors.service: error-pages-service
       traefik.http.middlewares.error-pages-middleware.errors.query: /{status}.html
       traefik.http.services.error-pages-service.loadbalancer.server.port: 8080
-
-  crowdsec:
-    <<: *defaults
-    image: crowdsecurity/crowdsec
-    container_name: crowdsec
-    env_file:
-      - /opt/traefik/crowdsec.env
-    depends_on:
-      - traefik
-    volumes:
-      - crowdsec-db:/var/lib/crowdsec/data/
-      - crowdsec-config:/etc/crowdsec/
-    labels:
-      traefik.enable: true
-      traefik.http.services.crowdsec-service.loadbalancer.server.port: 8080
 
 networks:
   metrics:
@@ -74,5 +80,5 @@ networks:
 
 volumes:
   traefik-letsencrypt:
-  crowdsec-db:
   crowdsec-config:
+  crowdsec-data:

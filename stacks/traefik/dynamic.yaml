@@ -32,18 +32,20 @@ http:
         crowdsec-bouncer-traefik-plugin:
           enabled: true
           crowdsecLapiUrl: "http://crowdsec:8080"
-          crowdsecLapiKey: "{{ env \"CROWDSEC_API_KEY\" }}"
+          crowdsecLapiKey: "${CROWDSEC_API_KEY}"
           forwardedHeadersCustomName: "X-Forwarded-For"
           forwardedHeadersTrustedIPs:
             - "127.0.0.1/32"
             - "10.0.0.0/8"
             - "172.16.0.0/12"
             - "192.168.89.0/24"
+            - "192.168.200.0/24"
           clientTrustedIPs:
             - "127.0.0.1/32"
             - "10.0.0.0/8"
             - "172.16.0.0/12"
             - "192.168.89.0/24"
+            - "192.168.200.0/24"
           remediation:
             ban:
               enabled: true
@@ -70,6 +72,7 @@ http:
         - websecure
       service: error-pages-service@docker
 
+    # Synology HTTPS Passthrough
     synology:
       rule: "Host(`synology.lake.dominiksiejak.pl`)"
       entryPoints:
@@ -104,9 +107,9 @@ http:
         - websecure
       service: openwebrx
 
-    # HomeAssistant
+    # Home Assistant
     homeassistant:
-      rule: "Host(`hass.hello.dominiksiejak.pl`) || Host(`hass.lake.dominiksiejak.pl`)"
+      rule: "Host(`hass.lake.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: homeassistant
@@ -130,8 +133,6 @@ http:
         servers:
           - url: "http://192.168.89.1/"
         passHostHeader: true
-
-    # Raspberry PI
     octoprint:
       loadBalancer:
         servers:
@@ -143,7 +144,6 @@ http:
           - url: "http://192.168.89.206:8073/"
         passHostHeader: true
 
-    # HomeAssistant
     homeassistant:
       loadBalancer:
         servers:

@@ -1,0 +1,19 @@
+---
+description: General Monorepo Structure and Constraints
+globs: *
+---
+# Monorepo Structure & General Rules
+
+## Codebase Splits
+The monorepo contains three distinct codebases:
+1. **Docker**: Located in `stacks/` (for Proxmox services).
+2. **ArgoCD**: (Reserved/Implied).
+3. **Terraform**: Located in `terraform/`.
+
+## Global Constraints
+- **NEVER create README.md files**. They are not needed.
+- **Minimal File Creation**: Do not create auxiliary files unless they are highly required.
+
+## Directory Purpose
+- `stacks/`: Contains Docker Compose stacks. This directory is `rsynced` to the Portainer host and **should not contain any data** (only config).
+- `terraform/`: Infrastructure as Code definitions.
