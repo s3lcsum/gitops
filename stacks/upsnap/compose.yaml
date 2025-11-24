@@ -12,6 +12,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.upsnap.loadbalancer.server.url: http://192.168.89.253:5000
+      traefik.http.routers.upsnap.rule: Host(`upsnap.lake.dominiksiejak.pl`)
 
 volumes:
   data:

@@ -106,6 +106,10 @@ provide a living reference for improvements. Contributions and suggestions are w
 
 ## Changelog
 
+### 23.11.2025
+
+Wrote up new repo rules for Docker Compose stacks and Terraform/GCP configs, gutted the unused ArgoCD/Cert-Manager/chart cruft, and rewired the mediabox/Traefik/Portainer pieces: Configarr is gone, Vaultwarden got its own stack plus DB creds, and Terraform-side references now match the fresh stack layout. Lost some commits while switching PCs before I could push them (the HDD format nuked the old machine), so this is the history that actually made it up here.
+
 ### 23.08.2025
 
 Swapped Authentik with ZITADEL due to ongoing configuration issues. Despite limited documentation for ZITADEL, it's an actively growing project with promising potential.
