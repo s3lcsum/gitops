@@ -26,6 +26,8 @@ resource "portainer_docker_network" "networks" {
   name        = each.key
   endpoint_id = var.endpoint_id
   driver      = "bridge"
+
+  enable_ipv4 = true
 }
 
 # This is always been created along with portainer.service
