@@ -2,17 +2,24 @@
 # Manual edits may be lost in future updates.
 
 provider "registry.terraform.io/e-breuninger/netbox" {
-  version     = "4.1.0"
-  constraints = "~> 4.1.0"
+  version     = "4.3.1"
+  constraints = "~> 4.3.0"
   hashes = [
-    "h1:IiwxyxSSfTsGw8DkHoJgjc2hBoaZTHlQ5hsZEkCPshI=",
-    "zh:116fb6d0a3e21a78c84a693e23e084edfc43af78f9dc204bdc4db05033025a2b",
-    "zh:19730ebac9dd54b76ff97c139016e53f70ec8744922e538486eb24a8be1a1b17",
-    "zh:28580061f37ae0f8b6c8ff70a5bc6f3e84676f09e18175d095d55c67d23c3ba3",
-    "zh:420a2244c63c2dc286a19bf219ff931acf76b7ed5ff75a185c737d95fa1e08a1",
-    "zh:49d2b58221ff4d096f409caf2260facfffeeefe2b06d4da5761aa92973d5d722",
-    "zh:4b7237744c7dd982e585dfd8caaf1aedb578d456474aaa7c3d311133acdae29d",
-    "zh:c7623a6b7f55d7e66d395d548eb8335b97fe705e0bb3cd00397185db22b2bf04",
-    "zh:eae11b69b9b8971b6dd5c13ac9e7b01200abed86141bb7bd4c169dc9e17cd006",
+    "h1:0i5Zn5l9qWe/wJZpPUlpjN5i2NmDJuuGsHhEoMnXgaw=",
+    "h1:IRyhXDQRnRsFEPjlEdtM8MPciCRoYYrnc/Hzrip+gGw=",
+    "h1:KA5QRxaEk8XwREcZYGVD5qXCbMQFy9+tRaOG08NxfBc=",
+    "h1:SeF+cs7egsGeZIqTpjgm4gevv2E5i3YScECkN2dZe7U=",
+    "h1:drU0Zfu/tURKF0WyufZUXAUNWYCJLBlnGm+Y4409BZU=",
+    "h1:g2AT2Mzt8e+u7OVKKJ3FY2LNTKsXh6dYPUaFM0OyTNU=",
+    "h1:kKZnBh7TUkldMps93yrlZv7aEn83tBUvVrNHhw/Vahw=",
+    "h1:y7OlfCNRROfrDWLdoKKEDhmh/SqmifvQhxI8Aoby54s=",
+    "zh:23d246ffd408e417cb94b10800ca0a09567a36898eefaaedccacb2e8844fa34b",
+    "zh:2753962846d6cd6d0b63ae62b7fa505f84fe72a86c52a53a1e436ff39ca7c465",
+    "zh:6fe32b85d301566c309e4b3fb46dc0ca15971c74b9584b805f25ce5a54086443",
+    "zh:94743763c654e28c490d90b957ba236e19faa9fb63e26958bb2545ed03d117de",
+    "zh:9da1ec57012507aa0fdefbbb8a83dbe18e216c3218c59d8b5908b71ad1774ff2",
+    "zh:a117a53408410b213be3671a7e335f71dabcc4fa6413f105e48ed45996f67403",
+    "zh:f35651140599d06ec1ebfe275eefb995fe65c5648fbc3db277451708d227cf49",
+    "zh:f49024f7d9f0630c312636c9a7dd89d5ba756580e47a01c62d94d523958231b4",
   ]
 }
