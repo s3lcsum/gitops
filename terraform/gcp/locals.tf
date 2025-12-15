@@ -13,6 +13,7 @@ locals {
 
   required_apis = [
     "cloudkms.googleapis.com",
-    "iam.googleapis.com"
+    "iam.googleapis.com",
+    "iap.googleapis.com"
   ]
 }

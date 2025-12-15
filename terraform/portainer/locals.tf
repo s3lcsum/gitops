@@ -8,10 +8,12 @@ locals {
 
   stacks = [
     "adguard",
+    "authentik",
     # "calibre",
     "cloudflared",
     "cups",
     "dozzle",
+    "diun",
     "grafana-synthetic-agent",
     "mediabox",
     "n8n",
@@ -24,8 +26,6 @@ locals {
     "vault",
     "vaultwarden",
     "warrtracker",
-    "watchtower",
     "watchyourlan",
-    "zitadel",
   ]
 }

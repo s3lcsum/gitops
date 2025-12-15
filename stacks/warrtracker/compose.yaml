@@ -7,6 +7,9 @@ services:
     restart: unless-stopped
     env_file:
       - /opt/warrtracker/warrtracker.env
+    environment:
+      FRONTEND_URL: https://warrtracker.lake.dominiksiejak.pl
+      APP_BASE_URL: https://warrtracker.lake.dominiksiejak.pl
     volumes:
       - uploads:/data/uploads
     networks:

@@ -182,5 +182,31 @@ variable "wireguard_routes" {
   }
 }
 
+# RADIUS Configuration for Keycloak/FreeRADIUS Authentication
+variable "enable_radius" {
+  description = "Enable RADIUS authentication for router login"
+  type        = bool
+  default     = false
+}
+
+variable "radius_server" {
+  description = "RADIUS server IP address (FreeRADIUS)"
+  type        = string
+  default     = "192.168.89.252"
+}
+
+variable "radius_secret" {
+  description = "RADIUS shared secret (must match FreeRADIUS configuration)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "radius_timeout" {
+  description = "RADIUS timeout in milliseconds"
+  type        = number
+  default     = 3000
+}
+
 # Note: User configuration is not supported by the RouterOS provider
 # Users must be configured manually via RouterOS interface

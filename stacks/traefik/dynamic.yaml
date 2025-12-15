@@ -62,8 +62,8 @@ http:
       entryPoints:
         - web
       middlewares:
-        - error-pages-middleware@docker
-      service: error-pages-service@docker
+        - redirect-to-https
+      service: noop@internal
 
     block-external-ip:
       rule: "HostRegexp(`{host:.+}`)"

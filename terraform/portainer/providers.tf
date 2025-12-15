@@ -6,6 +6,10 @@ terraform {
       source  = "portainer/portainer"
       version = "1.17.0"
     }
+    tfe = {
+      source  = "hashicorp/tfe"
+      version = "0.61.0"
+    }
   }
 
   backend "local" {

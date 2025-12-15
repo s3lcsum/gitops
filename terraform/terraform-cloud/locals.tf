@@ -1,64 +1,55 @@
 locals {
   workspaces = {
-    proxmox = {
-      name              = "gitops-proxmox"
+    gitops-proxmox = {
       description       = "Proxmox infrastructure management"
-      vcs_repo          = "s3lcsum/gitops"
       working_directory = "terraform/proxmox"
     }
-    backblaze = {
-      name              = "gitops-backblaze"
+    gitops-backblaze = {
       description       = "Backblaze B2 backup storage management"
-      vcs_repo          = "s3lcsum/gitops"
       working_directory = "terraform/backblaze"
     }
-    netbox = {
-      name              = "gitops-netbox"
+    gitops-netbox = {
       description       = "NetBox IPAM and network documentation"
-      vcs_repo          = "s3lcsum/gitops"
       working_directory = "terraform/netbox"
+      queue_all_runs    = true
     }
-    authentik = {
+    gitops-authentik = {
       name              = "gitops-authentik"
       description       = "Authentik SSO and identity management"
-      vcs_repo          = "s3lcsum/gitops"
       working_directory = "terraform/authentik"
     }
-    portainer = {
-      name              = "gitops-portainer"
+    gitops-portainer = {
       description       = "Portainer container management"
-      vcs_repo          = "s3lcsum/gitops"
       working_directory = "terraform/portainer"
     }
-    routeros = {
-      name              = "gitops-routeros"
+    gitops-routeros = {
       description       = "RouterOS network configuration"
-      vcs_repo          = "s3lcsum/gitops"
       working_directory = "terraform/routeros"
     }
-    zitadel = {
-      name              = "gitops-zitadel"
+    gitops-zitadel = {
       description       = "Zitadel SSO and identity management"
-      vcs_repo          = "s3lcsum/gitops"
       working_directory = "terraform/zitadel"
     }
-    terraform_cloud = {
-      name              = "gitops-terraform-cloud"
+    gitops-keycloak = {
+      description       = "Keycloak SSO and identity management"
+      working_directory = "terraform/keycloak"
+    }
+    gitops-openldap = {
+      description       = "OpenLDAP directory service and user management"
+      working_directory = "terraform/openldap"
+    }
+    gitops-terraform-cloud = {
       description       = "Terraform Cloud workspace and organization management"
-      vcs_repo          = "s3lcsum/gitops"
+      execution_mode    = "remote"
       working_directory = "terraform/terraform-cloud"
     }
-    terraform_cloudflare = {
-      name           = "terraform-cloudflare"
-      description    = "Cloudflare DNS and security management"
-      vcs_repo       = "s3lcsum/terraform-cloudflare"
-      execution_mode = "remote"
+    terraform-cloudflare = {
+      description       = "Cloudflare DNS and security management"
+      working_directory = "terraform/cloudflare"
     }
-    terraform_grafana = {
-      name           = "terraform-grafana"
-      description    = "Grafana monitoring and dashboards management"
-      vcs_repo       = "s3lcsum/terraform-grafana"
-      execution_mode = "remote"
+    terraform-grafana = {
+      description       = "Grafana monitoring and dashboards management"
+      working_directory = "terraform/grafana"
     }
   }
 }

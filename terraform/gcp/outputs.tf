@@ -13,3 +13,12 @@ output "service_accounts" {
   sensitive = true
 }
 
+output "google_oauth_authentik" {
+  description = "Google OAuth credentials for Authentik SSO"
+  value = {
+    client_id     = google_iap_client.authentik.client_id
+    client_secret = google_iap_client.authentik.secret
+  }
+  sensitive = true
+}
+

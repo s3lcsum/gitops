@@ -101,3 +101,65 @@ resource "netbox_device_role" "database_server" {
     netbox_tag.lxc.name
   ]
 }
+
+resource "netbox_device_role" "router" {
+  name        = "Router"
+  slug        = "router"
+  description = "Network routers and gateways"
+  color_hex   = "9c27b0"
+  vm_role     = false
+
+  tags = [
+    netbox_tag.network.name,
+    netbox_tag.infrastructure.name
+  ]
+}
+
+resource "netbox_device_role" "access_point" {
+  name        = "Access Point"
+  slug        = "access-point"
+  description = "Wireless access points"
+  color_hex   = "ff5722"
+  vm_role     = false
+
+  tags = [
+    netbox_tag.network.name,
+    netbox_tag.infrastructure.name
+  ]
+}
+
+resource "netbox_device_role" "printer" {
+  name        = "Printer"
+  slug        = "printer"
+  description = "Network printers and multifunction devices"
+  color_hex   = "607d8b"
+  vm_role     = false
+
+  tags = [
+    netbox_tag.infrastructure.name
+  ]
+}
+
+resource "netbox_device_role" "iot_device" {
+  name        = "IoT Device"
+  slug        = "iot-device"
+  description = "Internet of Things devices"
+  color_hex   = "8bc34a"
+  vm_role     = false
+
+  tags = [
+    netbox_tag.infrastructure.name
+  ]
+}
+
+resource "netbox_device_role" "wireguard_client" {
+  name        = "WireGuard Client"
+  slug        = "wireguard-client"
+  description = "WireGuard VPN clients"
+  color_hex   = "2196f3"
+  vm_role     = false
+
+  tags = [
+    netbox_tag.network.name
+  ]
+}

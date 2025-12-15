@@ -71,3 +71,19 @@ resource "google_kms_crypto_key_iam_binding" "vault_viewer" {
   ]
 }
 
+########################################################
+# GOOGLE OAUTH FOR AUTHENTIK SSO
+########################################################
+resource "google_iap_brand" "homelab" {
+  support_email     = "dreewniak@gmail.com"
+  application_title = "HomeLab SSO"
+  project           = var.gcp_project_id
+
+  depends_on = [google_project_service.apis["iap.googleapis.com"]]
+}
+
+resource "google_iap_client" "authentik" {
+  display_name = "Authentik SSO"
+  brand        = google_iap_brand.homelab.name
+}
+

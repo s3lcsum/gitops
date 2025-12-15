@@ -1,18 +1,19 @@
+# Portainer settings - OAuth enabled only when authentik workspace exists
 resource "portainer_settings" "default" {
-  authentication_method = 3
+  authentication_method = var.enable_oauth ? 3 : 1 # 3=OAuth, 1=Internal
   enable_telemetry      = true
 
   dynamic "oauth_settings" {
-    for_each = var.portainer_oauth2.client_secret != null ? [1] : []
+    for_each = var.enable_oauth ? [1] : []
     content {
       sso                     = true
-      client_id               = var.portainer_oauth2.client_id
-      client_secret           = var.portainer_oauth2.client_secret
-      access_token_uri        = var.portainer_oauth2.access_token_uri
-      authorization_uri       = var.portainer_oauth2.authorization_uri
-      logout_uri              = var.portainer_oauth2.logout_uri
-      redirect_uri            = var.portainer_oauth2.redirect_uri
-      resource_uri            = var.portainer_oauth2.resource_uri
+      client_id               = data.tfe_outputs.authentik[0].values.applications.portainer.client_id
+      client_secret           = data.tfe_outputs.authentik[0].values.applications.portainer.client_secret
+      access_token_uri        = data.tfe_outputs.authentik[0].values.applications.portainer.access_token_uri
+      authorization_uri       = data.tfe_outputs.authentik[0].values.applications.portainer.authorization_uri
+      logout_uri              = data.tfe_outputs.authentik[0].values.applications.portainer.logout_uri
+      redirect_uri            = data.tfe_outputs.authentik[0].values.applications.portainer.redirect_uri
+      resource_uri            = data.tfe_outputs.authentik[0].values.applications.portainer.resource_uri
       user_identifier         = "email"
       scopes                  = "openid profile email"
       oauth_auto_create_users = true
@@ -33,8 +34,8 @@ resource "portainer_docker_network" "networks" {
 # This is always been created along with portainer.service
 import {
   for_each = toset(local.networks)
-  to = portainer_docker_network.networks[each.value]
-  id = "${var.endpoint_id}:${each.value}"
+  to       = portainer_docker_network.networks[each.value]
+  id       = "${var.endpoint_id}:${each.value}"
 }
 
 resource "portainer_stack" "stacks" {

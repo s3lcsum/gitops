@@ -60,7 +60,7 @@ services:
     networks:
       - proxy
     environment:
-      TEMPLATE_NAME: "lost-in-space"
+      TEMPLATE_NAME: "app-down"
     labels:
       traefik.enable: true
       traefik.http.routers.error-pages-router.rule: "HostRegexp(`{host:.+}`)"

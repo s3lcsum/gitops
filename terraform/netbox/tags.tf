@@ -63,5 +63,46 @@ resource "netbox_tag" "database" {
   name        = "database"
   slug        = "database"
   description = "Database services"
+}
 
+resource "netbox_tag" "router" {
+  name        = "router"
+  slug        = "router"
+  description = "Router devices"
+}
+
+resource "netbox_tag" "access_point" {
+  name        = "access-point"
+  slug        = "access-point"
+  description = "Wireless access points"
+}
+
+resource "netbox_tag" "printer" {
+  name        = "printer"
+  slug        = "printer"
+  description = "Printer devices"
+}
+
+resource "netbox_tag" "iot" {
+  name        = "iot"
+  slug        = "iot"
+  description = "Internet of Things devices"
+}
+
+resource "netbox_tag" "wireguard" {
+  name        = "wireguard"
+  slug        = "wireguard"
+  description = "WireGuard VPN"
+}
+
+resource "netbox_tag" "dc0" {
+  name        = "dc0"
+  slug        = "dc0"
+  description = "Data Center 0 (Jarocin)"
+}
+
+resource "netbox_tag" "dc1" {
+  name        = "dc1"
+  slug        = "dc1"
+  description = "Data Center 1 (Wrocław)"
 }

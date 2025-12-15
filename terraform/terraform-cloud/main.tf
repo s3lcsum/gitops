@@ -3,25 +3,32 @@ data "tfe_organization" "main" {
   name = var.organization_name
 }
 
+resource "tfe_oauth_client" "test" {
+  organization     = data.tfe_organization.main.name
+  api_url          = "https://api.github.com"
+  http_url         = "https://github.com"
+  oauth_token      = var.github_oauth_token_id
+  service_provider = "github"
+}
+
 # Create all workspaces using for_each
 resource "tfe_workspace" "workspaces" {
   for_each = local.workspaces
 
-  name         = each.value.name
-  organization = data.tfe_organization.main.name
-  description  = try(each.value.description, "Managed by Terraform")
+  name              = each.key
+  organization      = data.tfe_organization.main.name
 
-  working_directory = try(each.value.working_directory, null)
+  tags              = {}
+  queue_all_runs    = try(each.value.queue_all_runs, false)
 
-  dynamic "vcs_repo" {
-    for_each = var.github_oauth_token_id != "" ? [1] : []
-    content {
-      identifier     = each.value.vcs_repo
-      oauth_token_id = var.github_oauth_token_id
-    }
+  vcs_repo {
+    identifier     = "s3lcsum/gitops"
+    branch         = "main"
+    oauth_token_id = var.github_oauth_token_id
   }
 
   auto_apply = false
+  working_directory = try(each.value.working_directory, null)
 }
 
 # Configure workspace settings for local execution
