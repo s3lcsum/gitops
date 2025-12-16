@@ -1,0 +1,130 @@
+# MkDocs configuration
+# https://www.mkdocs.org/user-guide/configuration/
+
+site_name: Home Infrastructure as Code
+site_description: Documentation for home lab GitOps repository
+site_author: dsiejak
+site_url: https://dsiejak.github.io/gitops/
+
+# Repository
+repo_name: dsiejak/gitops
+repo_url: https://github.com/dsiejak/gitops
+edit_uri: edit/main/docs/
+
+# Theme
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+  icon:
+    repo: fontawesome/brands/github
+
+# Navigation
+nav:
+  - Home: index.md
+  - Architecture:
+      - Overview: architecture/index.md
+      - C4 Container Diagram: architecture/c4-container.md
+  - ADRs:
+      - Overview: adr/index.md
+      - Template: adr/0000-template.md
+      - "ADR-0001: Traefik over NPM": adr/0001-traefik-over-npm.md
+      - "ADR-0002: Authentik over ZITADEL": adr/0002-authentik-over-zitadel.md
+  - Golden Paths:
+      - Overview: golden-paths/index.md
+      - Add Docker Stack: golden-paths/add-docker-stack.md
+      - Add Terraform Module: golden-paths/add-terraform-module.md
+      - Add Service Behind Traefik: golden-paths/add-service-behind-traefik.md
+  - Runbooks:
+      - Overview: runbooks/index.md
+      - Traefik Routing Broken: runbooks/traefik-routing-broken.md
+      - Rotate Secrets: runbooks/rotate-secrets.md
+  - Playbooks:
+      - Overview: playbooks/index.md
+      - Upgrade a Stack: playbooks/upgrade-stack.md
+      - Bootstrap New Host: playbooks/bootstrap-new-host.md
+
+# Extensions
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: dsiejak
+      repo: gitops
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Plugins
+plugins:
+  - search
+  - git-revision-date-localized:
+      enable_creation_date: true
+      fallback_to_build_date: true
+
+# Extra
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/dsiejak
+
+# Watch for changes
+watch:
+  - docs
+
