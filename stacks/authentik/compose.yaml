@@ -49,7 +49,7 @@ services:
       - database
 
   ldap-outpost:
-    image: ghcr.io/goauthentik/ldap:2025.10.2
+    image: ghcr.io/goauthentik/ldap:2025.10.3
     container_name: authentik-ldap-outpost
     restart: unless-stopped
     env_file:
