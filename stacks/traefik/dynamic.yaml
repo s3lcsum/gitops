@@ -74,7 +74,7 @@ http:
 
     # Synology HTTPS Passthrough
     synology:
-      rule: "Host(`synology.lake.dominiksiejak.pl`)"
+      rule: "Host(`nas.lake.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: synology
