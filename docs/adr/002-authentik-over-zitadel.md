@@ -1,4 +1,4 @@
-# ADR-0002: Choose Authentik over ZITADEL and Keycloak
+# ADR003: Choose Authentik over ZITADEL and Keycloak
 
 - **Status**: Accepted
 - **Date**: 2025-12-15

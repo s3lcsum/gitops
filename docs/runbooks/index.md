@@ -1,4 +1,4 @@
-# Runbooks
+# RB001: Runbooks
 
 Runbooks are incident response procedures. When something breaks, these documents help you diagnose and fix it quickly.
 
@@ -8,8 +8,7 @@ Runbooks are incident response procedures. When something breaks, these document
 
 | Runbook | When to Use |
 |---------|-------------|
-| [Traefik Routing Broken](traefik-routing-broken.md) | Services returning 404/502, routing not working |
-| [Rotate Secrets](rotate-secrets.md) | Credentials compromised or scheduled rotation |
+| [Initialize Vault](initialize-vault.md) | Vault data volume recreated; permission denied on `/vault/data/*`; raft storage empty |
 
 ## Runbook Format
 

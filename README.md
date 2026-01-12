@@ -14,12 +14,12 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 
 | Layer | What | Tools |
 |-------|------|-------|
-| **Compute** | Proxmox VE hosts running LXC containers | Terraform (`terraform/proxmox/`) |
+| **Compute** | Proxmox VE hosts running LXC containers | OpenTofu (`terraform/proxmox/`) |
 | **Containers** | Docker stacks managed via Portainer | Compose files in `stacks/` |
-| **Networking** | MikroTik RouterOS config | Terraform (`terraform/routeros/`) |
+| **Networking** | MikroTik RouterOS config | OpenTofu (`terraform/routeros/`) |
 | **Edge** | Traefik reverse proxy + CrowdSec | `stacks/traefik/` |
-| **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + Terraform |
-| **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + Terraform (`terraform/netbox/`) |
+| **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + OpenTofu (`terraform/authentik/`) |
+| **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + OpenTofu (`terraform/netbox/`) |
 | **Secrets** | HashiCorp Vault + Vaultwarden | `stacks/vault/`, `stacks/vaultwarden/` |
 | **Monitoring** | Uptime Kuma, Grafana Synthetic Agent | `stacks/uptime_kuma/`, `stacks/grafana-synthetic-agent/` |
 | **Media** | Jellyfin + *arr stack + downloaders | `stacks/mediabox/` |
@@ -36,7 +36,7 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 - **How it fits**: The `terraform/netbox/` module manages NetBox objects as code, keeping the inventory in sync with reality
 - **Access**: Internal only — `https://netbox.your-domain.local` (placeholder)
 
-The Terraform module (`terraform/netbox/`) defines:
+The OpenTofu module (`terraform/netbox/`) defines:
 - Device roles and types
 - Manufacturers
 - Sites and locations
@@ -49,34 +49,34 @@ The Terraform module (`terraform/netbox/`) defines:
 
 | Icon | Service | Purpose |
 |------|---------|----------|
-| <img src="./docs/assets/adguard.png" width="32" height="32"> | [AdGuard Home](https://github.com/AdguardTeam/AdGuardHome) | Network-wide DNS + adblocking |
+| <img src="./docs/assets/adguard.svg" width="32" height="32"> | [AdGuard Home](https://github.com/AdguardTeam/AdGuardHome) | Network-wide DNS + adblocking |
 | <img src="./docs/assets/authentik.svg" width="32" height="32"> | [Authentik](https://github.com/goauthentik/authentik) | Identity & Access Management (OAuth, SAML, LDAP) |
-| <img src="./docs/assets/bazarr.png" width="32" height="32"> | [Bazarr](https://github.com/morpheus65535/bazarr) | Subtitle automation |
-| <img src="./docs/assets/calibre.png" width="32" height="32"> | [Calibre](https://github.com/kovidgoyal/calibre) | eBook management & library |
-| <img src="./docs/assets/cloudflare.png" width="32" height="32"> | [Cloudflared](https://github.com/cloudflare/cloudflared) | Tunnel to Cloudflare for remote access |
+| <img src="./docs/assets/bazarr.svg" width="32" height="32"> | [Bazarr](https://github.com/morpheus65535/bazarr) | Subtitle automation |
+| <img src="./docs/assets/calibre.svg" width="32" height="32"> | [Calibre](https://github.com/kovidgoyal/calibre) | eBook management & library |
+| <img src="./docs/assets/cloudflare.svg" width="32" height="32"> | [Cloudflared](https://github.com/cloudflare/cloudflared) | Tunnel to Cloudflare for remote access |
 | <img src="./docs/assets/cups.svg" width="32" height="32"> | [CUPS](https://github.com/OpenPrinting/cups) | Print server |
 | <img src="./docs/assets/diun.png" width="32" height="32"> | [DIUN](https://github.com/crazy-max/diun) | Docker image update notifications |
 | <img src="./docs/assets/dozzle.svg" width="32" height="32"> | [Dozzle](https://github.com/amir20/dozzle) | Docker container log viewer |
 | <img src="./docs/assets/flaresolverr.svg" width="32" height="32"> | [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) | Cloudflare bypass for indexers |
-| <img src="./docs/assets/gluetun.png" width="32" height="32"> | [Gluetun](https://github.com/qdm12/gluetun) | VPN gateway for "download stuff" apps |
-| <img src="./docs/assets/grafana.png" width="32" height="32"> | [Grafana Synthetic Agent](https://github.com/grafana/synthetic-monitoring-agent) | Uptime & performance monitoring |
+| <img src="./docs/assets/gluetun.svg" width="32" height="32"> | [Gluetun](https://github.com/qdm12/gluetun) | VPN gateway for "download stuff" apps |
+| <img src="./docs/assets/grafana.svg" width="32" height="32"> | [Grafana Synthetic Agent](https://github.com/grafana/synthetic-monitoring-agent) | Uptime & performance monitoring |
 | <img src="./docs/assets/jellyfin.svg" width="32" height="32"> | [Jellyfin](https://github.com/jellyfin/jellyfin) | Media server |
-| <img src="./docs/assets/jellyseerr.webp" width="32" height="32"> | [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) | Requests / discovery for Jellyfin |
-| <img src="./docs/assets/n8n.png" width="32" height="32"> | [n8n](https://github.com/n8n-io/n8n) | Workflow automation platform |
-| <img src="./docs/assets/netbootxyz.png" width="32" height="32"> | [netboot.xyz](https://github.com/netbootxyz/netboot.xyz) | Network boot environments |
-| <img src="./docs/assets/netbox.png" width="32" height="32"> | [NetBox](https://github.com/netbox-community/netbox) | Network infrastructure IPAM |
-| <img src="./docs/assets/postgresql.jpg" width="32" height="32"> | [PostgreSQL](https://github.com/postgres/postgres) | Database server |
-| <img src="./docs/assets/prowlarr.png" width="32" height="32"> | [Prowlarr](https://github.com/Prowlarr/Prowlarr) | Indexer manager |
-| <img src="./docs/assets/qbittorrent.png" width="32" height="32"> | [qBittorrent](https://github.com/qbittorrent/qBittorrent) | Torrent client (routed via VPN) |
-| <img src="./docs/assets/radarr.png" width="32" height="32"> | [Radarr](https://github.com/Radarr/Radarr) | Movie automation |
-| <img src="./docs/assets/sabnzbd.png" width="32" height="32"> | [SABnzbd](https://github.com/sabnzbd/sabnzbd) | Usenet downloader (routed via VPN) |
-| <img src="./docs/assets/sonarr.webp" width="32" height="32"> | [Sonarr](https://github.com/Sonarr/Sonarr) | TV automation |
-| <img src="./docs/assets/traefik.png" width="32" height="32"> | [Traefik](https://github.com/traefik/traefik) | Reverse proxy with CrowdSec security integration |
-| <img src="./docs/assets/upsnap.png" width="32" height="32"> | [Upsnap](https://github.com/seriousm4x/UpSnap) | Wake-on-LAN management |
-| <img src="./docs/assets/uptime-kuma.png" width="32" height="32"> | [Uptime Kuma](https://github.com/louislam/uptime-kuma) | Uptime monitoring & status page |
-| <img src="./docs/assets/vault.png" width="32" height="32"> | [Vault](https://github.com/hashicorp/vault) | Secrets management |
-| <img src="./docs/assets/vaultwarden.png" width="32" height="32"> | [Vaultwarden](https://github.com/dani-garcia/vaultwarden) | Password manager server (Bitwarden compatible) |
-| <img src="./docs/assets/warrtracker.png" width="32" height="32"> | [Warrtracker](https://github.com/WarrionerGT/Warrtracker) | Warranty & asset tracking |
+| <img src="./docs/assets/jellyseerr.svg" width="32" height="32"> | [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) | Requests / discovery for Jellyfin |
+| <img src="./docs/assets/n8n.svg" width="32" height="32"> | [n8n](https://github.com/n8n-io/n8n) | Workflow automation platform |
+| <img src="./docs/assets/netbootxyz.svg" width="32" height="32"> | [netboot.xyz](https://github.com/netbootxyz/netboot.xyz) | Network boot environments |
+| <img src="./docs/assets/netbox.svg" width="32" height="32"> | [NetBox](https://github.com/netbox-community/netbox) | Network infrastructure IPAM |
+| <img src="./docs/assets/postgresql.svg" width="32" height="32"> | [PostgreSQL](https://github.com/postgres/postgres) | Database server |
+| <img src="./docs/assets/prowlarr.svg" width="32" height="32"> | [Prowlarr](https://github.com/Prowlarr/Prowlarr) | Indexer manager |
+| <img src="./docs/assets/qbittorrent.svg" width="32" height="32"> | [qBittorrent](https://github.com/qbittorrent/qBittorrent) | Torrent client (routed via VPN) |
+| <img src="./docs/assets/radarr.svg" width="32" height="32"> | [Radarr](https://github.com/Radarr/Radarr) | Movie automation |
+| <img src="./docs/assets/sabnzbd.svg" width="32" height="32"> | [SABnzbd](https://github.com/sabnzbd/sabnzbd) | Usenet downloader (routed via VPN) |
+| <img src="./docs/assets/sonarr.svg" width="32" height="32"> | [Sonarr](https://github.com/Sonarr/Sonarr) | TV automation |
+| <img src="./docs/assets/traefik.svg" width="32" height="32"> | [Traefik](https://github.com/traefik/traefik) | Reverse proxy with CrowdSec security integration |
+| <img src="./docs/assets/upsnap.svg" width="32" height="32"> | [Upsnap](https://github.com/seriousm4x/UpSnap) | Wake-on-LAN management |
+| <img src="./docs/assets/uptime-kuma.svg" width="32" height="32"> | [Uptime Kuma](https://github.com/louislam/uptime-kuma) | Uptime monitoring & status page |
+| <img src="./docs/assets/vault.svg" width="32" height="32"> | [Vault](https://github.com/hashicorp/vault) | Secrets management |
+| <img src="./docs/assets/vaultwarden.svg" width="32" height="32"> | [Vaultwarden](https://github.com/dani-garcia/vaultwarden) | Password manager server (Bitwarden compatible) |
+| <img src="./docs/assets/warracker.png" width="32" height="32"> | [Warracker](https://github.com/sassanix/warracker) | Warranty & asset tracking |
 | <img src="./docs/assets/watchyourlan.png" width="32" height="32"> | [watchyourlan](https://github.com/aceberg/watchyourlan) | LAN device discovery & monitoring |
 
 ---
@@ -135,13 +135,13 @@ DHCP + NTP handled via RouterOS.
 
 ## How to Use This Repo
 
-### Terraform Workflow
+### OpenTofu Workflow
 
-Each Terraform module under `terraform/` has a `Makefile` with standard targets:
+Each OpenTofu module under `terraform/` has a `Makefile` with standard targets:
 
 ```bash
 cd terraform/<module>
-make init      # Initialize Terraform
+make init      # Initialize OpenTofu
 make plan      # Preview changes
 make apply     # Apply changes (auto-approve)
 make destroy   # Tear down (auto-approve)
@@ -194,8 +194,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── adguard/
 │   ├── authentik/
 │   ├── calibre/
-│   ├── cloudflared/
 │   ├── cups/
+│   ├── cloudflared/
 │   ├── diun/
 │   ├── dozzle/
 │   ├── grafana-synthetic-agent/
@@ -209,7 +209,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── uptime_kuma/
 │   ├── vault/
 │   ├── vaultwarden/
-│   ├── warrtracker/
+│   ├── warracker/
 │   └── watchyourlan/
 │
 ├── terraform/                      # Infrastructure as Code
@@ -221,6 +221,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── proxmox/
 │   ├── routeros/
 │   ├── synology-nas/
+│   ├── vault/
 │   └── terraform-cloud/
 │
 ├── mkdocs.yml                      # MkDocs configuration
@@ -231,55 +232,22 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Roadmap
 
-- [x] Portainer stacks:
-  - [x] authentik
-  - [x] cloudflared
-  - [x] cups
-  - [x] dozzle
-  - [x] grafana-synthetic-agent
-  - [x] mediabox
-  - [x] n8n
-  - [x] netboot.xyz
-  - [x] postgres
-  - [x] traefik
-  - [x] upsnap
-  - [x] uptime kuma
-  - [x] watchyourlan
-- [ ] Terraform:
-  - [ ] Portainer:
-    - [x] All stacks created
-    - [ ] Users & Groups
-    - [ ] Host Settings
-  - [ ] Proxmox:
-    - [ ] Host settings
-    - [x] LXC: Portainer
-    - [x] LXC: AdGuard
-  - [ ] RouterOS:
-    - [ ] Interfaces
-    - [ ] Firewall rules
-    - [x] DNS
-    - [x] DHCP
-    - [x] NTP
-    - [ ] WireGuard
-  - [ ] Authentik:
-    - [ ] General settings
-    - [ ] LDAP setup
-    - [ ] OIDC providers
-    - [ ] SAML integration
-    - [ ] Groups and users
-- [ ] Future:
-  - [ ] Ansible playbooks for host configuration
-  - [ ] Migrate cloud drives to NAS
-  - [ ] Migrate backups from Proxmox to NAS
-  - [ ] Use Authentik LDAP for Synology
-  - [ ] Add NUT/UPS integration
-  - [ ] k3s single-node cluster
-  - [ ] Self-hosted LLM (Ollama)
-  - [ ] Separated subnets (IoT isolation)
+- [ ] Migrate cloud drives to NAS
+- [ ] Migrate backups from Proxmox to NAS
+- [x] Use Authentik LDAP for Synology
+- [ ] Add NUT/UPS integration
+- [ ] k3s single-node cluster
+- [ ] Self-hosted LLM (Ollama)
+- [ ] Separated subnets (IoT isolation)
+- [ ] Use Terraform for RouterOS management (or via NetBox)?
 
 ---
 
 ## Changelog
+
+### 11.01.2026
+
+Swapped the Terraform CLI for OpenTofu (`tofu`) across the repo. All module `Makefile`s now run `tofu`, pre-commit uses the OpenTofu hooks, CI installs OpenTofu. Vault now manages all OAuth secrets (for example, Authentik's client secrets), so there is no longer any global tfstate access for Authentik. Secrets are injected at runtime via Vault instead of being stored in shared state.
 
 ### 16.12.2025
 

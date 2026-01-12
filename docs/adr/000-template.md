@@ -1,4 +1,4 @@
-# ADR-0000: Title
+# ADR001: Template
 
 - **Status**: proposed | accepted | deprecated | superseded
 - **Date**: YYYY-MM-DD

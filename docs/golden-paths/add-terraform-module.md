@@ -1,6 +1,6 @@
-# Golden Path: Add a Terraform Module
+# GP003: Add an OpenTofu Module
 
-This guide walks you through adding a new Terraform module to manage infrastructure.
+This guide walks you through adding a new OpenTofu module to manage infrastructure.
 
 ## Prerequisites
 
@@ -37,12 +37,12 @@ terraform/<provider-name>/
 
 ```hcl
 terraform {
-  required_version = ">= 1.0"
+  required_version = ">= 1.6.0"
 
   required_providers {
     <provider> = {
       source  = "<namespace>/<provider>"
-      version = "~> X.Y"
+      version = "X.Y.Z" # pin exact version
     }
   }
 
@@ -87,7 +87,7 @@ variable "domain" {
 locals {
   # Common tags/labels
   common_tags = {
-    managed_by = "terraform"
+    managed_by = "tofu"
     module     = "<provider-name>"
   }
 
@@ -120,11 +120,13 @@ resource "<provider>_<resource>" "example" {
 ### 7. Set Up `Makefile`
 
 ```makefile
+#!/usr/bin/make -f
+
 .PHONY: help init plan apply destroy validate fmt check clean
 
 help:
 	@echo "Available targets:"
-	@echo "  init      - Initialize Terraform"
+	@echo "  init      - Initialize OpenTofu"
 	@echo "  plan      - Create an execution plan"
 	@echo "  apply     - Apply the configuration (with auto-approve)"
 	@echo "  destroy   - Destroy the infrastructure (with auto-approve)"
@@ -134,22 +136,22 @@ help:
 	@echo "  clean     - Clean up temporary files"
 
 init:
-	terraform init
+	tofu init
 
 plan:
-	terraform plan
+	tofu plan
 
 apply:
-	terraform apply -auto-approve
+	tofu apply -auto-approve
 
 destroy:
-	terraform destroy -auto-approve
+	tofu destroy -auto-approve
 
 validate:
-	terraform validate
+	tofu validate
 
 fmt:
-	terraform fmt
+	tofu fmt
 
 check: validate fmt
 

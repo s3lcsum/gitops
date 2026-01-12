@@ -1,4 +1,4 @@
-# Golden Path: Add a Docker Stack
+# GP002: Add a Docker Stack
 
 This guide walks you through adding a new Docker Compose stack to the repository, following established conventions.
 

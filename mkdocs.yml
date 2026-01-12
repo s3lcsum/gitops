@@ -3,12 +3,12 @@
 
 site_name: Home Infrastructure as Code
 site_description: Documentation for home lab GitOps repository
-site_author: dsiejak
-site_url: https://dsiejak.github.io/gitops/
+site_author: s3lcsum
+site_url: https://s3lcsum.github.io/gitops/
 
 # Repository
-repo_name: dsiejak/gitops
-repo_url: https://github.com/dsiejak/gitops
+repo_name: s3lcsum/gitops
+repo_url: https://github.com/s3lcsum/gitops
 edit_uri: edit/main/docs/
 
 # Theme
@@ -48,26 +48,28 @@ theme:
 nav:
   - Home: index.md
   - Architecture:
-      - Overview: architecture/index.md
-      - C4 Container Diagram: architecture/c4-container.md
+      - "A001: Overview": architecture/index.md
+      - "A002: C4 Container Diagram": architecture/c4-container.md
+      - "A003: Coding Conventions": architecture/conventions.md
   - ADRs:
-      - Overview: adr/index.md
-      - Template: adr/0000-template.md
-      - "ADR-0001: Traefik over NPM": adr/0001-traefik-over-npm.md
-      - "ADR-0002: Authentik over ZITADEL": adr/0002-authentik-over-zitadel.md
+      - "ADR000: Overview": adr/index.md
+      - "ADR001: Template": adr/000-template.md
+      - "ADR002: Traefik over NPM": adr/001-traefik-over-npm.md
+      - "ADR003: Authentik over ZITADEL": adr/002-authentik-over-zitadel.md
   - Golden Paths:
-      - Overview: golden-paths/index.md
-      - Add Docker Stack: golden-paths/add-docker-stack.md
-      - Add Terraform Module: golden-paths/add-terraform-module.md
-      - Add Service Behind Traefik: golden-paths/add-service-behind-traefik.md
+      - "GP001: Overview": golden-paths/index.md
+      - "GP002: Add Docker Stack": golden-paths/add-docker-stack.md
+      - "GP003: Add Terraform Module": golden-paths/add-terraform-module.md
+      - "GP004: Add Service Behind Traefik": golden-paths/add-service-behind-traefik.md
   - Runbooks:
-      - Overview: runbooks/index.md
-      - Traefik Routing Broken: runbooks/traefik-routing-broken.md
-      - Rotate Secrets: runbooks/rotate-secrets.md
+      - "RB001: Overview": runbooks/index.md
+      - "RB002: Traefik Routing Broken": runbooks/traefik-routing-broken.md
+      - "RB003: Rotate Secrets": runbooks/rotate-secrets.md
+      - "RB004: Initialize Vault": runbooks/initialize-vault.md
   - Playbooks:
-      - Overview: playbooks/index.md
-      - Upgrade a Stack: playbooks/upgrade-stack.md
-      - Bootstrap New Host: playbooks/bootstrap-new-host.md
+      - "PB001: Overview": playbooks/index.md
+      - "PB002: Upgrade a Stack": playbooks/upgrade-stack.md
+      - "PB003: Bootstrap New Host": playbooks/bootstrap-new-host.md
 
 # Extensions
 markdown_extensions:
@@ -96,7 +98,7 @@ markdown_extensions:
   - pymdownx.keys
   - pymdownx.magiclink:
       repo_url_shorthand: true
-      user: dsiejak
+      user: s3lcsum
       repo: gitops
   - pymdownx.mark
   - pymdownx.smartsymbols
@@ -122,7 +124,20 @@ plugins:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/dsiejak
+      link: https://github.com/s3lcsum
+
+# Exclude README.md files (they conflict with index.md and are for GitHub browsing only)
+exclude_docs: |
+  README.md
+
+# Validation - suppress warnings for links outside docs directory
+validation:
+  nav:
+    omitted_files: info
+    not_found: warn
+  links:
+    absolute_links: info
+    unrecognized_links: info
 
 # Watch for changes
 watch:

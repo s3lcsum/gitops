@@ -30,10 +30,10 @@ High-level system diagrams using C4 model conventions. Understand how the pieces
 
 | Resource | Description |
 |----------|-------------|
-| [README](../README.md) | Main project overview, services list, infrastructure details |
-| [stacks/](../stacks/) | Docker Compose stack definitions |
-| [terraform/](../terraform/) | Infrastructure as Code modules |
-| [terraform/netbox/](../terraform/netbox/) | NetBox inventory management |
+| [README](https://github.com/s3lcsum/gitops#readme) | Main project overview, services list, infrastructure details |
+| [stacks/](https://github.com/s3lcsum/gitops/tree/main/stacks) | Docker Compose stack definitions |
+| [terraform/](https://github.com/s3lcsum/gitops/tree/main/terraform) | Infrastructure as Code modules |
+| [terraform/netbox/](https://github.com/s3lcsum/gitops/tree/main/terraform/netbox) | NetBox inventory management |
 
 ---
 
@@ -56,7 +56,7 @@ Then open `http://localhost:8000`.
 
 When adding new documentation:
 
-1. **ADRs**: Use the template at `adr/0000-template.md`. Number sequentially.
+1. **ADRs**: Use the template at `adr/000-template.md`. Number sequentially.
 2. **Golden Paths**: Focus on the "what" and "how", not the "why" (that's for ADRs).
 3. **Runbooks**: Write for someone who's tired and stressed. Be explicit.
 4. **Playbooks**: Include verification steps. Assume nothing.

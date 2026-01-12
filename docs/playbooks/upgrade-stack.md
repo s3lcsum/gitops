@@ -1,4 +1,4 @@
-# Playbook: Upgrade a Stack
+# PB002: Upgrade a Stack
 
 ## Purpose
 

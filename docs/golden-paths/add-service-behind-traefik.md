@@ -1,4 +1,4 @@
-# Golden Path: Add a Service Behind Traefik
+# GP004: Add a Service Behind Traefik
 
 This guide walks you through exposing a service through Traefik, the reverse proxy.
 

@@ -1,4 +1,4 @@
-# Playbook: Bootstrap New Host
+# PB003: Bootstrap New Host
 
 ## Purpose
 

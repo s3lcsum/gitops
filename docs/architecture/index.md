@@ -1,12 +1,13 @@
-# Architecture
+# A001: Architecture
 
 This section contains high-level system diagrams using [C4 model](https://c4model.com/) conventions. These diagrams help you understand how the pieces fit together before diving into the code.
 
-## Diagrams
+## Contents
 
-| Diagram | Description |
-|---------|-------------|
+| Document | Description |
+|----------|-------------|
 | [C4 Container View](c4-container.md) | Shows the major "containers" (applications/services) and how they interact |
+| [Coding Conventions](conventions.md) | Standards for Docker stacks and Terraform code |
 
 ## C4 Model Levels
 
@@ -31,5 +32,5 @@ When making significant architectural changes:
 
 1. Update the relevant diagram
 2. Write an [ADR](../adr/index.md) explaining the change
-3. Update the [README](../../README.md) if the change affects the public overview
+3. Update the [README](https://github.com/s3lcsum/gitops#readme) if the change affects the public overview
 

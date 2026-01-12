@@ -1,4 +1,4 @@
-# Golden Paths
+# GP001: Golden Paths
 
 Golden paths are the recommended way to accomplish common tasks in this repository. They're opinionated guides that help you do things "the right way" — following established patterns and conventions.
 
@@ -9,7 +9,7 @@ Think of these as the "happy path" for getting work done. If you follow a golden
 | Guide | When to Use |
 |-------|-------------|
 | [Add a Docker Stack](add-docker-stack.md) | Deploying a new service via Docker Compose |
-| [Add a Terraform Module](add-terraform-module.md) | Managing new infrastructure with Terraform |
+| [Add an OpenTofu Module](add-terraform-module.md) | Managing new infrastructure with OpenTofu |
 | [Add a Service Behind Traefik](add-service-behind-traefik.md) | Exposing a service through the reverse proxy |
 
 ## When to Deviate

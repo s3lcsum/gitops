@@ -1,4 +1,4 @@
-# ADR-0001: Use Traefik instead of Nginx Proxy Manager
+# ADR002: Use Traefik instead of Nginx Proxy Manager
 
 - **Status**: Accepted
 - **Date**: 2025-07-07
