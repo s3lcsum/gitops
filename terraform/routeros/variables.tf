@@ -182,6 +182,21 @@ variable "wireguard_routes" {
   }
 }
 
+# WireGuard Peer Public Keys
+variable "wireguard_peer_public_keys" {
+  description = "Public keys for each WireGuard peer (indexed by peer name: peer0, peer1, etc.)"
+  type        = map(string)
+  sensitive   = true
+  default = {
+    peer0 = "" # Dominik's iPad
+    peer1 = "" # Dominik's iPhone
+    peer2 = "" # Dominik's Macbook
+    peer3 = "" # atom-1
+    peer4 = "" # jsejak iPhone
+    peer5 = "" # jsejak Macbook
+  }
+}
+
 # RADIUS Configuration for Keycloak/FreeRADIUS Authentication
 variable "enable_radius" {
   description = "Enable RADIUS authentication for router login"

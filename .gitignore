@@ -40,3 +40,9 @@ stacks/mktxp/mktxp.conf
 
 
 *.tgz*
+
+# MkDocs generated site
+site/
+
+# Python virtual environments
+.venv/

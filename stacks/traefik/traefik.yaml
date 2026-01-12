@@ -8,6 +8,16 @@ entryPoints:
     address: ":80"
     asDefault: false
     http:
+      encodedCharacters:
+        # Temporary solution to allow encoded slashes in the URL, as Vault in latest versions fails to work with Traefik.
+        # @ref: https://github.com/traefik/traefik/pull/12360#issuecomment-3719385044
+        allowEncodedSlash: true          # %2F - Default: false
+        allowEncodedBackSlash: true      # %5C - Default: false
+        allowEncodedNullCharacter: true  # %00 - Default: false
+        allowEncodedSemicolon: true      # %3B - Default: false
+        allowEncodedPercent: true        # %25 - Default: false
+        allowEncodedQuestionMark: true   # %3F - Default: false
+        allowEncodedHash: true           # %23 - Default: false
       middlewares:
         - redirect-to-https@file
         - error-pages-middleware@docker
@@ -17,6 +27,16 @@ entryPoints:
     asDefault: true
     http3: {}
     http:
+      encodedCharacters:
+        # Temporary solution to allow encoded slashes in the URL, as Vault in latest versions fails to work with Traefik.
+        # @ref: https://github.com/traefik/traefik/pull/12360#issuecomment-3719385044
+        allowEncodedSlash: true          # %2F - Default: false
+        allowEncodedBackSlash: true      # %5C - Default: false
+        allowEncodedNullCharacter: true  # %00 - Default: false
+        allowEncodedSemicolon: true      # %3B - Default: false
+        allowEncodedPercent: true        # %25 - Default: false
+        allowEncodedQuestionMark: true   # %3F - Default: false
+        allowEncodedHash: true           # %23 - Default: false
       middlewares:
         - secure-headers@file
         - error-pages-middleware@docker
@@ -25,7 +45,9 @@ entryPoints:
         domains:
           - main: dominiksiejak.pl
             sans:
+              - '*.dominiksiejak.pl'
               - '*.lake.dominiksiejak.pl'
+              - '*.atom.dominiksiejak.pl'
               - '*.hello.dominiksiejak.pl'
 
   traefik:
@@ -62,6 +84,13 @@ certificatesResolvers:
           - "1.1.1.1:53"
           - "8.8.8.8:53"
         disablePropagationCheck: false
+  vaultpki:
+    acme:
+      email: dreewniak@gmail.com
+      storage: /letsencrypt/vault-acme.json
+      caServer: "http://vault:8200/v1/pki_int/acme/directory"
+      httpChallenge:
+        entryPoint: web
 
 metrics:
   prometheus:

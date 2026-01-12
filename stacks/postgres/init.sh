@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
 
+# Color definitions
+RESET='\033[0m'
+BOLD='\033[1m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+YELLOW='\033[0;33m'
+RED='\033[0;31m'
+
 # 🛠️ Function to create user and database
 setup_user_and_database() {
     local username=$1
     local password=$2
     local db_name=$3
 
-    echo "🔧 Setting up user: $username | database: $db_name"
-    PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --host postgres --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+    echo -e "${CYAN}🔧 Setting up user: ${BOLD}$username${RESET}${CYAN} | database: ${BOLD}$db_name${RESET}"
+    PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --quiet --host postgres --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
         -- Create user if not exists, update password if exists
         DO \$\$
         BEGIN
@@ -23,10 +32,10 @@ setup_user_and_database() {
         SELECT 'CREATE DATABASE ${db_name} OWNER ${username}'
         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${db_name}')\gexec
 EOSQL
-    echo "✅ Successfully configured: $username → $db_name"
+    echo -e "${GREEN}✅ Successfully configured: ${BOLD}$username${RESET}${GREEN} → ${BOLD}$db_name${RESET}"
 }
 
-echo "🚀 Starting PostgreSQL database initialization..."
+echo -e "${BLUE}${BOLD}🚀 Starting PostgreSQL database initialization...${RESET}"
 
 # 🔍 Auto-discover all DBINIT_*_USER environment variables
 services_found=0
@@ -44,19 +53,19 @@ for user_var in $(env | grep "^DBINIT_.*_USER=" | cut -d'=' -f1); do
 
     # Check if all required variables are set
     if [[ -n "$user_value" && -n "$password_value" && -n "$name_value" ]]; then
-        echo "📦 Found service: $service_name"
+        echo -e "${BLUE}📦 Found service: ${BOLD}$service_name${RESET}"
         setup_user_and_database "$user_value" "$password_value" "$name_value"
         ((services_found++))
     else
-        echo "⚠️  Incomplete config for $service_name:"
-        echo "   👤 User: ${user_value:-❌ MISSING}"
-        echo "   🔐 Password: ${password_value:+✅ SET}${password_value:-❌ MISSING}"
-        echo "   📁 Database: ${name_value:-❌ MISSING}"
+        echo -e "${YELLOW}⚠️  Incomplete config for ${BOLD}$service_name${RESET}${YELLOW}:${RESET}"
+        echo -e "   👤 User: ${user_value:-${RED}❌ MISSING${RESET}}"
+        echo -e "   🔐 Password: ${password_value:+${GREEN}✅ SET${RESET}}${password_value:-${RED}❌ MISSING${RESET}}"
+        echo -e "   📁 Database: ${name_value:-${RED}❌ MISSING${RESET}}"
     fi
 done
 
 if [ $services_found -eq 0 ]; then
-    echo "😴 No database services found with DBINIT_*_USER pattern"
+    echo -e "${YELLOW}😴 No database services found with DBINIT_*_USER pattern${RESET}"
 else
-    echo "🎉 PostgreSQL initialization completed! ($services_found services configured)"
+    echo -e "${GREEN}${BOLD}🎉 PostgreSQL initialization completed!${RESET} ${GREEN}(${BOLD}$services_found${RESET}${GREEN} services configured)${RESET}"
 fi

@@ -25,7 +25,7 @@ locals {
     "uptime_kuma",
     "vault",
     "vaultwarden",
-    "warrtracker",
+    "warracker",
     "watchyourlan",
   ]
 }

@@ -23,7 +23,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.n8n.loadbalancer.server.port: 5678
-      traefik.http.routers.n8n.rule: Host(`nodemation.lake.dominiksiejak.pl`) || Host(`nodemation.hello.dominiksiejak.pl`)
+      traefik.http.routers.n8n.rule: Host(`nodemation.lake.dominiksiejak.pl`) || Host(`nodemation.hello.dominiksiejak.pl`) || Host(`n8n.lake.dominiksiejak.pl`) || Host(`n8n.hello.dominiksiejak.pl`)
 
 networks:
   proxy:

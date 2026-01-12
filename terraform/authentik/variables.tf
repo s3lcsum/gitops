@@ -25,7 +25,6 @@ variable "service_accounts" {
   description = "Service accounts for LDAP binds with hardcoded passwords"
   type = map(object({
     name     = string
-    password = string
     is_admin = optional(bool, false)
   }))
 }

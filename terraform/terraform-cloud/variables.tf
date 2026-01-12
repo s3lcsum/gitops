@@ -4,8 +4,8 @@ variable "organization_name" {
   default     = "dominiksiejak"
 }
 
-variable "github_oauth_token_id" {
-  description = "GitHub OAuth token ID for VCS integration"
+variable "github_app_installation_id" {
+  description = "GitHub App installation ID for VCS integration"
   type        = string
   default     = ""
 }

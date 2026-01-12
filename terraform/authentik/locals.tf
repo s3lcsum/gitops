@@ -2,6 +2,9 @@ locals {
   # Base domain for all applications
   base_domain = "lake.dominiksiejak.pl"
 
+  # Icon base URL from GitHub repository
+  icon_base_url = "https://raw.githubusercontent.com/s3lcsum/gitops/main/docs/assets"
+
   # LDAP configuration
   ldap = {
     base_dn = "dc=dominiksiejak,dc=pl"
@@ -71,9 +74,14 @@ locals {
     synology = {
       name          = "Synology DSM"
       slug          = "synology"
-      base_url      = "https://synology.lake.dominiksiejak.pl"
-      redirect_uris = ["https://synology.lake.dominiksiejak.pl"]
-      launch_url    = "https://synology.lake.dominiksiejak.pl"
+      base_url      = "https://nas.lake.dominiksiejak.pl"
+      redirect_uris = [
+        "https://nas.lake.dominiksiejak.pl",
+        "https://nas.hello.dominiksiejak.pl",
+        "http://192.168.89.240:5000",
+        "https://192.168.89.240:5001",
+      ]
+      launch_url    = "https://nas.lake.dominiksiejak.pl"
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/synology-dsm.svg"
     }
     n8n = {
@@ -84,22 +92,31 @@ locals {
       launch_url    = "https://n8n.lake.dominiksiejak.pl"
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/n8n.svg"
     }
-    warrtracker = {
-      name          = "Warrtracker"
-      slug          = "warrtracker"
-      base_url      = "https://warrtracker.lake.dominiksiejak.pl"
-      redirect_uris = ["https://warrtracker.lake.dominiksiejak.pl/"]
-      launch_url    = "https://warrtracker.lake.dominiksiejak.pl"
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/warrtracker.svg"
+    warracker = {
+      name          = "Warracker"
+      slug          = "warracker"
+      base_url      = "https://warracker.lake.dominiksiejak.pl"
+      redirect_uris = ["https://warracker.lake.dominiksiejak.pl/"]
+      launch_url    = "https://warracker.lake.dominiksiejak.pl"
+      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/warracker.png"
     }
     jellyfin = {
       name          = "Jellyfin"
       slug          = "jellyfin"
       base_url      = "https://jellyfin.lake.dominiksiejak.pl"
-      redirect_uris = ["https://jellyfin.lake.dominiksiejak.pl/sso/OID/r"]
-      launch_url    = "https://jellyfin.lake.dominiksiejak.pl"
+      redirect_uris = ["https://jellyfin.lake.dominiksiejak.pl/login"]
+      launch_url    = "https://jellyfin.lake.dominiksiejak.pl/"
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyfin.svg"
     }
+    jellyseerr = {
+      name          = "Jellyseerr"
+      slug          = "jellyseerr"
+      base_url      = "https://jellyseerr.lake.dominiksiejak.pl"
+      redirect_uris = ["https://jellyseerr.lake.dominiksiejak.pl/sso/OID/redirect/authentik"]
+      launch_url    = "https://jellyseerr.lake.dominiksiejak.pl/sso/OID/start/authentik"
+      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyseerr.svg"
+    }
+
     homeassistant = {
       name          = "Home Assistant"
       slug          = "homeassistant"
@@ -107,6 +124,18 @@ locals {
       redirect_uris = ["https://hass.lake.dominiksiejak.pl/auth/openid/callback"]
       launch_url    = "https://hass.lake.dominiksiejak.pl"
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/home-assistant.svg"
+    }
+    vault = {
+      name     = "Vault"
+      slug     = "vault"
+      base_url = "https://vault.lake.dominiksiejak.pl"
+      redirect_uris = [
+        "https://vault.lake.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
+        "https://vault.lake.dominiksiejak.pl/oidc/callback",
+        "http://localhost:8250/oidc/callback"
+      ]
+      launch_url = "https://vault.lake.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/vault.svg"
     }
   }
 
@@ -181,7 +210,7 @@ locals {
       name       = "Calibre"
       slug       = "calibre"
       launch_url = "https://calibre.lake.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/calibre-web.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/calibre.svg"
     }
     qbittorrent = {
       name       = "qBittorrent"
@@ -195,11 +224,32 @@ locals {
       launch_url = "https://upsnap.lake.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/upsnap.svg"
     }
-    jellyseerr = {
-      name       = "Jellyseerr"
-      slug       = "jellyseerr"
-      launch_url = "https://jellyseerr.lake.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyseerr.svg"
+    netbootxyz = {
+      name       = "Netboot.xyz"
+      slug       = "netbootxyz"
+      launch_url = "https://netbootxyz.lake.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/netbootxyz.svg"
     }
   }
+
+  # Applications accessible by users group (admins have access to everything)
+  user_accessible_apps = toset([
+    "calibre",
+    "n8n",
+    "netbootxyz",
+    "netbox",
+    "vaultwarden",
+    "warracker",
+    "watchyourlan",
+    "jellyfin",
+    "jellyseerr",
+    "upsnap",
+  ])
+
+  # All applications combined for policy binding
+  all_applications = merge(
+    { for k, v in local.oauth2_applications : k => "oauth2" },
+    { for k, v in local.proxy_applications : k => "proxy" },
+    { for k, v in local.dashboard_applications : k => "dashboard" },
+  )
 }

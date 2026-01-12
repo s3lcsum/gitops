@@ -29,7 +29,7 @@ services:
                   "region": "global",
                   "key_ring": "vault-keyring",
                   "crypto_key": "vault-auto-unseal",
-                  "credentials": "/vault/data/config/vault-service-account.json"
+                  "credentials": "/vault/credentials/vault-service-account.json"
               }
           },
           "telemetry": {
@@ -44,6 +44,7 @@ services:
         }
     volumes:
       - data:/vault/data
+      - /etc/vault/credentials:/vault/credentials
     networks:
       - proxy
       - database
@@ -54,6 +55,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.vault.loadbalancer.server.port: 8200
+
 
 networks:
   proxy:

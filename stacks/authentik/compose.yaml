@@ -12,10 +12,12 @@ x-default: &default
     - media:/media
     - templates:/templates
     - certs:/certs
-    - /var/run/docker.sock:/var/run/docker.sock:ro
+    - /var/run/docker.sock:/var/run/docker.sock:rw
+  user: "1000:996"
   networks:
     - proxy
     - database
+    - authentik
 
 services:
   server:
@@ -45,29 +47,29 @@ services:
     container_name: authentik-worker
     command: worker
     networks:
-      - proxy
+      - authentik
       - database
 
-  ldap-outpost:
+  ldap:
     image: ghcr.io/goauthentik/ldap:2025.10.2
-    container_name: authentik-ldap-outpost
-    restart: unless-stopped
+    container_name: authentik-ldap
+    ports:
+      - 389:3389
+      - 636:6636
     env_file:
       - /opt/authentik/authentik-outpost-docker.env
     environment:
       AUTHENTIK_HOST: https://auth.lake.dominiksiejak.pl
       AUTHENTIK_INSECURE: "false"
-    depends_on:
-      - server
-    ports:
-      - "389:3389"
-      - "636:6636"
+
 
 networks:
   proxy:
     external: true
   database:
     external: true
+  authentik:
+    driver: bridge
 
 volumes:
   media:

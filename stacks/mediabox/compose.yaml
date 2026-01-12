@@ -172,7 +172,7 @@ services:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:6767/"]
 
-  # 📺 Media server
+  # 📺 Media server (primary)
   jellyfin:
     <<: *service-defaults
     image: linuxserver/jellyfin
@@ -198,7 +198,7 @@ services:
   jellyseerr:
     <<: *service-defaults
     container_name: jellyseerr
-    image: fallenbagel/jellyseerr
+    image: fallenbagel/jellyseerr:preview-OIDC
     depends_on:
       jellyfin:
         condition: service_healthy

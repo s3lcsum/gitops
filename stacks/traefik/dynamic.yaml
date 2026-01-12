@@ -56,25 +56,9 @@ http:
 
   # Routers
   routers:
-    redirect-to-https:
-      rule: "HostRegexp(`{host:.+}`)"
-      priority: 1 # Lower priority to catch-all, but won't overwrite other routers
-      entryPoints:
-        - web
-      middlewares:
-        - redirect-to-https
-      service: noop@internal
-
-    block-external-ip:
-      rule: "HostRegexp(`{host:.+}`)"
-      priority: 1 # Lower priority to catch-all, but won't overwrite other routers
-      entryPoints:
-        - websecure
-      service: error-pages-service@docker
-
     # Synology HTTPS Passthrough
     synology:
-      rule: "Host(`nas.lake.dominiksiejak.pl`)"
+      rule: "Host(`nas.lake.dominiksiejak.pl`) || Host(`synology.lake.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: synology
@@ -119,7 +103,7 @@ http:
     synology:
       loadBalancer:
         servers:
-          - url: "https://192.168.89.210:5001/"
+          - url: "https://192.168.89.240:5001/"
         passHostHeader: true
         serversTransport: insecure
     proxmox:

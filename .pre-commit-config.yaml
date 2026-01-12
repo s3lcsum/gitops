@@ -17,11 +17,27 @@ repos:
       - id: mixed-line-ending
       - id: pretty-format-json
 
-  # Terraform-specific hooks: formatting, linting, validation, security
+  # OpenTofu-specific hooks: formatting and validation
+  - repo: https://github.com/tofuutils/pre-commit-opentofu
+    rev: v2.1.0
+    hooks:
+      - id: tofu_fmt
+      - id: tofu_validate
+
+  # Terraform linters and security scanners (compatible with OpenTofu configs)
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.99.5
     hooks:
-      - id: terraform_fmt
-      - id: terraform_validate
       - id: terraform_tflint
       - id: terraform_trivy
+
+  # MkDocs: build documentation locally (no server, output to site/)
+  - repo: local
+    hooks:
+      - id: mkdocs-build
+        name: Build MkDocs documentation
+        entry: uvx --with mkdocs-material --with mkdocs-git-revision-date-localized-plugin mkdocs build --strict
+        language: system
+        files: ^(docs/|mkdocs\.yml)
+        pass_filenames: false
+        stages: [pre-commit]

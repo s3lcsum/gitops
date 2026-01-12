@@ -9,6 +9,9 @@ terraform {
   }
 
   cloud {
+    hostname     = "app.terraform.io"
+    organization = "dominiksiejak"
+
     workspaces {
       name = "gitops-gcp"
     }

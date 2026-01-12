@@ -2,9 +2,13 @@ terraform {
   required_version = ">= 1.11.0"
 
   required_providers {
-    portainer = {
-      source  = "portainer/portainer"
-      version = "1.17.0"
+    vault = {
+      source  = "hashicorp/vault"
+      version = "5.6.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.6.0"
     }
     tfe = {
       source  = "hashicorp/tfe"
@@ -17,13 +21,13 @@ terraform {
     organization = "dominiksiejak"
 
     workspaces {
-      name = "gitops-portainer"
+      name = "gitops-vault"
     }
   }
 }
 
-provider "portainer" {
-  endpoint        = var.portainer_endpoint
-  api_key         = var.portainer_api_key
-  skip_ssl_verify = true
+provider "vault" {
+  address = var.vault_address
 }
+
+

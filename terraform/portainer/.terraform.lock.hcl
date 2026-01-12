@@ -1,27 +1,25 @@
-# This file is maintained automatically by "terraform init".
+# This file is maintained automatically by "tofu init".
 # Manual edits may be lost in future updates.
 
-provider "registry.terraform.io/hashicorp/tfe" {
+provider "registry.opentofu.org/hashicorp/tfe" {
   version     = "0.61.0"
   constraints = "0.61.0"
   hashes = [
-    "h1:HWEiJAXp0CN3wF6x4ZG2If4Zi67fWfib3DpoO3NyKKc=",
-    "zh:03140a49fc507635f4adb3a78e301f48cdf338b7945e55a5849595b5a477e3bf",
-    "zh:0fa6a1aae3a9babc8deb8b21b0ee1aa395d0c7ab3fd029d9d7fc34e90003b9da",
-    "zh:18211692e58f2c7cf27e36b3edf3da1dc22d6db16955bd7dd9aff7af326a54a9",
-    "zh:3992f05a9d41dccd1e511de2ad0a19ecda74d388954aafb49ec535e1d5a8d6c5",
-    "zh:42f49be2630ef84cc0cab9818452b24266164ecd4c1d5bf66ff431f4ae9905ad",
-    "zh:4c1f9b9bcc4c470b22272bf7944b936841b33a2ca59b46b751045079378b26f6",
-    "zh:4eab614e401d39c785448038b249490cb9952867071076d09929ab78894e4bed",
-    "zh:750d2fe9c0079123847490dc706febafe5c2cac2221c95f825232732c5201abd",
-    "zh:ae0f092446e71cb0e47a7fe246e9a16b80f6a5e5d2d416a80c4951bfe4ef3335",
-    "zh:d4e053fc15da1ae51112d3e90008302a987ffa8c1d39e71e0650c7e85352e89d",
-    "zh:d95ec293fa70e946b6cd657912b33155f8be3413e6128ed2bfa5a493f788e439",
-    "zh:f71f6fd95c24851e94cfb9b1d07a106bf32322f8e15b53701b2414a577a027b4",
+    "h1:msNsmseANtxfTPCDetedw5JDDn2ayRDQY/gjetjAebE=",
+    "zh:07c3209bae9de6f7e8110322d13651a1e3dd4a93c74c0a7996013fdc5a0e2797",
+    "zh:09d8d188626423b9c12dd6785f5c87d1c4e518628678bac9733510924e4c7e78",
+    "zh:1b297754c94ba029065eb5b68e6b39e41ea5c09715c838e5a162c399d7b9cf0b",
+    "zh:4267816e93345b15c7c66776ffe936ea086d85c1fce32ed382beecbd157ec8e1",
+    "zh:429aedc5156662241d6ed3908d4e5ac424d23bd0a7c85760439ad718a277475d",
+    "zh:6bdb2ed0aa39f5828a03f8c0783d35ebf9871a450f5d6b5cfd0372b18cefc7f0",
+    "zh:729de46b69ddfb5659c8ad956e8d288d93f125be22aa9d3b0e9a93b58f3e7eaf",
+    "zh:77bffe4015f4ac9fe6a3b929dc51268194bdc19876be9356eedfe07e4f89ca01",
+    "zh:8643abc6af4a705b5ffe82637ce05e630ce0334a414656d73d3e90b70d937f91",
+    "zh:8ebdf6547033a0a9dab5e2f9a1f72d024af74f1043e026f4cc712c638763eb03",
   ]
 }
 
-provider "registry.terraform.io/portainer/portainer" {
+provider "registry.opentofu.org/portainer/portainer" {
   version     = "1.17.0"
   constraints = "1.17.0"
   hashes = [

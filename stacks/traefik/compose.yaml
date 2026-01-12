@@ -2,8 +2,9 @@
 
 services:
   traefik:
-    image: traefik:latest
+    image: traefik:v3.6.6
     container_name: traefik
+    restart: unless-stopped
     user: root
     networks:
       - default
@@ -55,7 +56,7 @@ services:
 
   error-pages:
     image: ghcr.io/tarampampam/error-pages:3
-    restart: always
+    restart: unless-stopped
     container_name: error-pages
     networks:
       - proxy
@@ -63,7 +64,7 @@ services:
       TEMPLATE_NAME: "app-down"
     labels:
       traefik.enable: true
-      traefik.http.routers.error-pages-router.rule: "HostRegexp(`{host:.+}`)"
+      traefik.http.routers.error-pages-router.rule: "HostRegexp(`{host:.+}`) || ClientIP(`0.0.0.0/0`)"
       traefik.http.routers.error-pages-router.priority: 10
       traefik.http.routers.error-pages-router.entrypoints: web,websecure
       traefik.http.routers.error-pages-router.middlewares: error-pages-middleware
