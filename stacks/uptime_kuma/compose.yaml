@@ -7,8 +7,6 @@ services:
     restart: unless-stopped
     env_file:
       - /opt/uptime_kuma/uptime_kuma.env
-    environment:
-      DATABASE_URL: postgresql://${UPTIME_KUMA_DB_USER}:${UPTIME_KUMA_DB_PASSWORD}@postgres:5432/${UPTIME_KUMA_DB_NAME}
     volumes:
       - data:/app/data
       - /var/run/docker.sock:/var/run/docker.sock:ro
