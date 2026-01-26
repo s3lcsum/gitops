@@ -1,0 +1,14 @@
+services:
+  omnitools:
+    image: iib0011/omni-tools:latest
+    container_name: omnitools
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      traefik.enable: true
+      traefik.http.routers.omnitools.rule: Host(`omnitools.lake.dominiksiejak.pl`) || Host(`omnitools.hello.dominiksiejak.pl`)
+
+networks:
+  proxy:
+    external: true

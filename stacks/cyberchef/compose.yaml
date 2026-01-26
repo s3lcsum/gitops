@@ -1,0 +1,14 @@
+services:
+  cyberchef:
+    image: ghcr.io/gchq/cyberchef:latest
+    container_name: cyberchef
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      traefik.enable: true
+      traefik.http.routers.cyberchef.rule: Host(`cyberchef.lake.dominiksiejak.pl`) || Host(`cyberchef.hello.dominiksiejak.pl`)
+
+networks:
+  proxy:
+    external: true
