@@ -1,4 +1,3 @@
-# https://github.com/s3lcsum/gitops/blob/main/stacks/grafana-synthetic-agent/compose.yaml
 
 services:
   grafana-synthetic-agent:
@@ -9,14 +8,7 @@ services:
       - /opt/grafana-synthetic-agent/grafana-synthetic-agent.env
     networks:
       - metrics
-    # Note: Arguments must be passed without quotes to work properly
-    # The metrics endpoint by default only accepts connections from localhost
-    entrypoint: ["/bin/sh", "-c"]
-    command: >
-      /usr/local/bin/synthetic-monitoring-agent
-      -api-server-address=synthetic-monitoring-grpc-eu-west.grafana.net:443
-      -api-token=$${API_TOKEN}
-      -listen-address=0.0.0.0:4050
+    entrypoint: ["/bin/sh", "-c", "/usr/local/bin/synthetic-monitoring-agent -api-server-address $${API_SERVER} -api-token $${API_TOKEN}"]
 
 networks:
   metrics:
