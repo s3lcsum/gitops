@@ -51,7 +51,7 @@ services:
       - database
 
   ldap:
-    image: ghcr.io/goauthentik/ldap:2025.10.2
+    image: ghcr.io/goauthentik/ldap:2025.12.4
     container_name: authentik-ldap
     ports:
       - 389:3389
