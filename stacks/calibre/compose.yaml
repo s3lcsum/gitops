@@ -9,7 +9,7 @@ services:
   # 📚 Calibre - Full ebook management application
   calibre:
     <<: *defaults
-    image: linuxserver/calibre:latest
+    image: ghcr.io/linuxserver/calibre:latest
     container_name: calibre
     ports:
       - 12800:8080
@@ -19,7 +19,8 @@ services:
       - /dev/dri:/dev/dri
     volumes:
       - calibre_config:/config
-      - /mnt/LOCAL_MEDIA/books:/books
+      - /mnt/LOCAL_MEDIA/books:/mnt/LOCAL_MEDIA/books
+      - /mnt/NAS_Shared_Media/books:/mnt/NAS_Shared_Media/books
     labels:
       traefik.enable: true
       # Main GUI interface
@@ -28,7 +29,7 @@ services:
       traefik.http.services.calibre-gui.loadbalancer.server.port: 8080
 
       # WebServer for API
-      
+
       traefik.http.routers.calibre-api.rule: Host(`calibre-api.lake.dominiksiejak.pl`)
       traefik.http.routers.calibre-api.service: calibre-gui
       traefik.http.services.calibre-api.loadbalancer.server.port: 8083

@@ -1,7 +1,7 @@
-# This file is maintained automatically by "terraform init".
+# This file is maintained automatically by "tofu init".
 # Manual edits may be lost in future updates.
 
-provider "registry.terraform.io/e-breuninger/netbox" {
+provider "registry.opentofu.org/e-breuninger/netbox" {
   version     = "5.0.0"
   constraints = "5.0.0"
   hashes = [

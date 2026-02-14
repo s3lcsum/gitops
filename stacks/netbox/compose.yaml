@@ -2,7 +2,7 @@
 x-defaults: &defaults
   image: netboxcommunity/netbox
   restart: unless-stopped
-  user: "unit:root"
+  user: "root:root"
   env_file:
     - /opt/netbox/netbox.env
   networks:
@@ -27,7 +27,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.netbox.loadbalancer.server.port: 8080
-      traefik.http.routers.netbox.rule: Host(`netbox.lake.dominiksiejak.pl`) || Host(`netbox.hello.dominiksiejak.pl`)
+      traefik.http.routers.netbox.rule: Host(`netbox.lake.dominiksiejak.pl`)
 
   netbox-worker:
     <<: *defaults
@@ -38,7 +38,6 @@ services:
       - rqworker
     healthcheck:
       test: ps -aux | grep -v grep | grep -q rqworker || exit 1
-
 
   redis:
     image: docker.io/valkey/valkey:8.1-alpine

@@ -22,33 +22,44 @@ locals {
 
   databases = {
     n8n = {
-      database = "n8n_db"
       username = "n8n_user"
-    }
-    netbox = {
-      database = "netbox_db"
-      username = "netbox_user"
-    }
-    authentik = {
-      database = "authentik_db"
-      username = "authentik_user"
-    }
-    uptime_kuma = {
-      database = "uptime_kuma_db"
-      username = "uptime_kuma_user"
+      database = "n8n_db"
     }
     watchyourlan = {
-      database = "watchyourlan_db"
       username = "watchyourlan_user"
-    }
-    warracker = {
-      database = "warracker_db"
-      username = "warracker_user"
+      database = "watchyourlan_db"
     }
     vaultwarden = {
-      database = "vaultwarden_db"
       username = "vaultwarden_user"
+      database = "vaultwarden_db"
+    }
+    gitea = {
+      username = "gitea_user"
+      database = "gitea_db"
+    }
+    authentik = {
+      username = "authentik_user"
+      database = "authentik_db"
+    }
+    netbox = {
+      username = "netbox_user"
+      database = "netbox_db"
+    }
+    warracker = {
+      username = "warracker_user"
+      database = "warracker_db"
+    }
+    backstage = {
+      username = "backstage_user"
+      database = "backstage_db"
+    }
+    firefly = {
+      username = "firefly_user"
+      database = "firefly_db"
+    }
+    gatus = {
+      username = "gatus_user"
+      database = "gatus_db"
     }
   }
 }
-

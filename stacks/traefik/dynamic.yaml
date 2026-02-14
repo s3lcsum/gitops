@@ -32,7 +32,7 @@ http:
         crowdsec-bouncer-traefik-plugin:
           enabled: true
           crowdsecLapiUrl: "http://crowdsec:8080"
-          crowdsecLapiKey: "${CROWDSEC_API_KEY}"
+          crowdsecLapiKey: '{{ env "CROWDSEC_API_KEY" }}'
           forwardedHeadersCustomName: "X-Forwarded-For"
           forwardedHeadersTrustedIPs:
             - "127.0.0.1/32"
@@ -54,44 +54,27 @@ http:
               enabled: false
           logLevel: "INFO"
 
-  # Routers
+
+  # Routers for non-Docker services
   routers:
-    # Synology HTTPS Passthrough
     synology:
-      rule: "Host(`nas.lake.dominiksiejak.pl`) || Host(`synology.lake.dominiksiejak.pl`)"
+      rule: "Host(`nas.lake.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: synology
 
-    # Proxmox HTTPS Passthrough
     proxmox:
       rule: "Host(`proxmox.lake.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: proxmox
 
-    # Router (HTTP backend)
     mikrotik:
       rule: "Host(`router.lake.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: mikrotik
 
-    # OctoPrint
-    octoprint:
-      rule: "Host(`octoprint.lake.dominiksiejak.pl`)"
-      entryPoints:
-        - websecure
-      service: octoprint
-
-    # OpenWebRX
-    openwebrx:
-      rule: "Host(`openwebrx.lake.dominiksiejak.pl`)"
-      entryPoints:
-        - websecure
-      service: openwebrx
-
-    # Home Assistant
     homeassistant:
       rule: "Host(`hass.lake.dominiksiejak.pl`)"
       entryPoints:
@@ -106,26 +89,18 @@ http:
           - url: "https://192.168.89.240:5001/"
         passHostHeader: true
         serversTransport: insecure
+
     proxmox:
       loadBalancer:
         servers:
           - url: "https://192.168.89.254:8006/"
         passHostHeader: true
         serversTransport: insecure
+
     mikrotik:
       loadBalancer:
         servers:
           - url: "http://192.168.89.1/"
-        passHostHeader: true
-    octoprint:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.89.206:5000/"
-        passHostHeader: true
-    openwebrx:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.89.206:8073/"
         passHostHeader: true
 
     homeassistant:

@@ -13,13 +13,10 @@ services:
       UPSNAP_SCAN_TIMEOUT: 500ms
       UPSNAP_PING_PRIVILEGED: "true"
     network_mode: host
-    entrypoint: /bin/sh -c "./upsnap serve --http 0.0.0.0:5000"
     labels:
       traefik.enable: true
-      traefik.http.services.upsnap.loadbalancer.server.url: http://192.168.89.253:5000
+      traefik.http.services.upsnap.loadbalancer.server.url: http://192.168.89.253:8090
       traefik.http.routers.upsnap.rule: Host(`upsnap.lake.dominiksiejak.pl`)
-    healthcheck:
-      test: curl -fs "http://192.168.89.253:5000/api/health" || exit 1
 
 volumes:
   data:

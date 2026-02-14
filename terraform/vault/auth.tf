@@ -2,10 +2,10 @@
 resource "vault_jwt_auth_backend" "oidc" {
   path               = "oidc"
   type               = "oidc"
-  description        = "" # Leave empty for security reasons
-  oidc_discovery_url = local.authentik_vault_oidc.issuer_url
-  oidc_client_id     = local.authentik_vault_oidc.client_id
-  oidc_client_secret = local.authentik_vault_oidc.client_secret
+  description        = "Authentik"
+  oidc_discovery_url = "https://auth.lake.dominiksiejak.pl/application/o/vault/"
+  oidc_client_id     = data.tfe_outputs.authentik.values.applications.vault.client_id
+  oidc_client_secret = data.tfe_outputs.authentik.values.applications.vault.client_secret
   default_role       = "admin"
 
   tune {
@@ -28,7 +28,7 @@ resource "vault_jwt_auth_backend_role" "admin" {
     groups = "admins"
   }
 
-  bound_audiences = [local.authentik_vault_oidc.client_id]
+  bound_audiences = [data.tfe_outputs.authentik.values.applications.vault.client_id]
   allowed_redirect_uris = [
     "https://vault.lake.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
     "https://vault.lake.dominiksiejak.pl/oidc/callback",
@@ -64,4 +64,3 @@ resource "vault_identity_group_alias" "admins" {
   mount_accessor = vault_jwt_auth_backend.oidc.accessor
   canonical_id   = vault_identity_group.admins.id
 }
-

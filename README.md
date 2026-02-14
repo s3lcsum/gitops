@@ -21,7 +21,7 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 | **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + OpenTofu (`terraform/authentik/`) |
 | **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + OpenTofu (`terraform/netbox/`) |
 | **Secrets** | HashiCorp Vault + Vaultwarden | `stacks/vault/`, `stacks/vaultwarden/` |
-| **Monitoring** | Uptime Kuma, Grafana Synthetic Agent | `stacks/uptime_kuma/`, `stacks/grafana-synthetic-agent/` |
+| **Monitoring** | Gatus, Grafana Synthetic Agent | `stacks/gatus/`, `stacks/grafana-synthetic-agent/` |
 | **Media** | Jellyfin + *arr stack + downloaders | `stacks/mediabox/` |
 
 📖 **[Full documentation](docs/index.md)** — ADRs, golden paths, runbooks, playbooks, and C4 architecture diagrams.
@@ -71,9 +71,10 @@ The OpenTofu module (`terraform/netbox/`) defines:
 | <img src="./docs/assets/radarr.svg" width="32" height="32"> | [Radarr](https://github.com/Radarr/Radarr) | Movie automation |
 | <img src="./docs/assets/sabnzbd.svg" width="32" height="32"> | [SABnzbd](https://github.com/sabnzbd/sabnzbd) | Usenet downloader (routed via VPN) |
 | <img src="./docs/assets/sonarr.svg" width="32" height="32"> | [Sonarr](https://github.com/Sonarr/Sonarr) | TV automation |
+| <img src="./docs/assets/stalwart.svg" width="32" height="32"> | [Stalwart Mail](https://github.com/stalwartlabs/stalwart) | Send-only SMTP server for app notifications |
 | <img src="./docs/assets/traefik.svg" width="32" height="32"> | [Traefik](https://github.com/traefik/traefik) | Reverse proxy with CrowdSec security integration |
 | <img src="./docs/assets/upsnap.svg" width="32" height="32"> | [Upsnap](https://github.com/seriousm4x/UpSnap) | Wake-on-LAN management |
-| <img src="./docs/assets/uptime-kuma.svg" width="32" height="32"> | [Uptime Kuma](https://github.com/louislam/uptime-kuma) | Uptime monitoring & status page |
+| <img src="./docs/assets/gatus.svg" width="32" height="32"> | [Gatus](https://github.com/TwiN/gatus) | Uptime monitoring & status page |
 | <img src="./docs/assets/vault.svg" width="32" height="32"> | [Vault](https://github.com/hashicorp/vault) | Secrets management |
 | <img src="./docs/assets/vaultwarden.svg" width="32" height="32"> | [Vaultwarden](https://github.com/dani-garcia/vaultwarden) | Password manager server (Bitwarden compatible) |
 | <img src="./docs/assets/warracker.png" width="32" height="32"> | [Warracker](https://github.com/sassanix/warracker) | Warranty & asset tracking |
@@ -206,7 +207,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── postgres/
 │   ├── traefik/
 │   ├── upsnap/
-│   ├── uptime_kuma/
+│   ├── gatus/
 │   ├── vault/
 │   ├── vaultwarden/
 │   ├── warracker/
@@ -244,6 +245,20 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 05.02.2026
+
+Added a new `smtp` stack running Stalwart SMTP server for send-only notifications. It's exposed publicly on ports 587/465 with SMTP AUTH required, so apps can connect from anywhere without turning into an open relay. Admin UI is behind Traefik at `smtp.lake.dominiksiejak.pl`. Planning to relay outbound through Zoho since my dynamic IP would tank deliverability otherwise.
+
+### 03.02.2026
+
+Brought back Watchtower as a Portainer-managed stack (using the maintained `ghcr.io/containrrr/watchtower` image, not the abandoned one). Also removed the leftover `wud.*` label from the Postgres stack since I don’t want WUD poking at DB/Vault-tier stuff.
+
+Also bumped the centralized Postgres stack to **v18** and added a safe `17 -> 18` migration script (logical dump + filesystem snapshot + restore into a fresh v18 data dir) so I can roll forward/back without sweating data loss.
+
+### 02.02.2026
+
+Swapped Uptime Kuma for Gatus as the uptime monitoring solution. Gatus is simpler, uses config-as-code (YAML), and doesn't need a database - just SQLite for history. Migrated all monitors from Terraform to the Gatus config file. Removed the whole `terraform/uptime-kuma/` module and the Terraform Cloud workspace for it. Updated Authentik, Vault, and Postgres configs to drop the Uptime Kuma references. Status page now lives at `status.lake.dominiksiejak.pl`.
 
 ### 11.01.2026
 

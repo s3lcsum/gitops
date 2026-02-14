@@ -15,7 +15,7 @@ variable "users" {
   type = map(object({
     name         = string
     email        = string
-    groups       = list(string)
+    is_admin     = optional(bool, false)
     is_active    = optional(bool, true)
     sshPublicKey = optional(list(string), [])
   }))

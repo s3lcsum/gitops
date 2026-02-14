@@ -1,0 +1,27 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/gatus/compose.yaml
+
+services:
+  gatus:
+    image: ghcr.io/twin/gatus:latest
+    container_name: gatus
+    restart: unless-stopped
+    env_file:
+      - /opt/gatus/gatus.env
+    volumes:
+      - /opt/gatus/config.yaml:/config/config.yaml:ro
+    networks:
+      - proxy
+      - metrics
+      - database
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+      traefik.http.routers.gatus.rule: "Host(`status.lake.dominiksiejak.pl`)"
+
+networks:
+  proxy:
+    external: true
+  metrics:
+    external: true
+  database:
+    external: true

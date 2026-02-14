@@ -21,6 +21,7 @@ services:
       traefik.enable: true
       traefik.http.routers.wyl.rule: Host(`lan.lake.dominiksiejak.pl`)
       traefik.http.services.wyl.loadbalancer.server.url: http://192.168.89.253:8840
+      traefik.http.routers.wyl.middlewares: authentik@docker
 
 volumes:
   data:

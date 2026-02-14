@@ -86,4 +86,3 @@ resource "google_iap_client" "authentik" {
   display_name = "Authentik SSO"
   brand        = google_iap_brand.homelab.name
 }
-

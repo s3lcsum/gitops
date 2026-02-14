@@ -9,7 +9,6 @@ services:
       VAULT_ADDR: http://127.0.0.1:8200
       VAULT_API_ADDR: http://127.0.0.1:8200
       VAULT_CLUSTER_ADDR: http://127.0.0.1:8201
-      VAULT_LOG_LEVEL: debug
       VAULT_LOCAL_CONFIG: >-
         {
           "backend": {
@@ -40,11 +39,13 @@ services:
           "ui": true,
           "default_lease_ttl": "168h",
           "max_lease_ttl": "720h",
-          "disable_mlock": true
+          "disable_mlock": true,
         }
     volumes:
       - data:/vault/data
       - /etc/vault/credentials:/vault/credentials
+    ports:
+      - 8200:8200
     networks:
       - proxy
       - database

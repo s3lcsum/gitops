@@ -2,7 +2,7 @@
 
 services:
   traefik:
-    image: traefik:v3.6.6
+    image: ghcr.io/traefik/traefik:latest
     container_name: traefik
     restart: unless-stopped
     user: root
@@ -24,6 +24,7 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.traefik-dashboard.service: api@internal
+      traefik.http.routers.traefik-dashboard.middlewares: authentik@docker
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
       interval: 30s
@@ -31,14 +32,13 @@ services:
       retries: 3
 
   crowdsec:
-    image: crowdsecurity/crowdsec:latest
+    image: ghcr.io/crowdsecurity/crowdsec:latest
     container_name: crowdsec
     restart: unless-stopped
     networks:
       - proxy
-    environment:
-      - COLLECTIONS=crowdsecurity/traefik
-      - CROWDSEC_BOUNCER_KEY=${CROWDSEC_BOUNCER_KEY:-}
+    env_file:
+      - /opt/traefik/crowdsec.env
     volumes:
       - crowdsec-config:/etc/crowdsec
       - crowdsec-data:/var/lib/crowdsec/data
@@ -61,7 +61,8 @@ services:
     networks:
       - proxy
     environment:
-      TEMPLATE_NAME: "app-down"
+      TEMPLATE_NAME: "ghost"
+      SEND_SAME_HTTP_CODE: "true"
     labels:
       traefik.enable: true
       traefik.http.routers.error-pages-router.rule: "HostRegexp(`{host:.+}`) || ClientIP(`0.0.0.0/0`)"

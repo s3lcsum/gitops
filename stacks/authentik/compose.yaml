@@ -1,8 +1,8 @@
 # https://github.com/s3lcsum/gitops/blob/main/stacks/authentik/compose.yaml
 
 x-default: &default
-  image: ghcr.io/goauthentik/server:2025.10.2
-  restart: unless-stopped
+  image: ghcr.io/goauthentik/server:2025.12.3
+  restart: always
   env_file:
     - /opt/authentik/authentik.env
   environment:
@@ -24,8 +24,6 @@ services:
     <<: *default
     container_name: authentik-server
     command: server
-    depends_on:
-      - worker
     healthcheck:
       test: ["CMD", "ak", "healthcheck"]
       interval: 30s
@@ -37,30 +35,20 @@ services:
       traefik.docker.network: proxy
       traefik.http.routers.authentik.rule: Host(`auth.lake.dominiksiejak.pl`)
       traefik.http.services.authentik.loadbalancer.server.port: 9000
-      # Forward auth middleware for other services
-      traefik.http.middlewares.authentik-forward-auth.forwardauth.address: http://authentik-server:9000/outpost.goauthentik.io/auth/traefik
-      traefik.http.middlewares.authentik-forward-auth.forwardauth.trustForwardHeader: true
-      traefik.http.middlewares.authentik-forward-auth.forwardauth.authResponseHeaders: X-authentik-username,X-authentik-groups,X-authentik-email,X-authentik-name,X-authentik-uid
+
+      traefik.http.middlewares.authentik.forwardauth.address: http://authentik-server:9000/outpost.goauthentik.io/auth/traefik
+      traefik.http.middlewares.authentik.forwardauth.trustForwardHeader: true
+      traefik.http.middlewares.authentik.forwardauth.authResponseHeaders: X-authentik-username,X-authentik-groups,X-authentik-entitlements,X-authentik-email,X-authentik-name,X-authentik-uid,X-authentik-jwt,X-authentik-meta-jwks,X-authentik-meta-outpost,X-authentik-meta-provider,X-authentik-meta-app,X-authentik-meta-version
 
   worker:
     <<: *default
     container_name: authentik-worker
     command: worker
+    depends_on:
+      - server
     networks:
       - authentik
       - database
-
-  ldap:
-    image: ghcr.io/goauthentik/ldap:2025.10.2
-    container_name: authentik-ldap
-    ports:
-      - 389:3389
-      - 636:6636
-    env_file:
-      - /opt/authentik/authentik-outpost-docker.env
-    environment:
-      AUTHENTIK_HOST: https://auth.lake.dominiksiejak.pl
-      AUTHENTIK_INSECURE: "false"
 
 
 networks:

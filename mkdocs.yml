@@ -1,145 +1,21 @@
-# MkDocs configuration
-# https://www.mkdocs.org/user-guide/configuration/
-
-site_name: Home Infrastructure as Code
-site_description: Documentation for home lab GitOps repository
+site_name: GitOps
+site_description: Documentation for GitOps repository
 site_author: s3lcsum
 site_url: https://s3lcsum.github.io/gitops/
 
 # Repository
 repo_name: s3lcsum/gitops
 repo_url: https://github.com/s3lcsum/gitops
-edit_uri: edit/main/docs/
-
-# Theme
-theme:
-  name: material
-  palette:
-    # Light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    # Dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
-  features:
-    - navigation.instant
-    - navigation.tracking
-    - navigation.sections
-    - navigation.expand
-    - navigation.top
-    - search.suggest
-    - search.highlight
-    - content.code.copy
-    - content.action.edit
-  icon:
-    repo: fontawesome/brands/github
 
 # Navigation
 nav:
-  - Home: index.md
-  - Architecture:
-      - "A001: Overview": architecture/index.md
-      - "A002: C4 Container Diagram": architecture/c4-container.md
-      - "A003: Coding Conventions": architecture/conventions.md
-  - ADRs:
-      - "ADR000: Overview": adr/index.md
-      - "ADR001: Template": adr/000-template.md
-      - "ADR002: Traefik over NPM": adr/001-traefik-over-npm.md
-      - "ADR003: Authentik over ZITADEL": adr/002-authentik-over-zitadel.md
-  - Golden Paths:
-      - "GP001: Overview": golden-paths/index.md
-      - "GP002: Add Docker Stack": golden-paths/add-docker-stack.md
-      - "GP003: Add Terraform Module": golden-paths/add-terraform-module.md
-      - "GP004: Add Service Behind Traefik": golden-paths/add-service-behind-traefik.md
-  - Runbooks:
-      - "RB001: Overview": runbooks/index.md
-      - "RB002: Traefik Routing Broken": runbooks/traefik-routing-broken.md
-      - "RB003: Rotate Secrets": runbooks/rotate-secrets.md
-      - "RB004: Initialize Vault": runbooks/initialize-vault.md
-  - Playbooks:
-      - "PB001: Overview": playbooks/index.md
-      - "PB002: Upgrade a Stack": playbooks/upgrade-stack.md
-      - "PB003: Bootstrap New Host": playbooks/bootstrap-new-host.md
+  - "Home": index.md
+  - "ADR001: Traefik over NPM": adr/adr001-traefik-over-npm.md
+  - "ADR002: Authentik over ZITADEL": adr/adr002-authentik-over-zitadel.md
+  - "GP001: Add Docker Stack": golden-paths/gp001-add-docker-stack.md
+  - "GP002: Add Terraform Module (Gitea mirrors)": golden-paths/gp002-add-terraform-module-gitea-mirrors.md
+  - "RB001: Initialize Vault": runbooks/rb001-initialize-vault.md
+  - "RB007: Stalwart SMTP Setup": runbooks/rb007-smtp-stalwart-setup.md
 
-# Extensions
-markdown_extensions:
-  # Python Markdown
-  - abbr
-  - admonition
-  - attr_list
-  - def_list
-  - footnotes
-  - md_in_html
-  - toc:
-      permalink: true
-
-  # Python Markdown Extensions
-  - pymdownx.arithmatex:
-      generic: true
-  - pymdownx.betterem:
-      smart_enable: all
-  - pymdownx.caret
-  - pymdownx.details
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-  - pymdownx.inlinehilite
-  - pymdownx.keys
-  - pymdownx.magiclink:
-      repo_url_shorthand: true
-      user: s3lcsum
-      repo: gitops
-  - pymdownx.mark
-  - pymdownx.smartsymbols
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.tabbed:
-      alternate_style: true
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - pymdownx.tilde
-
-# Plugins
-plugins:
-  - search
-  - git-revision-date-localized:
-      enable_creation_date: true
-      fallback_to_build_date: true
-
-# Extra
-extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/s3lcsum
-
-# Exclude README.md files (they conflict with index.md and are for GitHub browsing only)
-exclude_docs: |
-  README.md
-
-# Validation - suppress warnings for links outside docs directory
-validation:
-  nav:
-    omitted_files: info
-    not_found: warn
-  links:
-    absolute_links: info
-    unrecognized_links: info
-
-# Watch for changes
 watch:
   - docs
-

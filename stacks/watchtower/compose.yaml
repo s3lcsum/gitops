@@ -1,0 +1,46 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/watchtower/compose.yaml
+
+services:
+  watchtower:
+    image: nickfedor/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    env_file:
+      - /opt/watchtower/watchtower.env
+    environment:
+      TZ: Europe/Warsaw
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_ROLLING_RESTART: "true"
+      WATCHTOWER_INCLUDE_STOPPED: "true"
+      WATCHTOWER_SCHEDULE: "0 0 10 * * 5"
+      WATCHTOWER_NOTIFICATIONS_SKIP_FIRST: "true"
+      WATCHTOWER_NOTIFICATIONS_SKIP_SUCCESS: "true"
+      WATCHTOWER_NOTIFICATION_REPORT: "true"
+      WATCHTOWER_NOTIFICATION_TEMPLATE: |
+        {{- if .Report -}}
+          {{- with .Report -}}
+            {{- if ( or .Updated .Restarted .Failed ) -}}
+              {{len .Scanned}} containers scanned, {{len .Updated}} updated, {{len .Failed}} failed
+              {{- range .Updated }}
+                - {{.Name}} ({{.ImageName}}): {{.CurrentImageID.ShortID}} → {{.LatestImageID.ShortID}}
+              {{- end }}
+              {{- range .Failed }}
+                - {{.Name}} ({{.ImageName}}): {{.Error}}
+              {{- end }}
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+      # Configure your notification provider below
+      # Example for email:
+      # WATCHTOWER_NOTIFICATION_EMAIL_FROM: "watchtower@example.com"
+      # WATCHTOWER_NOTIFICATION_EMAIL_TO: "admin@example.com"
+      # WATCHTOWER_NOTIFICATION_EMAIL_SMTP_SERVER: "smtp.example.com"
+      # WATCHTOWER_NOTIFICATION_EMAIL_SMTP_PORT: "587"
+      # WATCHTOWER_NOTIFICATION_EMAIL_SMTP_USER: "user"
+      # WATCHTOWER_NOTIFICATION_EMAIL_SMTP_PASSWORD: "password"
+      # WATCHTOWER_NOTIFICATION_EMAIL_SUBJECT_TAG: "[Watchtower]"
+      # Or configure Slack, Discord, Gotify, or other providers via WATCHTOWER_NOTIFICATION_URL
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro

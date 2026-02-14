@@ -4,11 +4,7 @@ terraform {
   required_providers {
     authentik = {
       source  = "goauthentik/authentik"
-      version = "2025.10.1"
-    }
-    tfe = {
-      source  = "hashicorp/tfe"
-      version = "0.61.0"
+      version = "2025.12.1"
     }
     random = {
       source  = "hashicorp/random"
@@ -27,6 +23,6 @@ terraform {
 }
 
 provider "authentik" {
-  url   = "https://auth.lake.dominiksiejak.pl"
+  url   = "https://${var.authentik_domain}"
   token = var.authentik_token
 }

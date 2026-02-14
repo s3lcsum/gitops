@@ -1,0 +1,50 @@
+services:
+  firefly:
+    image: fireflyiii/core:latest
+    container_name: firefly
+    restart: unless-stopped
+    env_file:
+      - /opt/firefly/firefly.env
+    environment:
+      APP_URL: https://money.lake.dominiksiejak.pl
+      APP_ENV: production
+      APP_DEBUG: "false"
+      SITE_OWNER: admin@dominiksiejak.pl
+      TRUSTED_PROXIES: "*"
+      LOG_CHANNEL: stdout
+    volumes:
+      - uploads:/var/www/html/storage/upload
+    networks:
+      - proxy
+      - database
+      - firefly
+    labels:
+      traefik.enable: true
+      traefik.http.routers.firefly.rule: Host(`money.lake.dominiksiejak.pl`)
+      traefik.http.services.firefly.loadbalancer.server.port: 8080
+
+  firefly-cron:
+    image: alpine:3.21
+    container_name: firefly-cron
+    restart: unless-stopped
+    env_file:
+      - /opt/firefly/firefly.env
+    environment:
+      FIREFLY_III_URL: http://firefly:8080
+    command: >
+      sh -c "apk add --no-cache curl >/dev/null 2>&1 && while true; do curl -fsS \"$${FIREFLY_III_URL}/api/v1/cron/$${STATIC_CRON_TOKEN}\" >/dev/null 2>&1 || true; sleep 3600; done"
+    networks:
+      - firefly
+    depends_on:
+      - firefly
+
+networks:
+  proxy:
+    external: true
+  database:
+    external: true
+  firefly:
+    driver: bridge
+
+volumes:
+  uploads:

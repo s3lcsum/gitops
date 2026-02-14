@@ -20,10 +20,28 @@ variable "postgres_admin_user" {
   default     = "postgres"
 }
 
-variable "postgres_admin_password" {
-  description = "PostgreSQL admin password for Vault database secrets engine"
+variable "postgres_host" {
+  description = "PostgreSQL host for Vault database secrets engine"
   type        = string
-  sensitive   = true
+  default     = "postgres"
+}
+
+variable "postgres_port" {
+  description = "PostgreSQL port for Vault database secrets engine"
+  type        = number
+  default     = 5432
+}
+
+variable "postgres_admin_database" {
+  description = "PostgreSQL database Vault connects to as admin (used for role management)"
+  type        = string
+  default     = "postgres"
+}
+
+variable "postgres_sslmode" {
+  description = "PostgreSQL sslmode for Vault connection (disable/require/verify-ca/verify-full)"
+  type        = string
+  default     = "disable"
 }
 
 # =============================================================================

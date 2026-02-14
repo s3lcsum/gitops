@@ -1,0 +1,76 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    env_file:
+      - /opt/monitoring/grafana.env
+    environment:
+      GF_SERVER_DOMAIN: grafana.lake.dominiksiejak.pl
+      GF_SERVER_ROOT_URL: https://grafana.lake.dominiksiejak.pl
+      GF_SERVER_SERVE_FROM_SUB_PATH: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_AUTH_GENERIC_OAUTH_ENABLED: "true"
+      GF_AUTH_GENERIC_OAUTH_NAME: Authentik
+      GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP: "true"
+      GF_AUTH_GENERIC_OAUTH_SCOPES: "openid profile email grafana"
+      GF_AUTH_GENERIC_OAUTH_AUTH_URL: https://auth.lake.dominiksiejak.pl/application/o/authorize/
+      GF_AUTH_GENERIC_OAUTH_TOKEN_URL: https://auth.lake.dominiksiejak.pl/application/o/token/
+      GF_AUTH_GENERIC_OAUTH_API_URL: https://auth.lake.dominiksiejak.pl/application/o/userinfo/
+      GF_AUTH_GENERIC_OAUTH_USE_PKCE: "true"
+      GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: "role"
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-piechart-panel,grafana-polystat-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - /opt/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - proxy
+      - metrics
+    labels:
+      traefik.enable: true
+
+  victoria-metrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: victoria-metrics
+    restart: unless-stopped
+    env_file:
+      - /opt/monitoring/victoria-metrics.env
+    volumes:
+      - victoria_metrics_data:/storage
+      - /opt/monitoring/victoria-metrics/promscrape.yaml:/etc/victoria-metrics/promscrape.yaml:ro
+    networks:
+      - metrics
+      - proxy
+    command:
+      - "-storageDataPath=/storage"
+      - "-retentionPeriod=30d"
+      - "-promscrape.config=/etc/victoria-metrics/promscrape.yaml"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.victoria-metrics.rule: "Host(`metrics.lake.dominiksiejak.pl`)"
+
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+    restart: "no"
+    environment:
+      K6_PROMETHEUS_RW_SERVER_URL: http://victoria-metrics:8428/api/v1/write
+    volumes:
+      - /opt/monitoring/k6:/scripts:ro
+    networks:
+      - metrics
+    command:
+      - "run"
+      - "/scripts/smoke.js"
+      - "-o"
+      - "experimental-prometheus-rw"
+
+networks:
+  proxy:
+    external: true
+  metrics:
+    external: true
+
+volumes:
+  grafana_data:
+  victoria_metrics_data:

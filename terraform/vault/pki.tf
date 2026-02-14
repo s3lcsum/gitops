@@ -50,11 +50,11 @@ resource "vault_pki_secret_backend_config_cluster" "root" {
 
 # Intermediate CA PKI mount
 resource "vault_mount" "pki_intermediate" {
-  path                      = "pki_int"
-  type                      = "pki"
-  description               = "Intermediate CA for issuing certificates"
-  default_lease_ttl_seconds = 3600
-  max_lease_ttl_seconds     = 157680000 # 5 years
+  path                        = "pki_int"
+  type                        = "pki"
+  description                 = "Intermediate CA for issuing certificates"
+  default_lease_ttl_seconds   = 3600
+  max_lease_ttl_seconds       = 157680000 # 5 years
   passthrough_request_headers = ["If-Modified-Since"]
   allowed_response_headers    = ["Last-Modified", "Location", "Replay-Nonce", "Link"]
 }
@@ -125,7 +125,7 @@ resource "vault_pki_secret_backend_role" "internal_services" {
   key_bits  = 2048
   key_usage = ["DigitalSignature", "KeyEncipherment"]
 
-  max_ttl = local.pki.max_ttl   # 17280
+  max_ttl = local.pki.max_ttl     # 17280
   ttl     = local.pki.default_ttl # 720
 
   generate_lease = true
@@ -173,7 +173,7 @@ resource "vault_pki_secret_backend_role" "client_certs" {
   server_flag   = false
   client_flag   = true
 
-  max_ttl = local.pki.max_ttl   # 17280
+  max_ttl = local.pki.max_ttl     # 17280
   ttl     = local.pki.default_ttl # 720
 
   generate_lease = true
@@ -196,7 +196,7 @@ resource "vault_pki_secret_backend_role" "acme" {
   server_flag   = true
   client_flag   = false
 
-  max_ttl = local.pki.max_ttl   # 17280
+  max_ttl = local.pki.max_ttl     # 17280
   ttl     = local.pki.default_ttl # 720
 }
 

@@ -4,42 +4,58 @@ resource "vault_mount" "database" {
   description = "PostgreSQL credential management"
 }
 
+resource "vault_password_policy" "postgres_base64" {
+  name = "postgres-base64"
+
+  policy = <<-EOT
+  length = 34
+
+  rule "charset" {
+    charset   = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    min-chars = 34
+  }
+  EOT
+}
+
 resource "vault_database_secret_backend_connection" "postgres" {
-  backend = vault_mount.database.path
-  name    = "postgres"
+  backend       = vault_mount.database.path
+  name          = "postgres"
+  allowed_roles = [for _, db in local.databases : db.username]
 
   postgresql {
-    connection_url = "postgresql://{{username}}:{{password}}@postgres:5432/postgres?sslmode=disable"
+    connection_url = "postgresql://{{username}}:{{password}}@${var.postgres_host}:${var.postgres_port}/${var.postgres_admin_database}?sslmode=${var.postgres_sslmode}"
     username       = var.postgres_admin_user
-    password       = var.postgres_admin_password
   }
 }
 
-resource "vault_database_secret_backend_role" "databases" {
+resource "vault_generic_endpoint" "postgres_password_policy" {
+  path                 = "${vault_mount.database.path}/config/${vault_database_secret_backend_connection.postgres.name}"
+  disable_read         = false
+  disable_delete       = true
+  ignore_absent_fields = true
+
+  data_json = jsonencode({
+    password_policy = vault_password_policy.postgres_base64.name
+  })
+
+  depends_on = [
+    vault_database_secret_backend_connection.postgres,
+    vault_password_policy.postgres_base64,
+  ]
+}
+
+resource "vault_database_secret_backend_static_role" "databases" {
   for_each = local.databases
 
   backend = vault_mount.database.path
-  name    = each.key
+  name    = each.value.username
   db_name = vault_database_secret_backend_connection.postgres.name
 
-  creation_statements = [
-    "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';",
-    "GRANT ALL PRIVILEGES ON DATABASE ${each.value.database} TO \"{{name}}\";",
-    "GRANT ALL PRIVILEGES ON SCHEMA public TO \"{{name}}\";",
-    "GRANT ALL ON ALL TABLES IN SCHEMA public TO \"{{name}}\";",
-    "GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO \"{{name}}\";",
-    "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO \"{{name}}\";",
-    "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO \"{{name}}\";"
-  ]
+  username        = each.value.username
+  rotation_period = 31536000
 
-  revocation_statements = [
-    "REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM \"{{name}}\";",
-    "REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM \"{{name}}\";",
-    "REVOKE ALL PRIVILEGES ON SCHEMA public FROM \"{{name}}\";",
-    "REVOKE ALL PRIVILEGES ON DATABASE ${each.value.database} FROM \"{{name}}\";",
-    "DROP ROLE IF EXISTS \"{{name}}\";"
+  rotation_statements = [
+    "ALTER USER \"{{name}}\" WITH PASSWORD '{{password}}'",
+    "ALTER USER \"{{name}}\" WITH LOGIN PASSWORD '{{password}}'",
   ]
-
-  default_ttl = 3600  # 1 hour
-  max_ttl     = 86400 # 24 hours
 }

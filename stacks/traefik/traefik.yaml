@@ -19,8 +19,9 @@ entryPoints:
         allowEncodedQuestionMark: true   # %3F - Default: false
         allowEncodedHash: true           # %23 - Default: false
       middlewares:
+        - crowdsec-bouncer@file
         - redirect-to-https@file
-        - error-pages-middleware@docker
+        # - error-pages-middleware@docker
 
   websecure:
     address: ":443"
@@ -38,8 +39,9 @@ entryPoints:
         allowEncodedQuestionMark: true   # %3F - Default: false
         allowEncodedHash: true           # %23 - Default: false
       middlewares:
+        - crowdsec-bouncer@file
         - secure-headers@file
-        - error-pages-middleware@docker
+        # - error-pages-middleware@docker
       tls:
         certResolver: letsencrypt
         domains:

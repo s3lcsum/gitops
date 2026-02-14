@@ -1,0 +1,175 @@
+# Gatus Configuration
+# Migrated from terraform/uptime-kuma monitors
+
+metrics: true
+
+storage:
+  type: postgres
+  path: "postgres://${GATUS_DB_USER}:${GATUS_DB_PASSWORD}@${GATUS_DB_HOST}:5432/${GATUS_DB_NAME}?sslmode=disable"
+
+alerting:
+  telegram:
+    token: ${TELEGRAM_BOT_TOKEN}
+    id: ${TELEGRAM_CHAT_ID}
+
+  # email:
+  #   host: ${SMTP_HOST}
+  #   port: ${SMTP_PORT}
+  #   username: ${SMTP_USERNAME}
+  #   password: ${SMTP_PASSWORD}
+  #   from: ${SMTP_FROM}
+  #   to: ${SMTP_TO}
+  #   default-alert:
+  #     enabled: true
+  #     failure-threshold: 5
+  #     success-threshold: 2
+  #     send-on-resolved: true
+
+ui:
+  title: Homelab Status
+  header: Service Status Dashboard
+
+
+endpoints:
+  - name: "portainer"
+    url: https://portainer.lake.dominiksiejak.pl
+    <<: &defaults
+      interval: 15m
+      client:
+        timeout: 3s
+      alerts:
+        - type: telegram
+          failure-threshold: 4
+          success-threshold: 2
+          send-on-resolved: true
+        - type: email
+          failure-threshold: 4
+          success-threshold: 2
+          send-on-resolved: true
+      conditions:
+        - "[STATUS] < 400"
+        - "[CERTIFICATE_EXPIRATION] > 48h"
+
+  - name: "vault"
+    url: https://vault.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "adguard"
+    url: https://adguard.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "netbox"
+    url: https://netbox.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "dozzle"
+    url: https://dozzle.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "beszel"
+    url: https://beszel.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "auth"
+    url: https://auth.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "upsnap"
+    url: https://upsnap.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "proxmox"
+    url: https://proxmox.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "router"
+    url: https://router.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "nas"
+    url: https://nas.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "jellyfin"
+    url: https://jellyfin.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "seerr"
+    url: https://seerr.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "radarr"
+    url: https://radarr.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "sonarr"
+    url: https://sonarr.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "bazarr"
+    url: https://bazarr.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "prowlarr"
+    url: https://prowlarr.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "qbittorrent"
+    url: https://qbittorrent.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "sabnzbd"
+    url: https://sabnzbd.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "flaresolverr"
+    url: https://flaresolverr.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "n8n"
+    url: https://n8n.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "git"
+    url: https://git.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "vaultwarden"
+    url: https://vaultwarden.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "money"
+    url: https://money.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "warracker"
+    url: https://warracker.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "hass"
+    url: https://hass.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "grafana"
+    url: https://grafana.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "metrics"
+    url: https://metrics.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "lan"
+    url: https://lan.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "cyberchef"
+    url: https://cyberchef.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "omnitools"
+    url: https://omnitools.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "google"
+    url: https://google.com
+    <<: *defaults

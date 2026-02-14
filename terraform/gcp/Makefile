@@ -16,4 +16,3 @@ export-vault-key: ## Export Vault SA key to vault-service-account.json
 		echo "Exporting Vault Service Account Key..." && \
 		$(TOFU) output -json service_account_keys_decoded | jq -r '."vault-auto-unseal"' > vault-service-account.json && \
 		echo "Key saved to vault-service-account.json"
-

@@ -1,34 +1,21 @@
-# https://github.com/s3lcsum/gitops/blob/main/stacks/postgres/compose.yaml
 
 services:
   postgres:
-    image: postgres:17
+    image: postgres:18
     container_name: postgres
     restart: always
     ports:
-      - "127.0.0.1:5432:5432"
+      - "5432:5432"
     env_file:
       - /opt/postgres/postgres.env
     volumes:
       - data:/var/lib/postgresql/data
     networks:
-      - database
+      database:
+        aliases:
+          - postgres
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-
-  init:
-    image: postgres:17
-    container_name: postgres-init
-    restart: no
-    depends_on:
-      postgres:
-        condition: service_healthy
-    volumes:
-      - /opt/postgres/init.sh:/init.sh
-      - /opt/postgres/postgres.env:/postgres.env
-    networks:
-      - database
-    command: ["sh", "-c", "chmod +x /init.sh && set -a && . /postgres.env && set +a && /init.sh"]
 
   adminer:
     image: adminer:latest

@@ -27,8 +27,8 @@ locals {
       }
     }
     gitops-authentik = {
-      description       = "Authentik SSO and identity management"
-      working_directory = "terraform/authentik"
+      description            = "Authentik SSO and identity management"
+      working_directory      = "terraform/authentik"
       shared_with_workspaces = ["gitops-vault"]
       vcs_repo = {
         identifier = "s3lcsum/gitops"
@@ -67,9 +67,25 @@ locals {
         branch     = "main"
       }
     }
+    gitops-gitea = {
+      description       = "Gitea organization and repository management"
+      working_directory = "terraform/gitea"
+      vcs_repo = {
+        identifier = "s3lcsum/gitops"
+        branch     = "main"
+      }
+    }
     gitops-gcp = {
       description       = "Google Cloud Platform resources"
       working_directory = "terraform/gcp"
+      vcs_repo = {
+        identifier = "s3lcsum/gitops"
+        branch     = "main"
+      }
+    }
+    gitops-postgres = {
+      description       = "PostgreSQL role and database management"
+      working_directory = "terraform/postgres"
       vcs_repo = {
         identifier = "s3lcsum/gitops"
         branch     = "main"

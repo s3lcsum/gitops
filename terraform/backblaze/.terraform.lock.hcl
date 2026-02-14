@@ -1,7 +1,7 @@
-# This file is maintained automatically by "terraform init".
+# This file is maintained automatically by "tofu init".
 # Manual edits may be lost in future updates.
 
-provider "registry.terraform.io/backblaze/b2" {
+provider "registry.opentofu.org/backblaze/b2" {
   version     = "0.11.0"
   constraints = "0.11.0"
   hashes = [

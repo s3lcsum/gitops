@@ -9,4 +9,3 @@ resource "vault_audit" "main" {
     file_path = var.vault_audit_file_path
   }
 }
-

@@ -21,4 +21,3 @@ output "google_oauth_authentik" {
   }
   sensitive = true
 }
-

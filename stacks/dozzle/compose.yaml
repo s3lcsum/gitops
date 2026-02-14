@@ -1,6 +1,6 @@
 services:
   dozzle:
-    image: amir20/dozzle:latest
+    image: ghcr.io/amir20/dozzle:latest
     container_name: dozzle
     restart: unless-stopped
     volumes:
@@ -9,6 +9,7 @@ services:
       - proxy
     labels:
       traefik.enable: true
+      traefik.http.routers.dozzle.middlewares: authentik@docker
 
 networks:
   proxy:

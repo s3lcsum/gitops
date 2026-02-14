@@ -1,11 +1,13 @@
 terraform {
   required_version = ">= 1.11.0"
+
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
-      version = "0.82.1"
+      version = "0.93.0"
     }
   }
+
   cloud {
     hostname     = "app.terraform.io"
     organization = "dominiksiejak"
@@ -17,8 +19,13 @@ terraform {
 }
 
 provider "proxmox" {
-  # Skip TLS verification for self-signed certificates
-  insecure = true
-}
+  endpoint  = var.virtual_environment_endpoint
+  api_token = var.virtual_environment_api_token
 
-data "proxmox_virtual_environment_nodes" "all_nodes" {}
+  insecure = var.virtual_environment_insecure
+
+  ssh {
+    agent    = var.virtual_environment_ssh_agent
+    username = var.virtual_environment_username
+  }
+}

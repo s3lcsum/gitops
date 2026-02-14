@@ -1,22 +1,19 @@
-# This file is maintained automatically by "terraform init".
+# This file is maintained automatically by "tofu init".
 # Manual edits may be lost in future updates.
 
-provider "registry.terraform.io/hashicorp/google" {
+provider "registry.opentofu.org/hashicorp/google" {
   version     = "7.12.0"
   constraints = "7.12.0"
   hashes = [
-    "h1:kBKvDUp6GLwHAsoM6CIj9ZTxVBzSnQjyxaVSP8SfqHQ=",
-    "zh:38722ec7777543c23e22e02695e53dd5c94644022647c3c79e11e587063d4d2b",
-    "zh:417b12b69c91c12e3fcefee38744b7a37bae73b706e3071c714151a623a6b0e9",
-    "zh:4902cea92c78b462beaf053de03d0d55fb2241d41ca3379b4568ba247f667fa9",
-    "zh:50ccce39d403ba477943e6652ccb6913092d9dcce1d55533b00b66062888db3d",
-    "zh:56dccfe5df28cfe368d93c37ad6c46a16e76da61482fd0bfc83676b1423cecf5",
-    "zh:7265fca2921e5e300da5d8de7e28b658c0863fdda9da696c5b97dbd3122c17c2",
-    "zh:8317467e828178a6db9ddabe431bb13935c00bfb5e4b4d9760bd56f7ae596eca",
-    "zh:84cc9d9277422a0d6c80d2bd204642d8776ddbba23feb94cf2760bb5f15410bc",
-    "zh:8f79d72e7ed4e36d01560ce5fc944dc7e0387fa0f8272a4345fc6ae896e8f575",
-    "zh:98c3d756beca036f84e7840e2099ff7359e9a246cd9a35386e03ce65032b3f5f",
-    "zh:a07e3ca19673d28da9289ca28dfb83204fa6636f642b8cf46de8caaf526b7dde",
-    "zh:f569b65999264a9416862bca5cd2a6177d94ccb0424f3a4ef424428912b9cb3c",
+    "h1:I0sCJv/ExYw/uHpZHSmReS8YLz+ODrOV8GP/81cWgYU=",
+    "zh:0d4074221600d978a0fdad1444c334a838ffa2fd5cd286e16a6016182f546236",
+    "zh:1453846745b3b05ade0414cb5118477d83b81b4509db0eda712079ddaa39d8df",
+    "zh:1ec56b20dd24c647aa51154875ef204e98b9a9d9e9bd161ef5df8ff9cc4cf9fe",
+    "zh:3115ceac6d520b4406ab9ab9fc8de4fd1065be525e3a9faea65fa8c030e0b4b1",
+    "zh:428957506ddbe2caf54a21834715ce1b447774a2c5a7a4f1973877b578cc3260",
+    "zh:466234bd320b737eddf629b5b51deef2af73baea3ccf2ec63afa16970003df1d",
+    "zh:99c8f325ed4989f2e802eaf27b50f8604b26adc22fe863bc0787ad49c618d661",
+    "zh:af99baef19efb88f6bc521c2d82e674af2358070f61b4b2db1291b84d0b16761",
+    "zh:cdc335d3acc9a75a696dafe6291f65119d696ea555d5d0941dab05720b5c8a27",
   ]
 }

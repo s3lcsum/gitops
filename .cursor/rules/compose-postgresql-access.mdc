@@ -6,24 +6,42 @@ alwaysApply: false
 
 **Use the centralized PostgreSQL stack** (`stacks/postgres/`) for all database needs. Never deploy separate PostgreSQL instances.
 
+**Database provisioning is managed by Terraform/OpenTofu, not by editing `stacks/postgres/` scripts/env.**
+
 **To add PostgreSQL access for a new service:**
 
-1. **Add to `stacks/postgres/postgres.env`:**
-   ```bash
-   MYSERVICE_DB_USER=myservice_user
-   MYSERVICE_DB_PASSWORD=secure-password-here
-   MYSERVICE_DB_NAME=myservice_db
+1. **Create the role + database in `terraform/postgres/`:**
+   - Add a new entry to `terraform/postgres/locals.tf` in `local.application_config`:
+
+   ```hcl
+   myservice = {
+     username = "myservice_user"
+     database = "myservice_db"
+   }
    ```
 
-2. **Add to `stacks/postgres/init.sh`:**
-   ```bash
-   setup_user_and_database "${MYSERVICE_DB_USER}" "${MYSERVICE_DB_PASSWORD}" "${MYSERVICE_DB_NAME}"
+2. **Configure Vault to manage/rotate the password in `terraform/vault/`:**
+   - Add a matching entry to `terraform/vault/locals.tf` in `local.databases`:
+
+   ```hcl
+   myservice = {
+     username = "myservice_user"
+     database = "myservice_db"
+   }
    ```
 
-3. **Connect in your service's compose.yaml:**
+3. **Apply both Terraform workspaces:**
+   - `terraform/postgres/`: `make apply`
+   - `terraform/vault/`: authenticate if needed (`make auth`) then `make apply`
+
+4. **Fetch the generated password from Vault and wire it into your service:**
+   - Vault static creds path is based on the Postgres username (static role name), e.g.:
+     - `vault read database/static-creds/myservice_user`
+
+5. **Connect in your service's `compose.yaml` using a `.env` file (do not put passwords in compose.yaml):**
    ```yaml
    services:
      myservice:
-       environment:
-         - DB_URL=postgresql://${MYSERVICE_DB_USER}:${MYSERVICE_DB_PASSWORD}@postgres:5432/${MYSERVICE_DB_NAME}
+       env_file:
+         - /opt/myservice/myservice.env
    ```

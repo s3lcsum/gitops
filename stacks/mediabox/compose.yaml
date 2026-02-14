@@ -9,14 +9,15 @@ x-service-defaults: &service-defaults
   environment: &environment
     PUID: 0
     PGID: 0
+    UMASK: 002
     TZ: Europe/Warsaw
 
 services:
   # 🔒 VPN gateway (WireGuard via Mullvad)
   gluetun:
-    image: qmcgaw/gluetun
+    <<: *service-defaults
+    image: ghcr.io/qdm12/gluetun:latest
     container_name: gluetun
-    restart: unless-stopped
     env_file:
       - /opt/mediabox/gluetun.env
     networks:
@@ -34,7 +35,7 @@ services:
   # 🔒 Torrent client (VPN-routed)
   qbittorrent:
     <<: *service-defaults
-    image: linuxserver/qbittorrent
+    image: ghcr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
     environment: *environment
     depends_on:
@@ -42,13 +43,14 @@ services:
         condition: service_healthy
     volumes:
       - qbittorrent_config:/config
-      - /mnt/LOCAL_MEDIA/qbittorrent:/data/qbittorrent
+      - /mnt/LOCAL_MEDIA/qbittorrent:/mnt/LOCAL_MEDIA/qbittorrent
     networks: []  # Override to empty since using network_mode
     network_mode: service:gluetun
     labels:
       traefik.enable: true
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
       traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.hello.dominiksiejak.pl`) || Host(`qbittorrent.lake.dominiksiejak.pl`)
+      #traefik.http.routers.qbittorrent.middlewares: authentik@docker
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8080/"]
@@ -56,7 +58,7 @@ services:
   # 📥 Usenet downloader (VPN-routed)
   sabnzbd:
     <<: *service-defaults
-    image: linuxserver/sabnzbd
+    image: ghcr.io/linuxserver/sabnzbd:latest
     container_name: sabnzbd
     depends_on:
       gluetun:
@@ -65,14 +67,15 @@ services:
       - /opt/mediabox/sabnzbd.env
     volumes:
       - sabnzbd_config:/config
-      - /mnt/LOCAL_MEDIA/usenet:/data/usenet
-      - /mnt/LOCAL_MEDIA/usenet/incomplete:/data/incomplete-downloads
+      - /mnt/LOCAL_MEDIA/usenet:/mnt/LOCAL_MEDIA/usenet
+      - /mnt/LOCAL_MEDIA/usenet/incomplete:/mnt/LOCAL_MEDIA/usenet/incomplete
     networks: []
     network_mode: service:gluetun
     labels:
       traefik.enable: true
       traefik.http.services.sabnzbd.loadbalancer.server.port: 8085
       traefik.http.routers.sabnzbd.rule: Host(`sabnzbd.hello.dominiksiejak.pl`) || Host(`sabnzbd.lake.dominiksiejak.pl`)
+      #traefik.http.routers.sabnzbd.middlewares: authentik@docker
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8085/api?mode=version"]
@@ -80,21 +83,17 @@ services:
   # 🌐 Cloudflare bypass for indexers
   flaresolverr:
     <<: *service-defaults
-    image: flaresolverr/flaresolverr
+    image: ghcr.io/flaresolverr/flaresolverr:latest
     container_name: flaresolverr
     volumes:
       - flaresolverr_config:/app/data
-    labels:
-      traefik.enable: true
-      traefik.http.services.flaresolverr.loadbalancer.server.port: 8191
-      traefik.http.routers.flaresolverr.rule: Host(`flaresolverr.hello.dominiksiejak.pl`) || Host(`flaresolverr.lake.dominiksiejak.pl`)
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8191/"]
 
   prowlarr:
     <<: *service-defaults
-    image: linuxserver/prowlarr
+    image: ghcr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
     depends_on:
       flaresolverr:
@@ -112,7 +111,7 @@ services:
   # 🎥 Movie automation
   radarr:
     <<: *service-defaults
-    image: linuxserver/radarr
+    image: ghcr.io/linuxserver/radarr:latest
     container_name: radarr
     depends_on:
       qbittorrent:
@@ -123,11 +122,13 @@ services:
         condition: service_healthy
     volumes:
       - radarr_config:/config
-      - /mnt/LOCAL_MEDIA:/data
+      - /mnt/LOCAL_MEDIA:/mnt/LOCAL_MEDIA
+      - /mnt/NAS_Shared_Media:/mnt/NAS_Shared_Media
     labels:
       traefik.enable: true
       traefik.http.services.radarr.loadbalancer.server.port: 7878
       traefik.http.routers.radarr.rule: Host(`radarr.hello.dominiksiejak.pl`) || Host(`radarr.lake.dominiksiejak.pl`)
+      #traefik.http.routers.radarr.middlewares: authentik@docker
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:7878/"]
@@ -135,7 +136,7 @@ services:
   # 📺 TV series automation
   sonarr:
     <<: *service-defaults
-    image: linuxserver/sonarr
+    image: ghcr.io/linuxserver/sonarr:latest
     container_name: sonarr
     depends_on:
       qbittorrent:
@@ -146,11 +147,13 @@ services:
         condition: service_healthy
     volumes:
       - sonarr_config:/config
-      - /mnt/LOCAL_MEDIA:/data
+      - /mnt/LOCAL_MEDIA:/mnt/LOCAL_MEDIA
+      - /mnt/NAS_Shared_Media:/mnt/NAS_Shared_Media
     labels:
       traefik.enable: true
       traefik.http.services.sonarr.loadbalancer.server.port: 8989
       traefik.http.routers.sonarr.rule: Host(`sonarr.hello.dominiksiejak.pl`) || Host(`sonarr.lake.dominiksiejak.pl`)
+      #traefik.http.routers.sonarr.middlewares: authentik@docker
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8989/"]
@@ -159,11 +162,12 @@ services:
   # 🔄 Subtitle management
   bazarr:
     <<: *service-defaults
-    image: linuxserver/bazarr
+    image: ghcr.io/linuxserver/bazarr:latest
     container_name: bazarr
     volumes:
       - bazarr_config:/config
-      - /mnt/LOCAL_MEDIA:/data
+      - /mnt/LOCAL_MEDIA:/mnt/LOCAL_MEDIA
+      - /mnt/NAS_Shared_Media:/mnt/NAS_Shared_Media
     labels:
       traefik.enable: true
       traefik.http.services.bazarr.loadbalancer.server.port: 6767
@@ -175,12 +179,14 @@ services:
   # 📺 Media server (primary)
   jellyfin:
     <<: *service-defaults
-    image: linuxserver/jellyfin
+    image: ghcr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
     volumes:
       - jellyfin_config:/config
-      - /mnt/LOCAL_MEDIA/tv:/data/tv
-      - /mnt/LOCAL_MEDIA/movies:/data/movies
+      - /mnt/LOCAL_MEDIA/tv:/mnt/LOCAL_MEDIA/tv
+      - /mnt/NAS_Shared_Media/tv:/mnt/NAS_Shared_Media/tv
+      - /mnt/LOCAL_MEDIA/movies:/mnt/LOCAL_MEDIA/movies
+      - /mnt/NAS_Shared_Media/movies:/mnt/NAS_Shared_Media/movies
     devices:
       - /dev/dri:/dev/dri
     group_add:
@@ -195,9 +201,9 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8096/"]
 
   # 📥 Request manager
-  jellyseerr:
+  seerr:
     <<: *service-defaults
-    container_name: jellyseerr
+    container_name: seerr
     image: fallenbagel/jellyseerr:preview-OIDC
     depends_on:
       jellyfin:
@@ -210,7 +216,7 @@ services:
       - jellyseerr_config:/app/config
     labels:
       traefik.enable: true
-      traefik.http.routers.jellyseerr.rule: 'Host(`jellyseerr.hello.dominiksiejak.pl`) || Host(`jellyseerr.lake.dominiksiejak.pl`)'
+      traefik.http.routers.jellyseerr.rule: 'Host(`seerr.hello.dominiksiejak.pl`) || Host(`seerr.lake.dominiksiejak.pl`)'
 
 networks:
   arr:
