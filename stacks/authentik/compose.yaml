@@ -1,7 +1,7 @@
 # https://github.com/s3lcsum/gitops/blob/main/stacks/authentik/compose.yaml
 
 x-default: &default
-  image: ghcr.io/goauthentik/server:2025.12.3
+  image: ghcr.io/goauthentik/server:2025.12.4
   restart: always
   env_file:
     - /opt/authentik/authentik.env
