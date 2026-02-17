@@ -75,20 +75,19 @@ http:
         - websecure
       service: mikrotik
 
-    homeassistant:
-      rule: "Host(`hass.lake.dominiksiejak.pl`)"
+    haos:
+      rule: "Host(`haos.lake.dominiksiejak.pl`)"
       entryPoints:
         - websecure
-      service: homeassistant
+      service: haos
 
   # Services
   services:
-    synology:
+    mikrotik:
       loadBalancer:
         servers:
-          - url: "https://192.168.89.240:5001/"
+          - url: "http://192.168.89.1/"
         passHostHeader: true
-        serversTransport: insecure
 
     proxmox:
       loadBalancer:
@@ -97,17 +96,18 @@ http:
         passHostHeader: true
         serversTransport: insecure
 
-    mikrotik:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.89.1/"
-        passHostHeader: true
-
-    homeassistant:
+    haos:
       loadBalancer:
         servers:
           - url: "http://192.168.89.251:8123/"
         passHostHeader: true
+
+    synology:
+      loadBalancer:
+        servers:
+          - url: "https://192.168.89.240:5001/"
+        passHostHeader: true
+        serversTransport: insecure
 
   serversTransports:
     insecure:

@@ -1,0 +1,67 @@
+
+services:
+  hass:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: hass
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    environment:
+      TZ: Europe/Warsaw
+    volumes:
+      - data:/config
+    networks:
+      - proxy
+      - hass
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+      traefik.http.routers.hass.rule: Host(`homeassistant.lake.dominiksiejak.pl`)
+      traefik.http.services.hass.loadbalancer.server.port: 8123
+
+  zigbee2mqtt:
+    image: ghcr.io/koenkk/zigbee2mqtt:latest
+    container_name: zigbee2mqtt
+    restart: unless-stopped
+    depends_on:
+      - mosquitto
+    environment:
+      TZ: Europe/Warsaw
+    volumes:
+      - zigbee2mqtt_data:/app/data
+      - /opt/hass/configuration.yaml:/app/data/configuration.yaml
+    networks:
+      - proxy
+      - hass
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+      traefik.http.routers.zigbee2mqtt.rule: Host(`zigbee.lake.dominiksiejak.pl`)
+      traefik.http.services.zigbee2mqtt.loadbalancer.server.port: 8080
+      traefik.http.routers.zigbee2mqtt.middlewares: authentik@docker
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: mosquitto
+    restart: unless-stopped
+    volumes:
+      - /opt/hass/config:/mosquitto/config:ro
+      - mosquitto_data:/mosquitto/data
+    networks:
+      - hass
+
+networks:
+  proxy:
+    external: true
+  hass:
+    driver: bridge
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /var/lib/homeassistant
+      o: bind
+  zigbee2mqtt_data:
+  mosquitto_data:

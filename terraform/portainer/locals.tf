@@ -16,6 +16,7 @@ locals {
     "gatus",
     "gitea",
     "grafana-synthetic-agent",
+    "hass",
     "homarr",
     "mediabox",
     "monitoring",

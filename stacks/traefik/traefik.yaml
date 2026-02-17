@@ -49,7 +49,6 @@ entryPoints:
             sans:
               - '*.dominiksiejak.pl'
               - '*.lake.dominiksiejak.pl'
-              - '*.atom.dominiksiejak.pl'
               - '*.hello.dominiksiejak.pl'
 
   traefik:
