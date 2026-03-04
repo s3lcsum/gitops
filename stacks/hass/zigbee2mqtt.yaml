@@ -1,0 +1,23 @@
+version: 5
+
+# zigbee2mqtt - TCP serial to remote coordinator at 192.168.89.20:8888
+serial:
+  port: tcp://192.168.89.20:8888
+  adapter: zstack
+
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://mosquitto:1883
+
+frontend:
+  enabled: true
+  port: 8080
+
+homeassistant:
+  enabled: true
+
+devices:
+  '0xf082c0fffe48f3bf':
+    friendly_name: T/H Sensor
+  '0xa4c13866a983d7a6':
+    friendly_name: Bedroom Light Switch

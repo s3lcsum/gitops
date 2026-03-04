@@ -9,17 +9,9 @@ import {
 
 resource "authentik_outpost" "proxy" {
   name               = "authentik Embedded Outpost"
-  protocol_providers = [authentik_provider_proxy.outpost-proxy.id]
+  protocol_providers = [for app in authentik_application.proxy : app.protocol_provider]
   config = jsonencode({
-    AUTHENTIK_HOST     = "https://auth.lake.dominiksiejak.pl"
-    AUTHENTIK_INSECURE = "false"
+    authentik_host     = "https://auth.lake.dominiksiejak.pl"
+    authentik_insecure = "false"
   })
-}
-
-resource "authentik_provider_proxy" "outpost-proxy" {
-  name               = "outpost-proxy"
-  mode               = "forward_domain"
-  external_host      = "https://auth.lake.dominiksiejak.pl"
-  authorization_flow = data.authentik_flow.default-authorization-flow.id
-  invalidation_flow  = data.authentik_flow.default-invalidation-flow.id
 }

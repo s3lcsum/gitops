@@ -10,14 +10,11 @@ services:
       TZ: Europe/Warsaw
     volumes:
       - data:/config
-    networks:
-      - proxy
-      - hass
+    network_mode: host # Otherwise autodiscovery won't work
     labels:
       traefik.enable: true
-      traefik.docker.network: proxy
-      traefik.http.routers.hass.rule: Host(`homeassistant.lake.dominiksiejak.pl`)
-      traefik.http.services.hass.loadbalancer.server.port: 8123
+      traefik.http.routers.hass.rule: Host(`hass.lake.dominiksiejak.pl`) || Host(`hass.hello.dominiksiejak.pl`)
+      traefik.http.services.hass.loadbalancer.server.url: http://192.168.89.253:8123
 
   zigbee2mqtt:
     image: ghcr.io/koenkk/zigbee2mqtt:latest
@@ -29,14 +26,15 @@ services:
       TZ: Europe/Warsaw
     volumes:
       - zigbee2mqtt_data:/app/data
-      - /opt/hass/configuration.yaml:/app/data/configuration.yaml
+      - /opt/hass/zigbee2mqtt.yaml:/app/data/configuration.yaml
     networks:
       - proxy
-      - hass
+    extra_hosts:
+      - "mosquitto:host-gateway"
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
-      traefik.http.routers.zigbee2mqtt.rule: Host(`zigbee.lake.dominiksiejak.pl`)
+      traefik.http.routers.zigbee2mqtt.rule: Host(`zigbee2mqtt.lake.dominiksiejak.pl`)
       traefik.http.services.zigbee2mqtt.loadbalancer.server.port: 8080
       traefik.http.routers.zigbee2mqtt.middlewares: authentik@docker
 
@@ -45,16 +43,13 @@ services:
     container_name: mosquitto
     restart: unless-stopped
     volumes:
-      - /opt/hass/config:/mosquitto/config:ro
+      - /opt/hass/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto_data:/mosquitto/data
-    networks:
-      - hass
+    network_mode: host # Because home-assistant have to be on the same network as the coordinator
 
 networks:
   proxy:
     external: true
-  hass:
-    driver: bridge
 
 volumes:
   data:

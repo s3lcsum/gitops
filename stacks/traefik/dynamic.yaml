@@ -75,12 +75,6 @@ http:
         - websecure
       service: mikrotik
 
-    haos:
-      rule: "Host(`haos.lake.dominiksiejak.pl`)"
-      entryPoints:
-        - websecure
-      service: haos
-
   # Services
   services:
     mikrotik:
@@ -95,12 +89,6 @@ http:
           - url: "https://192.168.89.254:8006/"
         passHostHeader: true
         serversTransport: insecure
-
-    haos:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.89.251:8123/"
-        passHostHeader: true
 
     synology:
       loadBalancer:

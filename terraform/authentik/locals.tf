@@ -64,10 +64,14 @@ locals {
       redirect_uris = ["http://seerr.lake.dominiksiejak.pl/login?provider=authentik&callback=true"]
     }
     homeassistant = {
-      name          = "Home Assistant"
-      launch_url    = "https://hass.lake.dominiksiejak.pl"
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/home-assistant.svg"
-      redirect_uris = ["https://hass.lake.dominiksiejak.pl/auth/openid/callback"]
+      name       = "Home Assistant"
+      launch_url = "https://hass.lake.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/home-assistant.svg"
+      redirect_uris = [
+        "https://hass.lake.dominiksiejak.pl/auth/openid/callback",
+        "https://homeassistant.lake.dominiksiejak.pl/auth/openid/callback",
+        "https://haos.lake.dominiksiejak.pl/auth/openid/callback",
+      ]
     }
     synology = {
       name       = "Synology DSM"
@@ -176,7 +180,7 @@ locals {
     watchyourlan = {
       name            = "WatchYourLAN"
       external_host   = "https://watchyourlan.lake.dominiksiejak.pl"
-      internal_host   = "http://watchyourlan:8840"
+      internal_host   = "http://192.168.89.253:8840"
       launch_url      = "https://watchyourlan.lake.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/watchyourlan.png"
       skip_path_regex = ""
@@ -219,6 +223,14 @@ locals {
       internal_host   = "http://traefik:8080"
       launch_url      = "https://traefik.lake.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/traefik.svg"
+      skip_path_regex = ""
+    }
+    zigbee2mqtt = {
+      name            = "Zigbee2MQTT"
+      external_host   = "https://zigbee2mqtt.lake.dominiksiejak.pl"
+      internal_host   = "http://zigbee2mqtt:8080"
+      launch_url      = "https://zigbee2mqtt.lake.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zigbee2mqtt.svg"
       skip_path_regex = ""
     }
   }
