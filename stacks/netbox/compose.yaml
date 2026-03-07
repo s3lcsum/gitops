@@ -40,7 +40,7 @@ services:
       test: ps -aux | grep -v grep | grep -q rqworker || exit 1
 
   redis:
-    image: docker.io/valkey/valkey:8.1-alpine
+    image: docker.io/valkey/valkey:9.0-alpine
     container_name: netbox-redis
     restart: unless-stopped
     networks:

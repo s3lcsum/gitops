@@ -24,7 +24,7 @@ services:
       traefik.http.services.firefly.loadbalancer.server.port: 8080
 
   firefly-cron:
-    image: alpine:3.21
+    image: alpine:3.23
     container_name: firefly-cron
     restart: unless-stopped
     env_file:
