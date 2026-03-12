@@ -1,29 +1,26 @@
 variable "virtual_environment_endpoint" {
-  description = "Virtual environment endpoint"
-  type        = string
-  default     = "https://proxmox.lake.dominiksiejak.pl"
+  type    = string
+  default = "https://lake:8006"
 }
 
 variable "virtual_environment_api_token" {
-  description = "Virtual environment API token"
-  type        = string
-  sensitive   = true
+  type      = string
+  sensitive = true
+  default   = ""
 }
 
-variable "virtual_environment_insecure" {
-  description = "Virtual environment TLS insecure"
-  type        = bool
-  default     = true
+variable "oidc_issuer_url" {
+  type    = string
+  default = "https://auth.lake.dominiksiejak.pl/application/o/proxmox/"
 }
 
-variable "virtual_environment_ssh_agent" {
-  description = "Virtual environment SSH agent"
-  type        = bool
-  default     = true
+variable "oidc_client_id" {
+  type    = string
+  default = "proxmox"
 }
 
-variable "virtual_environment_username" {
-  description = "Virtual environment username"
-  type        = string
-  default     = "terraform"
+variable "oidc_client_secret" {
+  type      = string
+  sensitive = true
+  default   = ""
 }
