@@ -177,14 +177,6 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sonarr.svg"
       skip_path_regex = "^/api/.*"
     }
-    watchyourlan = {
-      name            = "WatchYourLAN"
-      external_host   = "https://watchyourlan.lake.dominiksiejak.pl"
-      internal_host   = "http://192.168.89.253:8840"
-      launch_url      = "https://watchyourlan.lake.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/watchyourlan.png"
-      skip_path_regex = ""
-    }
     firefly = {
       name            = "Firefly III"
       external_host   = "https://money.lake.dominiksiejak.pl"
@@ -264,6 +256,16 @@ locals {
       name       = "Prowlarr"
       launch_url = "https://prowlarr.lake.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/prowlarr.svg"
+    }
+    esphome = {
+      name       = "ESPHome"
+      launch_url = "https://esphome.lake.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/esphome.svg"
+    }
+    watchyourlan = {
+      name       = "WatchYourLAN"
+      launch_url = "https://watchyourlan.lake.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/watchyourlan.png"
     }
   }
 

@@ -1,13 +1,14 @@
-
+x-default: &default
+  restart: unless-stopped
+  environment:
+    TZ: Europe/Warsaw
 services:
   hass:
+    <<: *default
     image: ghcr.io/home-assistant/home-assistant:stable
     container_name: hass
-    restart: unless-stopped
     depends_on:
       - mosquitto
-    environment:
-      TZ: Europe/Warsaw
     volumes:
       - data:/config
     network_mode: host # Otherwise autodiscovery won't work
@@ -17,13 +18,11 @@ services:
       traefik.http.services.hass.loadbalancer.server.url: http://192.168.89.253:8123
 
   zigbee2mqtt:
+    <<: *default
     image: ghcr.io/koenkk/zigbee2mqtt:latest
     container_name: zigbee2mqtt
-    restart: unless-stopped
     depends_on:
       - mosquitto
-    environment:
-      TZ: Europe/Warsaw
     volumes:
       - zigbee2mqtt_data:/app/data
       - /opt/hass/zigbee2mqtt.yaml:/app/data/configuration.yaml
@@ -39,13 +38,26 @@ services:
       traefik.http.routers.zigbee2mqtt.middlewares: authentik@docker
 
   mosquitto:
+    <<: *default
     image: eclipse-mosquitto:2
     container_name: mosquitto
-    restart: unless-stopped
     volumes:
       - /opt/hass/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto_data:/mosquitto/data
     network_mode: host # Because home-assistant have to be on the same network as the coordinator
+
+  esphome:
+    <<: *default
+    image: ghcr.io/esphome/esphome:stable
+    container_name: esphome
+    privileged: true
+    network_mode: host # Autodiscovery won't work otherwise
+    volumes:
+      - esphome_data:/config
+    labels:
+      traefik.enable: true
+      traefik.http.routers.esphome.rule: Host(`esphome.lake.dominiksiejak.pl`)
+      traefik.http.services.esphome.loadbalancer.server.url: http://192.168.89.253:6052
 
 networks:
   proxy:
@@ -60,3 +72,4 @@ volumes:
       o: bind
   zigbee2mqtt_data:
   mosquitto_data:
+  esphome_data:

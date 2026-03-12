@@ -150,6 +150,10 @@ endpoints:
     url: https://hass.lake.dominiksiejak.pl
     <<: *defaults
 
+  - name: "esphome"
+    url: https://esphome.lake.dominiksiejak.pl
+    <<: *defaults
+
   - name: "grafana"
     url: https://grafana.lake.dominiksiejak.pl
     <<: *defaults
