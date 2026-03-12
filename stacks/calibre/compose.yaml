@@ -34,22 +34,22 @@ services:
       traefik.http.routers.calibre-api.service: calibre-gui
       traefik.http.services.calibre-api.loadbalancer.server.port: 8083
 
-  # # 🌐 Calibre-Web - Web interface for browsing and reading ebooks
-  # calibre-web:
-  #   <<: *defaults
-  #   image: linuxserver/calibre-web:latest
-  #   container_name: calibre-web
-  #   environment:
-  #     DOCKER_MODS: linuxserver/mods:universal-calibre
-  #   volumes:
-  #     - calibre_web_config:/config
-  #     - /mnt/LOCAL_MEDIA/books:/books
-  #   labels:
-  #     traefik.enable: true
-  #     traefik.http.services.calibre-web.loadbalancer.server.port: 8083
-  #     traefik.http.routers.calibre-web.rule: Host(`calibre.hello.dominiksiejak.pl`) || Host(`calibre.lake.dominiksiejak.pl`)
-  #   depends_on:
-  #     - calibre
+  # 🌐 Calibre-Web - Web interface for browsing and reading ebooks
+  calibre-web:
+    <<: *defaults
+    image: linuxserver/calibre-web:latest
+    container_name: calibre-web
+    environment:
+      DOCKER_MODS: linuxserver/mods:universal-calibre
+    volumes:
+      - calibre_web_config:/config
+      - /mnt/LOCAL_MEDIA/books:/books
+    labels:
+      traefik.enable: true
+      traefik.http.services.calibre-web.loadbalancer.server.port: 8083
+      traefik.http.routers.calibre-web.rule: Host(`calibre.hello.dominiksiejak.pl`) || Host(`calibre.lake.dominiksiejak.pl`)
+    depends_on:
+      - calibre
 
 networks:
   proxy:

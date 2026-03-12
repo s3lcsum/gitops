@@ -9,6 +9,7 @@ locals {
   stacks = [
     "adguard",
     "authentik",
+    "calibre",
     "cloudflared",
     "cyberchef",
     "dozzle",
