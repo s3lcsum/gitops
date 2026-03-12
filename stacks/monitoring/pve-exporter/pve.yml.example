@@ -1,0 +1,7 @@
+# Proxmox API credentials for pve-exporter (VictoriaMetrics)
+# Copy to pve.yml and fill token_value from: terraform -chdir=terraform/proxmox output -raw metrics_api_token
+default:
+  user: metrics@pve
+  token_name: victoriametrics
+  token_value: "YOUR_TOKEN_FROM_TERRAFORM_OUTPUT"
+  verify_ssl: false

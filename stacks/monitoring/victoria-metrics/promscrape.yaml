@@ -33,3 +33,12 @@ scrape_configs:
       - targets:
           - "authentik-server:9300"
     metrics_path: /metrics
+
+  - job_name: "proxmox"
+    static_configs:
+      - targets:
+          - "pve-exporter:9221"
+    metrics_path: /pve
+    params:
+      module: [default]
+      target: ["proxmox.lake.dominiksiejak.pl"]

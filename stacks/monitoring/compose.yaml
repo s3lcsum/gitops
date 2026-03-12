@@ -29,6 +29,19 @@ services:
     labels:
       traefik.enable: true
 
+  pve-exporter:
+    image: prompve/prometheus-pve-exporter:latest
+    container_name: pve-exporter
+    restart: unless-stopped
+    volumes:
+      - /opt/monitoring/pve-exporter/pve.yml:/etc/pve.yml:ro
+    networks:
+      - metrics
+    command:
+      - --config.file=/etc/pve.yml
+      - --web.listen-address=0.0.0.0:9221
+      - --no-collector.config
+
   victoria-metrics:
     image: victoriametrics/victoria-metrics:latest
     container_name: victoria-metrics
