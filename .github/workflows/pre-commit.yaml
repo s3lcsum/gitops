@@ -24,7 +24,7 @@ jobs:
           tofu_version: ${{ env.TOFU_VERSION }}
 
       - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v4.1.1
+        uses: terraform-linters/setup-tflint@v6.2.2
         with:
           tflint_version: ${{ env.TFLINT_VERSION }}
 
