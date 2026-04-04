@@ -1,0 +1,5 @@
+{
+  "name": "external-secrets",
+  "namespace": "external-secrets",
+  "syncWave": "0"
+}

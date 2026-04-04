@@ -1,0 +1,4 @@
+apiVersion: v2
+name: grafana-synthetic-agent
+version: 0.1.0
+description: Grafana Synthetic Monitoring Agent — private probe for Grafana Cloud

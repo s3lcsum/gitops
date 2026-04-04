@@ -1,0 +1,5 @@
+{
+  "name": "nfs-provisioner",
+  "namespace": "nfs-provisioner",
+  "syncWave": "0"
+}

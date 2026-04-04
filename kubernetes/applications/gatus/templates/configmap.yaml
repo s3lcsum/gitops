@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gatus-config
+data:
+  config.yaml: |
+    storage:
+      type: postgres
+      path: "postgres://${GATUS_DB_USER}:${GATUS_DB_PASS}@postgres-rw.cnpg-system.svc.cluster.local:5432/gatus?sslmode=disable"
+
+    endpoints:
+      - name: ArgoCD
+        url: "https://argocd.lake.dominiksiejak.pl"
+        interval: 5m
+        conditions:
+          - "[STATUS] == 200"
+
+      - name: Vault
+        url: "https://vault.lake.dominiksiejak.pl"
+        interval: 5m
+        conditions:
+          - "[STATUS] == any(200, 307)"
+
+      - name: Authentik
+        url: "https://auth.lake.dominiksiejak.pl"
+        interval: 5m
+        conditions:
+          - "[STATUS] == 200"

@@ -1,0 +1,30 @@
+calibre:
+  image:
+    repository: ghcr.io/linuxserver/calibre
+    tag: latest
+  ports:
+    gui: 8080
+    api: 8083
+
+calibreWeb:
+  image:
+    repository: linuxserver/calibre-web
+    tag: latest
+  port: 8083
+
+persistence:
+  calibreConfig:
+    size: 5Gi
+  calibreWebConfig:
+    size: 1Gi
+
+nfs:
+  localMedia: /mnt/LOCAL_MEDIA/books
+  nasSharedMedia: /mnt/NAS_Shared_Media/books
+
+hostnames:
+  gui: calibre-gui.lake.dominiksiejak.pl
+  api: calibre-api.lake.dominiksiejak.pl
+  web:
+    - calibre.lake.dominiksiejak.pl
+    - calibre.hello.dominiksiejak.pl

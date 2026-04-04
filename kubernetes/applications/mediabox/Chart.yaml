@@ -1,0 +1,8 @@
+apiVersion: v2
+name: mediabox
+version: 0.1.0
+description: >-
+  Mediabox — full media automation stack:
+  gluetun VPN gateway, qBittorrent + SABnzbd (VPN-routed),
+  Prowlarr, Radarr, Sonarr, Bazarr, FlareSolverr,
+  Jellyfin (Intel iGPU), Jellyseerr

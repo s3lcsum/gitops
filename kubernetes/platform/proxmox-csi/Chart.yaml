@@ -1,0 +1,8 @@
+apiVersion: v2
+name: proxmox-csi
+version: 0.1.0
+description: Proxmox CSI plugin for persistent volumes backed by Proxmox storage
+dependencies:
+  - name: proxmox-csi-plugin
+    version: "0.11.0"
+    repository: "oci://ghcr.io/sergelogvinov/charts"

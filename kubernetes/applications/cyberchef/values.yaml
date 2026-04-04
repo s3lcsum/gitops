@@ -1,0 +1,10 @@
+image:
+  repository: ghcr.io/gchq/cyberchef
+  tag: latest
+
+replicas: 1
+port: 8080
+
+hostnames:
+  - cyberchef.lake.dominiksiejak.pl
+  - cyberchef.hello.dominiksiejak.pl

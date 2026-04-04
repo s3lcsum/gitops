@@ -1,0 +1,14 @@
+proxmox-csi-plugin:
+  config:
+    clusters:
+      - url: "https://<PROXMOX_HOST>:8006/api2/json"
+        insecure: false
+        token_id: "<TOKEN_ID>"
+        token_secret: "<TOKEN_SECRET>"
+        region: pve
+
+  storageClass:
+    - name: proxmox-lvm
+      storage: local-lvm
+      reclaimPolicy: Delete
+      fstype: ext4

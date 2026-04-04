@@ -1,0 +1,28 @@
+# Bootstrap: kubectl apply -f argocd/bootstrap/root.yaml
+# This is the ONLY manifest applied manually. Everything else flows from here.
+# After first apply, ArgoCD syncs argocd/ (excluding bootstrap/) from Git.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/s3lcsum/gitops.git
+    targetRevision: main
+    path: argocd
+    directory:
+      recurse: true
+      exclude: bootstrap/*
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

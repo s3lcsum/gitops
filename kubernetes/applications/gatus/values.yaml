@@ -1,0 +1,9 @@
+image:
+  repository: ghcr.io/twin/gatus
+  tag: latest
+  pullPolicy: Always
+
+replicas: 1
+
+hostnames:
+  - status.lake.dominiksiejak.pl

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: calibre
+version: 0.1.0
+description: Calibre — full ebook management + Calibre-Web reader (Intel iGPU enabled)

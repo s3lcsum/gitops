@@ -1,0 +1,8 @@
+apiVersion: v2
+name: vault
+version: 0.1.0
+description: HashiCorp Vault — secrets management
+dependencies:
+  - name: vault
+    version: "0.29.1"
+    repository: "https://helm.releases.hashicorp.com"

@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: applications
+  namespace: argocd
+spec:
+  description: User-facing homelab applications
+  sourceRepos:
+    - https://github.com/s3lcsum/gitops.git
+  destinations:
+    - namespace: "*"
+      server: https://kubernetes.default.svc
+  # Apps should not create cluster-scoped resources; tighten as needed.
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"

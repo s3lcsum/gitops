@@ -1,0 +1,4 @@
+apiVersion: v2
+name: vaultwarden
+version: 0.1.0
+description: Vaultwarden — lightweight Bitwarden-compatible password manager

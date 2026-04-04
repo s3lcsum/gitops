@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bazarr
+  labels:
+    app.kubernetes.io/name: mediabox
+    app.kubernetes.io/component: bazarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mediabox
+      app.kubernetes.io/component: bazarr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mediabox
+        app.kubernetes.io/component: bazarr
+    spec:
+      containers:
+        - name: bazarr
+          image: "{{ .Values.bazarr.image.repository }}:{{ .Values.bazarr.image.tag }}"
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: UMASK
+              value: "002"
+            - name: TZ
+              value: {{ .Values.timezone }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.bazarr.port }}
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: local-media
+              mountPath: /mnt/LOCAL_MEDIA
+            - name: nas-media
+              mountPath: /mnt/NAS_Shared_Media
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: bazarr-config
+        - name: local-media
+          hostPath:
+            path: {{ .Values.media.localMediaPath }}
+            type: DirectoryOrCreate
+        - name: nas-media
+          hostPath:
+            path: {{ .Values.media.nasSharedMediaPath }}
+            type: DirectoryOrCreate

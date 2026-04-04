@@ -1,0 +1,22 @@
+{{- $gateway := "main" }}
+{{- $gatewayNs := "envoy-gateway-system" }}
+
+{{- range $svc := list "qbittorrent" "sabnzbd" "prowlarr" "radarr" "sonarr" "bazarr" "jellyfin" "seerr" }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $svc }}
+spec:
+  parentRefs:
+    - name: {{ $gateway }}
+      namespace: {{ $gatewayNs }}
+  hostnames:
+    {{- range index $.Values.hostnames $svc }}
+    - {{ . | quote }}
+    {{- end }}
+  rules:
+    - backendRefs:
+        - name: {{ $svc }}
+          port: 80
+{{- end }}

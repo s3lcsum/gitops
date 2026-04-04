@@ -1,0 +1,5 @@
+{
+  "name": "envoy-gateway",
+  "namespace": "envoy-gateway-system",
+  "syncWave": "1"
+}

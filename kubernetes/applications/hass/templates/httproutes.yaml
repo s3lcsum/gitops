@@ -1,0 +1,50 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: homeassistant
+spec:
+  parentRefs:
+    - name: main
+      namespace: envoy-gateway-system
+  hostnames:
+    {{- range .Values.hostnames.hass }}
+    - {{ . | quote }}
+    {{- end }}
+  rules:
+    - backendRefs:
+        - name: homeassistant
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: zigbee2mqtt
+spec:
+  parentRefs:
+    - name: main
+      namespace: envoy-gateway-system
+  hostnames:
+    {{- range .Values.hostnames.zigbee2mqtt }}
+    - {{ . | quote }}
+    {{- end }}
+  rules:
+    - backendRefs:
+        - name: zigbee2mqtt
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: esphome
+spec:
+  parentRefs:
+    - name: main
+      namespace: envoy-gateway-system
+  hostnames:
+    {{- range .Values.hostnames.esphome }}
+    - {{ . | quote }}
+    {{- end }}
+  rules:
+    - backendRefs:
+        - name: esphome
+          port: 80

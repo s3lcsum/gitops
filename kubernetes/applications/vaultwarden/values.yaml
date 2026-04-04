@@ -1,0 +1,17 @@
+image:
+  repository: ghcr.io/dani-garcia/vaultwarden
+  tag: latest
+  pullPolicy: Always
+
+replicas: 1
+
+env:
+  DOMAIN: https://vaultwarden.lake.dominiksiejak.pl
+  LOG_LEVEL: warn
+  DATABASE_URL: ""  # populated via ExternalSecret
+
+persistence:
+  size: 1Gi
+
+hostnames:
+  - vaultwarden.lake.dominiksiejak.pl

@@ -1,0 +1,11 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default-pool
+  namespace: metallb-system
+spec:
+  # Allocate a small range from the homelab subnet (.240–.249).
+  # Ensure these IPs are excluded from RouterOS DHCP and do not collide with
+  # existing static assignments (.10–.99) or the Portainer host (.253).
+  addresses:
+    - 192.168.89.240-192.168.89.249

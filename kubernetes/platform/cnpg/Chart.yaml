@@ -1,0 +1,8 @@
+apiVersion: v2
+name: cnpg
+version: 0.1.0
+description: CloudNative-PG operator — managed PostgreSQL on Kubernetes
+dependencies:
+  - name: cloudnative-pg
+    version: "0.23.0"
+    repository: "https://cloudnative-pg.github.io/charts"

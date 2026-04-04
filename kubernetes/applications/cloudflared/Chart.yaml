@@ -1,0 +1,4 @@
+apiVersion: v2
+name: cloudflared
+version: 0.1.0
+description: Cloudflare Tunnel — expose selected services via Cloudflare network

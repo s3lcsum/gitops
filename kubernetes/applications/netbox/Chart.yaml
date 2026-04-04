@@ -1,0 +1,8 @@
+apiVersion: v2
+name: netbox
+version: 0.1.0
+description: NetBox — network infrastructure resource modeling (DCIM/IPAM)
+dependencies:
+  - name: netbox
+    version: "5.0.0-beta.142"
+    repository: "https://charts.boo.tc"

@@ -1,0 +1,22 @@
+image:
+  repository: ghcr.io/n8n-io/n8n
+  tag: latest
+  pullPolicy: Always
+
+replicas: 1
+
+env:
+  N8N_METRICS: "true"
+  N8N_RUNNERS_ENABLED: "true"
+  N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+  N8N_EDITOR_BASE_URL: https://nodemation.lake.dominiksiejak.pl
+  WEBHOOK_URL: https://nodemation.lake.dominiksiejak.pl
+
+persistence:
+  size: 5Gi
+
+hostnames:
+  - nodemation.lake.dominiksiejak.pl
+  - nodemation.hello.dominiksiejak.pl
+  - n8n.lake.dominiksiejak.pl
+  - n8n.hello.dominiksiejak.pl

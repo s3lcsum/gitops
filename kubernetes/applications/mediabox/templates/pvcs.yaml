@@ -1,0 +1,23 @@
+{{- $pvcs := dict
+  "qbittorrent-config"  .Values.qbittorrent.persistence.config.size
+  "sabnzbd-config"      .Values.sabnzbd.persistence.config.size
+  "prowlarr-config"     .Values.prowlarr.persistence.config.size
+  "radarr-config"       .Values.radarr.persistence.config.size
+  "sonarr-config"       .Values.sonarr.persistence.config.size
+  "bazarr-config"       .Values.bazarr.persistence.config.size
+  "flaresolverr-config" .Values.flaresolverr.persistence.config.size
+  "jellyfin-config"     .Values.jellyfin.persistence.config.size
+  "seerr-config"        .Values.seerr.persistence.config.size
+}}
+{{- range $name, $size := $pvcs }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $name }}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: {{ $size }}
+{{- end }}

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: authentik
+version: 0.1.0
+description: Authentik — identity provider (OAuth, SAML, LDAP)
+dependencies:
+  - name: authentik
+    version: "2025.6.1"
+    repository: "https://charts.goauthentik.io"

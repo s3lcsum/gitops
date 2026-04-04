@@ -1,0 +1,23 @@
+netbox:
+  superuser:
+    name: admin
+    email: admin@dominiksiejak.pl
+
+  postgresql:
+    enabled: false
+  externalDatabase:
+    host: postgres-rw.cnpg-system.svc.cluster.local
+    port: 5432
+    database: netbox
+    existingSecretName: netbox-db-credentials
+    existingSecretKey: password
+
+  redis:
+    enabled: true
+
+  persistence:
+    enabled: true
+    size: 5Gi
+
+  remoteAuth:
+    enabled: false

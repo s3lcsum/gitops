@@ -1,0 +1,4 @@
+apiVersion: v2
+name: watchyourlan
+version: 0.1.0
+description: WatchYourLAN — network device scanner (requires hostNetwork + NET_ADMIN)

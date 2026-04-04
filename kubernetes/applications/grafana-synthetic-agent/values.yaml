@@ -1,0 +1,6 @@
+image:
+  repository: grafana/synthetic-monitoring-agent
+  tag: latest
+  pullPolicy: Always
+
+replicas: 1

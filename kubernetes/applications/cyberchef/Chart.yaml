@@ -1,0 +1,4 @@
+apiVersion: v2
+name: cyberchef
+version: 0.1.0
+description: CyberChef — web-based data transformation tool

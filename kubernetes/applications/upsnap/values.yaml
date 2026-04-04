@@ -1,0 +1,18 @@
+image:
+  repository: ghcr.io/seriousm4x/upsnap
+  tag: latest
+  pullPolicy: Always
+
+env:
+  UPSNAP_INTERVAL: "*/10 * * * * *"
+  UPSNAP_SCAN_RANGE: "192.168.89.0/24"
+  UPSNAP_SCAN_TIMEOUT: "500ms"
+  UPSNAP_PING_PRIVILEGED: "true"
+
+port: 8090
+
+persistence:
+  size: 256Mi
+
+hostnames:
+  - upsnap.lake.dominiksiejak.pl

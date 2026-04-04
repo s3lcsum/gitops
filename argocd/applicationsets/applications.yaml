@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: applications
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/s3lcsum/gitops.git
+        revision: HEAD
+        files:
+          - path: kubernetes/applications/*/config.json
+  template:
+    metadata:
+      name: "{{ .name }}"
+    spec:
+      project: applications
+      source:
+        repoURL: https://github.com/s3lcsum/gitops.git
+        targetRevision: main
+        path: "{{ .path.path }}"
+        helm:
+          valueFiles:
+            - values.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{ .namespace }}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

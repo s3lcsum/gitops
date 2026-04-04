@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+  labels:
+    app.kubernetes.io/name: mediabox
+    app.kubernetes.io/component: jellyfin
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mediabox
+      app.kubernetes.io/component: jellyfin
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mediabox
+        app.kubernetes.io/component: jellyfin
+    spec:
+      containers:
+        - name: jellyfin
+          image: "{{ .Values.jellyfin.image.repository }}:{{ .Values.jellyfin.image.tag }}"
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: UMASK
+              value: "002"
+            - name: TZ
+              value: {{ .Values.timezone }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.jellyfin.port }}
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: local-tv
+              mountPath: /mnt/LOCAL_MEDIA/tv
+            - name: nas-tv
+              mountPath: /mnt/NAS_Shared_Media/tv
+            - name: local-movies
+              mountPath: /mnt/LOCAL_MEDIA/movies
+            - name: nas-movies
+              mountPath: /mnt/NAS_Shared_Media/movies
+          resources:
+            requests:
+              cpu: 200m
+              memory: 1Gi
+              gpu.intel.com/i915: "1"
+            limits:
+              memory: 4Gi
+              gpu.intel.com/i915: "1"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: jellyfin-config
+        - name: local-tv
+          hostPath:
+            path: "{{ .Values.media.localMediaPath }}/tv"
+            type: DirectoryOrCreate
+        - name: nas-tv
+          hostPath:
+            path: "{{ .Values.media.nasSharedMediaPath }}/tv"
+            type: DirectoryOrCreate
+        - name: local-movies
+          hostPath:
+            path: "{{ .Values.media.localMediaPath }}/movies"
+            type: DirectoryOrCreate
+        - name: nas-movies
+          hostPath:
+            path: "{{ .Values.media.nasSharedMediaPath }}/movies"
+            type: DirectoryOrCreate

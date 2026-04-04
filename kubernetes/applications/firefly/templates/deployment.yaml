@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: firefly
+  labels:
+    app.kubernetes.io/name: firefly
+spec:
+  replicas: {{ .Values.replicas }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: firefly
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: firefly
+    spec:
+      containers:
+        - name: firefly
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            {{- range $k, $v := .Values.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: firefly-env
+                optional: true
+          volumeMounts:
+            - name: uploads
+              mountPath: /var/www/html/storage/upload
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+            initialDelaySeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+
+        - name: cron
+          image: alpine:3
+          command:
+            - sh
+            - -c
+            - |
+              apk add --no-cache curl >/dev/null 2>&1
+              while true; do
+                curl -fsS "http://localhost:8080/api/v1/cron/${STATIC_CRON_TOKEN}" >/dev/null 2>&1 || true
+                sleep 3600
+              done
+          envFrom:
+            - secretRef:
+                name: firefly-env
+                optional: true
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              memory: 32Mi
+
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: firefly-uploads

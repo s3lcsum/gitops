@@ -1,0 +1,4 @@
+apiVersion: v2
+name: hass
+version: 0.1.0
+description: Home Assistant ecosystem — HA + Mosquitto + Zigbee2MQTT + ESPHome

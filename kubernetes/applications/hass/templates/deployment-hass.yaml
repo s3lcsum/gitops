@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homeassistant
+  labels:
+    app.kubernetes.io/name: hass
+    app.kubernetes.io/component: homeassistant
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hass
+      app.kubernetes.io/component: homeassistant
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hass
+        app.kubernetes.io/component: homeassistant
+      annotations:
+        k8s.v1.cni.cncf.io/networks: kube-system/homelab-lan
+    spec:
+      containers:
+        - name: homeassistant
+          image: "{{ .Values.homeassistant.image.repository }}:{{ .Values.homeassistant.image.tag }}"
+          env:
+            - name: TZ
+              value: {{ .Values.timezone }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.homeassistant.port }}
+          volumeMounts:
+            - name: config
+              mountPath: /config
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /api/
+              port: http
+            periodSeconds: 30
+            initialDelaySeconds: 60
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: hass-config

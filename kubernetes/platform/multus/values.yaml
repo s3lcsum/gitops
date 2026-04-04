@@ -1,0 +1,7 @@
+multus:
+  cni:
+    image:
+      repository: ghcr.io/k8snetworkplumbingwg/multus-cni
+      tag: thick
+    daemonSet:
+      enabled: true

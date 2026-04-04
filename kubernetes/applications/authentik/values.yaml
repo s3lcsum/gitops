@@ -1,0 +1,33 @@
+authentik:
+  authentik:
+    error_reporting:
+      enabled: true
+    log_level: info
+
+  server:
+    replicas: 1
+
+  worker:
+    replicas: 1
+
+  postgresql:
+    enabled: false
+  redis:
+    enabled: true
+
+  global:
+    env:
+      - name: AUTHENTIK_POSTGRESQL__HOST
+        value: "postgres-rw.cnpg-system.svc.cluster.local"
+      - name: AUTHENTIK_POSTGRESQL__NAME
+        value: "authentik"
+      - name: AUTHENTIK_POSTGRESQL__USER
+        valueFrom:
+          secretKeyRef:
+            name: authentik-db-credentials
+            key: username
+      - name: AUTHENTIK_POSTGRESQL__PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: authentik-db-credentials
+            key: password

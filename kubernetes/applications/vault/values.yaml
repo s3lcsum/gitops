@@ -1,0 +1,44 @@
+vault:
+  server:
+    enabled: true
+    dataStorage:
+      enabled: true
+      size: 10Gi
+
+    standalone:
+      enabled: true
+      config: |
+        ui = true
+        listener "tcp" {
+          tls_disable = 1
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+        }
+        storage "raft" {
+          path = "/vault/data"
+        }
+        seal "gcpckms" {
+          project     = "dominiksiejak"
+          region      = "global"
+          key_ring    = "vault-keyring"
+          crypto_key  = "vault-auto-unseal"
+        }
+        telemetry {
+          disable_hostname          = true
+          prometheus_retention_time = "30s"
+        }
+
+    extraEnvironmentVars:
+      VAULT_ADDR: "http://127.0.0.1:8200"
+      VAULT_API_ADDR: "http://127.0.0.1:8200"
+
+    # GCP Workload Identity: annotate the SA so no long-lived JSON key is needed.
+    serviceAccount:
+      annotations:
+        iam.gke.io/gcp-service-account: ""
+
+  ui:
+    enabled: true
+
+  injector:
+    enabled: false

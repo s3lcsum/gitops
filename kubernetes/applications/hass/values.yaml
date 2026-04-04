@@ -1,0 +1,41 @@
+homeassistant:
+  image:
+    repository: ghcr.io/home-assistant/home-assistant
+    tag: stable
+  port: 8123
+  persistence:
+    size: 10Gi
+
+mosquitto:
+  image:
+    repository: eclipse-mosquitto
+    tag: "2"
+  persistence:
+    size: 1Gi
+
+zigbee2mqtt:
+  image:
+    repository: ghcr.io/koenkk/zigbee2mqtt
+    tag: latest
+  port: 8080
+  persistence:
+    size: 1Gi
+
+esphome:
+  image:
+    repository: ghcr.io/esphome/esphome
+    tag: stable
+  port: 6052
+  persistence:
+    size: 2Gi
+
+timezone: Europe/Warsaw
+
+hostnames:
+  hass:
+    - hass.lake.dominiksiejak.pl
+    - hass.hello.dominiksiejak.pl
+  zigbee2mqtt:
+    - zigbee2mqtt.lake.dominiksiejak.pl
+  esphome:
+    - esphome.lake.dominiksiejak.pl

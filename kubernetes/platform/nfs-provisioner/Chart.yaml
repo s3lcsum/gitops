@@ -1,0 +1,8 @@
+apiVersion: v2
+name: nfs-provisioner
+version: 0.1.0
+description: NFS external provisioner for Synology NAS RWX volumes (media, bulk data)
+dependencies:
+  - name: nfs-subdir-external-provisioner
+    version: "4.0.18"
+    repository: "https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner"

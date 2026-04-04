@@ -1,0 +1,8 @@
+apiVersion: v2
+name: gitea
+version: 0.1.0
+description: Gitea — self-hosted Git service
+dependencies:
+  - name: gitea
+    version: "11.0.3"
+    repository: "https://dl.gitea.io/charts/"

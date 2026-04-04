@@ -1,0 +1,25 @@
+alloy:
+  alloy:
+    configMap:
+      content: |
+        // Prometheus remote-write to Grafana Cloud.
+        prometheus.remote_write "grafana_cloud" {
+          endpoint {
+            url = "<GRAFANA_CLOUD_PROMETHEUS_URL>"
+
+            basic_auth {
+              username = "<GRAFANA_CLOUD_STACK_ID>"
+              password = "<GRAFANA_CLOUD_API_KEY>"
+            }
+          }
+        }
+
+        // Scrape Kubernetes pods with prometheus.io annotations.
+        prometheus.scrape "pods" {
+          targets    = discovery.kubernetes.pods.targets
+          forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+        }
+
+        discovery.kubernetes "pods" {
+          role = "pod"
+        }

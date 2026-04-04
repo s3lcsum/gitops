@@ -1,0 +1,117 @@
+timezone: Europe/Warsaw
+
+gluetun:
+  image:
+    repository: ghcr.io/qdm12/gluetun
+    tag: latest
+
+qbittorrent:
+  image:
+    repository: ghcr.io/linuxserver/qbittorrent
+    tag: latest
+  port: 8080
+  persistence:
+    config:
+      size: 1Gi
+
+sabnzbd:
+  image:
+    repository: ghcr.io/linuxserver/sabnzbd
+    tag: latest
+  port: 8085
+  persistence:
+    config:
+      size: 1Gi
+
+prowlarr:
+  image:
+    repository: ghcr.io/linuxserver/prowlarr
+    tag: latest
+  port: 9696
+  persistence:
+    config:
+      size: 1Gi
+
+radarr:
+  image:
+    repository: ghcr.io/linuxserver/radarr
+    tag: latest
+  port: 7878
+  persistence:
+    config:
+      size: 2Gi
+
+sonarr:
+  image:
+    repository: ghcr.io/linuxserver/sonarr
+    tag: latest
+  port: 8989
+  persistence:
+    config:
+      size: 2Gi
+
+bazarr:
+  image:
+    repository: ghcr.io/linuxserver/bazarr
+    tag: latest
+  port: 6767
+  persistence:
+    config:
+      size: 1Gi
+
+flaresolverr:
+  image:
+    repository: ghcr.io/flaresolverr/flaresolverr
+    tag: latest
+  port: 8191
+  persistence:
+    config:
+      size: 256Mi
+
+jellyfin:
+  image:
+    repository: ghcr.io/linuxserver/jellyfin
+    tag: latest
+  port: 8096
+  persistence:
+    config:
+      size: 10Gi
+
+seerr:
+  image:
+    repository: fallenbagel/jellyseerr
+    tag: preview-OIDC
+  port: 5055
+  persistence:
+    config:
+      size: 1Gi
+
+media:
+  localMediaPath: /mnt/LOCAL_MEDIA
+  nasSharedMediaPath: /mnt/NAS_Shared_Media
+
+hostnames:
+  qbittorrent:
+    - qbittorrent.lake.dominiksiejak.pl
+    - qbittorrent.hello.dominiksiejak.pl
+  sabnzbd:
+    - sabnzbd.lake.dominiksiejak.pl
+    - sabnzbd.hello.dominiksiejak.pl
+  prowlarr:
+    - prowlarr.lake.dominiksiejak.pl
+    - prowlarr.hello.dominiksiejak.pl
+  radarr:
+    - radarr.lake.dominiksiejak.pl
+    - radarr.hello.dominiksiejak.pl
+  sonarr:
+    - sonarr.lake.dominiksiejak.pl
+    - sonarr.hello.dominiksiejak.pl
+  bazarr:
+    - bazarr.lake.dominiksiejak.pl
+    - bazarr.hello.dominiksiejak.pl
+  jellyfin:
+    - jellyfin.lake.dominiksiejak.pl
+    - jellyfin.hello.dominiksiejak.pl
+  seerr:
+    - seerr.lake.dominiksiejak.pl
+    - seerr.hello.dominiksiejak.pl

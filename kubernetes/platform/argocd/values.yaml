@@ -1,0 +1,28 @@
+argo-cd:
+  fullnameOverride: argocd
+
+  global:
+    domain: argocd.lake.dominiksiejak.pl
+
+  configs:
+    params:
+      # TLS terminated at the Gateway; ArgoCD serves plain HTTP.
+      server.insecure: true
+
+  server:
+    replicas: 1
+
+  controller:
+    replicas: 1
+
+  repoServer:
+    replicas: 1
+
+  redis:
+    enabled: true
+
+  dex:
+    enabled: false
+
+  notifications:
+    enabled: false

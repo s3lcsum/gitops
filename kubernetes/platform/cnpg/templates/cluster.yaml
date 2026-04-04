@@ -1,0 +1,36 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres
+  namespace: cnpg-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  instances: 1
+
+  postgresql:
+    parameters:
+      shared_buffers: 256MB
+      effective_cache_size: 512MB
+
+  storage:
+    size: 10Gi
+    # storageClass: <set to Proxmox CSI or default when available>
+
+  bootstrap:
+    initdb:
+      database: app
+      owner: app
+
+  backup:
+    barmanObjectStore:
+      destinationPath: "s3://cnpg-backups/"
+      endpointURL: ""
+      s3Credentials:
+        accessKeyId:
+          name: cnpg-s3-creds
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: cnpg-s3-creds
+          key: ACCESS_SECRET_KEY
+    retentionPolicy: "30d"

@@ -1,0 +1,6 @@
+image:
+  repository: cloudflare/cloudflared
+  tag: latest
+  pullPolicy: Always
+
+replicas: 1

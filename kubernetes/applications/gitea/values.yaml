@@ -1,0 +1,21 @@
+gitea:
+  gitea:
+    config:
+      server:
+        DOMAIN: gitea.lake.dominiksiejak.pl
+        ROOT_URL: https://gitea.lake.dominiksiejak.pl/
+      database:
+        DB_TYPE: postgres
+        HOST: postgres-rw.cnpg-system.svc.cluster.local:5432
+        NAME: gitea
+
+  postgresql:
+    enabled: false
+  postgresql-ha:
+    enabled: false
+  redis-cluster:
+    enabled: false
+
+  persistence:
+    enabled: true
+    size: 10Gi

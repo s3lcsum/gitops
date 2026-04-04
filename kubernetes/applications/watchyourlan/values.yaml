@@ -1,0 +1,17 @@
+image:
+  repository: aceberg/watchyourlan
+  tag: latest
+  pullPolicy: Always
+
+env:
+  PROMETHEUS_ENABLE: "true"
+  PORT: "8840"
+  USE_DB: postgres
+
+port: 8840
+
+persistence:
+  size: 256Mi
+
+hostnames:
+  - lan.lake.dominiksiejak.pl

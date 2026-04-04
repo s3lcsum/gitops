@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calibre
+  labels:
+    app.kubernetes.io/name: calibre
+    app.kubernetes.io/component: server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: calibre
+      app.kubernetes.io/component: server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: calibre
+        app.kubernetes.io/component: server
+    spec:
+      containers:
+        - name: calibre
+          image: "{{ .Values.calibre.image.repository }}:{{ .Values.calibre.image.tag }}"
+          ports:
+            - name: gui
+              containerPort: {{ .Values.calibre.ports.gui }}
+            - name: api
+              containerPort: {{ .Values.calibre.ports.api }}
+          env:
+            - name: DRINODE
+              value: /dev/dri/renderD128
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: local-books
+              mountPath: /mnt/LOCAL_MEDIA/books
+            - name: nas-books
+              mountPath: /mnt/NAS_Shared_Media/books
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+              gpu.intel.com/i915: "1"
+            limits:
+              memory: 1Gi
+              gpu.intel.com/i915: "1"
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: calibre-config
+        - name: local-books
+          hostPath:
+            path: {{ .Values.nfs.localMedia }}
+            type: DirectoryOrCreate
+        - name: nas-books
+          hostPath:
+            path: {{ .Values.nfs.nasSharedMedia }}
+            type: DirectoryOrCreate

@@ -1,0 +1,10 @@
+image:
+  repository: iib0011/omni-tools
+  tag: latest
+
+replicas: 1
+port: 8080
+
+hostnames:
+  - omnitools.lake.dominiksiejak.pl
+  - omnitools.hello.dominiksiejak.pl

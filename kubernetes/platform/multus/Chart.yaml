@@ -1,0 +1,8 @@
+apiVersion: v2
+name: multus
+version: 0.1.0
+description: Multus CNI — attach multiple network interfaces to pods (thick plugin for Talos)
+dependencies:
+  - name: multus
+    version: "4.1.2"
+    repository: "https://charts.github.io/k8snetworkplumbingwg"
