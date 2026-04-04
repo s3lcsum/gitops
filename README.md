@@ -61,7 +61,7 @@ The OpenTofu module (`terraform/netbox/`) defines:
 | <img src="./docs/assets/gluetun.svg" width="32" height="32"> | [Gluetun](https://github.com/qdm12/gluetun) | VPN gateway for "download stuff" apps |
 | <img src="./docs/assets/grafana.svg" width="32" height="32"> | [Grafana Synthetic Agent](https://github.com/grafana/synthetic-monitoring-agent) | Uptime & performance monitoring |
 | <img src="./docs/assets/jellyfin.svg" width="32" height="32"> | [Jellyfin](https://github.com/jellyfin/jellyfin) | Media server |
-| <img src="./docs/assets/jellyseerr.svg" width="32" height="32"> | [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) | Requests / discovery for Jellyfin |
+| <img src="./docs/assets/jellyseerr.svg" width="32" height="32"> | [Seerr](https://github.com/seerr-team/seerr) (formerly Jellyseerr; Docker image still `fallenbagel/jellyseerr`) | Requests / discovery for Jellyfin |
 | <img src="./docs/assets/n8n.svg" width="32" height="32"> | [n8n](https://github.com/n8n-io/n8n) | Workflow automation platform |
 | <img src="./docs/assets/netbootxyz.svg" width="32" height="32"> | [netboot.xyz](https://github.com/netbootxyz/netboot.xyz) | Network boot environments |
 | <img src="./docs/assets/netbox.svg" width="32" height="32"> | [NetBox](https://github.com/netbox-community/netbox) | Network infrastructure IPAM |
@@ -246,9 +246,13 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Changelog
 
+### 5.04.2026
+
+Renamed the Seerr bits in docs (Jellyseerr is legacy branding; Docker image name unchanged). Fixed the Authentik `user_accessible_apps` slug to match `seerr`, pointed the Gitea mirror at the new GitHub repo, and added a Talos DHCP reminder so apply doesn’t look like it’s hanging forever.
+
 ### 4.04.2026
 
-OpenTofu + provider refresh, pinned a few container images, fixed CI’s tofu pin (it was embarrassingly old). Threw a note on Jellyseerr about OIDC still being preview-only upstream.
+OpenTofu + provider refresh, pinned a few container images, fixed CI’s tofu pin (it was embarrassingly old). Threw a note on Seerr about OIDC still being preview-only upstream.
 
 ### 7.03.2026
 

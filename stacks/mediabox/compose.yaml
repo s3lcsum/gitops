@@ -201,7 +201,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8096/"]
 
   # 📥 Request manager
-  # OIDC login is not in stable Seerr/Jellyseerr yet (seerr-team/seerr#1505 closed without merge; v3.1.0 has no OIDC). Keep preview-OIDC until a release ships it.
+  # OIDC not in stable Seerr yet (upstream #1505). Image is still fallenbagel/jellyseerr — keep preview-OIDC until a release ships OIDC.
   seerr:
     <<: *service-defaults
     container_name: seerr

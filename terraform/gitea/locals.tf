@@ -9,36 +9,37 @@ locals {
   }
 
   mirrors = {
-    "mirrors/act_runner"                    = { clone_url = "https://gitea.com/gitea/act_runner.git" }
-    "mirrors/AdGuardHome"                   = { clone_url = "https://github.com/AdguardTeam/AdGuardHome.git" }
-    "mirrors/adminer"                       = { clone_url = "https://github.com/vrana/adminer.git" }
-    "mirrors/All-jellyfin-media-server"     = { clone_url = "https://github.com/Morzomb/All-jellyfin-media-server.git" }
-    "mirrors/Authentik"                     = { clone_url = "https://github.com/goauthentik/authentik.git" }
-    "mirrors/backstage"                     = { clone_url = "https://github.com/backstage/backstage.git" }
-    "mirrors/Bazarr"                        = { clone_url = "https://github.com/morpheus65535/bazarr.git" }
-    "mirrors/Calibre"                       = { clone_url = "https://github.com/kovidgoyal/calibre.git" }
-    "mirrors/Cloudflared"                   = { clone_url = "https://github.com/cloudflare/cloudflared.git" }
-    "mirrors/crowdsec"                      = { clone_url = "https://github.com/crowdsecurity/crowdsec.git" }
-    "mirrors/CUPS"                          = { clone_url = "https://github.com/OpenPrinting/cups.git" }
-    "mirrors/DIUN"                          = { clone_url = "https://github.com/crazy-max/diun.git" }
-    "mirrors/docker-adminer"                = { clone_url = "https://git.hubp.de/TimWolla/docker-adminer.git" }
-    "mirrors/docker-bazarr"                 = { clone_url = "https://github.com/linuxserver/docker-bazarr.git" }
-    "mirrors/docker-calibre"                = { clone_url = "https://github.com/linuxserver/docker-calibre.git" }
-    "mirrors/docker-idrac6"                 = { clone_url = "https://github.com/DomiStyle/docker-idrac6.git" }
-    "mirrors/docker-jellyfin"               = { clone_url = "https://github.com/linuxserver/docker-jellyfin.git" }
-    "mirrors/docker-prowlarr"               = { clone_url = "https://github.com/linuxserver/docker-prowlarr.git" }
-    "mirrors/docker-qbittorrent"            = { clone_url = "https://github.com/linuxserver/docker-qbittorrent.git" }
-    "mirrors/docker-radarr"                 = { clone_url = "https://github.com/linuxserver/docker-radarr.git" }
-    "mirrors/docker-sabnzbd"                = { clone_url = "https://github.com/linuxserver/docker-sabnzbd.git" }
-    "mirrors/docker-sonarr"                 = { clone_url = "https://github.com/linuxserver/docker-sonarr.git" }
-    "mirrors/WatchYourLAN"                  = { clone_url = "https://github.com/aceberg/WatchYourLAN.git" }
-    "mirrors/dozzle"                        = { clone_url = "https://github.com/amir20/dozzle.git" }
-    "mirrors/error-pages"                   = { clone_url = "https://github.com/tarampampam/error-pages.git" }
-    "mirrors/FlareSolverr"                  = { clone_url = "https://github.com/FlareSolverr/FlareSolverr.git" }
-    "mirrors/gitea"                         = { clone_url = "https://github.com/go-gitea/gitea.git" }
-    "mirrors/Gluetun"                       = { clone_url = "https://github.com/qdm12/gluetun.git" }
-    "mirrors/Jellyfin"                      = { clone_url = "https://github.com/jellyfin/jellyfin.git" }
-    "mirrors/Jellyseerr"                    = { clone_url = "https://github.com/Fallenbagel/jellyseerr.git" }
+    "mirrors/act_runner"                = { clone_url = "https://gitea.com/gitea/act_runner.git" }
+    "mirrors/AdGuardHome"               = { clone_url = "https://github.com/AdguardTeam/AdGuardHome.git" }
+    "mirrors/adminer"                   = { clone_url = "https://github.com/vrana/adminer.git" }
+    "mirrors/All-jellyfin-media-server" = { clone_url = "https://github.com/Morzomb/All-jellyfin-media-server.git" }
+    "mirrors/Authentik"                 = { clone_url = "https://github.com/goauthentik/authentik.git" }
+    "mirrors/backstage"                 = { clone_url = "https://github.com/backstage/backstage.git" }
+    "mirrors/Bazarr"                    = { clone_url = "https://github.com/morpheus65535/bazarr.git" }
+    "mirrors/Calibre"                   = { clone_url = "https://github.com/kovidgoyal/calibre.git" }
+    "mirrors/Cloudflared"               = { clone_url = "https://github.com/cloudflare/cloudflared.git" }
+    "mirrors/crowdsec"                  = { clone_url = "https://github.com/crowdsecurity/crowdsec.git" }
+    "mirrors/CUPS"                      = { clone_url = "https://github.com/OpenPrinting/cups.git" }
+    "mirrors/DIUN"                      = { clone_url = "https://github.com/crazy-max/diun.git" }
+    "mirrors/docker-adminer"            = { clone_url = "https://git.hubp.de/TimWolla/docker-adminer.git" }
+    "mirrors/docker-bazarr"             = { clone_url = "https://github.com/linuxserver/docker-bazarr.git" }
+    "mirrors/docker-calibre"            = { clone_url = "https://github.com/linuxserver/docker-calibre.git" }
+    "mirrors/docker-idrac6"             = { clone_url = "https://github.com/DomiStyle/docker-idrac6.git" }
+    "mirrors/docker-jellyfin"           = { clone_url = "https://github.com/linuxserver/docker-jellyfin.git" }
+    "mirrors/docker-prowlarr"           = { clone_url = "https://github.com/linuxserver/docker-prowlarr.git" }
+    "mirrors/docker-qbittorrent"        = { clone_url = "https://github.com/linuxserver/docker-qbittorrent.git" }
+    "mirrors/docker-radarr"             = { clone_url = "https://github.com/linuxserver/docker-radarr.git" }
+    "mirrors/docker-sabnzbd"            = { clone_url = "https://github.com/linuxserver/docker-sabnzbd.git" }
+    "mirrors/docker-sonarr"             = { clone_url = "https://github.com/linuxserver/docker-sonarr.git" }
+    "mirrors/WatchYourLAN"              = { clone_url = "https://github.com/aceberg/WatchYourLAN.git" }
+    "mirrors/dozzle"                    = { clone_url = "https://github.com/amir20/dozzle.git" }
+    "mirrors/error-pages"               = { clone_url = "https://github.com/tarampampam/error-pages.git" }
+    "mirrors/FlareSolverr"              = { clone_url = "https://github.com/FlareSolverr/FlareSolverr.git" }
+    "mirrors/gitea"                     = { clone_url = "https://github.com/go-gitea/gitea.git" }
+    "mirrors/Gluetun"                   = { clone_url = "https://github.com/qdm12/gluetun.git" }
+    "mirrors/Jellyfin"                  = { clone_url = "https://github.com/jellyfin/jellyfin.git" }
+    # Seerr (GitHub: seerr-team/seerr); legacy path name — image on Docker Hub remains fallenbagel/jellyseerr
+    "mirrors/Jellyseerr"                    = { clone_url = "https://github.com/seerr-team/seerr.git" }
     "mirrors/n8n"                           = { clone_url = "https://github.com/n8n-io/n8n.git" }
     "mirrors/netboot.xyz"                   = { clone_url = "https://github.com/netbootxyz/netboot.xyz.git" }
     "mirrors/NetBox"                        = { clone_url = "https://github.com/netbox-community/netbox.git" }

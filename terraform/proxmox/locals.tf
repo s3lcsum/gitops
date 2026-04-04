@@ -41,6 +41,8 @@ locals {
   }
 
   # Talos — node definitions
+  # `ip` must be reachable before `talos_machine_configuration_apply` runs: reserve this IP in DHCP for the VM’s MAC,
+  # or first-boot Talos will use another address and Terraform (which targets `ip`) will hang until `.250` answers.
   talos_nodes = {
     "talos-cp-1" = {
       host_node     = "lake-1"
@@ -49,7 +51,6 @@ locals {
       vm_id         = 500
       cpu           = 4
       ram_dedicated = 16384
-      disk_size     = 68
     }
   }
 

@@ -284,7 +284,7 @@ locals {
     "grafana",
     "homarr",
     "jellyfin",
-    "jellyseerr",
+    "seerr",
     "n8n",
     "netbox",
     "qbittorrent",
