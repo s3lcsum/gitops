@@ -50,13 +50,13 @@ locals {
       cpu           = 4
       ram_dedicated = 16384
       disk_size     = 68
-      igpu          = true
     }
   }
 
-  # Derived node helpers
+  # Derived node helpers (bootstrap uses lexicographically first control-plane key)
   talos_controlplane_nodes = { for k, v in local.talos_nodes : k => v if v.machine_type == "controlplane" }
-  talos_first_cp_ip        = values(local.talos_controlplane_nodes)[0].ip
+  talos_bootstrap_node_key = sort(keys(local.talos_controlplane_nodes))[0]
+  talos_first_cp_ip        = local.talos_controlplane_nodes[local.talos_bootstrap_node_key].ip
 
   # Talos cluster config
   proxmox_storage          = "local"

@@ -20,6 +20,7 @@ data "http" "schematic_id" {
 resource "proxmox_virtual_environment_download_file" "talos_iso" {
   for_each = { for k, v in local.talos_nodes : "${v.host_node}_${local.image_id}" => v... }
 
+  # ISO storage can decompress gz. Use `disk.file_id` to attach raw image as a block device (not IDE CD-ROM).
   content_type            = "iso"
   datastore_id            = local.proxmox_storage
   node_name               = each.value[0].host_node

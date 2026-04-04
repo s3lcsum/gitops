@@ -1,10 +1,10 @@
 terraform {
-  required_version = ">= 1.11.0"
+  required_version = ">= 1.11.5"
 
   required_providers {
     netbox = {
       source  = "e-breuninger/netbox"
-      version = "5.1.0"
+      version = "5.2.1"
     }
   }
 

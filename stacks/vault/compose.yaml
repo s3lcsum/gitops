@@ -2,7 +2,7 @@
 
 services:
   vault:
-    image: hashicorp/vault
+    image: hashicorp/vault:1.21.4
     container_name: vault
     restart: unless-stopped
     environment:

@@ -1,3 +1,6 @@
+# Credentials: use Terraform Cloud workspace variables and/or a local *.tfvars file
+# (see repo .gitignore — *.tfvars are not committed).
+
 variable "virtual_environment_endpoint" {
   type    = string
   default = "https://lake:8006"

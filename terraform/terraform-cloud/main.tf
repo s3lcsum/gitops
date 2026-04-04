@@ -6,7 +6,7 @@ resource "tfe_workspace" "workspaces" {
   organization = var.organization_name
 
   working_directory = try(each.value.working_directory, "")
-  terraform_version = try(each.value.terraform_version, ">= 1.14.0")
+  terraform_version = try(each.value.terraform_version, ">= 1.11.5")
 
   allow_destroy_plan            = try(each.value.allow_destroy_plan, true)
   file_triggers_enabled         = try(each.value.file_triggers_enabled, true)

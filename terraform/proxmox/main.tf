@@ -83,7 +83,9 @@ resource "proxmox_virtual_environment_role" "authentik" {
 # Talos Linux Kubernetes — multi-node via for_each
 # -----------------------------------------------------------------------------
 
-resource "talos_machine_secrets" "this" {}
+resource "talos_machine_secrets" "this" {
+  talos_version = local.talos_image_version
+}
 
 resource "proxmox_virtual_environment_vm" "talos" {
   for_each = local.talos_nodes
@@ -103,11 +105,12 @@ resource "proxmox_virtual_environment_vm" "talos" {
     dedicated = each.value.ram_dedicated
   }
 
+  # Attach factory raw as scsi0 via `file_id` (not CD-ROM). Omit `size` here — setting it can force a hot resize on the boot disk and fail on a running VM.
   disk {
     datastore_id = local.proxmox_datastore_id
+    file_id      = proxmox_virtual_environment_download_file.talos_iso["${each.value.host_node}_${local.image_id}"].id
     file_format  = "raw"
     interface    = "scsi0"
-    size         = each.value.disk_size
     ssd          = true
     discard      = "on"
     backup       = true
@@ -119,13 +122,7 @@ resource "proxmox_virtual_environment_vm" "talos" {
     type         = "4m"
   }
 
-  cdrom {
-    enabled   = true
-    file_id   = proxmox_virtual_environment_download_file.talos_iso["${each.value.host_node}_${local.image_id}"].id
-    interface = "ide2"
-  }
-
-  boot_order = ["ide2", "scsi0"]
+  boot_order = ["scsi0"]
 
   network_device {
     bridge = local.talos_network_bridge
@@ -133,7 +130,7 @@ resource "proxmox_virtual_environment_vm" "talos" {
   }
 
   agent {
-    enabled = false
+    enabled = true
   }
 }
 
@@ -163,29 +160,3 @@ resource "talos_cluster_kubeconfig" "this" {
 
   depends_on = [talos_machine_bootstrap.this]
 }
-
-# -----------------------------------------------------------------------------
-# State migration — remove after first successful apply
-# -----------------------------------------------------------------------------
-
-moved {
-  from = talos_machine_secrets.this[0]
-  to   = talos_machine_secrets.this
-}
-
-moved {
-  from = proxmox_virtual_environment_vm.talos_k8s[0]
-  to   = proxmox_virtual_environment_vm.talos["talos-cp-1"]
-}
-
-moved {
-  from = talos_machine_configuration_apply.this[0]
-  to   = talos_machine_configuration_apply.this["talos-cp-1"]
-}
-
-# Note: proxmox_virtual_environment_download_file.talos_iso moved block omitted —
-# key depends on dynamic schematic_id so it can't be expressed statically.
-# The old count-based ISO will be destroyed and re-downloaded with the new key.
-#
-# talos_machine_bootstrap.this moved block omitted — provider doesn't support it.
-# The old count-based resource will be destroyed (bootstrap is idempotent).

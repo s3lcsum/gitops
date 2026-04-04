@@ -246,6 +246,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Changelog
 
+### 4.04.2026
+
+OpenTofu + provider refresh, pinned a few container images, fixed CI’s tofu pin (it was embarrassingly old). Threw a note on Jellyseerr about OIDC still being preview-only upstream.
+
 ### 7.03.2026
 
 Updated all dependencies to latest versions — Docker images, Terraform providers, and OpenTofu itself.

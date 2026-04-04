@@ -11,7 +11,7 @@ alwaysApply: false
 ## Required Template (use as baseline)
 ```hcl
 terraform {
-  required_version = ">= 1.11.0" # minimum supported Terraform version
+  required_version = ">= 1.11.5" # minimum supported OpenTofu version
 
   required_providers {
     zitadel = {

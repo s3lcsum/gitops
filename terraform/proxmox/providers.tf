@@ -1,18 +1,18 @@
 terraform {
-  required_version = ">= 1.11.0"
+  required_version = ">= 1.11.5"
 
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
-      version = "0.98.0"
+      version = "0.100.0"
     }
     talos = {
       source  = "siderolabs/talos"
-      version = "0.8.0"
+      version = "0.10.1"
     }
     http = {
       source  = "hashicorp/http"
-      version = "~> 3.4"
+      version = "3.5.0"
     }
   }
 
