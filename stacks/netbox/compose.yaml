@@ -1,6 +1,6 @@
 
 x-defaults: &defaults
-  image: netboxcommunity/netbox:v2.5.10
+  image: netboxcommunity/netbox:v2.11.12
   restart: unless-stopped
   user: "root:root"
   env_file:
