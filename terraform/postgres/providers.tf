@@ -8,13 +8,9 @@ terraform {
     }
   }
 
-  cloud {
-    hostname     = "app.terraform.io"
-    organization = "dominiksiejak"
-
-    workspaces {
-      name = "gitops-postgres"
-    }
+  backend "gcs" {
+    bucket = "dominiksiejak-gitops-tfstate"
+    prefix = "gitops-postgres"
   }
 }
 

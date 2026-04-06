@@ -3,6 +3,11 @@
 GIT_ROOT := $(shell git rev-parse --show-toplevel)
 include $(GIT_ROOT)/terraform/base.Makefile
 
+# Bootstrap: apply this module on Terraform Cloud once (backend "cloud" below) to create
+# gs://dominiksiejak-gitops-tfstate. Then replace the cloud {} block in providers.tf with
+# backend "gcs" { bucket = "dominiksiejak-gitops-tfstate" prefix = "gitops-gcp" } and run:
+#   $(TOFU) init -migrate-state
+# For every other terraform/* module already on GCS: same init -migrate-state with GCP ADC.
 
 .PHONY: show-sa export-vault-key
 

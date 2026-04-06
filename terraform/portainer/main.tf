@@ -7,13 +7,13 @@ resource "portainer_settings" "default" {
     for_each = var.enable_oauth ? [1] : []
     content {
       sso                     = true
-      client_id               = data.tfe_outputs.authentik[0].values.applications.portainer.client_id
-      client_secret           = data.tfe_outputs.authentik[0].values.applications.portainer.client_secret
-      access_token_uri        = data.tfe_outputs.authentik[0].values.applications.portainer.access_token_uri
-      authorization_uri       = data.tfe_outputs.authentik[0].values.applications.portainer.authorization_uri
-      logout_uri              = data.tfe_outputs.authentik[0].values.applications.portainer.logout_uri
-      redirect_uri            = data.tfe_outputs.authentik[0].values.applications.portainer.redirect_uri
-      resource_uri            = data.tfe_outputs.authentik[0].values.applications.portainer.resource_uri
+      client_id               = data.terraform_remote_state.authentik[0].outputs.applications.portainer.client_id
+      client_secret           = data.terraform_remote_state.authentik[0].outputs.applications.portainer.client_secret
+      access_token_uri        = data.terraform_remote_state.authentik[0].outputs.applications.portainer.access_token_uri
+      authorization_uri       = data.terraform_remote_state.authentik[0].outputs.applications.portainer.authorization_uri
+      logout_uri              = data.terraform_remote_state.authentik[0].outputs.applications.portainer.logout_uri
+      redirect_uri            = data.terraform_remote_state.authentik[0].outputs.applications.portainer.redirect_uri
+      resource_uri            = data.terraform_remote_state.authentik[0].outputs.applications.portainer.resource_uri
       user_identifier         = "email"
       scopes                  = "openid profile email"
       oauth_auto_create_users = true

@@ -8,6 +8,8 @@ terraform {
     }
   }
 
+  # Bootstrap: apply once on Terraform Cloud so the bucket exists, then switch to backend "gcs"
+  # below and run: tofu init -migrate-state
   cloud {
     hostname     = "app.terraform.io"
     organization = "dominiksiejak"

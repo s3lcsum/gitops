@@ -86,3 +86,42 @@ resource "google_iap_client" "authentik" {
   display_name = "Authentik SSO"
   brand        = google_iap_brand.homelab.name
 }
+
+########################################################
+# REMOTE STATE (OpenTofu / Terraform GCS backend)
+# Locking is handled by the gcs backend (object generation).
+########################################################
+resource "google_service_account" "terraform_state" {
+  account_id   = "terraform-state"
+  display_name = "OpenTofu remote state (GCS)"
+  description  = "Used by automation or humans with impersonation to read/write tfstate in GCS"
+  project      = var.gcp_project_id
+}
+
+# Homelab: Google-managed encryption and access logs are sufficient for state; dedicated CMEK and log sinks add cost.
+#trivy:ignore:AVD-GCP-0066
+#trivy:ignore:AVD-GCP-0077
+resource "google_storage_bucket" "terraform_state" {
+  name                        = local.tfstate_bucket_name
+  project                     = var.gcp_project_id
+  location                    = "EU"
+  force_destroy               = false
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
+
+  versioning {
+    enabled = true
+  }
+
+  depends_on = [google_project_service.apis["storage.googleapis.com"]]
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "google_storage_bucket_iam_member" "terraform_state_sa" {
+  bucket = google_storage_bucket.terraform_state.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.terraform_state.email}"
+}

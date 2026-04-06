@@ -14,15 +14,19 @@ terraform {
       source  = "hashicorp/http"
       version = "3.5.0"
     }
+    local = {
+      source  = "hashicorp/local"
+      version = "2.8.0"
+    }
+    null = {
+      source  = "hashicorp/null"
+      version = "3.2.4"
+    }
   }
 
-  cloud {
-    hostname     = "app.terraform.io"
-    organization = "dominiksiejak"
-
-    workspaces {
-      name = "gitops-proxmox"
-    }
+  backend "gcs" {
+    bucket = "dominiksiejak-gitops-tfstate"
+    prefix = "gitops-proxmox"
   }
 }
 

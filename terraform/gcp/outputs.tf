@@ -21,3 +21,13 @@ output "google_oauth_authentik" {
   }
   sensitive = true
 }
+
+output "terraform_state_bucket" {
+  description = "GCS bucket for OpenTofu/Terraform remote state"
+  value       = google_storage_bucket.terraform_state.name
+}
+
+output "terraform_state_service_account" {
+  description = "Service account that can read/write state objects in the bucket"
+  value       = google_service_account.terraform_state.email
+}

@@ -1,4 +1,7 @@
 locals {
+  # Globally unique GCS bucket name for OpenTofu/Terraform state (must match backend blocks).
+  tfstate_bucket_name = "dominiksiejak-gitops-tfstate"
+
   vault_kms = {
     key_ring_name   = "vault-keyring"
     location        = "global"
@@ -14,6 +17,7 @@ locals {
   required_apis = [
     "cloudkms.googleapis.com",
     "iam.googleapis.com",
-    "iap.googleapis.com"
+    "iap.googleapis.com",
+    "storage.googleapis.com",
   ]
 }

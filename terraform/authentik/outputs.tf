@@ -8,6 +8,12 @@ output "applications" {
 
       # Convenience: first redirect URI registered in Authentik for this app
       redirect_uri = local.oauth2_applications[slug].redirect_uris[0]
+
+      # Standard Authentik OAuth2 endpoints (used by Portainer and other RPs)
+      authorization_uri = "https://auth.${local.base_domain}/application/o/authorize/"
+      access_token_uri  = "https://auth.${local.base_domain}/application/o/token/"
+      logout_uri        = "https://auth.${local.base_domain}/application/o/${slug}/end-session/"
+      resource_uri      = "https://auth.${local.base_domain}/application/o/${slug}/"
     }
   }
   sensitive = true
