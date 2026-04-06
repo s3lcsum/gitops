@@ -4,8 +4,8 @@ resource "vault_jwt_auth_backend" "oidc" {
   type               = "oidc"
   description        = "Authentik"
   oidc_discovery_url = "https://auth.lake.dominiksiejak.pl/application/o/vault/"
-  oidc_client_id     = data.terraform_remote_state.authentik.outputs.applications.vault.client_id
-  oidc_client_secret = data.terraform_remote_state.authentik.outputs.applications.vault.client_secret
+  oidc_client_id     = data.tfe_outputs.authentik.values.applications.vault.client_id
+  oidc_client_secret = data.tfe_outputs.authentik.values.applications.vault.client_secret
   default_role       = "admin"
 
   tune {
@@ -28,7 +28,7 @@ resource "vault_jwt_auth_backend_role" "admin" {
     groups = "admins"
   }
 
-  bound_audiences = [data.terraform_remote_state.authentik.outputs.applications.vault.client_id]
+  bound_audiences = [data.tfe_outputs.authentik.values.applications.vault.client_id]
   allowed_redirect_uris = [
     "https://vault.lake.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
     "https://vault.lake.dominiksiejak.pl/oidc/callback",

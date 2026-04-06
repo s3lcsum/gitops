@@ -246,6 +246,12 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Changelog
 
+### 6.04.2026
+
+Swapped **Terraform Cloud** remote state for a **GCS** bucket — wired backends across the Terraform roots, added a batch **TFC→GCS** migration script plus `migrate-all-tfc` / `bootstrap-tfstate-bucket` make targets so I’m not clicking through fifty workspaces. On the **Proxmox** side: **Talos** cluster resources, optional **Calico** bootstrap after kubeconfig lands, and gitignored `terraform/proxmox/generated/` for Talos/kubeconfig artifacts.
+
+Pushed more **Kubernetes** platform bits: **Grafana**, **VictoriaMetrics**, **Vector**, **Stakater Reloader**, **Calico**, **Grafana Alloy** (incl. templates), plus **homelab** manifests and ArgoCD / **n8n** tweaks. Pruned legacy **Docker Compose** stacks from `stacks/` (AdGuard, CyberChef, Firefly, OmniTools, Watchtower) since those workloads moved to the cluster, trimmed **Gatus**, and refreshed **NetBox** IPAM data + **MkDocs** networking notes.
+
 ### 5.04.2026
 
 Renamed the Seerr bits in docs (Jellyseerr is legacy branding; Docker image name unchanged). Fixed the Authentik `user_accessible_apps` slug to match `seerr`, pointed the Gitea mirror at the new GitHub repo, and added a Talos DHCP reminder so apply doesn’t look like it’s hanging forever.

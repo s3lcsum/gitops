@@ -2,24 +2,65 @@ alloy:
   alloy:
     configMap:
       content: |
-        // Prometheus remote-write to Grafana Cloud.
+        // Credentials: env from secret grafana-alloy-credentials (Vault path secret/grafana-alloy).
         prometheus.remote_write "grafana_cloud" {
           endpoint {
-            url = "<GRAFANA_CLOUD_PROMETHEUS_URL>"
+            url = sys.env("GRAFANA_CLOUD_PROMETHEUS_URL")
 
             basic_auth {
-              username = "<GRAFANA_CLOUD_STACK_ID>"
-              password = "<GRAFANA_CLOUD_API_KEY>"
+              username = sys.env("GRAFANA_CLOUD_USERNAME")
+              password = sys.env("GRAFANA_CLOUD_API_KEY")
             }
           }
         }
 
-        // Scrape Kubernetes pods with prometheus.io annotations.
-        prometheus.scrape "pods" {
-          targets    = discovery.kubernetes.pods.targets
-          forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+        // Primary TSDB in-cluster (Grafana default datasource).
+        prometheus.remote_write "local" {
+          endpoint {
+            url = "http://victoria-metrics-victoria-metrics-single-server.victoria-metrics.svc:8428/api/v1/write"
+          }
         }
 
         discovery.kubernetes "pods" {
           role = "pod"
         }
+
+        // Same relabel flow as Prometheus kubernetes_sd (pod role) for prometheus.io/* annotations.
+        discovery.relabel "pod_annotations" {
+          targets = discovery.kubernetes.pods.targets
+
+          rule {
+            source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_scrape"]
+            regex         = "true"
+            action        = "keep"
+          }
+
+          rule {
+            source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_path"]
+            regex         = "(.+)"
+            target_label  = "__metrics_path__"
+            replacement   = "$1"
+            action        = "replace"
+          }
+
+          rule {
+            source_labels = ["__address__", "__meta_kubernetes_pod_annotation_prometheus_io_port"]
+            regex         = "([^:]+)(?::\\d+)?;(\\d+)"
+            replacement   = "$1:$2"
+            target_label  = "__address__"
+            action        = "replace"
+          }
+        }
+
+        prometheus.scrape "pods" {
+          targets         = discovery.relabel.pod_annotations.output
+          forward_to = [
+            prometheus.remote_write.local.receiver,
+            prometheus.remote_write.grafana_cloud.receiver,
+          ]
+          scrape_interval = "60s"
+        }
+
+    envFrom:
+      - secretRef:
+          name: grafana-alloy-credentials

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: grafana-stack
+version: 0.1.0
+description: Grafana OSS — primary UI; Grafana Cloud as secondary datasources
+dependencies:
+  - name: grafana
+    version: "10.5.15"
+    repository: "https://grafana.github.io/helm-charts"

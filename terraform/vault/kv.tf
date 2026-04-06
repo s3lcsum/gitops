@@ -7,7 +7,7 @@ resource "vault_mount" "kv" {
 
 # Store all Authentik oAuth2 application credentials in Vault
 resource "vault_kv_secret_v2" "oauth2" {
-  for_each = nonsensitive(data.terraform_remote_state.authentik.outputs.applications)
+  for_each = nonsensitive(data.tfe_outputs.authentik.values.applications)
 
   mount               = vault_mount.kv.path
   name                = "${each.key}/authentik/oauth2"

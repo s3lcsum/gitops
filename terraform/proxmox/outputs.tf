@@ -21,25 +21,44 @@ output "managed_roles" {
   }
 }
 
-# Talos Kubernetes cluster outputs
-output "kubeconfig" {
-  description = "Kubernetes admin kubeconfig for the Talos cluster."
-  value       = talos_cluster_kubeconfig.this.kubeconfig_raw
+output "talos_cluster_endpoint" {
+  description = "Kubernetes API URL (first control-plane node; from bbtechsys/talos/proxmox after apply)."
+  value       = "https://${module.talos_lake.control_plane_ips[0]}:6443"
+}
+
+output "talos_control_plane_fqdns" {
+  description = "Control-plane FQDNs when talos_node_domain is set (create A/AAAA records to talos_nodes IPv4s)."
+  value       = local.talos_cp_fqdns
+}
+
+output "talos_control_plane_ips" {
+  description = "Control-plane IPv4s (from Proxmox guest agent via bbtechsys module). Compare to locals.talos_nodes for RouterOS DHCP lease verification."
+  value       = module.talos_lake.control_plane_ips
+}
+
+output "talos_vm_macs" {
+  description = "Talos VM NIC MAC addresses (names match Proxmox / module: talos-cp-1, …)."
+  value       = { for k, v in local.talos_nodes : "talos-${k}" => v.mac }
+}
+
+output "talos_routeros_dhcp_leases" {
+  description = "RouterOS DHCP static lease targets (IP → MAC). Pool 192.168.89.100–199 is dynamic; use 200–239 for Talos. DNAT 80/443 → MetalLB pool 192.168.89.240–249."
+  value = {
+    for k, v in local.talos_nodes : k => {
+      address = v.ipv4
+      mac     = v.mac
+    }
+  }
+}
+
+output "talosconfig" {
+  description = "Talos client configuration (talosctl). Regenerate via: terraform output -raw talosconfig > generated/talosconfig.yaml"
+  value       = module.talos_lake.talos_config
   sensitive   = true
 }
 
-output "talos_nodes" {
-  description = "Map of Talos node names to their IPs."
-  value       = { for k, v in local.talos_nodes : k => v.ip }
-}
-
-output "talos_api_endpoint" {
-  description = "Talos API endpoint for talosctl."
-  value       = "https://${local.talos_first_cp_ip}:6443"
-}
-
-output "talos_client_config" {
-  description = "Talos client configuration for talosctl."
-  value       = data.talos_client_configuration.this.talos_config
+output "kubeconfig" {
+  description = "Cluster kubeconfig. Regenerate via: terraform output -raw kubeconfig > generated/kubeconfig"
+  value       = module.talos_lake.kubeconfig
   sensitive   = true
 }

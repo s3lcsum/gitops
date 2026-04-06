@@ -10,6 +10,7 @@ repo_url: https://github.com/s3lcsum/gitops
 # Navigation
 nav:
   - "Home": index.md
+  - "Homelab subnets and addressing": networking/homelab-subnets.md
   - "ADR001: Traefik over NPM": adr/adr001-traefik-over-npm.md
   - "ADR002: Authentik over ZITADEL": adr/adr002-authentik-over-zitadel.md
   - "GP001: Add Docker Stack": golden-paths/gp001-add-docker-stack.md

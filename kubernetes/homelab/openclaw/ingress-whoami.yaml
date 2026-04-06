@@ -1,0 +1,26 @@
+# TLS for openclaw.dominiksiejak.pl via cert-manager (DNS-01 / Cloudflare).
+# Requires ClusterIssuer letsencrypt-prod and secret cloudflare-api-token in cert-manager.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: whoami
+  namespace: default
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - openclaw.dominiksiejak.pl
+      secretName: openclaw-tls
+  rules:
+    - host: openclaw.dominiksiejak.pl
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: whoami
+                port:
+                  number: 80

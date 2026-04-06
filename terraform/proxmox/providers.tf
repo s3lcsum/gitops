@@ -10,10 +10,6 @@ terraform {
       source  = "siderolabs/talos"
       version = "0.10.1"
     }
-    http = {
-      source  = "hashicorp/http"
-      version = "3.5.0"
-    }
     local = {
       source  = "hashicorp/local"
       version = "2.8.0"
@@ -24,9 +20,13 @@ terraform {
     }
   }
 
-  backend "gcs" {
-    bucket = "dominiksiejak-gitops-tfstate"
-    prefix = "gitops-proxmox"
+  cloud {
+    hostname     = "app.terraform.io"
+    organization = "dominiksiejak"
+
+    workspaces {
+      name = "gitops-proxmox"
+    }
   }
 }
 

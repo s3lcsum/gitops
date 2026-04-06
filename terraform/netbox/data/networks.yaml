@@ -1,1 +1,30 @@
-prefixes: {}
+# Homelab IP plan — keep in sync with terraform/proxmox (Talos) and RouterOS.
+# IPv4: RFC1918 LAN. IPv6: RFC4193 ULA site prefix + dedicated /48s for K8s (simple, typeable).
+prefixes:
+  lan-ipv4:
+    prefix: 192.168.89.0/24
+    site: lake
+    description: Primary LAN — DHCP, Wi‑Fi, user devices, servers, printers, NAS, IoT (same L2 unless VLAN-split)
+    is_pool: true
+    status: active
+
+  ula-site-ipv6:
+    prefix: fd12:34::/48
+    site: lake
+    description: RFC 4193 ULA /48 — reserve for future LAN VLANs or dual-stack (document subnets here)
+    is_pool: false
+    status: active
+
+  k8s-pods-ipv6:
+    prefix: fd12:35::/56
+    site: lake
+    description: Talos/Kubernetes pod CIDR (matches terraform/proxmox locals)
+    is_pool: false
+    status: active
+
+  k8s-services-ipv6:
+    prefix: fd12:36::/112
+    site: lake
+    description: Kubernetes service CIDR (IPv6)
+    is_pool: false
+    status: active

@@ -3,6 +3,11 @@ argo-cd:
 
   global:
     domain: argocd.lake.dominiksiejak.pl
+    # Homelab: control-plane taint; repeat on components (chart does not apply global to all pods).
+    tolerations: &controlPlaneTolerations
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
 
   configs:
     params:
@@ -11,15 +16,23 @@ argo-cd:
 
   server:
     replicas: 1
+    tolerations: *controlPlaneTolerations
 
   controller:
     replicas: 1
+    tolerations: *controlPlaneTolerations
 
   repoServer:
     replicas: 1
+    tolerations: *controlPlaneTolerations
 
   redis:
     enabled: true
+    tolerations: *controlPlaneTolerations
+
+  applicationSet:
+    replicas: 1
+    tolerations: *controlPlaneTolerations
 
   dex:
     enabled: false

@@ -1,0 +1,19 @@
+# Requires Talos cluster.network.cni.name: none (see terraform/proxmox/talos-cluster-network.patch.yaml).
+# Pod CIDR must match Talos cluster.network.podSubnets.
+# Namespace tigera-operator must allow Pod Security "privileged" (see terraform/proxmox/Makefile bootstrap-calico).
+tigera-operator:
+  installation:
+    calicoNetwork:
+      bgp: Disabled
+      ipPools:
+        - cidr: fd12:35::/56
+          blockSize: 122
+          encapsulation: VXLAN
+          natOutgoing: Enabled
+          nodeSelector: all()
+  apiServer:
+    enabled: false
+  goldmane:
+    enabled: false
+  whisker:
+    enabled: false

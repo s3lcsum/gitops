@@ -5,6 +5,11 @@ image:
 
 replicas: 1
 
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "5678"
+  prometheus.io/path: "/metrics"
+
 env:
   N8N_METRICS: "true"
   N8N_RUNNERS_ENABLED: "true"

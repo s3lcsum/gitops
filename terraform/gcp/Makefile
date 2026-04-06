@@ -3,40 +3,41 @@
 GIT_ROOT := $(shell git rev-parse --show-toplevel)
 include $(GIT_ROOT)/terraform/base.Makefile
 
-# Bootstrap: apply this module on Terraform Cloud once (backend "cloud" below) to create
-# gs://dominiksiejak-gitops-tfstate. Then move gitops-gcp state from TFC to GCS with:
-#   make help-migrate-tfc
-# (run from terraform/gcp; OpenTofu has no automatic TFC→GCS migration—use state pull/push).
-# Use ADC (gcloud auth application-default login) for GCS.
-#
-# If the bucket was created with bootstrap-tfstate-bucket (or manually) before the first
-# terraform/gcp apply, import it so state matches: from terraform/gcp after init,
-#   tofu import google_storage_bucket.terraform_state dominiksiejak-gitops-tfstate
+TF_DIR := $(abspath $(CURDIR))
+TOFU   ?= tofu
 
-GCP_PROJECT ?= dominiksiejak
-TFSTATE_BUCKET ?= dominiksiejak-gitops-tfstate
+.PHONY: show-vault-unseal export-vault-key state-rm-legacy
 
-.PHONY: show-sa export-vault-key bootstrap-tfstate-bucket
-
-# Creates gs://$(TFSTATE_BUCKET) when missing (same intent as google_storage_bucket.terraform_state in main.tf).
-bootstrap-tfstate-bucket: ## Create GCS OpenTofu state bucket via gcloud if it does not exist
-	@if gcloud storage buckets describe "gs://$(TFSTATE_BUCKET)" --project="$(GCP_PROJECT)" >/dev/null 2>&1; then \
-		echo "Bucket gs://$(TFSTATE_BUCKET) already exists."; \
-	else \
-		echo "Creating gs://$(TFSTATE_BUCKET) ..."; \
-		gcloud storage buckets create "gs://$(TFSTATE_BUCKET)" \
-			--project="$(GCP_PROJECT)" --location=EU --uniform-bucket-level-access --pap; \
-	fi
-	@gcloud storage buckets update "gs://$(TFSTATE_BUCKET)" --versioning --project="$(GCP_PROJECT)"
-	@echo "Bucket ready: gs://$(TFSTATE_BUCKET) (versioning on)"
-
-show-sa: ## Show created Service Accounts
+# One-time after slimming this module: drop old resources from remote state so Terraform stops managing them (no GCP API calls).
+# Deletes nothing in GCP by itself—orphans old resources; delete those in Console if you want zero spend on them (e.g. empty GCS bucket).
+state-rm-legacy: ## Remove pre-slim resources from state (n8n, IAP, OAuth clients+credentials, extra APIs, tfstate bucket/SA)
 	@cd "$(TF_DIR)" && \
-		echo "Service Accounts:" && \
-		$(TOFU) output service_accounts
+		for r in \
+			google_service_account.n8n \
+			google_service_account_key.n8n \
+			google_service_account.terraform_state \
+			google_iap_brand.homelab \
+			'google_iap_brand.homelab[0]' \
+			google_iap_client.authentik \
+			'google_iap_client.authentik[0]' \
+			google_storage_bucket.terraform_state \
+			google_storage_bucket_iam_member.terraform_state_sa \
+			google_project_service.iap_api \
+			'google_project_service.apis["iap.googleapis.com"]' \
+			'google_project_service.apis["storage.googleapis.com"]' \
+		; do \
+			$(TOFU) state rm "$$r" 2>/dev/null || true; \
+		done; \
+		for r in $$($(TOFU) state list 2>/dev/null | grep -E '^google_iam_oauth_client(_credential)?\.'); do \
+			$(TOFU) state rm "$$r" 2>/dev/null || true; \
+		done; \
+		echo "Done (errors ignored if address was not in state)."
 
-export-vault-key: ## Export Vault SA key to vault-service-account.json
+# After apply: use outputs to configure Vault seal (or decode the SA key JSON for import elsewhere).
+show-vault-unseal: ## Print vault_auto_unseal as JSON (sensitive; redact if sharing)
+	@cd "$(TF_DIR)" && $(TOFU) output -json vault_auto_unseal | jq .
+
+export-vault-key: ## Write Vault SA JSON key to vault-service-account.json (from Terraform output)
 	@cd "$(TF_DIR)" && \
-		echo "Exporting Vault Service Account Key..." && \
-		$(TOFU) output -json service_account_keys_decoded | jq -r '."vault-auto-unseal"' > vault-service-account.json && \
-		echo "Key saved to vault-service-account.json"
+		$(TOFU) output -json vault_auto_unseal | jq -r '.service_account_key_b64 // .value.service_account_key_b64' | base64 -d > vault-service-account.json && \
+		echo "Wrote vault-service-account.json"

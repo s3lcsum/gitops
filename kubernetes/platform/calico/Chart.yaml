@@ -1,0 +1,8 @@
+apiVersion: v2
+name: calico
+version: 0.1.0
+description: Calico CNI (Tigera operator) — primary pod networking
+dependencies:
+  - name: tigera-operator
+    version: "v3.31.4"
+    repository: "https://docs.tigera.io/calico/charts"

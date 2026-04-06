@@ -32,10 +32,6 @@ locals {
       username = "backstage_user"
       database = "backstage_db"
     }
-    firefly = {
-      username = "firefly_user"
-      database = "firefly_db"
-    }
     gatus = {
       username = "gatus_user"
       database = "gatus_db"

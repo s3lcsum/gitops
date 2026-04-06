@@ -1,33 +1,9 @@
-output "service_accounts" {
-  description = "Service account information"
+output "vault_auto_unseal" {
+  description = "Vault GCP KMS auto-unseal: service account email, base64-encoded JSON key (decode for credentials file), and KMS key resource ID for seal config"
   value = {
-    vault = {
-      email = google_service_account.vault.email
-      key   = google_service_account_key.vault.private_key
-    }
-    n8n = {
-      email = google_service_account.n8n.email
-      key   = google_service_account_key.n8n.private_key
-    }
+    service_account_email   = google_service_account.vault.email
+    service_account_key_b64 = google_service_account_key.vault.private_key
+    kms_key_id              = google_kms_crypto_key.vault.id
   }
   sensitive = true
-}
-
-output "google_oauth_authentik" {
-  description = "Google OAuth credentials for Authentik SSO"
-  value = {
-    client_id     = google_iap_client.authentik.client_id
-    client_secret = google_iap_client.authentik.secret
-  }
-  sensitive = true
-}
-
-output "terraform_state_bucket" {
-  description = "GCS bucket for OpenTofu/Terraform remote state"
-  value       = google_storage_bucket.terraform_state.name
-}
-
-output "terraform_state_service_account" {
-  description = "Service account that can read/write state objects in the bucket"
-  value       = google_service_account.terraform_state.email
 }

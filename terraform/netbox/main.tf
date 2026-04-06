@@ -144,7 +144,7 @@ resource "netbox_device" "devices" {
   tags = concat(
     local.common_tags,
     [netbox_tag.site_tags[each.value.site].name],
-    contains(each.value.location, "location") ? [netbox_tag.location_tags[each.value.location].name] : []
+    contains(each.value, "location") ? [netbox_tag.location_tags[each.value.location].name] : []
   )
 
   description = contains(each.value, "description") ? each.value.description : "${each.value.name} - ${netbox_device_type.device_types[each.value.device_type].model}"

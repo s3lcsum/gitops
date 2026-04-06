@@ -1,0 +1,55 @@
+grafana:
+  replicas: 1
+
+  adminUser: admin
+  admin:
+    existingSecret: grafana-admin
+    passwordKey: admin-password
+
+  testFramework:
+    enabled: false
+
+  persistence:
+    enabled: true
+    size: 5Gi
+
+  plugins:
+    - grafana-clock-panel
+    - grafana-piechart-panel
+    - grafana-polystat-panel
+
+  grafana.ini:
+    server:
+      root_url: https://grafana.lake.dominiksiejak.pl
+      domain: grafana.lake.dominiksiejak.pl
+    users:
+      allow_sign_up: false
+
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: VictoriaMetrics
+          type: prometheus
+          uid: victoria-metrics
+          url: http://victoria-metrics-victoria-metrics-single-server.victoria-metrics.svc:8428
+          access: proxy
+          isDefault: true
+          editable: false
+
+  extraVolumes:
+    - name: grafana-cloud-datasources
+      secret:
+        secretName: grafana-cloud-datasources
+
+  extraVolumeMounts:
+    - name: grafana-cloud-datasources
+      mountPath: /etc/grafana/provisioning/datasources/zz-grafana-cloud.yaml
+      subPath: zz-grafana-cloud.yaml
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi

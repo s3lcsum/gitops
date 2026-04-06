@@ -177,14 +177,6 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sonarr.svg"
       skip_path_regex = "^/api/.*"
     }
-    firefly = {
-      name            = "Firefly III"
-      external_host   = "https://money.lake.dominiksiejak.pl"
-      internal_host   = "http://firefly:8080"
-      launch_url      = "https://money.lake.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/firefly-iii.svg"
-      skip_path_regex = ""
-    }
     calibre = {
       name            = "Calibre"
       external_host   = "https://calibre.lake.dominiksiejak.pl"
@@ -232,11 +224,6 @@ locals {
   #───────────────────────────────────────────────────────────────────────────────
 
   dashboard_applications = {
-    adguard = {
-      name       = "AdGuard Home"
-      launch_url = "https://adguard.lake.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/adguard-home.svg"
-    }
     gatus = {
       name       = "Gatus"
       launch_url = "https://status.lake.dominiksiejak.pl"
@@ -278,7 +265,6 @@ locals {
     "calibre",
     "cups",
     "dozzle",
-    "firefly",
     "gatus",
     "gitea",
     "grafana",

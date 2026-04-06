@@ -1,0 +1,8 @@
+apiVersion: v2
+name: vector
+version: 0.1.0
+description: Vector — Kubernetes log collection (Agent) to Loki
+dependencies:
+  - name: vector
+    version: "0.51.0"
+    repository: "https://helm.vector.dev"

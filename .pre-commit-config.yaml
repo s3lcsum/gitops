@@ -30,11 +30,18 @@ repos:
     rev: v1.99.5
     hooks:
       - id: terraform_tflint
-      - id: terraform_trivy
+      # terraform_trivy from upstream runs `terraform` internally and rewrites lockfiles to
+      # registry.terraform.io. scripts/pre-commit-terraform-trivy.sh sets TERRAFORM_BINARY=tofu.
 
   # MkDocs: build documentation locally (no server, output to site/)
   - repo: local
     hooks:
+      - id: terraform-trivy-opentofu
+        name: Terraform validate with trivy (OpenTofu)
+        entry: scripts/pre-commit-terraform-trivy.sh
+        language: script
+        files: \.(tf|tfvars)$
+        pass_filenames: true
       - id: mkdocs-build
         name: Build MkDocs documentation
         entry: uvx --with mkdocs-material --with mkdocs-git-revision-date-localized-plugin mkdocs build --strict

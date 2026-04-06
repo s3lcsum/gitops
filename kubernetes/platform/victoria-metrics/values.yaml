@@ -1,0 +1,12 @@
+victoria-metrics-single:
+  server:
+    retentionPeriod: 30d
+    persistentVolume:
+      enabled: true
+      size: 20Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 2Gi

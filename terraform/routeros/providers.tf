@@ -12,9 +12,13 @@ terraform {
     }
   }
 
-  backend "gcs" {
-    bucket = "dominiksiejak-gitops-tfstate"
-    prefix = "gitops-routeros"
+  cloud {
+    hostname     = "app.terraform.io"
+    organization = "dominiksiejak"
+
+    workspaces {
+      name = "gitops-routeros"
+    }
   }
 }
 

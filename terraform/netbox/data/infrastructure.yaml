@@ -1,4 +1,10 @@
-sites: {}
+# Minimal site model — expand devices/locations as you inventory hardware.
+sites:
+  lake:
+    name: Lake
+    slug: lake
+    description: Primary homelab site
+
 locations: {}
 manufacturers: {}
 device_types: {}

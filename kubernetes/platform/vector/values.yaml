@@ -1,0 +1,59 @@
+vector:
+  role: Agent
+
+  podLabels: {}
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+
+  tolerations:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/control-plane
+      operator: Exists
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/master
+      operator: Exists
+
+  envFrom:
+    - secretRef:
+        name: vector-credentials
+
+  customConfig:
+    data_dir: /vector-data-dir
+    api:
+      enabled: true
+      address: 127.0.0.1:8686
+
+    sources:
+      kubernetes_logs:
+        type: kubernetes_logs
+      internal_metrics:
+        type: internal_metrics
+
+    sinks:
+      loki:
+        type: loki
+        inputs:
+          - kubernetes_logs
+        endpoint: ${LOKI_ENDPOINT}
+        encoding:
+          codec: json
+        out_of_order_action: accept
+        labels:
+          job: k8s-logs
+          cluster: homelab
+          namespace: '{{ print "{{ kubernetes.pod_namespace }}" }}'
+        auth:
+          strategy: basic
+          user: ${LOKI_USERNAME}
+          password: ${LOKI_API_KEY}
+
+      prom_exporter:
+        type: prometheus_exporter
+        inputs:
+          - internal_metrics
+        address: 0.0.0.0:9090

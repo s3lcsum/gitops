@@ -1,0 +1,11 @@
+# Merge into Talos cluster machine config. With cni.name: none, Talos does not install a CNI —
+# nodes stay NotReady until Calico is installed (terraform/proxmox/calico-bootstrap.tf or manual helm).
+# Without cni: none, Talos's default CNI would conflict with Calico.
+cluster:
+  network:
+    cni:
+      name: none
+    podSubnets:
+      - fd12:35::/56
+    serviceSubnets:
+      - fd12:36::/112
