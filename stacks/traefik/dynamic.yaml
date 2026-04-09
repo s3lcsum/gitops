@@ -75,6 +75,12 @@ http:
         - websecure
       service: mikrotik
 
+    argocd:
+      rule: "Host(`argocd.lake.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      service: argocd-k8s
+
   # Services
   services:
     mikrotik:
@@ -96,6 +102,12 @@ http:
           - url: "https://192.168.89.240:5001/"
         passHostHeader: true
         serversTransport: insecure
+
+    argocd-k8s:
+      loadBalancer:
+        servers:
+          - url: 'http://{{ env "ENVOY_GATEWAY_ADDR" | default "192.168.89.241:80" }}/'
+        passHostHeader: true
 
   serversTransports:
     insecure:

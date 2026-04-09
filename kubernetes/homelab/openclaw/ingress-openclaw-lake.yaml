@@ -1,0 +1,27 @@
+# kind + ingress-nginx (homelab-local): TLS via cert-manager; upstream is plain HTTP on the host.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: openclaw-lake
+  namespace: default
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - openclaw.lake.dominiksiejak.pl
+      secretName: openclaw-lake-tls
+  rules:
+    - host: openclaw.lake.dominiksiejak.pl
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: openclaw-dashboard
+                port:
+                  number: 80

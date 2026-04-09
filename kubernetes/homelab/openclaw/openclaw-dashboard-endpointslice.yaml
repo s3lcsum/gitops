@@ -1,0 +1,19 @@
+# EndpointSlice for openclaw-dashboard Service. If pods cannot reach 192.168.89.200,
+# replace the address with the host IP as seen from inside the cluster (e.g. Podman/Lima gateway).
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: openclaw-dashboard-1
+  namespace: default
+  labels:
+    kubernetes.io/service-name: openclaw-dashboard
+addressType: IPv4
+ports:
+  - name: http
+    port: 18789
+    protocol: TCP
+endpoints:
+  - addresses:
+      - 192.168.89.200
+    conditions:
+      ready: true

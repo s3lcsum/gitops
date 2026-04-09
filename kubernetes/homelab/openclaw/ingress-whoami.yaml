@@ -1,3 +1,6 @@
+# Legacy whoami demo on openclaw.dominiksiejak.pl. For the OpenClaw UI on this kind cluster,
+# use openclaw-dashboard-svc.yaml, openclaw-dashboard-endpointslice.yaml, and
+# ingress-openclaw-lake.yaml (ingress-nginx → :18789).
 # TLS for openclaw.dominiksiejak.pl via cert-manager (DNS-01 / Cloudflare).
 # Requires ClusterIssuer letsencrypt-prod and secret cloudflare-api-token in cert-manager.
 apiVersion: networking.k8s.io/v1
