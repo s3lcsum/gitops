@@ -37,8 +37,6 @@ override.tf.json
 # Exported Vault GCP SA key (terraform/gcp make export-vault-key)
 terraform/gcp/vault-service-account.json
 
-# Local copies of env files when stacks are removed (not for git)
-stacks/_removed-backups/
 stacks/mktxp/mktxp.conf
 
 # Ignore JetBrains IDE project files
