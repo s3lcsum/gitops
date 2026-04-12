@@ -95,9 +95,10 @@ locals {
       ]
     }
     gitea = {
-      name          = "Gitea"
-      launch_url    = "https://git.lake.dominiksiejak.pl"
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/gitea.svg"
+      name       = "Gitea"
+      launch_url = "https://git.lake.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/gitea.svg"
+      # Gitea callback path segment must match the authentication source *name* in Gitea (here: authentik).
       redirect_uris = ["https://git.lake.dominiksiejak.pl/user/oauth2/authentik/callback"]
       mapping       = <<-EOF
         if request.user.ak_groups.filter(name="admins").exists():
@@ -185,14 +186,6 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/calibre.svg"
       skip_path_regex = ""
     }
-    beszel = {
-      name            = "Beszel"
-      external_host   = "https://beszel.lake.dominiksiejak.pl"
-      internal_host   = "http://beszel:8080"
-      launch_url      = "https://beszel.lake.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/beszel.svg"
-      skip_path_regex = ""
-    }
     sabnzbd = {
       name            = "SABnzbd"
       external_host   = "https://sabnzbd.lake.dominiksiejak.pl"
@@ -215,6 +208,14 @@ locals {
       internal_host   = "http://zigbee2mqtt:8080"
       launch_url      = "https://zigbee2mqtt.lake.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zigbee2mqtt.svg"
+      skip_path_regex = ""
+    }
+    watchyourlan = {
+      name            = "WatchYourLAN"
+      external_host   = "https://watchyourlan.lake.dominiksiejak.pl"
+      internal_host   = "http://watchyourlan:8840"
+      launch_url      = "https://watchyourlan.lake.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/watchyourlan.png"
       skip_path_regex = ""
     }
   }
@@ -249,11 +250,6 @@ locals {
       launch_url = "https://esphome.lake.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/esphome.svg"
     }
-    watchyourlan = {
-      name       = "WatchYourLAN"
-      launch_url = "https://watchyourlan.lake.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/watchyourlan.png"
-    }
   }
 
   #───────────────────────────────────────────────────────────────────────────────
@@ -261,9 +257,7 @@ locals {
   #───────────────────────────────────────────────────────────────────────────────
 
   user_accessible_apps = toset([
-    "beszel",
     "calibre",
-    "cups",
     "dozzle",
     "gatus",
     "gitea",

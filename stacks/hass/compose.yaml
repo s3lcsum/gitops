@@ -59,6 +59,34 @@ services:
       traefik.http.routers.esphome.rule: Host(`esphome.lake.dominiksiejak.pl`)
       traefik.http.services.esphome.loadbalancer.server.url: http://192.168.89.253:6052
 
+  ha-time-machine:
+    <<: *default
+    image: ghcr.io/saihgupr/homeassistanttimemachine:latest
+    container_name: ha-time-machine
+    env_file:
+      - /opt/hass/timemachine.env
+    environment:
+      TZ: Europe/Warsaw
+      HOME_ASSISTANT_URL: http://host.docker.internal:8123
+      ESPHOME_CONFIG_PATH: /esphome
+      DEBUG_LOGS: "false"
+      THEME: dark
+    volumes:
+      - data:/config
+      - esphome_data:/esphome
+      - /opt/hass/timemachine:/media/timemachine
+      - ha_time_machine_data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - proxy
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+      traefik.http.routers.timemachine.rule: Host(`timemachine.lake.dominiksiejak.pl`)
+      traefik.http.services.timemachine.loadbalancer.server.port: 54000
+      traefik.http.routers.timemachine.middlewares: authentik@docker
+
 networks:
   proxy:
     external: true
@@ -73,3 +101,4 @@ volumes:
   zigbee2mqtt_data:
   mosquitto_data:
   esphome_data:
+  ha_time_machine_data:

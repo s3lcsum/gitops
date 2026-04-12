@@ -58,7 +58,10 @@ The OpenTofu module (`terraform/netbox/`) defines:
 | <img src="./docs/assets/diun.png" width="32" height="32"> | [DIUN](https://github.com/crazy-max/diun) | Docker image update notifications |
 | <img src="./docs/assets/dozzle.svg" width="32" height="32"> | [Dozzle](https://github.com/amir20/dozzle) | Docker container log viewer |
 | <img src="./docs/assets/flaresolverr.svg" width="32" height="32"> | [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) | Cloudflare bypass for indexers |
+| <img src="./docs/assets/firefly-iii.svg" width="32" height="32"> | [Firefly III](https://github.com/firefly-iii/firefly-iii) | Personal finance manager |
+| <img src="./docs/assets/gitea.svg" width="32" height="32"> | [Gitea](https://github.com/go-gitea/gitea) | Self-hosted Git |
 | <img src="./docs/assets/gluetun.svg" width="32" height="32"> | [Gluetun](https://github.com/qdm12/gluetun) | VPN gateway for "download stuff" apps |
+| <img src="./docs/assets/home-assistant.svg" width="32" height="32"> | [Home Assistant Time Machine](https://github.com/saihgupr/homeassistanttimemachine) | Web UI for Home Assistant / ESPHome config backups (`stacks/hass/`) |
 | <img src="./docs/assets/grafana.svg" width="32" height="32"> | [Grafana Synthetic Agent](https://github.com/grafana/synthetic-monitoring-agent) | Uptime & performance monitoring |
 | <img src="./docs/assets/jellyfin.svg" width="32" height="32"> | [Jellyfin](https://github.com/jellyfin/jellyfin) | Media server |
 | <img src="./docs/assets/jellyseerr.svg" width="32" height="32"> | [Seerr](https://github.com/seerr-team/seerr) (formerly Jellyseerr; Docker image still `fallenbagel/jellyseerr`) | Requests / discovery for Jellyfin |
@@ -199,7 +202,9 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── cloudflared/
 │   ├── diun/
 │   ├── dozzle/
+│   ├── gitea/
 │   ├── grafana-synthetic-agent/
+│   ├── hass/
 │   ├── mediabox/
 │   ├── n8n/
 │   ├── netbootxyz/
@@ -245,6 +250,18 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 12.04.2026
+
+**Gitea** stopped living on a Docker named volume — `/data` is bind-mounted to the NAS (same energy as the mediabox NFS pattern), and Traefik gets `traefik.docker.network: proxy` so it doesn’t pick the wrong attach point. **`gitea.env.example`** now spells out the Authentik OIDC callback / source-name footguns so I don’t rediscover them at 2am.
+
+**Home Assistant** stack grew **HA Time Machine** (`ghcr.io/saihgupr/homeassistanttimemachine`): Traefik + Authentik at `timemachine.lake.dominiksiejak.pl`, secrets via `/opt/hass/timemachine.env` with `stacks/hass/timemachine.env.example` as the template, exports landing under `/opt/hass/timemachine` on the host.
+
+**NetBox** Compose image bumped to **v2.5.13**; Terraform **netbox** provider lock moved with it.
+
+**Authentik** Terraform: **Firefly III** and **WatchYourLAN** are real forward-auth proxy apps now (WatchYourLAN got yeeted off the dashboard-only list). **`all_app_uuids`** uses `setintersection` against resources in state so renamed/missing apps don’t brick evaluation. Dropped a stale `import` block on the embedded proxy outpost.
+
+Regenerated **`.terraform.lock.hcl`** files across modules so they also record **`registry.terraform.io/*`** provider hashes — `terraform init` stops whining even when I’m not living purely in OpenTofu-land.
 
 ### 6.04.2026
 

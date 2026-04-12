@@ -17,7 +17,8 @@ services:
       GITEA__indexer__REPO_INDEXER_TYPE: bleve
       GITEA__indexer__REPO_INDEXER_PATH: indexers/repos.bleve
     volumes:
-      - data:/data
+      # Repositories and Gitea data live on NAS (same NFS mount pattern as stacks/mediabox).
+      - /mnt/NAS_Shared_Media/gitea:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
@@ -25,6 +26,7 @@ services:
       - database
     labels:
       traefik.enable: true
+      traefik.docker.network: proxy
       traefik.http.routers.gitea.rule: Host(`git.lake.dominiksiejak.pl`)
       traefik.http.services.gitea.loadbalancer.server.port: 3000
     healthcheck:
@@ -45,7 +47,7 @@ services:
   #     GITEA_INSTANCE_URL: https://git.lake.dominiksiejak.pl
   #   volumes:
   #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - data:/data
+  #     - /mnt/NAS_Shared_Media/gitea:/data
   #   networks:
   #     - gitea
   #   depends_on:
@@ -58,6 +60,3 @@ networks:
     external: true
   gitea:
     driver: bridge
-
-volumes:
-  data:

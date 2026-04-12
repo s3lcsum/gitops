@@ -81,10 +81,12 @@ resource "authentik_application" "dashboard" {
 }
 
 locals {
+  # Intersect config keys with resources in state so evaluation succeeds when config and state drift
+  # (e.g. dashboard apps renamed or not yet applied).
   all_app_uuids = merge(
-    { for k, _ in local.oauth2_applications : k => authentik_application.oauth2[k].uuid },
-    { for k, _ in local.proxy_applications : k => authentik_application.proxy[k].uuid },
-    { for k, _ in local.dashboard_applications : k => authentik_application.dashboard[k].uuid },
+    { for k in setintersection(keys(local.oauth2_applications), keys(authentik_application.oauth2)) : k => authentik_application.oauth2[k].uuid },
+    { for k in setintersection(keys(local.proxy_applications), keys(authentik_application.proxy)) : k => authentik_application.proxy[k].uuid },
+    { for k in setintersection(keys(local.dashboard_applications), keys(authentik_application.dashboard)) : k => authentik_application.dashboard[k].uuid },
   )
 }
 

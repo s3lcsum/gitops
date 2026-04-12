@@ -1,7 +1,30 @@
-# This file is maintained automatically by "tofu init".
+# This file is maintained automatically by "terraform init".
 # Manual edits may be lost in future updates.
 
 provider "registry.opentofu.org/go-gitea/gitea" {
+  version     = "0.7.0"
+  constraints = "0.7.0"
+  hashes = [
+    "h1:hgZhNe+B1ir7gnMXba038y74+bb8781jcWYbkOFe3/I=",
+    "zh:12b7da04c4285e1549879909c3f453c9850842c9da59e5f3682100040372cf97",
+    "zh:18506790b2c6abf323ad067d02d2fee6638f5d3d76799840d8d09c2ede35153a",
+    "zh:199151c28094d187e8a6e824616558310f32c6ac037edf9534fc8b3e2848b9f6",
+    "zh:420d6962f7804b483b22d638cf6c9c3345e4c14b295956681a0faf9db273e734",
+    "zh:4f962d97df5d694889e757506aee1f4c9f42d30357c0bc4b7b658c0c4c14046a",
+    "zh:619355262b0393b00869018e37766c19b6fc9056efe84ef494807513ea1e45ca",
+    "zh:64ac87bc208d279997331ac681812650acd672a241a049e57b67a370c3f29e58",
+    "zh:6cc01a146b8c84946307745ee6bfdb51dac8c0b4d3d7815b15c555aaea07a9cc",
+    "zh:9056aaaea5988f24632e2e1fd488205999aeeb7242c595c8df4536eb3c00e2dd",
+    "zh:90786117ff9e33bf590a589aee7efba0e86c728a2183aa6f338606f64bec381c",
+    "zh:9b12af85486a96aedd8d7984b0ff811a4b42e3d88dad1a3fb4c0b580d04fa425",
+    "zh:9b6adbae718d2f45775e323b433240c01092f6ef17ed63503e15a8dc888c9184",
+    "zh:a7e53175e955d25814e8ec4219f5e1052e245a57cc3acabe9711e78f06b62eac",
+    "zh:b874731073b61338f1a752d342002cee74bfa0bd007f39fe44729115f813c79d",
+    "zh:f83e26ffb0236d9ae14985a6f3794d72d1e738a18066359f7dca70d3d0055334",
+  ]
+}
+
+provider "registry.terraform.io/go-gitea/gitea" {
   version     = "0.7.0"
   constraints = "0.7.0"
   hashes = [
