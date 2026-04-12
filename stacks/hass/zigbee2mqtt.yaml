@@ -12,6 +12,7 @@ mqtt:
 frontend:
   enabled: true
   port: 8080
+  url: https://zigbee2mqtt.lake.dominiksiejak.pl
 
 homeassistant:
   enabled: true

@@ -276,5 +276,6 @@ locals {
     "victoriametrics",
     "warracker",
     "watchyourlan",
+    "zigbee2mqtt",
   ])
 }

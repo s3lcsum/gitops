@@ -263,6 +263,12 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 Regenerated **`.terraform.lock.hcl`** files across modules so they also record **`registry.terraform.io/*`** provider hashes — `terraform init` stops whining even when I’m not living purely in OpenTofu-land.
 
+More **12.04** tweaks after that landed: **Postgres** is **localhost-only** on the host (`127.0.0.1:5432`) so random LAN clients can’t poke the DB; **`terraform/postgres/Makefile`** now knows **`POSTGRES_SSH_TARGET`** and spins an SSH **`-L`** tunnel for **`tofu plan`/`apply`** from a dev machine when you’re not on the Portainer box (sets **`TF_VAR_postgres_host`** / **`TF_VAR_postgres_port`** for the run). **Vault** no longer publishes **`8200`** on the host — it’s **Traefik-or-bust**, which is the whole point of the proxy stack.
+
+**Traefik** got **`host.docker.internal:host-gateway`** so file-provider / container routers can hit **host-networked** **Home Assistant** and **ESPHome** without hard-coding a DHCP address. **HASS stack**: **Mosquitto** has a **`mosquitto_sub`** healthcheck, **HA** + **zigbee2mqtt** **`depends_on`** with **`condition: service_healthy`**, **HA Time Machine** is gated behind compose **`profile: timemachine`** (set **`COMPOSE_PROFILES=timemachine`** in Portainer or your shell when you want it; **`timemachine.env.example`** documents that). **zigbee2mqtt** config sets **`frontend.url`** to the Traefik hostname so links don’t lie.
+
+**Authentik** compose: **`AUTHENTIK_LOG_LEVEL`** back to **`info`**, **Docker socket** mounted **`:ro`** (same **`:ro`** treatment for **Dozzle**). **Authentik** Terraform adds **`zigbee2mqtt`** to the user-facing app list; the module lockfile is **OpenTofu-only** now — yeeted the duplicate **`registry.terraform.io/*`** stanzas.
+
 ### 6.04.2026
 
 Swapped **Terraform Cloud** remote state for a **GCS** bucket — wired backends across the Terraform roots, added a batch **TFC→GCS** migration script plus `migrate-all-tfc` / `bootstrap-tfstate-bucket` make targets so I’m not clicking through fifty workspaces. On the **Proxmox** side: **Talos** cluster resources, optional **Calico** bootstrap after kubeconfig lands, and gitignored `terraform/proxmox/generated/` for Talos/kubeconfig artifacts.

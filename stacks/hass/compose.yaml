@@ -8,21 +8,23 @@ services:
     image: ghcr.io/home-assistant/home-assistant:stable
     container_name: hass
     depends_on:
-      - mosquitto
+      mosquitto:
+        condition: service_healthy
     volumes:
       - data:/config
     network_mode: host # Otherwise autodiscovery won't work
     labels:
       traefik.enable: true
       traefik.http.routers.hass.rule: Host(`hass.lake.dominiksiejak.pl`) || Host(`hass.hello.dominiksiejak.pl`)
-      traefik.http.services.hass.loadbalancer.server.url: http://192.168.89.253:8123
+      traefik.http.services.hass.loadbalancer.server.url: http://host.docker.internal:8123
 
   zigbee2mqtt:
     <<: *default
     image: ghcr.io/koenkk/zigbee2mqtt:latest
     container_name: zigbee2mqtt
     depends_on:
-      - mosquitto
+      mosquitto:
+        condition: service_healthy
     volumes:
       - zigbee2mqtt_data:/app/data
       - /opt/hass/zigbee2mqtt.yaml:/app/data/configuration.yaml
@@ -45,6 +47,16 @@ services:
       - /opt/hass/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto_data:/mosquitto/data
     network_mode: host # Because home-assistant have to be on the same network as the coordinator
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mosquitto_sub -h 127.0.0.1 -p 1883 -t '$$SYS/broker/uptime' -C 1 -W 3",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   esphome:
     <<: *default
@@ -57,12 +69,14 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.esphome.rule: Host(`esphome.lake.dominiksiejak.pl`)
-      traefik.http.services.esphome.loadbalancer.server.url: http://192.168.89.253:6052
+      traefik.http.services.esphome.loadbalancer.server.url: http://host.docker.internal:6052
 
   ha-time-machine:
     <<: *default
     image: ghcr.io/saihgupr/homeassistanttimemachine:latest
     container_name: ha-time-machine
+    profiles:
+      - timemachine
     env_file:
       - /opt/hass/timemachine.env
     environment:

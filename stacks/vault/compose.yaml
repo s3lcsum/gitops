@@ -44,8 +44,6 @@ services:
     volumes:
       - data:/vault/data
       - /etc/vault/credentials:/vault/credentials
-    ports:
-      - 8200:8200
     networks:
       - proxy
       - database

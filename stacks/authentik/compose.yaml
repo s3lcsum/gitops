@@ -7,12 +7,12 @@ x-default: &default
     - /opt/authentik/authentik.env
   environment:
     AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
-    AUTHENTIK_LOG_LEVEL: debug
+    AUTHENTIK_LOG_LEVEL: info
   volumes:
     - media:/media
     - templates:/templates
     - certs:/certs
-    - /var/run/docker.sock:/var/run/docker.sock:rw
+    - /var/run/docker.sock:/var/run/docker.sock:ro
   user: "1000:996"
   networks:
     - proxy
