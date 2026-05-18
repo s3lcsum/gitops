@@ -151,9 +151,19 @@ services:
       - /mnt/NAS_Shared_Media:/mnt/NAS_Shared_Media
     labels:
       traefik.enable: true
+      traefik.docker.network: proxy
       traefik.http.services.sonarr.loadbalancer.server.port: 8989
+
+      # API: bypass Authentik, sonarr enforces X-Api-Key
+      traefik.http.routers.sonarr-api.rule: (Host(`sonarr.hello.dominiksiejak.pl`) || Host(`sonarr.lake.dominiksiejak.pl`)) && PathPrefix(`/api`)
+      traefik.http.routers.sonarr-api.service: sonarr
+      traefik.http.routers.sonarr-api.priority: 100
+
+      # Web UI: behind Authentik SSO
       traefik.http.routers.sonarr.rule: Host(`sonarr.hello.dominiksiejak.pl`) || Host(`sonarr.lake.dominiksiejak.pl`)
-      #traefik.http.routers.sonarr.middlewares: authentik@docker
+      traefik.http.routers.sonarr.service: sonarr
+      traefik.http.routers.sonarr.middlewares: authentik@docker
+      traefik.http.routers.sonarr.priority: 10
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8989/"]
@@ -206,6 +216,12 @@ services:
     <<: *service-defaults
     container_name: seerr
     image: fallenbagel/jellyseerr:preview-OIDC
+    # OIDC discovery runs inside the container (fetch to issuer /.well-known/openid-configuration).
+    # If public DNS points Authentik through Cloudflare, that fetch often gets HTML (challenge/error), not JSON.
+    # Route the Authentik hostname to the Docker host so Traefik serves TLS and returns real OIDC metadata.
+    # After deploy: in Seerr Settings → Network, enable "Trust Proxy" so OIDC redirect URIs use https behind Traefik.
+    extra_hosts:
+      - "auth.lake.dominiksiejak.pl:host-gateway"
     depends_on:
       jellyfin:
         condition: service_healthy
@@ -217,7 +233,9 @@ services:
       - jellyseerr_config:/app/config
     labels:
       traefik.enable: true
+      traefik.docker.network: proxy
       traefik.http.routers.jellyseerr.rule: 'Host(`seerr.hello.dominiksiejak.pl`) || Host(`seerr.lake.dominiksiejak.pl`)'
+      traefik.http.services.jellyseerr.loadbalancer.server.port: 5055
 
 networks:
   arr:
