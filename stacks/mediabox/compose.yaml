@@ -102,8 +102,19 @@ services:
       - prowlarr_config:/config
     labels:
       traefik.enable: true
+      traefik.docker.network: proxy
       traefik.http.services.prowlarr.loadbalancer.server.port: 9696
+
+      # API: bypass Authentik, prowlarr enforces X-Api-Key
+      traefik.http.routers.prowlarr-api.rule: (Host(`prowlarr.hello.dominiksiejak.pl`) || Host(`prowlarr.lake.dominiksiejak.pl`)) && PathPrefix(`/api`)
+      traefik.http.routers.prowlarr-api.service: prowlarr
+      traefik.http.routers.prowlarr-api.priority: 100
+
+      # Web UI: behind Authentik SSO
       traefik.http.routers.prowlarr.rule: Host(`prowlarr.hello.dominiksiejak.pl`) || Host(`prowlarr.lake.dominiksiejak.pl`)
+      traefik.http.routers.prowlarr.service: prowlarr
+      traefik.http.routers.prowlarr.middlewares: authentik@docker
+      traefik.http.routers.prowlarr.priority: 10
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:9696/ping"]
