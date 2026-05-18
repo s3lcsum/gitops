@@ -126,9 +126,19 @@ services:
       - /mnt/NAS_Shared_Media:/mnt/NAS_Shared_Media
     labels:
       traefik.enable: true
+      traefik.docker.network: proxy
       traefik.http.services.radarr.loadbalancer.server.port: 7878
+
+      # API: bypass Authentik, radarr enforces X-Api-Key
+      traefik.http.routers.radarr-api.rule: (Host(`radarr.hello.dominiksiejak.pl`) || Host(`radarr.lake.dominiksiejak.pl`)) && PathPrefix(`/api`)
+      traefik.http.routers.radarr-api.service: radarr
+      traefik.http.routers.radarr-api.priority: 100
+
+      # Web UI: behind Authentik SSO
       traefik.http.routers.radarr.rule: Host(`radarr.hello.dominiksiejak.pl`) || Host(`radarr.lake.dominiksiejak.pl`)
-      #traefik.http.routers.radarr.middlewares: authentik@docker
+      traefik.http.routers.radarr.service: radarr
+      traefik.http.routers.radarr.middlewares: authentik@docker
+      traefik.http.routers.radarr.priority: 10
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:7878/"]
