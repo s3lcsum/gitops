@@ -23,7 +23,6 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 | **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + OpenTofu (`terraform/netbox/`) |
 | **Secrets** | HashiCorp Vault + Vaultwarden | `stacks/vault/`, `stacks/vaultwarden/` |
 | **Monitoring** | Gatus (status), Grafana + VictoriaMetrics (`stacks/monitoring/`), Synthetic Agent | `stacks/gatus/`, `stacks/monitoring/`, `stacks/grafana-synthetic-agent/` |
-| **Dashboard** | Homarr | `stacks/homarr/` |
 | **Media** | Jellyfin + *arr stack + downloaders | `stacks/mediabox/` |
 
 📖 **[Documentation site](docs/index.md)** — MkDocs (networking notes, ADRs, golden paths, Vault runbook).
@@ -63,7 +62,6 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | [Gitea](https://github.com/go-gitea/gitea) | Git hosting |
 | [Grafana Synthetic Monitoring Agent](https://github.com/grafana/synthetic-monitoring-agent) | Synthetic checks (Grafana Cloud–oriented agent) |
 | [Home Assistant stack](https://www.home-assistant.io/) | HA, Zigbee2MQTT, Mosquitto, optional [HA Time Machine](https://github.com/saihgupr/homeassistanttimemachine) (compose profile) |
-| [Homarr](https://homarr.dev/) | Dashboard |
 | **Mediabox** (see below) | Media + *arr + VPN-routed downloaders |
 | **Monitoring** | [Grafana](https://grafana.com/), [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics), PVE exporter, [k6](https://k6.io/) smoke |
 | [n8n](https://n8n.io/) | Workflow automation |
@@ -203,7 +201,6 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── gitea/
 │   ├── grafana-synthetic-agent/
 │   ├── hass/
-│   ├── homarr/
 │   ├── mediabox/
 │   ├── monitoring/
 │   ├── n8n/

@@ -58,10 +58,6 @@ endpoints:
     url: https://dozzle.lake.dominiksiejak.pl
     <<: *defaults
 
-  - name: "homarr"
-    url: https://homarr.lake.dominiksiejak.pl
-    <<: *defaults
-
   - name: "auth"
     url: https://auth.lake.dominiksiejak.pl
     <<: *defaults
