@@ -1,0 +1,53 @@
+# https://hub.docker.com/r/linuxserver/unifi-network-application
+
+services:
+  unifi:
+    image: lscr.io/linuxserver/unifi-network-application:latest
+    container_name: unifi
+    restart: unless-stopped
+    env_file:
+      - /opt/unifi/unifi.env
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Europe/Warsaw
+      MONGO_USER: unifi
+      MONGO_HOST: unifi-db
+      MONGO_PORT: 27017
+      MONGO_DBNAME: unifi
+    volumes:
+      - config:/config
+    ports:
+      - 3478:3478/udp
+      - 10001:10001/udp
+      - 8080:8080
+    networks:
+      - proxy
+      - unifi
+    depends_on:
+      - unifi-db
+    labels:
+      traefik.enable: true
+      traefik.http.services.unifi.loadbalancer.server.port: 8443
+      traefik.http.services.unifi.loadbalancer.server.scheme: https
+
+  unifi-db:
+    image: mongo:7
+    container_name: unifi-db
+    restart: unless-stopped
+    env_file:
+      - /opt/unifi/unifi.env
+    volumes:
+      - db:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - unifi
+
+networks:
+  proxy:
+    external: true
+  unifi:
+
+volumes:
+  config:
+  db:
