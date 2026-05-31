@@ -1,8 +1,0 @@
-nfs-subdir-external-provisioner:
-  nfs:
-    server: "<SYNOLOGY_NAS_IP>"
-    path: /volume1/kubernetes
-  storageClass:
-    name: nfs-synology
-    reclaimPolicy: Retain
-    accessModes: ReadWriteMany

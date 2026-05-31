@@ -1,4 +1,0 @@
-apiVersion: v2
-name: upsnap
-version: 0.1.0
-description: UpSnap — Wake-on-LAN dashboard (requires hostNetwork for ARP/WoL)

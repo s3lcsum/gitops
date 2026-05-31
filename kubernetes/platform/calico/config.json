@@ -1,5 +1,0 @@
-{
-  "name": "calico",
-  "namespace": "tigera-operator",
-  "syncWave": "-10"
-}

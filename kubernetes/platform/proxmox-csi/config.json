@@ -1,5 +1,0 @@
-{
-  "name": "proxmox-csi",
-  "namespace": "proxmox-csi-system",
-  "syncWave": "0"
-}

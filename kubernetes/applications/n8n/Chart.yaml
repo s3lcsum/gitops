@@ -1,4 +1,0 @@
-apiVersion: v2
-name: n8n
-version: 0.1.0
-description: n8n — workflow automation platform

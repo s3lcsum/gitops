@@ -1,5 +1,0 @@
-{
-  "name": "multus",
-  "namespace": "kube-system",
-  "syncWave": "-5"
-}
