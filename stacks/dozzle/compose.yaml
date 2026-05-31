@@ -9,7 +9,9 @@ services:
       - proxy
     labels:
       traefik.enable: true
+      traefik.http.routers.dozzle.rule: Host(`logs.lake.dominiksiejak.pl`)
       traefik.http.routers.dozzle.middlewares: authentik@docker
+      traefik.http.services.dozzle.loadbalancer.server.port: 8080
 
 networks:
   proxy:

@@ -6,7 +6,7 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 
 - `stacks/` — Docker Compose stacks deployed via Portainer
 - `terraform/` — Infrastructure as Code modules for various providers
-- `docs/` — ADRs, golden paths, runbooks, playbooks, and architecture diagrams
+- `docs/` — MkDocs: ADRs, golden paths, runbooks, networking notes
 
 ---
 
@@ -16,15 +16,17 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 |-------|------|-------|
 | **Compute** | Proxmox VE hosts running LXC containers | OpenTofu (`terraform/proxmox/`) |
 | **Containers** | Docker stacks managed via Portainer | Compose files in `stacks/` |
+| **Kubernetes** | Talos + platform workloads (Grafana stack, automation, etc.) | Manifests / GitOps outside this repo’s `stacks/` |
 | **Networking** | MikroTik RouterOS config | OpenTofu (`terraform/routeros/`) |
 | **Edge** | Traefik reverse proxy + CrowdSec | `stacks/traefik/` |
 | **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + OpenTofu (`terraform/authentik/`) |
 | **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + OpenTofu (`terraform/netbox/`) |
 | **Secrets** | HashiCorp Vault + Vaultwarden | `stacks/vault/`, `stacks/vaultwarden/` |
-| **Monitoring** | Gatus, Grafana Synthetic Agent | `stacks/gatus/`, `stacks/grafana-synthetic-agent/` |
+| **Monitoring** | Gatus (status), Grafana + VictoriaMetrics (`stacks/monitoring/`), Synthetic Agent | `stacks/gatus/`, `stacks/monitoring/`, `stacks/grafana-synthetic-agent/` |
+| **Dashboard** | Homarr | `stacks/homarr/` |
 | **Media** | Jellyfin + *arr stack + downloaders | `stacks/mediabox/` |
 
-📖 **[Full documentation](docs/index.md)** — ADRs, golden paths, runbooks, playbooks, and C4 architecture diagrams.
+📖 **[Documentation site](docs/index.md)** — MkDocs (networking notes, ADRs, golden paths, Vault runbook).
 
 ---
 
@@ -47,41 +49,40 @@ The OpenTofu module (`terraform/netbox/`) defines:
 
 ## Services
 
-| Icon | Service | Purpose |
-|------|---------|----------|
-| <img src="./docs/assets/adguard.svg" width="32" height="32"> | [AdGuard Home](https://github.com/AdguardTeam/AdGuardHome) | Network-wide DNS + adblocking |
-| <img src="./docs/assets/authentik.svg" width="32" height="32"> | [Authentik](https://github.com/goauthentik/authentik) | Identity & Access Management (OAuth, SAML, LDAP) |
-| <img src="./docs/assets/bazarr.svg" width="32" height="32"> | [Bazarr](https://github.com/morpheus65535/bazarr) | Subtitle automation |
-| <img src="./docs/assets/calibre.svg" width="32" height="32"> | [Calibre](https://github.com/kovidgoyal/calibre) | eBook management & library |
-| <img src="./docs/assets/cloudflare.svg" width="32" height="32"> | [Cloudflared](https://github.com/cloudflare/cloudflared) | Tunnel to Cloudflare for remote access |
-| <img src="./docs/assets/cups.svg" width="32" height="32"> | [CUPS](https://github.com/OpenPrinting/cups) | Print server |
-| <img src="./docs/assets/diun.png" width="32" height="32"> | [DIUN](https://github.com/crazy-max/diun) | Docker image update notifications |
-| <img src="./docs/assets/dozzle.svg" width="32" height="32"> | [Dozzle](https://github.com/amir20/dozzle) | Docker container log viewer |
-| <img src="./docs/assets/flaresolverr.svg" width="32" height="32"> | [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) | Cloudflare bypass for indexers |
-| <img src="./docs/assets/firefly-iii.svg" width="32" height="32"> | [Firefly III](https://github.com/firefly-iii/firefly-iii) | Personal finance manager |
-| <img src="./docs/assets/gitea.svg" width="32" height="32"> | [Gitea](https://github.com/go-gitea/gitea) | Self-hosted Git |
-| <img src="./docs/assets/gluetun.svg" width="32" height="32"> | [Gluetun](https://github.com/qdm12/gluetun) | VPN gateway for "download stuff" apps |
-| <img src="./docs/assets/home-assistant.svg" width="32" height="32"> | [Home Assistant Time Machine](https://github.com/saihgupr/homeassistanttimemachine) | Web UI for Home Assistant / ESPHome config backups (`stacks/hass/`) |
-| <img src="./docs/assets/grafana.svg" width="32" height="32"> | [Grafana Synthetic Agent](https://github.com/grafana/synthetic-monitoring-agent) | Uptime & performance monitoring |
-| <img src="./docs/assets/jellyfin.svg" width="32" height="32"> | [Jellyfin](https://github.com/jellyfin/jellyfin) | Media server |
-| <img src="./docs/assets/jellyseerr.svg" width="32" height="32"> | [Seerr](https://github.com/seerr-team/seerr) (formerly Jellyseerr; Docker image still `fallenbagel/jellyseerr`) | Requests / discovery for Jellyfin |
-| <img src="./docs/assets/n8n.svg" width="32" height="32"> | [n8n](https://github.com/n8n-io/n8n) | Workflow automation platform |
-| <img src="./docs/assets/netbootxyz.svg" width="32" height="32"> | [netboot.xyz](https://github.com/netbootxyz/netboot.xyz) | Network boot environments |
-| <img src="./docs/assets/netbox.svg" width="32" height="32"> | [NetBox](https://github.com/netbox-community/netbox) | Network infrastructure IPAM |
-| <img src="./docs/assets/postgresql.svg" width="32" height="32"> | [PostgreSQL](https://github.com/postgres/postgres) | Database server |
-| <img src="./docs/assets/prowlarr.svg" width="32" height="32"> | [Prowlarr](https://github.com/Prowlarr/Prowlarr) | Indexer manager |
-| <img src="./docs/assets/qbittorrent.svg" width="32" height="32"> | [qBittorrent](https://github.com/qbittorrent/qBittorrent) | Torrent client (routed via VPN) |
-| <img src="./docs/assets/radarr.svg" width="32" height="32"> | [Radarr](https://github.com/Radarr/Radarr) | Movie automation |
-| <img src="./docs/assets/sabnzbd.svg" width="32" height="32"> | [SABnzbd](https://github.com/sabnzbd/sabnzbd) | Usenet downloader (routed via VPN) |
-| <img src="./docs/assets/sonarr.svg" width="32" height="32"> | [Sonarr](https://github.com/Sonarr/Sonarr) | TV automation |
-| <img src="./docs/assets/stalwart.svg" width="32" height="32"> | [Stalwart Mail](https://github.com/stalwartlabs/stalwart) | Send-only SMTP server for app notifications |
-| <img src="./docs/assets/traefik.svg" width="32" height="32"> | [Traefik](https://github.com/traefik/traefik) | Reverse proxy with CrowdSec security integration |
-| <img src="./docs/assets/upsnap.svg" width="32" height="32"> | [Upsnap](https://github.com/seriousm4x/UpSnap) | Wake-on-LAN management |
-| <img src="./docs/assets/gatus.svg" width="32" height="32"> | [Gatus](https://github.com/TwiN/gatus) | Uptime monitoring & status page |
-| <img src="./docs/assets/vault.svg" width="32" height="32"> | [Vault](https://github.com/hashicorp/vault) | Secrets management |
-| <img src="./docs/assets/vaultwarden.svg" width="32" height="32"> | [Vaultwarden](https://github.com/dani-garcia/vaultwarden) | Password manager server (Bitwarden compatible) |
-| <img src="./docs/assets/warracker.png" width="32" height="32"> | [Warracker](https://github.com/sassanix/warracker) | Warranty & asset tracking |
-| <img src="./docs/assets/watchyourlan.png" width="32" height="32"> | [watchyourlan](https://github.com/aceberg/watchyourlan) | LAN device discovery & monitoring |
+What follows matches **Docker Compose stacks deployed from this repo** (see `terraform/portainer/locals.tf`) plus a couple of things that live **outside** `stacks/` but are still part of the lab.
+
+### Portainer stacks (`stacks/`)
+
+| Stack | Role |
+|-------|------|
+| [Authentik](https://goauthentik.io/) | Identity (OAuth / SAML / LDAP) |
+| [Calibre](https://github.com/kovidgoyal/calibre) | eBook library |
+| [Cloudflared](https://github.com/cloudflare/cloudflared) | Cloudflare Tunnel |
+| [Dozzle](https://github.com/amir20/dozzle) | Container logs UI |
+| [Gatus](https://github.com/TwiN/gatus) | Uptime / status page |
+| [Gitea](https://github.com/go-gitea/gitea) | Git hosting |
+| [Grafana Synthetic Monitoring Agent](https://github.com/grafana/synthetic-monitoring-agent) | Synthetic checks (Grafana Cloud–oriented agent) |
+| [Home Assistant stack](https://www.home-assistant.io/) | HA, Zigbee2MQTT, Mosquitto, optional [HA Time Machine](https://github.com/saihgupr/homeassistanttimemachine) (compose profile) |
+| [Homarr](https://homarr.dev/) | Dashboard |
+| **Mediabox** (see below) | Media + *arr + VPN-routed downloaders |
+| **Monitoring** | [Grafana](https://grafana.com/), [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics), PVE exporter, [k6](https://k6.io/) smoke |
+| [n8n](https://n8n.io/) | Workflow automation |
+| [NetBox](https://github.com/netbox-community/netbox) | IPAM / DCIM |
+| [PostgreSQL](https://www.postgresql.org/) | Shared database host |
+| [Traefik](https://traefik.io/) | Reverse proxy (+ CrowdSec integration in config) |
+| [Upsnap](https://github.com/seriousm4x/UpSnap) | Wake-on-LAN |
+| [Vault](https://www.hashicorp.com/products/vault) | Secrets |
+| [Vaultwarden](https://github.com/dani-garcia/vaultwarden) | Bitwarden-compatible passwords |
+| [WatchYourLAN](https://github.com/aceberg/watchyourlan) | LAN host visibility |
+
+### Mediabox (`stacks/mediabox/`)
+
+[Jellyfin](https://jellyfin.org/), [Seerr](https://github.com/seerr-team/seerr) (image `fallenbagel/jellyseerr`), Sonarr, Radarr, Bazarr, Prowlarr, FlareSolverr, [Gluetun](https://github.com/qdm12/gluetun), qBittorrent, SABnzbd — wired the usual way behind Traefik and the VPN gateway where applicable.
+
+### Not in `stacks/` (still in the environment)
+
+- **[AdGuard Home](https://github.com/AdguardTeam/AdGuardHome)** — runs as a **Proxmox LXC** (DNS / ad-blocking), not as a compose stack in this repo.
+- **Talos / Kubernetes** — several services that used to be Compose here (see changelog around **6.04.2026**) now run on the cluster; this README does not enumerate them.
 
 ---
 
@@ -185,37 +186,33 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ## Repository Structure
 
 ```
-├── docs/                           # Documentation
-│   ├── index.md                    # Docs portal
+├── docs/                           # MkDocs source
+│   ├── index.md                    # Docs home
+│   ├── networking/                 # Homelab addressing
 │   ├── adr/                        # Architecture Decision Records
-│   ├── golden-paths/               # How-to guides for common tasks
-│   ├── runbooks/                   # Incident response procedures
-│   ├── playbooks/                  # Repeatable operational tasks
-│   ├── architecture/               # C4 diagrams and system overviews
-│   └── assets/                     # Icons and images
+│   ├── golden-paths/               # How-to guides
+│   ├── runbooks/                   # Operational procedures
+│   └── assets/                     # Icons and images (e.g. README)
 │
-├── stacks/                         # Docker Compose stacks
-│   ├── adguard/
+├── stacks/                         # Docker Compose stacks (Portainer)
 │   ├── authentik/
 │   ├── calibre/
-│   ├── cups/
 │   ├── cloudflared/
-│   ├── diun/
 │   ├── dozzle/
+│   ├── gatus/
 │   ├── gitea/
 │   ├── grafana-synthetic-agent/
 │   ├── hass/
+│   ├── homarr/
 │   ├── mediabox/
+│   ├── monitoring/
 │   ├── n8n/
-│   ├── netbootxyz/
 │   ├── netbox/
 │   ├── postgres/
 │   ├── traefik/
 │   ├── upsnap/
-│   ├── gatus/
 │   ├── vault/
 │   ├── vaultwarden/
-│   ├── warracker/
 │   └── watchyourlan/
 │
 ├── terraform/                      # Infrastructure as Code
@@ -268,6 +265,8 @@ More **12.04** tweaks after that landed: **Postgres** is **localhost-only** on t
 **Traefik** got **`host.docker.internal:host-gateway`** so file-provider / container routers can hit **host-networked** **Home Assistant** and **ESPHome** without hard-coding a DHCP address. **HASS stack**: **Mosquitto** has a **`mosquitto_sub`** healthcheck, **HA** + **zigbee2mqtt** **`depends_on`** with **`condition: service_healthy`**, **HA Time Machine** is gated behind compose **`profile: timemachine`** (set **`COMPOSE_PROFILES=timemachine`** in Portainer or your shell when you want it; **`timemachine.env.example`** documents that). **zigbee2mqtt** config sets **`frontend.url`** to the Traefik hostname so links don’t lie.
 
 **Authentik** compose: **`AUTHENTIK_LOG_LEVEL`** back to **`info`**, **Docker socket** mounted **`:ro`** (same **`:ro`** treatment for **Dozzle**). **Authentik** Terraform adds **`zigbee2mqtt`** to the user-facing app list; the module lockfile is **OpenTofu-only** now — yeeted the duplicate **`registry.terraform.io/*`** stanzas.
+
+README + MkDocs got a sanity pass: **services** and **repo tree** now track **`terraform/portainer/locals.tf`** (added **homarr**, **monitoring**; evicted dead stack names). Replaced the giant icon grid with a maintainable table, and spelled out **AdGuard** as **LXC** plus **Talos/K8s** as “not in `stacks/`”. Yeeted the empty **Stalwart** runbook from **MkDocs** nav.
 
 ### 6.04.2026
 

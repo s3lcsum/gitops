@@ -75,8 +75,6 @@ services:
     <<: *default
     image: ghcr.io/saihgupr/homeassistanttimemachine:latest
     container_name: ha-time-machine
-    profiles:
-      - timemachine
     env_file:
       - /opt/hass/timemachine.env
     environment:

@@ -146,6 +146,14 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/victoriametrics.svg"
       skip_path_regex = ""
     }
+    beszel = {
+      name            = "Beszel"
+      external_host   = "https://beszel.lake.dominiksiejak.pl"
+      internal_host   = "http://beszel:8090"
+      launch_url      = "https://beszel.lake.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/selfhst/icons/svg/beszel.svg"
+      skip_path_regex = "^/api/.*"
+    }
     qbittorrent = {
       name            = "qBittorrent"
       external_host   = "https://qbittorrent.lake.dominiksiejak.pl"
@@ -218,6 +226,14 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/watchyourlan.png"
       skip_path_regex = ""
     }
+    # idrac6 = {
+    #   name            = "iDRAC6"
+    #   external_host   = "https://idrac.lake.dominiksiejak.pl"
+    #   internal_host   = "http://idrac6:5800"
+    #   launch_url      = "https://idrac.lake.dominiksiejak.pl"
+    #   icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/dell.png"
+    #   skip_path_regex = ""
+    # }
   }
 
   #───────────────────────────────────────────────────────────────────────────────

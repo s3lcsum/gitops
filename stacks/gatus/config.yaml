@@ -1,5 +1,5 @@
 # Gatus Configuration
-# Migrated from terraform/uptime-kuma monitors
+# Migrated from terraform/uptime-kuma monitors; keep in sync with stacks/ + traefik/dynamic.yaml
 
 metrics: true
 
@@ -29,8 +29,8 @@ ui:
   title: Homelab Status
   header: Service Status Dashboard
 
-
 endpoints:
+  # --- Core / ops
   - name: "portainer"
     url: https://portainer.lake.dominiksiejak.pl
     <<: &defaults
@@ -39,10 +39,6 @@ endpoints:
         timeout: 3s
       alerts:
         - type: telegram
-          failure-threshold: 4
-          success-threshold: 2
-          send-on-resolved: true
-        - type: email
           failure-threshold: 4
           success-threshold: 2
           send-on-resolved: true
@@ -62,8 +58,8 @@ endpoints:
     url: https://dozzle.lake.dominiksiejak.pl
     <<: *defaults
 
-  - name: "beszel"
-    url: https://beszel.lake.dominiksiejak.pl
+  - name: "homarr"
+    url: https://homarr.lake.dominiksiejak.pl
     <<: *defaults
 
   - name: "auth"
@@ -74,6 +70,7 @@ endpoints:
     url: https://upsnap.lake.dominiksiejak.pl
     <<: *defaults
 
+  # --- Network / metal (traefik/dynamic.yaml file provider)
   - name: "proxmox"
     url: https://proxmox.lake.dominiksiejak.pl
     <<: *defaults
@@ -86,6 +83,11 @@ endpoints:
     url: https://nas.lake.dominiksiejak.pl
     <<: *defaults
 
+  - name: "argocd"
+    url: https://argocd.lake.dominiksiejak.pl
+    <<: *defaults
+
+  # --- Mediabox
   - name: "jellyfin"
     url: https://jellyfin.lake.dominiksiejak.pl
     <<: *defaults
@@ -122,8 +124,9 @@ endpoints:
     url: https://flaresolverr.lake.dominiksiejak.pl
     <<: *defaults
 
+  # --- Apps
   - name: "n8n"
-    url: https://n8n.lake.dominiksiejak.pl
+    url: https://nodemation.lake.dominiksiejak.pl
     <<: *defaults
 
   - name: "git"
@@ -134,10 +137,11 @@ endpoints:
     url: https://vaultwarden.lake.dominiksiejak.pl
     <<: *defaults
 
-  - name: "warracker"
-    url: https://warracker.lake.dominiksiejak.pl
+  - name: "calibre"
+    url: https://calibre.lake.dominiksiejak.pl
     <<: *defaults
 
+  # --- Home Assistant stack
   - name: "hass"
     url: https://hass.lake.dominiksiejak.pl
     <<: *defaults
@@ -146,6 +150,11 @@ endpoints:
     url: https://esphome.lake.dominiksiejak.pl
     <<: *defaults
 
+  - name: "zigbee2mqtt"
+    url: https://zigbee2mqtt.lake.dominiksiejak.pl
+    <<: *defaults
+
+  # --- Observability
   - name: "grafana"
     url: https://grafana.lake.dominiksiejak.pl
     <<: *defaults
@@ -158,6 +167,7 @@ endpoints:
     url: https://lan.lake.dominiksiejak.pl
     <<: *defaults
 
+  # --- External sanity check
   - name: "google"
     url: https://google.com
     <<: *defaults

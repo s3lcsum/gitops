@@ -46,6 +46,8 @@ services:
     image: victoriametrics/victoria-metrics:latest
     container_name: victoria-metrics
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
       - /opt/monitoring/victoria-metrics.env
     volumes:

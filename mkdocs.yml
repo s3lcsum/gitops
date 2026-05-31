@@ -16,7 +16,6 @@ nav:
   - "GP001: Add Docker Stack": golden-paths/gp001-add-docker-stack.md
   - "GP002: Add Terraform Module (Gitea mirrors)": golden-paths/gp002-add-terraform-module-gitea-mirrors.md
   - "RB001: Initialize Vault": runbooks/rb001-initialize-vault.md
-  - "RB007: Stalwart SMTP Setup": runbooks/rb007-smtp-stalwart-setup.md
 
 watch:
   - docs

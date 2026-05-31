@@ -1,7 +1,7 @@
 # https://github.com/s3lcsum/gitops/blob/main/stacks/authentik/compose.yaml
 
 x-default: &default
-  image: ghcr.io/goauthentik/server:2026.2.1
+  image: ghcr.io/goauthentik/server:2026.2.3
   restart: always
   env_file:
     - /opt/authentik/authentik.env
@@ -17,6 +17,7 @@ x-default: &default
   networks:
     - proxy
     - database
+    - metrics
     - authentik
 
 services:
@@ -55,6 +56,8 @@ networks:
   proxy:
     external: true
   database:
+    external: true
+  metrics:
     external: true
   authentik:
     driver: bridge

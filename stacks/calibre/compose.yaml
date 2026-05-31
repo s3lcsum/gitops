@@ -1,4 +1,11 @@
 # https://github.com/s3lcsum/gitops/blob/main/stacks/calibre/compose.yaml
+# Calibre (desktop UI + content server) and Calibre-Web (browser / OPDS).
+# Readarr was archived in 2025; use Calibre's own tools or a small ingest script for automation.
+#
+# Calibre-Web uses one Calibre library (one metadata.db). If Calibre has multiple library roots,
+# point Calibre-Web at the folder that contains the primary metadata.db. Book roots use the same
+# host paths inside the container as the calibre service and mediabox (/mnt/LOCAL_MEDIA/books,
+# /mnt/NAS_Shared_Media/books).
 
 x-defaults: &defaults
   restart: unless-stopped
@@ -6,50 +13,64 @@ x-defaults: &defaults
     - proxy
 
 services:
-  # 📚 Calibre - Full ebook management application
   calibre:
     <<: *defaults
     image: ghcr.io/linuxserver/calibre:latest
     container_name: calibre
-    ports:
-      - 12800:8080
     environment:
       DRINODE: /dev/dri/renderD128
+      PUID: 0
+      PGID: 0
+      TZ: Europe/Warsaw
     devices:
       - /dev/dri:/dev/dri
     volumes:
       - calibre_config:/config
       - /mnt/LOCAL_MEDIA/books:/mnt/LOCAL_MEDIA/books
       - /mnt/NAS_Shared_Media/books:/mnt/NAS_Shared_Media/books
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
     labels:
       traefik.enable: true
-      # Main GUI interface
       traefik.http.routers.calibre-gui.rule: Host(`calibre-gui.lake.dominiksiejak.pl`)
       traefik.http.routers.calibre-gui.service: calibre-gui
       traefik.http.services.calibre-gui.loadbalancer.server.port: 8080
-
-      # WebServer for API
-
       traefik.http.routers.calibre-api.rule: Host(`calibre-api.lake.dominiksiejak.pl`)
-      traefik.http.routers.calibre-api.service: calibre-gui
+      traefik.http.routers.calibre-api.service: calibre-api
       traefik.http.services.calibre-api.loadbalancer.server.port: 8083
 
-  # 🌐 Calibre-Web - Web interface for browsing and reading ebooks
+  # First-run (web UI): set Calibre library path to the directory that contains metadata.db (e.g.
+  # under /mnt/LOCAL_MEDIA/books or /mnt/NAS_Shared_Media/books). Default login
+  # admin / admin123 — change immediately. Admin → Basic Configuration → External Binaries:
+  # unrar /usr/bin/unrar, Calibre converter /usr/bin/ebook-convert (dir /usr/bin/ on newer releases),
+  # kepubify /usr/bin/kepubify (DOCKER_MODS enables conversion tools).
   calibre-web:
     <<: *defaults
-    image: linuxserver/calibre-web:latest
+    image: ghcr.io/linuxserver/calibre-web:latest
     container_name: calibre-web
     environment:
       DOCKER_MODS: linuxserver/mods:universal-calibre
+      PUID: 0
+      PGID: 0
+      TZ: Europe/Warsaw
     volumes:
       - calibre_web_config:/config
-      - /mnt/LOCAL_MEDIA/books:/books
+      - /mnt/LOCAL_MEDIA/books:/mnt/LOCAL_MEDIA/books
+      - /mnt/NAS_Shared_Media/books:/mnt/NAS_Shared_Media/books
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8083/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     labels:
       traefik.enable: true
       traefik.http.services.calibre-web.loadbalancer.server.port: 8083
       traefik.http.routers.calibre-web.rule: Host(`calibre.hello.dominiksiejak.pl`) || Host(`calibre.lake.dominiksiejak.pl`)
-    depends_on:
-      - calibre
 
 networks:
   proxy:

@@ -23,10 +23,11 @@ scrape_configs:
           - "gatus:8080"
     metrics_path: /metrics
 
+  # WatchYourLAN uses network_mode: host; scrape via Docker host gateway (not Docker bridge DNS).
   - job_name: "watchyourlan"
     static_configs:
       - targets:
-          - "lan.lake.dominiksiejak.pl:8840"
+          - "host.docker.internal:8840"
 
   - job_name: "authentik"
     static_configs:
