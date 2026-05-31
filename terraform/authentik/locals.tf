@@ -46,17 +46,6 @@ locals {
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyfin.svg"
       redirect_uris = ["https://jellyfin.lake.dominiksiejak.pl/sso/OID/redirect/authentik"]
     }
-    warracker = {
-      name          = "Warracker"
-      launch_url    = "https://warracker.lake.dominiksiejak.pl"
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/warracker.png"
-      redirect_uris = ["http://warracker.lake.dominiksiejak.pl/api/oidc/callback"]
-      mapping       = <<-EOF
-        if request.user.ak_groups.filter(name="admins").exists():
-            return {"group": "admin"}
-        return {"group": "user"}
-      EOF
-    }
     seerr = {
       name          = "Seerr"
       launch_url    = "https://seerr.lake.dominiksiejak.pl/sso/OID/start/authentik"
@@ -121,16 +110,6 @@ locals {
         return {"role": "Viewer"}
       EOF
     }
-    homarr = {
-      name       = "Homarr"
-      launch_url = "https://homarr.lake.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/homarr.svg"
-      redirect_uris = [
-        "https://homarr.lake.dominiksiejak.pl/api/auth/callback/oidc",
-        "https://homarr.hello.dominiksiejak.pl/api/auth/callback/oidc",
-        "http://localhost:7575/api/auth/callback/oidc",
-      ]
-    }
   }
 
   #───────────────────────────────────────────────────────────────────────────────
@@ -145,14 +124,6 @@ locals {
       launch_url      = "https://metrics.lake.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/victoriametrics.svg"
       skip_path_regex = ""
-    }
-    beszel = {
-      name            = "Beszel"
-      external_host   = "https://beszel.lake.dominiksiejak.pl"
-      internal_host   = "http://beszel:8090"
-      launch_url      = "https://beszel.lake.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/selfhst/icons/svg/beszel.svg"
-      skip_path_regex = "^/api/.*"
     }
     qbittorrent = {
       name            = "qBittorrent"
@@ -226,14 +197,6 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/watchyourlan.png"
       skip_path_regex = ""
     }
-    # idrac6 = {
-    #   name            = "iDRAC6"
-    #   external_host   = "https://idrac.lake.dominiksiejak.pl"
-    #   internal_host   = "http://idrac6:5800"
-    #   launch_url      = "https://idrac.lake.dominiksiejak.pl"
-    #   icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/dell.png"
-    #   skip_path_regex = ""
-    # }
   }
 
   #───────────────────────────────────────────────────────────────────────────────
@@ -278,7 +241,6 @@ locals {
     "gatus",
     "gitea",
     "grafana",
-    "homarr",
     "jellyfin",
     "seerr",
     "n8n",
@@ -290,7 +252,6 @@ locals {
     "upsnap",
     "vaultwarden",
     "victoriametrics",
-    "warracker",
     "watchyourlan",
     "zigbee2mqtt",
   ])

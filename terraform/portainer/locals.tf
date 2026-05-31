@@ -8,7 +8,6 @@ locals {
 
   stacks = [
     "authentik",
-    "beszel",
     "calibre",
     "cloudflared",
     "dozzle",
@@ -16,7 +15,6 @@ locals {
     "gitea",
     "grafana-synthetic-agent",
     "hass",
-    "homarr",
     "mediabox",
     "monitoring",
     "n8n",

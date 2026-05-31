@@ -45,14 +45,6 @@ locals {
       username = "netbox_user"
       database = "netbox_db"
     }
-    warracker = {
-      username = "warracker_user"
-      database = "warracker_db"
-    }
-    backstage = {
-      username = "backstage_user"
-      database = "backstage_db"
-    }
     gatus = {
       username = "gatus_user"
       database = "gatus_db"

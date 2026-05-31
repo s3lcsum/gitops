@@ -24,7 +24,6 @@ locals {
     "mirrors/docker-adminer"            = { clone_url = "https://git.hubp.de/TimWolla/docker-adminer.git" }
     "mirrors/docker-bazarr"             = { clone_url = "https://github.com/linuxserver/docker-bazarr.git" }
     "mirrors/docker-calibre"            = { clone_url = "https://github.com/linuxserver/docker-calibre.git" }
-    "mirrors/docker-idrac6"             = { clone_url = "https://github.com/DomiStyle/docker-idrac6.git" }
     "mirrors/docker-jellyfin"           = { clone_url = "https://github.com/linuxserver/docker-jellyfin.git" }
     "mirrors/docker-prowlarr"           = { clone_url = "https://github.com/linuxserver/docker-prowlarr.git" }
     "mirrors/docker-qbittorrent"        = { clone_url = "https://github.com/linuxserver/docker-qbittorrent.git" }
@@ -75,6 +74,5 @@ locals {
     "mirrors/valkey-container"              = { clone_url = "https://github.com/valkey-io/valkey-container.git" }
     "mirrors/Vault"                         = { clone_url = "https://github.com/hashicorp/vault.git" }
     "mirrors/Vaultwarden"                   = { clone_url = "https://github.com/dani-garcia/vaultwarden.git" }
-    "mirrors/Warracker"                     = { clone_url = "https://github.com/sassanix/warracker.git" }
   }
 }
