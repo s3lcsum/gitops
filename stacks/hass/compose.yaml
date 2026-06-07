@@ -20,14 +20,14 @@ services:
 
   zigbee2mqtt:
     <<: *default
-    image: ghcr.io/koenkk/zigbee2mqtt:latest
+    image: ghcr.io/koenkk/zigbee2mqtt:1.40.7
     container_name: zigbee2mqtt
     depends_on:
       mosquitto:
         condition: service_healthy
     volumes:
       - zigbee2mqtt_data:/app/data
-      - /opt/hass/zigbee2mqtt.yaml:/app/data/configuration.yaml
+      - /opt/hass/zigbee2mqtt.yaml:/app/data/configuration.yaml:ro
     networks:
       - proxy
     extra_hosts:
@@ -41,7 +41,7 @@ services:
 
   mosquitto:
     <<: *default
-    image: eclipse-mosquitto:2
+    image: eclipse-mosquitto:2.0.15
     container_name: mosquitto
     volumes:
       - /opt/hass/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
@@ -73,7 +73,7 @@ services:
 
   ha-time-machine:
     <<: *default
-    image: ghcr.io/saihgupr/homeassistanttimemachine:latest
+    image: ghcr.io/saihgupr/homeassistanttimemachine:v1.0.5
     container_name: ha-time-machine
     env_file:
       - /opt/hass/timemachine.env
@@ -86,8 +86,7 @@ services:
     volumes:
       - data:/config
       - esphome_data:/esphome
-      - /opt/hass/timemachine:/media/timemachine
-      - ha_time_machine_data:/data
+      - ha_time_machine_data:/media/timemachine
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:

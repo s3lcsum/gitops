@@ -16,7 +16,7 @@ services:
   # 🔒 VPN gateway (WireGuard via Mullvad)
   gluetun:
     <<: *service-defaults
-    image: ghcr.io/qdm12/gluetun:latest
+    image: ghcr.io/qdm12/gluetun:v3.37.0
     container_name: gluetun
     env_file:
       - /opt/mediabox/gluetun.env
@@ -35,7 +35,7 @@ services:
   # 🔒 Torrent client (VPN-routed)
   qbittorrent:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/qbittorrent:latest
+    image: ghcr.io/linuxserver/qbittorrent:v5.2.1-r0-ls253
     container_name: qbittorrent
     environment: *environment
     depends_on:
@@ -46,19 +46,19 @@ services:
       - /mnt/LOCAL_MEDIA/qbittorrent:/mnt/LOCAL_MEDIA/qbittorrent
     networks: []  # Override to empty since using network_mode
     network_mode: service:gluetun
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
     labels:
       traefik.enable: true
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
       traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.hello.dominiksiejak.pl`) || Host(`qbittorrent.lake.dominiksiejak.pl`)
       #traefik.http.routers.qbittorrent.middlewares: authentik@docker
-    healthcheck:
-      <<: *healthcheck
-      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
 
   # 📥 Usenet downloader (VPN-routed)
   sabnzbd:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/sabnzbd:latest
+    image: ghcr.io/linuxserver/sabnzbd:4.3.2-r0-ls87
     container_name: sabnzbd
     depends_on:
       gluetun:
@@ -71,19 +71,19 @@ services:
       - /mnt/LOCAL_MEDIA/usenet/incomplete:/mnt/LOCAL_MEDIA/usenet/incomplete
     networks: []
     network_mode: service:gluetun
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8085/api?mode=version"]
     labels:
       traefik.enable: true
       traefik.http.services.sabnzbd.loadbalancer.server.port: 8085
       traefik.http.routers.sabnzbd.rule: Host(`sabnzbd.hello.dominiksiejak.pl`) || Host(`sabnzbd.lake.dominiksiejak.pl`)
       #traefik.http.routers.sabnzbd.middlewares: authentik@docker
-    healthcheck:
-      <<: *healthcheck
-      test: ["CMD", "curl", "-f", "http://localhost:8085/api?mode=version"]
 
   # 🌐 Cloudflare bypass for indexers
   flaresolverr:
     <<: *service-defaults
-    image: ghcr.io/flaresolverr/flaresolverr:latest
+    image: ghcr.io/flaresolverr/flaresolverr:v3.3.13
     container_name: flaresolverr
     volumes:
       - flaresolverr_config:/app/data
@@ -93,7 +93,7 @@ services:
 
   prowlarr:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/prowlarr:latest
+    image: ghcr.io/linuxserver/prowlarr:1.20.2.4575-r0-ls244
     container_name: prowlarr
     depends_on:
       flaresolverr:
@@ -122,7 +122,7 @@ services:
   # 🎥 Movie automation
   radarr:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/radarr:latest
+    image: ghcr.io/linuxserver/radarr:5.14.3.11727-r0-ls287
     container_name: radarr
     depends_on:
       qbittorrent:
@@ -157,7 +157,7 @@ services:
   # 📺 TV series automation
   sonarr:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/sonarr:latest
+    image: ghcr.io/linuxserver/sonarr:4.0.8.2145-r0-ls278
     container_name: sonarr
     depends_on:
       qbittorrent:
@@ -193,7 +193,7 @@ services:
   # 🔄 Subtitle management
   bazarr:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/bazarr:latest
+    image: ghcr.io/linuxserver/bazarr:1.4.6-r0-ls237
     container_name: bazarr
     volumes:
       - bazarr_config:/config
@@ -214,14 +214,11 @@ services:
       traefik.http.routers.bazarr.service: bazarr
       traefik.http.routers.bazarr.middlewares: authentik@docker
       traefik.http.routers.bazarr.priority: 10
-    healthcheck:
-      <<: *healthcheck
-      test: ["CMD", "curl", "-f", "http://localhost:6767/"]
 
   # 📺 Media server (primary)
   jellyfin:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/jellyfin:latest
+    image: ghcr.io/linuxserver/jellyfin:10.10.3-r0-ls237
     container_name: jellyfin
     volumes:
       - jellyfin_config:/config
@@ -238,9 +235,6 @@ services:
       traefik.enable: true
       traefik.http.services.jellyfin.loadbalancer.server.port: 8096
       traefik.http.routers.jellyfin.rule: Host(`jellyfin.hello.dominiksiejak.pl`) || Host(`jellyfin.lake.dominiksiejak.pl`)
-    healthcheck:
-      <<: *healthcheck
-      test: ["CMD", "curl", "-f", "http://localhost:8096/"]
 
   # 📥 Request manager
   # OIDC not in stable Seerr yet (upstream #1505). Image is still fallenbagel/jellyseerr — keep preview-OIDC until a release ships OIDC.
