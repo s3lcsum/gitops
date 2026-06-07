@@ -237,17 +237,10 @@ services:
       traefik.http.routers.jellyfin.rule: Host(`jellyfin.hello.dominiksiejak.pl`) || Host(`jellyfin.lake.dominiksiejak.pl`)
 
   # 📥 Request manager
-  # OIDC not in stable Seerr yet (upstream #1505). Image is still fallenbagel/jellyseerr — keep preview-OIDC until a release ships OIDC.
   seerr:
     <<: *service-defaults
     container_name: seerr
-    image: fallenbagel/jellyseerr:preview-OIDC
-    # OIDC discovery runs inside the container (fetch to issuer /.well-known/openid-configuration).
-    # If public DNS points Authentik through Cloudflare, that fetch often gets HTML (challenge/error), not JSON.
-    # Route the Authentik hostname to the Docker host so Traefik serves TLS and returns real OIDC metadata.
-    # After deploy: in Seerr Settings → Network, enable "Trust Proxy" so OIDC redirect URIs use https behind Traefik.
-    extra_hosts:
-      - "auth.lake.dominiksiejak.pl:host-gateway"
+    image: fallenbagel/jellyseerr:1.11.5
     depends_on:
       jellyfin:
         condition: service_healthy
