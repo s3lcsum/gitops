@@ -12,7 +12,6 @@ locals {
     "cloudflared",
     "dozzle",
     "gatus",
-    "gitea",
     "grafana-synthetic-agent",
     "hass",
     "mediabox",
@@ -21,9 +20,9 @@ locals {
     "netbox",
     "postgres",
     "traefik",
+    "unifi",
     "upsnap",
     "vault",
-    "unifi",
     "vaultwarden",
     "watchyourlan",
   ]
