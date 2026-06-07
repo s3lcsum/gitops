@@ -239,8 +239,11 @@ services:
   # 📥 Request manager
   seerr:
     <<: *service-defaults
-    container_name: seerr
     image: ghcr.io/seerr-team/seerr:3.3.0
+    container_name: seerr
+    environment:
+      <<: *environment
+      PORT: 5055
     depends_on:
       jellyfin:
         condition: service_healthy
@@ -249,12 +252,12 @@ services:
       radarr:
         condition: service_healthy
     volumes:
-      - jellyseerr_config:/app/config
+      - seerr_config:/app/config
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
-      traefik.http.routers.jellyseerr.rule: 'Host(`seerr.hello.dominiksiejak.pl`) || Host(`seerr.lake.dominiksiejak.pl`)'
-      traefik.http.services.jellyseerr.loadbalancer.server.port: 5055
+      traefik.http.routers.seerr.rule: Host(`seerr.hello.dominiksiejak.pl`) || Host(`seerr.lake.dominiksiejak.pl`)
+      traefik.http.services.seerr.loadbalancer.server.port: 5055
 
 networks:
   arr:
@@ -269,6 +272,6 @@ volumes:
   sonarr_config:
   bazarr_config:
   jellyfin_config:
-  jellyseerr_config:
+  seerr_config:
   prowlarr_config:
   flaresolverr_config:
