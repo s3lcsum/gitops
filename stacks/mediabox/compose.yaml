@@ -240,7 +240,7 @@ services:
   seerr:
     <<: *service-defaults
     container_name: seerr
-    image: ghcr.io/seerr-team/seerr:1.11.5
+    image: ghcr.io/seerr-team/seerr:3.3.0
     depends_on:
       jellyfin:
         condition: service_healthy
