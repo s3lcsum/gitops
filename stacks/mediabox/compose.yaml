@@ -16,7 +16,7 @@ services:
   # 🔒 VPN gateway (WireGuard via Mullvad)
   gluetun:
     <<: *service-defaults
-    image: ghcr.io/qdm12/gluetun:v3.37.0
+    image: ghcr.io/qdm12/gluetun:latest
     container_name: gluetun
     env_file:
       - /opt/mediabox/gluetun.env
@@ -93,7 +93,7 @@ services:
 
   prowlarr:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/prowlarr:1.20.2
+    image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
     depends_on:
       flaresolverr:
@@ -122,7 +122,7 @@ services:
   # 🎥 Movie automation
   radarr:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/radarr:5.14.3
+    image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
     depends_on:
       qbittorrent:
@@ -193,7 +193,7 @@ services:
   # 🔄 Subtitle management
   bazarr:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/bazarr:1.4.6
+    image: lscr.io/linuxserver/bazarr:latest
     container_name: bazarr
     volumes:
       - bazarr_config:/config
@@ -239,7 +239,7 @@ services:
   # 📥 Request manager
   seerr:
     <<: *service-defaults
-    image: ghcr.io/seerr-team/seerr:3.3.0
+    image: ghcr.io/seerr-team/seerr:latest
     container_name: seerr
     environment:
       <<: *environment
