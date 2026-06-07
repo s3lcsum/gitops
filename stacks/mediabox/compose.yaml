@@ -235,6 +235,9 @@ services:
       traefik.enable: true
       traefik.http.services.jellyfin.loadbalancer.server.port: 8096
       traefik.http.routers.jellyfin.rule: Host(`jellyfin.hello.dominiksiejak.pl`) || Host(`jellyfin.lake.dominiksiejak.pl`)
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8096/"]
 
   # 📥 Request manager
   seerr:
