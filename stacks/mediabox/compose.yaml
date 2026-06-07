@@ -43,7 +43,8 @@ services:
         condition: service_healthy
     volumes:
       - qbittorrent_config:/config
-      - /mnt/LOCAL_MEDIA/qbittorrent:/mnt/LOCAL_MEDIA/qbittorrent
+      - /mnt/LOCAL_MEDIA:/mnt/LOCAL_MEDIA
+      - /mnt/NAS_Shared_Media:/mnt/NAS_Shared_Media
     networks: []  # Override to empty since using network_mode
     network_mode: service:gluetun
     healthcheck:
@@ -53,12 +54,11 @@ services:
       traefik.enable: true
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
       traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.hello.dominiksiejak.pl`) || Host(`qbittorrent.lake.dominiksiejak.pl`)
-      #traefik.http.routers.qbittorrent.middlewares: authentik@docker
 
   # 📥 Usenet downloader (VPN-routed)
   sabnzbd:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/sabnzbd:4.3.2
+    image: ghcr.io/linuxserver/sabnzbd:5.0.3
     container_name: sabnzbd
     depends_on:
       gluetun:
@@ -78,7 +78,6 @@ services:
       traefik.enable: true
       traefik.http.services.sabnzbd.loadbalancer.server.port: 8085
       traefik.http.routers.sabnzbd.rule: Host(`sabnzbd.hello.dominiksiejak.pl`) || Host(`sabnzbd.lake.dominiksiejak.pl`)
-      #traefik.http.routers.sabnzbd.middlewares: authentik@docker
 
   # 🌐 Cloudflare bypass for indexers
   flaresolverr:
@@ -93,7 +92,7 @@ services:
 
   prowlarr:
     <<: *service-defaults
-    image: lscr.io/linuxserver/prowlarr:latest
+    image: lscr.io/linuxserver/prowlarr:2.3.5
     container_name: prowlarr
     depends_on:
       flaresolverr:
@@ -104,17 +103,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.prowlarr.loadbalancer.server.port: 9696
-
-      # API: bypass Authentik, prowlarr enforces X-Api-Key
-      traefik.http.routers.prowlarr-api.rule: (Host(`prowlarr.hello.dominiksiejak.pl`) || Host(`prowlarr.lake.dominiksiejak.pl`)) && PathPrefix(`/api`)
-      traefik.http.routers.prowlarr-api.service: prowlarr
-      traefik.http.routers.prowlarr-api.priority: 100
-
-      # Web UI: behind Authentik SSO
       traefik.http.routers.prowlarr.rule: Host(`prowlarr.hello.dominiksiejak.pl`) || Host(`prowlarr.lake.dominiksiejak.pl`)
-      traefik.http.routers.prowlarr.service: prowlarr
-      traefik.http.routers.prowlarr.middlewares: authentik@docker
-      traefik.http.routers.prowlarr.priority: 10
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:9696/ping"]
@@ -122,7 +111,7 @@ services:
   # 🎥 Movie automation
   radarr:
     <<: *service-defaults
-    image: lscr.io/linuxserver/radarr:latest
+    image: lscr.io/linuxserver/radarr:6.1.1
     container_name: radarr
     depends_on:
       qbittorrent:
@@ -139,17 +128,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.radarr.loadbalancer.server.port: 7878
-
-      # API: bypass Authentik, radarr enforces X-Api-Key
-      traefik.http.routers.radarr-api.rule: (Host(`radarr.hello.dominiksiejak.pl`) || Host(`radarr.lake.dominiksiejak.pl`)) && PathPrefix(`/api`)
-      traefik.http.routers.radarr-api.service: radarr
-      traefik.http.routers.radarr-api.priority: 100
-
-      # Web UI: behind Authentik SSO
       traefik.http.routers.radarr.rule: Host(`radarr.hello.dominiksiejak.pl`) || Host(`radarr.lake.dominiksiejak.pl`)
-      traefik.http.routers.radarr.service: radarr
-      traefik.http.routers.radarr.middlewares: authentik@docker
-      traefik.http.routers.radarr.priority: 10
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:7878/"]
@@ -157,7 +136,7 @@ services:
   # 📺 TV series automation
   sonarr:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/sonarr:4.0.8
+    image: ghcr.io/linuxserver/sonarr:4.0.17
     container_name: sonarr
     depends_on:
       qbittorrent:
@@ -174,17 +153,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.sonarr.loadbalancer.server.port: 8989
-
-      # API: bypass Authentik, sonarr enforces X-Api-Key
-      traefik.http.routers.sonarr-api.rule: (Host(`sonarr.hello.dominiksiejak.pl`) || Host(`sonarr.lake.dominiksiejak.pl`)) && PathPrefix(`/api`)
-      traefik.http.routers.sonarr-api.service: sonarr
-      traefik.http.routers.sonarr-api.priority: 100
-
-      # Web UI: behind Authentik SSO
       traefik.http.routers.sonarr.rule: Host(`sonarr.hello.dominiksiejak.pl`) || Host(`sonarr.lake.dominiksiejak.pl`)
-      traefik.http.routers.sonarr.service: sonarr
-      traefik.http.routers.sonarr.middlewares: authentik@docker
-      traefik.http.routers.sonarr.priority: 10
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8989/"]
@@ -193,7 +162,7 @@ services:
   # 🔄 Subtitle management
   bazarr:
     <<: *service-defaults
-    image: lscr.io/linuxserver/bazarr:latest
+    image: lscr.io/linuxserver/bazarr:1.5.6
     container_name: bazarr
     volumes:
       - bazarr_config:/config
@@ -203,22 +172,12 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.bazarr.loadbalancer.server.port: 6767
-
-      # API: bypass Authentik, bazarr enforces X-Api-Key
-      traefik.http.routers.bazarr-api.rule: (Host(`bazarr.hello.dominiksiejak.pl`) || Host(`bazarr.lake.dominiksiejak.pl`)) && PathPrefix(`/api`)
-      traefik.http.routers.bazarr-api.service: bazarr
-      traefik.http.routers.bazarr-api.priority: 100
-
-      # Web UI: behind Authentik SSO
       traefik.http.routers.bazarr.rule: Host(`bazarr.hello.dominiksiejak.pl`) || Host(`bazarr.lake.dominiksiejak.pl`)
-      traefik.http.routers.bazarr.service: bazarr
-      traefik.http.routers.bazarr.middlewares: authentik@docker
-      traefik.http.routers.bazarr.priority: 10
 
   # 📺 Media server (primary)
   jellyfin:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/jellyfin:10.10.3
+    image: ghcr.io/linuxserver/jellyfin:10.11.11
     container_name: jellyfin
     volumes:
       - jellyfin_config:/config
@@ -237,12 +196,12 @@ services:
       traefik.http.routers.jellyfin.rule: Host(`jellyfin.hello.dominiksiejak.pl`) || Host(`jellyfin.lake.dominiksiejak.pl`)
     healthcheck:
       <<: *healthcheck
-      test: ["CMD", "curl", "-f", "http://localhost:8096/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8096/System/Ping"]
 
   # 📥 Request manager
   seerr:
     <<: *service-defaults
-    image: ghcr.io/seerr-team/seerr:latest
+    image: ghcr.io/seerr-team/seerr:v3.3.0
     container_name: seerr
     environment:
       <<: *environment
