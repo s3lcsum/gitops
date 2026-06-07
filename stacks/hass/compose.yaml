@@ -27,7 +27,7 @@ services:
         condition: service_healthy
     volumes:
       - zigbee2mqtt_data:/app/data
-      - /opt/hass/zigbee2mqtt.yaml:/app/data/configuration.yaml:ro
+      - /var/lib/homeassistant/zigbee2mqtt.yaml:/app/data/configuration.yaml:ro
     networks:
       - proxy
     extra_hosts:
@@ -44,7 +44,7 @@ services:
     image: eclipse-mosquitto:2.0.15
     container_name: mosquitto
     volumes:
-      - /opt/hass/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - /var/lib/homeassistant/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto_data:/mosquitto/data
     network_mode: host # Because home-assistant have to be on the same network as the coordinator
     healthcheck:
@@ -76,7 +76,7 @@ services:
     image: ghcr.io/saihgupr/homeassistanttimemachine:v1.0.5
     container_name: ha-time-machine
     env_file:
-      - /opt/hass/timemachine.env
+      - /var/lib/homeassistant/timemachine.env
     environment:
       TZ: Europe/Warsaw
       HOME_ASSISTANT_URL: http://host.docker.internal:8123
