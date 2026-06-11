@@ -1,7 +1,7 @@
 # https://github.com/s3lcsum/gitops/blob/main/stacks/authentik/compose.yaml
 
 x-default: &default
-  image: ghcr.io/goauthentik/server:2026.5.2
+  image: ghcr.io/goauthentik/server:2026.5.3
   restart: always
   env_file:
     - /opt/authentik/authentik.env
@@ -34,7 +34,7 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
-      traefik.http.routers.authentik.rule: Host(`auth.lake.dominiksiejak.pl`)
+      traefik.http.routers.authentik.rule: Host(`auth.lake.dominiksiejak.pl`) || Host(`auth.hello.dominiksiejak.pl`)
       traefik.http.services.authentik.loadbalancer.server.port: 9000
 
       traefik.http.middlewares.authentik.forwardauth.address: http://authentik-server:9000/outpost.goauthentik.io/auth/traefik
@@ -50,6 +50,10 @@ services:
     networks:
       - authentik
       - database
+    volumes:
+      - media:/media
+      - templates:/templates
+      - certs:/certs
 
 
 networks:

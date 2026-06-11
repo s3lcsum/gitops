@@ -2,7 +2,7 @@
 
 services:
   traefik:
-    image: ghcr.io/traefik/traefik:v3.7.1
+    image: ghcr.io/traefik/traefik:v3.7.5
     container_name: traefik
     restart: unless-stopped
     user: root
@@ -44,20 +44,14 @@ services:
     volumes:
       - crowdsec-config:/etc/crowdsec
       - crowdsec-data:/var/lib/crowdsec/data
-    command:
-      - cscli
-      - machines
-      - add
-      - --auto
-      - traefik
     healthcheck:
-      test: ["CMD", "crowdsec", "-t"]
+      test: ["CMD", "curl", "-sf", "http://localhost:6060/health"]
       interval: 30s
       timeout: 5s
       retries: 3
 
   error-pages:
-    image: ghcr.io/tarampampam/error-pages:4.2.0
+    image: ghcr.io/tarampampam/error-pages:4.2.1
     restart: unless-stopped
     container_name: error-pages
     networks:

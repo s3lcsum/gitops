@@ -2,6 +2,7 @@ x-default: &default
   restart: unless-stopped
   environment:
     TZ: Europe/Warsaw
+
 services:
   hass:
     <<: *default
@@ -12,22 +13,22 @@ services:
         condition: service_healthy
     volumes:
       - data:/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     network_mode: host # Otherwise autodiscovery won't work
     labels:
       traefik.enable: true
       traefik.http.routers.hass.rule: Host(`hass.lake.dominiksiejak.pl`) || Host(`hass.hello.dominiksiejak.pl`)
       traefik.http.services.hass.loadbalancer.server.url: http://host.docker.internal:8123
 
-  zigbee2mqtt:
+  zigbee2mqtt-wifi:
     <<: *default
-    image: ghcr.io/koenkk/zigbee2mqtt:1.40.7
-    container_name: zigbee2mqtt
+    image: ghcr.io/koenkk/zigbee2mqtt:2.12.0
+    container_name: zigbee2mqtt-wifi
     depends_on:
       mosquitto:
         condition: service_healthy
     volumes:
-      - zigbee2mqtt_data:/app/data
-      - /var/lib/homeassistant/zigbee2mqtt.yaml:/app/data/configuration.yaml:ro
+      - /var/lib/hass/zigbee2mqtt-wifi:/app/data
     networks:
       - proxy
     extra_hosts:
@@ -35,16 +36,36 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
-      traefik.http.routers.zigbee2mqtt.rule: Host(`zigbee2mqtt.lake.dominiksiejak.pl`)
-      traefik.http.services.zigbee2mqtt.loadbalancer.server.port: 8080
-      traefik.http.routers.zigbee2mqtt.middlewares: authentik@docker
+      traefik.http.routers.zigbee2mqtt-wifi.middlewares: authentik@docker
+      traefik.http.services.zigbee2mqtt-wifi.loadbalancer.server.port: "8080"
+
+  zigbee2mqtt-usb:
+    <<: *default
+    image: ghcr.io/koenkk/zigbee2mqtt:2.12.0
+    container_name: zigbee2mqtt-usb
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    volumes:
+      - /var/lib/hass/zigbee2mqtt-usb:/app/data
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+    networks:
+      - proxy
+    extra_hosts:
+      - "mosquitto:host-gateway"
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+      traefik.http.routers.zigbee2mqtt-usb.middlewares: authentik@docker
+      traefik.http.services.zigbee2mqtt-usb.loadbalancer.server.port: "8080"
 
   mosquitto:
     <<: *default
-    image: eclipse-mosquitto:2.0.15
+    image: eclipse-mosquitto:2.1.2-alpine
     container_name: mosquitto
     volumes:
-      - /var/lib/homeassistant/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - /opt/hass/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto_data:/mosquitto/data
     network_mode: host # Because home-assistant have to be on the same network as the coordinator
     healthcheck:
@@ -58,25 +79,12 @@ services:
       retries: 3
       start_period: 15s
 
-  esphome:
+  hass-timemachine:
     <<: *default
-    image: ghcr.io/esphome/esphome:stable
-    container_name: esphome
-    privileged: true
-    network_mode: host # Autodiscovery won't work otherwise
-    volumes:
-      - esphome_data:/config
-    labels:
-      traefik.enable: true
-      traefik.http.routers.esphome.rule: Host(`esphome.lake.dominiksiejak.pl`)
-      traefik.http.services.esphome.loadbalancer.server.url: http://host.docker.internal:6052
-
-  ha-time-machine:
-    <<: *default
-    image: ghcr.io/saihgupr/homeassistanttimemachine:v1.0.5
-    container_name: ha-time-machine
+    image: ghcr.io/saihgupr/homeassistanttimemachine:2.3.2
+    container_name: hass-timemachine
     env_file:
-      - /var/lib/homeassistant/timemachine.env
+      - /opt/hass/timemachine.env
     environment:
       TZ: Europe/Warsaw
       HOME_ASSISTANT_URL: http://host.docker.internal:8123
@@ -85,7 +93,6 @@ services:
       THEME: dark
     volumes:
       - data:/config
-      - esphome_data:/esphome
       - ha_time_machine_data:/media/timemachine
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -94,9 +101,8 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
-      traefik.http.routers.timemachine.rule: Host(`timemachine.lake.dominiksiejak.pl`)
-      traefik.http.services.timemachine.loadbalancer.server.port: 54000
       traefik.http.routers.timemachine.middlewares: authentik@docker
+      traefik.http.services.timemachine.loadbalancer.server.port: "8080"
 
 networks:
   proxy:
@@ -107,9 +113,7 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /var/lib/homeassistant
+      device: /var/lib/hass
       o: bind
-  zigbee2mqtt_data:
   mosquitto_data:
-  esphome_data:
   ha_time_machine_data:

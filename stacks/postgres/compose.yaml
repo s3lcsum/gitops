@@ -1,7 +1,7 @@
 
 services:
   postgres:
-    image: postgres:18
+    image: postgres:18.4
     container_name: postgres
     restart: always
     ports:
@@ -28,6 +28,7 @@ services:
       - database
     labels:
       traefik.enable: true
+      traefik.http.routers.adminer.middlewares: authentik@docker
 
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest

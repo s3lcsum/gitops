@@ -82,7 +82,7 @@ services:
   # 🌐 Cloudflare bypass for indexers
   flaresolverr:
     <<: *service-defaults
-    image: ghcr.io/flaresolverr/flaresolverr:v3.3.13
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.0
     container_name: flaresolverr
     volumes:
       - flaresolverr_config:/app/data
@@ -92,7 +92,7 @@ services:
 
   prowlarr:
     <<: *service-defaults
-    image: lscr.io/linuxserver/prowlarr:2.3.5
+    image: lscr.io/linuxserver/prowlarr:2.4.0
     container_name: prowlarr
     depends_on:
       flaresolverr:
@@ -111,7 +111,7 @@ services:
   # 🎥 Movie automation
   radarr:
     <<: *service-defaults
-    image: lscr.io/linuxserver/radarr:6.1.1
+    image: lscr.io/linuxserver/radarr:6.2.1
     container_name: radarr
     depends_on:
       qbittorrent:
@@ -168,6 +168,9 @@ services:
       - bazarr_config:/config
       - /mnt/LOCAL_MEDIA:/mnt/LOCAL_MEDIA
       - /mnt/NAS_Shared_Media:/mnt/NAS_Shared_Media
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:6767/"]
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
