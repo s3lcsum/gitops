@@ -1,6 +1,6 @@
 services:
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.0.2
     container_name: grafana
     restart: unless-stopped
     env_file:
@@ -29,21 +29,8 @@ services:
     labels:
       traefik.enable: true
 
-  pve-exporter:
-    image: prompve/prometheus-pve-exporter:latest
-    container_name: pve-exporter
-    restart: unless-stopped
-    volumes:
-      - /opt/monitoring/pve-exporter/pve.yml:/etc/pve.yml:ro
-    networks:
-      - metrics
-    command:
-      - --config.file=/etc/pve.yml
-      - --web.listen-address=0.0.0.0:9221
-      - --no-collector.config
-
   victoria-metrics:
-    image: victoriametrics/victoria-metrics:latest
+    image: victoriametrics/victoria-metrics:v1.145.0
     container_name: victoria-metrics
     restart: unless-stopped
     extra_hosts:
@@ -63,22 +50,6 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.victoria-metrics.rule: "Host(`metrics.lake.dominiksiejak.pl`)"
-
-  k6:
-    image: grafana/k6:latest
-    container_name: k6
-    restart: "no"
-    environment:
-      K6_PROMETHEUS_RW_SERVER_URL: http://victoria-metrics:8428/api/v1/write
-    volumes:
-      - /opt/monitoring/k6:/scripts:ro
-    networks:
-      - metrics
-    command:
-      - "run"
-      - "/scripts/smoke.js"
-      - "-o"
-      - "experimental-prometheus-rw"
 
 networks:
   proxy:

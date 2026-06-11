@@ -2,7 +2,7 @@
 
 services:
   upsnap:
-    image: ghcr.io/seriousm4x/upsnap:latest
+    image: ghcr.io/seriousm4x/upsnap:5.4.1
     container_name: upsnap
     restart: unless-stopped
     volumes:
@@ -16,7 +16,6 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.upsnap.loadbalancer.server.url: http://192.168.89.253:8090
-      traefik.http.routers.upsnap.rule: Host(`upsnap.lake.dominiksiejak.pl`)
 
 volumes:
   data:

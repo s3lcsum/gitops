@@ -15,6 +15,9 @@ locals {
       launch_url    = "https://portainer.lake.dominiksiejak.pl"
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/portainer.svg"
       redirect_uris = ["https://portainer.lake.dominiksiejak.pl/"]
+      mapping       = <<-EOF
+        return {"groups": [g.name for g in request.user.ak_groups.all()]}
+      EOF
     }
     proxmox = {
       name          = "Proxmox"
@@ -58,8 +61,7 @@ locals {
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/home-assistant.svg"
       redirect_uris = [
         "https://hass.lake.dominiksiejak.pl/auth/openid/callback",
-        "https://homeassistant.lake.dominiksiejak.pl/auth/openid/callback",
-        "https://haos.lake.dominiksiejak.pl/auth/openid/callback",
+        "https://hass.hello.dominiksiejak.pl/auth/openid/callback",
       ]
     }
     synology = {
@@ -181,11 +183,19 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/traefik.svg"
       skip_path_regex = ""
     }
-    zigbee2mqtt = {
-      name            = "Zigbee2MQTT"
-      external_host   = "https://zigbee2mqtt.lake.dominiksiejak.pl"
-      internal_host   = "http://zigbee2mqtt:8080"
-      launch_url      = "https://zigbee2mqtt.lake.dominiksiejak.pl"
+    zigbee2mqtt-wifi = {
+      name            = "Zigbee2MQTT (WiFi)"
+      external_host   = "https://zigbee2mqtt-wifi.lake.dominiksiejak.pl"
+      internal_host   = "http://zigbee2mqtt-wifi:8080"
+      launch_url      = "https://zigbee2mqtt-wifi.lake.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zigbee2mqtt.svg"
+      skip_path_regex = ""
+    }
+    zigbee2mqtt-usb = {
+      name            = "Zigbee2MQTT (USB)"
+      external_host   = "https://zigbee2mqtt-usb.lake.dominiksiejak.pl"
+      internal_host   = "http://zigbee2mqtt-usb:8080"
+      launch_url      = "https://zigbee2mqtt-usb.lake.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zigbee2mqtt.svg"
       skip_path_regex = ""
     }
@@ -195,6 +205,14 @@ locals {
       internal_host   = "http://watchyourlan:8840"
       launch_url      = "https://watchyourlan.lake.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/watchyourlan.png"
+      skip_path_regex = ""
+    }
+    hass-timemachine = {
+      name            = "HASS Time Machine"
+      external_host   = "https://hass-timemachine.lake.dominiksiejak.pl"
+      internal_host   = "http://hass-timemachine:3000"
+      launch_url      = "https://hass-timemachine.lake.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/home-assistant.svg"
       skip_path_regex = ""
     }
   }
@@ -253,6 +271,7 @@ locals {
     "vaultwarden",
     "victoriametrics",
     "watchyourlan",
-    "zigbee2mqtt",
+    "zigbee2mqtt-wifi",
+    "zigbee2mqtt-usb",
   ])
 }

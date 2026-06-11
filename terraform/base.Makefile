@@ -87,5 +87,5 @@ plan: init ## Create an execution plan
 	@tofu plan
 
 apply: init ## Apply the configuration (with auto-approve)
-	@$(MAKE) header CMD="tofu apply -auto-approve"
-	@tofu apply -auto-approve
+	@$(MAKE) header CMD="tofu apply -auto-approve $(TOFU_ARGS)"
+	@tofu apply -auto-approve $(TOFU_ARGS)

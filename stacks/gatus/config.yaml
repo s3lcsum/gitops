@@ -142,12 +142,16 @@ endpoints:
     url: https://hass.lake.dominiksiejak.pl
     <<: *defaults
 
-  - name: "esphome"
-    url: https://esphome.lake.dominiksiejak.pl
+  - name: "zigbee2mqtt-wifi"
+    url: https://zigbee2mqtt-wifi.lake.dominiksiejak.pl
     <<: *defaults
 
-  - name: "zigbee2mqtt"
-    url: https://zigbee2mqtt.lake.dominiksiejak.pl
+  - name: "zigbee2mqtt-usb"
+    url: https://zigbee2mqtt-usb.lake.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "hass-timemachine"
+    url: https://hass-timemachine.lake.dominiksiejak.pl
     <<: *defaults
 
   # --- Observability

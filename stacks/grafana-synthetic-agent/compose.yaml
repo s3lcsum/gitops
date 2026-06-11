@@ -1,7 +1,7 @@
 
 services:
   grafana-synthetic-agent:
-    image: grafana/synthetic-monitoring-agent:latest
+    image: grafana/synthetic-monitoring-agent:v0.58.3
     container_name: grafana-synthetic-agent
     restart: unless-stopped
     env_file:

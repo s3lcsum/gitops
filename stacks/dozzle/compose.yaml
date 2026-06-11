@@ -1,6 +1,8 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/dozzle/compose.yaml
+
 services:
   dozzle:
-    image: ghcr.io/amir20/dozzle:latest
+    image: ghcr.io/amir20/dozzle:v10.6.5
     container_name: dozzle
     restart: unless-stopped
     volumes:
@@ -9,9 +11,7 @@ services:
       - proxy
     labels:
       traefik.enable: true
-      traefik.http.routers.dozzle.rule: Host(`logs.lake.dominiksiejak.pl`)
       traefik.http.routers.dozzle.middlewares: authentik@docker
-      traefik.http.services.dozzle.loadbalancer.server.port: 8080
 
 networks:
   proxy:

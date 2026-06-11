@@ -16,7 +16,7 @@ services:
   # 🔒 VPN gateway (WireGuard via Mullvad)
   gluetun:
     <<: *service-defaults
-    image: ghcr.io/qdm12/gluetun:latest
+    image: ghcr.io/qdm12/gluetun:v3.41.1
     container_name: gluetun
     env_file:
       - /opt/mediabox/gluetun.env

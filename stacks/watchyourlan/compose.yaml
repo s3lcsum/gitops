@@ -2,7 +2,7 @@
 
 services:
   wyl:
-    image: aceberg/watchyourlan:latest
+    image: aceberg/watchyourlan:2.1.4
     container_name: watchyourlan
     restart: unless-stopped
     env_file:

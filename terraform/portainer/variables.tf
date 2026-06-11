@@ -17,7 +17,7 @@ variable "portainer_api_key" {
 }
 
 variable "enable_oauth" {
-  description = "Enable OAuth authentication via Authentik. Set to true once terraform-authentik workspace exists."
+  description = "Enable OAuth/OIDC authentication via Authentik (auth.lake.dominiksiejak.pl). Reads credentials from the gitops-authentik workspace outputs. Set to false only when bootstrapping before that workspace exists."
   type        = bool
-  default     = false
+  default     = true
 }

@@ -7,6 +7,9 @@ Requires=docker.service
 
 [Service]
 Restart=always
+ExecStartPre=-/usr/bin/docker network create -d bridge proxy
+ExecStartPre=-/usr/bin/docker network create -d bridge metrics
+ExecStartPre=-/usr/bin/docker network create -d bridge database
 ExecStartPre=-/usr/bin/docker rm -f portainer
 ExecStartPre=-/usr/bin/docker rmi portainer/portainer-ce:alpine-sts
 ExecStart=/usr/bin/docker run \
