@@ -49,5 +49,9 @@ locals {
       username = "gatus_user"
       database = "gatus_db"
     }
+    hass = {
+      username = "hass_user"
+      database = "homeassistant"
+    }
   }
 }
