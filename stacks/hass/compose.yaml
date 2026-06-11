@@ -24,6 +24,7 @@ services:
     <<: *default
     image: ghcr.io/koenkk/zigbee2mqtt:2.12.0
     container_name: zigbee2mqtt-wifi
+    user: "1000:1000"
     depends_on:
       mosquitto:
         condition: service_healthy
@@ -43,6 +44,9 @@ services:
     <<: *default
     image: ghcr.io/koenkk/zigbee2mqtt:2.12.0
     container_name: zigbee2mqtt-usb
+    user: "1000:1000"
+    group_add:
+      - dialout
     depends_on:
       mosquitto:
         condition: service_healthy
