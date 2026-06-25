@@ -1,14 +1,13 @@
 #!/usr/bin/env make -f
 
 GIT_ROOT := $(shell git rev-parse --show-toplevel)
+
 include $(GIT_ROOT)/terraform/base.Makefile
 
-.PHONY: sync-portainer watch-portainer sync-service sync-apply untaint-all
+# Inherit apply recipe from base.Makefile; just add portainer-specific prerequisites.
+apply: sync-portainer untaint-all
 
-sync-apply:
-	-$(MAKE) sync-portainer
-	$(MAKE) untaint-all
-	$(MAKE) apply TOFU_ARGS='-parallelism=1'
+.PHONY: sync-portainer watch-portainer sync-service untaint-all
 
 untaint-all: ## Untaint all tainted resources
 	@tofu state pull | python3 -c "\
@@ -21,7 +20,7 @@ state = json.load(sys.stdin); \
 	while read addr; do tofu untaint "$$addr"; done
 
 sync-portainer: ## Rsync stacks/ to ssh portainer:/opt
-	rsync -av --delete "$(GIT_ROOT)/stacks/" portainer:/opt
+	-rsync -av --delete "$(GIT_ROOT)/stacks/" portainer:/opt
 
 watch-portainer: ## Watch for changes and sync automatically
 	fswatch -r --exclude '.*\.swp$$' --exclude '\.git' "$(GIT_ROOT)/stacks" | \

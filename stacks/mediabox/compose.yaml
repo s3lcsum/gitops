@@ -53,7 +53,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
-      traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.hello.dominiksiejak.pl`) || Host(`qbittorrent.lake.dominiksiejak.pl`)
+      traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.dominiksiejak.pl`) || Host(`qbittorrent.lake.dominiksiejak.pl`)
 
   # 📥 Usenet downloader (VPN-routed)
   sabnzbd:
@@ -77,7 +77,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.sabnzbd.loadbalancer.server.port: 8085
-      traefik.http.routers.sabnzbd.rule: Host(`sabnzbd.hello.dominiksiejak.pl`) || Host(`sabnzbd.lake.dominiksiejak.pl`)
+      traefik.http.routers.sabnzbd.rule: Host(`sabnzbd.dominiksiejak.pl`) || Host(`sabnzbd.lake.dominiksiejak.pl`)
 
   # 🌐 Cloudflare bypass for indexers
   flaresolverr:
@@ -103,7 +103,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.prowlarr.loadbalancer.server.port: 9696
-      traefik.http.routers.prowlarr.rule: Host(`prowlarr.hello.dominiksiejak.pl`) || Host(`prowlarr.lake.dominiksiejak.pl`)
+      traefik.http.routers.prowlarr.rule: Host(`prowlarr.dominiksiejak.pl`) || Host(`prowlarr.lake.dominiksiejak.pl`)
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:9696/ping"]
@@ -128,7 +128,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.radarr.loadbalancer.server.port: 7878
-      traefik.http.routers.radarr.rule: Host(`radarr.hello.dominiksiejak.pl`) || Host(`radarr.lake.dominiksiejak.pl`)
+      traefik.http.routers.radarr.rule: Host(`radarr.dominiksiejak.pl`) || Host(`radarr.lake.dominiksiejak.pl`)
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:7878/"]
@@ -153,7 +153,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.sonarr.loadbalancer.server.port: 8989
-      traefik.http.routers.sonarr.rule: Host(`sonarr.hello.dominiksiejak.pl`) || Host(`sonarr.lake.dominiksiejak.pl`)
+      traefik.http.routers.sonarr.rule: Host(`sonarr.dominiksiejak.pl`) || Host(`sonarr.lake.dominiksiejak.pl`)
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8989/"]
@@ -175,7 +175,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.bazarr.loadbalancer.server.port: 6767
-      traefik.http.routers.bazarr.rule: Host(`bazarr.hello.dominiksiejak.pl`) || Host(`bazarr.lake.dominiksiejak.pl`)
+      traefik.http.routers.bazarr.rule: Host(`bazarr.dominiksiejak.pl`) || Host(`bazarr.lake.dominiksiejak.pl`)
 
   # 📺 Media server (primary)
   jellyfin:
@@ -196,7 +196,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.jellyfin.loadbalancer.server.port: 8096
-      traefik.http.routers.jellyfin.rule: Host(`jellyfin.hello.dominiksiejak.pl`) || Host(`jellyfin.lake.dominiksiejak.pl`)
+      traefik.http.routers.jellyfin.rule: Host(`jellyfin.dominiksiejak.pl`) || Host(`jellyfin.lake.dominiksiejak.pl`)
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8096/System/Ping"]
@@ -221,7 +221,7 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
-      traefik.http.routers.seerr.rule: Host(`seerr.hello.dominiksiejak.pl`) || Host(`seerr.lake.dominiksiejak.pl`)
+      traefik.http.routers.seerr.rule: Host(`seerr.dominiksiejak.pl`) || Host(`seerr.lake.dominiksiejak.pl`)
       traefik.http.services.seerr.loadbalancer.server.port: 5055
 
 networks:

@@ -1,11 +1,6 @@
 http:
   # Middlewares
   middlewares:
-    redirect-to-https:
-      redirectScheme:
-        scheme: https
-        permanent: true
-
     secure-headers:
       headers:
         browserXssFilter: true

@@ -65,7 +65,7 @@ Follow this order for service definitions:
 - Traefik ships a default `websecure` router that already handles TLS certificates, so you do not need to repeat TLS-related labels unless you override behavior.
 - Every Traefik-accessible service still needs `traefik.enable: true`.
 - Add router rules only when you need a custom hostname (use `traefik.http.routers.<service>.rule: Host(\`...\`)`).
-- Remember that `*.lake.dominiksiejak.pl` resolves to the internal/VPN network (`192.168.89.0/24`), whereas `*.hello.dominiksiejak.pl` targets the public IP mapped to Traefik (ports 80/443).
+- Remember that `*.lake.dominiksiejak.pl` resolves to the internal/VPN network (`192.168.89.0/24`), whereas `*.dominiksiejak.pl` targets the public IP mapped to Traefik (ports 80/443).
 - Use object syntax for labels.
 
 ## Sync Requirement

@@ -72,7 +72,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.calibre-web.loadbalancer.server.port: 8083
-      traefik.http.routers.calibre-web.rule: Host(`calibre.hello.dominiksiejak.pl`) || Host(`calibre.lake.dominiksiejak.pl`)
+      traefik.http.routers.calibre-web.rule: Host(`calibre.dominiksiejak.pl`) || Host(`calibre.lake.dominiksiejak.pl`)
 
 networks:
   proxy:

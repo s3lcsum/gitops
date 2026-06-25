@@ -11,9 +11,8 @@ locals {
     }
     allowed_domains = [
       "lake.dominiksiejak.pl",
-      "hello.dominiksiejak.pl",
-      "atom.dominiksiejak.pl",
       "dominiksiejak.pl",
+      "atom.dominiksiejak.pl",
       "local"
     ]
     default_ttl = 720

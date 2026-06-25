@@ -17,3 +17,10 @@ variable "gitea_password" {
   sensitive   = true
   default     = null
 }
+
+variable "github_token" {
+  description = "GitHub PAT (repo scope) used to clone private own-repos into Gitea mirrors"
+  type        = string
+  sensitive   = true
+  default     = null
+}

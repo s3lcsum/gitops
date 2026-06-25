@@ -59,11 +59,7 @@ endpoints:
     <<: *defaults
 
   - name: "auth"
-    url: https://auth.lake.dominiksiejak.pl
-    <<: *defaults
-
-  - name: "upsnap"
-    url: https://upsnap.lake.dominiksiejak.pl
+    url: https://auth.dominiksiejak.pl
     <<: *defaults
 
   # --- Network / metal (traefik/dynamic.yaml file provider)

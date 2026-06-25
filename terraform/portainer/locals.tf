@@ -8,6 +8,7 @@ locals {
 
   stacks = [
     "authentik",
+    "adguard",
     "calibre",
     "cloudflared",
     "dozzle",
@@ -21,7 +22,6 @@ locals {
     "postgres",
     "traefik",
     "unifi",
-    "upsnap",
     "vault",
     "vaultwarden",
     "watchyourlan",

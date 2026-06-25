@@ -1,0 +1,19 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/adguard/compose.yaml
+
+services:
+  adguard:
+    image: adguard/adguardhome:v0.107.77
+    container_name: adguard
+    restart: always
+    network_mode: host
+    volumes:
+      - work:/opt/adguardhome/work
+      - conf:/opt/adguardhome/conf
+    labels:
+      traefik.enable: true
+      traefik.http.routers.adguard.rule: Host(`adguard.lake.dominiksiejak.pl`) || Host(`adguard.dominiksiejak.pl`)
+      traefik.http.services.adguard.loadbalancer.server.url: http://host.docker.internal:3000
+
+volumes:
+  work:
+  conf:

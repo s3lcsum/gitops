@@ -12,8 +12,11 @@ services:
       N8N_METRICS: true
       N8N_RUNNERS_ENABLED: true
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: true
-      N8N_EDITOR_BASE_URL: https://nodemation.lake.dominiksiejak.pl
-      WEBHOOK_URL: https://nodemation.lake.dominiksiejak.pl
+      N8N_EDITOR_BASE_URL: https://n8n.dominiksiejak.pl
+      WEBHOOK_URL: https://n8n.dominiksiejak.pl/
+      N8N_HOST: n8n.dominiksiejak.pl
+      N8N_PROTOCOL: https
+      N8N_SSRF_PROTECTION_ENABLED: false
     volumes:
       - config:/home/node/.n8n
     networks:
@@ -23,7 +26,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.n8n.loadbalancer.server.port: 5678
-      traefik.http.routers.n8n.rule: Host(`nodemation.lake.dominiksiejak.pl`) || Host(`nodemation.hello.dominiksiejak.pl`) || Host(`n8n.lake.dominiksiejak.pl`) || Host(`n8n.hello.dominiksiejak.pl`)
+      traefik.http.routers.n8n.rule: Host(`n8n.lake.dominiksiejak.pl`) || Host(`n8n.dominiksiejak.pl`)
 
 networks:
   proxy:

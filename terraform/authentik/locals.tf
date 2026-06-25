@@ -15,9 +15,6 @@ locals {
       launch_url    = "https://portainer.lake.dominiksiejak.pl"
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/portainer.svg"
       redirect_uris = ["https://portainer.lake.dominiksiejak.pl/"]
-      mapping       = <<-EOF
-        return {"groups": [g.name for g in request.user.ak_groups.all()]}
-      EOF
     }
     proxmox = {
       name          = "Proxmox"
@@ -61,7 +58,7 @@ locals {
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/home-assistant.svg"
       redirect_uris = [
         "https://hass.lake.dominiksiejak.pl/auth/openid/callback",
-        "https://hass.hello.dominiksiejak.pl/auth/openid/callback",
+        "https://hass.dominiksiejak.pl/auth/openid/callback",
       ]
     }
     synology = {
@@ -70,7 +67,7 @@ locals {
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/synology-dsm.svg"
       redirect_uris = [
         "https://nas.lake.dominiksiejak.pl",
-        "https://nas.hello.dominiksiejak.pl",
+        "https://nas.dominiksiejak.pl",
         "http://192.168.89.240:5000",
         "https://192.168.89.240:5001",
       ]
@@ -170,7 +167,7 @@ locals {
     sabnzbd = {
       name            = "SABnzbd"
       external_host   = "https://sabnzbd.lake.dominiksiejak.pl"
-      internal_host   = "http://sabnzbd:8080"
+      internal_host   = "http://sabnzbd:8085"
       launch_url      = "https://sabnzbd.lake.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sabnzbd.svg"
       skip_path_regex = ""
@@ -215,6 +212,14 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/home-assistant.svg"
       skip_path_regex = ""
     }
+    adminer = {
+      name            = "Adminer"
+      external_host   = "https://adminer.lake.dominiksiejak.pl"
+      internal_host   = "http://adminer:8080"
+      launch_url      = "https://adminer.lake.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/adminer.svg"
+      skip_path_regex = ""
+    }
   }
 
   #───────────────────────────────────────────────────────────────────────────────
@@ -226,11 +231,6 @@ locals {
       name       = "Gatus"
       launch_url = "https://status.lake.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/gatus.svg"
-    }
-    upsnap = {
-      name       = "Upsnap"
-      launch_url = "https://upsnap.lake.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/upsnap.svg"
     }
     bazarr = {
       name       = "Bazarr"
@@ -267,7 +267,6 @@ locals {
     "radarr",
     "sonarr",
     "synology",
-    "upsnap",
     "vaultwarden",
     "victoriametrics",
     "watchyourlan",

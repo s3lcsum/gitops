@@ -15,14 +15,8 @@ resource "portainer_settings" "default" {
       resource_uri                    = data.tfe_outputs.authentik[0].values.applications.portainer.resource_uri
       user_identifier                 = "email"
       oauth_auto_create_users         = true
-      oauth_auto_map_team_memberships = true
-      scopes                          = "openid profile email portainer"
-
-      team_memberships {
-        oauth_claim_name              = "groups"
-        admin_auto_populate           = true
-        admin_group_claims_regex_list = ["admins"]
-      }
+      oauth_auto_map_team_memberships = false
+      scopes                          = "openid profile email"
     }
   }
 }

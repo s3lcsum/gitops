@@ -4,6 +4,8 @@ resource "postgresql_role" "applications" {
   name  = each.value.username
   login = true
   # password is managed by Vault
+  skip_drop_role      = true
+  skip_reassign_owned = true
 }
 
 resource "postgresql_database" "applications" {

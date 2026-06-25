@@ -8,19 +8,8 @@ entryPoints:
     address: ":80"
     asDefault: false
     http:
-      encodedCharacters:
-        # Temporary solution to allow encoded slashes in the URL, as Vault in latest versions fails to work with Traefik.
-        # @ref: https://github.com/traefik/traefik/pull/12360#issuecomment-3719385044
-        allowEncodedSlash: true          # %2F - Default: false
-        allowEncodedBackSlash: true      # %5C - Default: false
-        allowEncodedNullCharacter: true  # %00 - Default: false
-        allowEncodedSemicolon: true      # %3B - Default: false
-        allowEncodedPercent: true        # %25 - Default: false
-        allowEncodedQuestionMark: true   # %3F - Default: false
-        allowEncodedHash: true           # %23 - Default: false
       middlewares:
         - crowdsec-bouncer@file
-        - redirect-to-https@file
         # - error-pages-middleware@docker
 
   websecure:
@@ -28,16 +17,6 @@ entryPoints:
     asDefault: true
     http3: {}
     http:
-      encodedCharacters:
-        # Temporary solution to allow encoded slashes in the URL, as Vault in latest versions fails to work with Traefik.
-        # @ref: https://github.com/traefik/traefik/pull/12360#issuecomment-3719385044
-        allowEncodedSlash: true          # %2F - Default: false
-        allowEncodedBackSlash: true      # %5C - Default: false
-        allowEncodedNullCharacter: true  # %00 - Default: false
-        allowEncodedSemicolon: true      # %3B - Default: false
-        allowEncodedPercent: true        # %25 - Default: false
-        allowEncodedQuestionMark: true   # %3F - Default: false
-        allowEncodedHash: true           # %23 - Default: false
       middlewares:
         - crowdsec-bouncer@file
         - secure-headers@file
@@ -49,7 +28,6 @@ entryPoints:
             sans:
               - '*.dominiksiejak.pl'
               - '*.lake.dominiksiejak.pl'
-              - '*.hello.dominiksiejak.pl'
 
   traefik:
     address: ":8080"
@@ -69,14 +47,14 @@ providers:
   docker:
     exposedByDefault: false
     network: proxy
-    defaultRule: "Host(`{{ .ContainerName }}.lake.dominiksiejak.pl`)"
+    defaultRule: "Host(`{{ .ContainerName }}.lake.dominiksiejak.pl`) || Host(`{{ .ContainerName }}.dominiksiejak.pl`)"
   file:
     filename: /etc/traefik/dynamic.yaml
 
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: dreewniak@gmail.com
+      email: admin@dominiksiejak.pl
       storage: /letsencrypt/acme.json
       dnsChallenge:
         provider: cloudflare
@@ -87,7 +65,7 @@ certificatesResolvers:
         disablePropagationCheck: false
   vaultpki:
     acme:
-      email: dreewniak@gmail.com
+      email: admin@dominiksiejak.pl
       storage: /letsencrypt/vault-acme.json
       caServer: "http://vault:8200/v1/pki_int/acme/directory"
       httpChallenge:

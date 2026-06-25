@@ -19,3 +19,20 @@ resource "gitea_repository" "mirrors" {
 
   depends_on = [gitea_org.organizations]
 }
+
+resource "gitea_repository" "own" {
+  for_each = local.own_repos
+
+  username = split("/", each.key)[0]
+  name     = split("/", each.key)[1]
+
+  private = each.value.private
+
+  mirror                  = true
+  migration_clone_address = each.value.clone_url
+  migration_service       = "github"
+  # Private repos need a GitHub PAT to clone; public ones clone anonymously.
+  migration_service_auth_token = each.value.private ? var.github_token : null
+
+  depends_on = [gitea_org.organizations]
+}

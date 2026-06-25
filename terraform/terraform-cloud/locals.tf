@@ -91,6 +91,14 @@ locals {
         branch     = "main"
       }
     }
+    gitops-cloudflare = {
+      description       = "Cloudflare DNS, tunnel and Zero Trust applications"
+      working_directory = "terraform/cloudflare"
+      vcs_repo = {
+        identifier = "s3lcsum/gitops"
+        branch     = "main"
+      }
+    }
     terraform-cloudflare = {
       description       = "Cloudflare DNS and security management"
       working_directory = "terraform/cloudflare"

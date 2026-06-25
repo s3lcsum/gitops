@@ -30,7 +30,7 @@ locals {
     }
     hass = {
       username = "hass_user"
-      database = "homeassistant"
+      database = "homeassistant" # HA requires this exact name; don't rename to hass_db
     }
   }
 }

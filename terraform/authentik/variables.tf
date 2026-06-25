@@ -7,7 +7,7 @@ variable "authentik_token" {
 variable "authentik_domain" {
   description = "Authentik server domain"
   type        = string
-  default     = "auth.lake.dominiksiejak.pl"
+  default     = "auth.dominiksiejak.pl"
 }
 
 variable "users" {

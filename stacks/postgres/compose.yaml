@@ -5,7 +5,7 @@ services:
     container_name: postgres
     restart: always
     ports:
-      - "127.0.0.1:5432:5432"
+      - "0.0.0.0:5432:5432"
     env_file:
       - /opt/postgres/postgres.env
     volumes:
@@ -28,7 +28,9 @@ services:
       - database
     labels:
       traefik.enable: true
-      traefik.http.routers.adminer.middlewares: authentik@docker
+      traefik.http.routers.adminer.rule: "Host(`adminer.lake.dominiksiejak.pl`)"
+      traefik.http.routers.adminer.entrypoints: websecure
+      traefik.http.routers.adminer.middlewares: "authentik@docker"
 
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:v0.19.1

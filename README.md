@@ -55,6 +55,7 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | Stack | Role |
 |-------|------|
 | [Authentik](https://goauthentik.io/) | Identity (OAuth / SAML / LDAP) |
+| [AdGuard Home](https://github.com/AdguardTeam/AdGuardHome) | DNS sinkhole / ad-blocking |
 | [Calibre](https://github.com/kovidgoyal/calibre) | eBook library |
 | [Cloudflared](https://github.com/cloudflare/cloudflared) | Cloudflare Tunnel |
 | [Dozzle](https://github.com/amir20/dozzle) | Container logs UI |
@@ -68,7 +69,6 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | [NetBox](https://github.com/netbox-community/netbox) | IPAM / DCIM |
 | [PostgreSQL](https://www.postgresql.org/) | Shared database host |
 | [Traefik](https://traefik.io/) | Reverse proxy (+ CrowdSec integration in config) |
-| [Upsnap](https://github.com/seriousm4x/UpSnap) | Wake-on-LAN |
 | [Vault](https://www.hashicorp.com/products/vault) | Secrets |
 | [Vaultwarden](https://github.com/dani-garcia/vaultwarden) | Bitwarden-compatible passwords |
 | [WatchYourLAN](https://github.com/aceberg/watchyourlan) | LAN host visibility |
@@ -79,7 +79,6 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 
 ### Not in `stacks/` (still in the environment)
 
-- **[AdGuard Home](https://github.com/AdguardTeam/AdGuardHome)** — runs as a **Proxmox LXC** (DNS / ad-blocking), not as a compose stack in this repo.
 - **Talos / Kubernetes** — several services that used to be Compose here (see changelog around **6.04.2026**) now run on the cluster; this README does not enumerate them.
 
 ---
@@ -116,7 +115,6 @@ DHCP + NTP handled via RouterOS.
 **LXC Containers on Proxmox:**
 
 - Docker (Portainer host)
-- AdGuard
 - HomeAssistant
 
 ### Storage
@@ -194,6 +192,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │
 ├── stacks/                         # Docker Compose stacks (Portainer)
 │   ├── authentik/
+│   ├── adguard/
 │   ├── calibre/
 │   ├── cloudflared/
 │   ├── dozzle/
@@ -207,7 +206,6 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── netbox/
 │   ├── postgres/
 │   ├── traefik/
-│   ├── upsnap/
 │   ├── vault/
 │   ├── vaultwarden/
 │   └── watchyourlan/
@@ -335,7 +333,7 @@ Replaced Nginx Proxy Manager with Traefik as the reverse proxy and added CrowdSe
 
 ### 25.05.2025
 
-Refactored the Terraform code slightly to reduce repetition. I also removed 'watchtower' — it's a great tool, but I prefer to update everything manually, and RenovateBot will handle the rest.
+Refactored the Terraform code slightly to reduce repetition. I also removed 'watchtower' — it's a great tool, but I prefer to update everything manually.
 
 ### 21.05.2025
 
