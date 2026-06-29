@@ -61,6 +61,7 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | [Dozzle](https://github.com/amir20/dozzle) | Container logs UI |
 | [Gatus](https://github.com/TwiN/gatus) | Uptime / status page |
 | [Gitea](https://github.com/go-gitea/gitea) | Git hosting |
+| [Homepage](https://gethomepage.dev/) | Dashboard (Docker label auto-discovery) |
 | [Grafana Synthetic Monitoring Agent](https://github.com/grafana/synthetic-monitoring-agent) | Synthetic checks (Grafana Cloud–oriented agent) |
 | [Home Assistant stack](https://www.home-assistant.io/) | HA, Zigbee2MQTT, Mosquitto, optional [HA Time Machine](https://github.com/saihgupr/homeassistanttimemachine) (compose profile) |
 | **Mediabox** (see below) | Media + *arr + VPN-routed downloaders |
@@ -242,6 +243,20 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 29.06.2026
+
+**Domain flattened.** Dropped the `lake.` subdomain entirely — services now live straight at `*.dominiksiejak.pl`. Updated Traefik defaultRule, cert SANs, `*.lake` wiped from the SANs list. Changed Authentik OIDC redirect URIs, Vault allowed domains, Gitea provider URL, NetBox and Vault addresses, and every compose file that still had the old `lake.` ref. Traefik HTTP (port 80) now does a permanent redirect to HTTPS instead of passing through CrowdSec first.
+
+**Homepage dashboard.** New `stacks/homepage/` stack running [Homepage](https://gethomepage.dev/) with Docker socket proxy for auto-discovery. Every compose file got `homepage.*` labels — groups, names, icons — so the dashboard populates itself. Added `stacks/homepage/config/` with settings, services, bookmarks, widgets, and docker.yaml. Also added `stacks/adguard/traefik-adguard-sync.env.example` for the AdGuard ↔ Traefik sync sidecar.
+
+**Media stack rework.** Dropped Bazarr (wasn't really using it for Polish subs). Switched VPN gateway from Mullvad/OpenVPN to NordVPN/WireGuard in Gluetun. Simplified `sabnzbd.env.example` — all config is now managed through the web UI and persisted in the volume, no env vars needed. Bumped Sonarr `4.0.17` → `4.0.19`.
+
+**Traefik security.** Added `remote@file` middleware on most router rules for internal-only services. Removed `frameDeny` from security headers (was breaking some UIs). Added `customRequestHeaders` for X-Remote-Bypass on the `remote` middleware. Removed `crowdsec-bouncer` from the HTTP entrypoint — port 80 now redirects straight to HTTPS.
+
+**Cleanup.** Deleted Project N.O.M.A.D stack (`stacks/nomad/`) — wasn't actively used. Removed all `.cursor/rules/` files (16 of them) since the knowledge is consolidated in `AGENTS.md`. Deleted stale `docs/superpowers/` planning/spec docs for the HA lovelace dashboard.
+
+**Terraform.** Updated `terraform/portainer/locals.tf` — added `homepage` and `gitea` to the active stack list. Removed `bazarr` and `nomad` references from `terraform/authentik/locals.tf` and `terraform/gitea/locals.tf`. Added `redirect_uri_type` to Authentik OAuth2 provider config. Dropped `lake.dominiksiejak.pl` from Vault's `allowed_domains`. Regenerated `.terraform.lock.hcl` for gitea, postgres, and routeros modules.
 
 ### 12.04.2026
 
