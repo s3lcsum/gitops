@@ -29,6 +29,10 @@ services:
       test: curl -f http://localhost:8080/login/ || exit 1
     labels:
       traefik.enable: true
+      traefik.http.services.netbox.loadbalancer.server.port: 8080
+      homepage.group: Data
+      homepage.name: NetBox
+      homepage.icon: netbox
 
   netbox-worker:
     <<: *defaults

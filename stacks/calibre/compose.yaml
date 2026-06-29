@@ -36,11 +36,11 @@ services:
       start_period: 120s
     labels:
       traefik.enable: true
-      traefik.http.routers.calibre-gui.rule: Host(`calibre-gui.lake.dominiksiejak.pl`)
+      traefik.http.routers.calibre-gui.rule: Host(`calibre-gui.dominiksiejak.pl`)
       traefik.http.routers.calibre-gui.service: calibre-gui
       traefik.http.routers.calibre-gui.middlewares: authentik@docker
       traefik.http.services.calibre-gui.loadbalancer.server.port: 8080
-      traefik.http.routers.calibre-api.rule: Host(`calibre-api.lake.dominiksiejak.pl`)
+      traefik.http.routers.calibre-api.rule: Host(`calibre-api.dominiksiejak.pl`)
       traefik.http.routers.calibre-api.service: calibre-api
       traefik.http.routers.calibre-api.middlewares: authentik@docker
       traefik.http.services.calibre-api.loadbalancer.server.port: 8083
@@ -72,7 +72,12 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.calibre-web.loadbalancer.server.port: 8083
-      traefik.http.routers.calibre-web.rule: Host(`calibre.dominiksiejak.pl`) || Host(`calibre.lake.dominiksiejak.pl`)
+      traefik.http.routers.calibre-web.rule: Host(`calibre.dominiksiejak.pl`)
+      traefik.http.routers.calibre-web.middlewares: remote@file
+      homepage.group: Media
+      homepage.name: Calibre
+      homepage.icon: calibre-web
+      homepage.href: https://calibre.dominiksiejak.pl
 
 networks:
   proxy:

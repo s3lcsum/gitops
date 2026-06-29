@@ -27,6 +27,10 @@ services:
       traefik.enable: "true"
       traefik.http.routers.traefik-dashboard.service: api@internal
       traefik.http.routers.traefik-dashboard.middlewares: authentik@docker
+      homepage.group: Core
+      homepage.name: Traefik
+      homepage.icon: traefik
+      homepage.href: https://traefik.dominiksiejak.pl
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
       interval: 30s

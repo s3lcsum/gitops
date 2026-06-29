@@ -1,0 +1,20 @@
+---
+# Info widgets — datetime, weather, stocks
+
+- datetime:
+    text_size: xl
+    format:
+      dateStyle: long
+      timeStyle: short
+
+- openweathermap:
+    label: Warsaw
+    latitude: "52.2297"
+    longitude: "21.0122"
+    units: metric
+    apiKey: "{{HOMEPAGE_VAR_WEATHER_API_KEY}}"
+
+- stocks:
+    - symbol: NVDA
+    - symbol: AAPL
+    - symbol: AMZN

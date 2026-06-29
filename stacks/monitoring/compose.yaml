@@ -6,8 +6,8 @@ services:
     env_file:
       - /opt/monitoring/grafana.env
     environment:
-      GF_SERVER_DOMAIN: grafana.lake.dominiksiejak.pl
-      GF_SERVER_ROOT_URL: https://grafana.lake.dominiksiejak.pl
+      GF_SERVER_DOMAIN: grafana.dominiksiejak.pl
+      GF_SERVER_ROOT_URL: https://grafana.dominiksiejak.pl
       GF_SERVER_SERVE_FROM_SUB_PATH: "false"
       GF_AUTH_ANONYMOUS_ENABLED: "false"
       GF_AUTH_GENERIC_OAUTH_ENABLED: "true"
@@ -28,6 +28,9 @@ services:
       - metrics
     labels:
       traefik.enable: true
+      homepage.group: Core
+      homepage.name: Grafana
+      homepage.icon: grafana
 
   victoria-metrics:
     image: victoriametrics/victoria-metrics:v1.145.0
@@ -49,7 +52,11 @@ services:
       - "-promscrape.config=/etc/victoria-metrics/promscrape.yaml"
     labels:
       traefik.enable: true
-      traefik.http.routers.victoria-metrics.rule: "Host(`metrics.lake.dominiksiejak.pl`)"
+      traefik.http.routers.victoria-metrics.rule: "Host(`metrics.dominiksiejak.pl`)"
+      homepage.group: Core
+      homepage.name: Metrics
+      homepage.icon: victoriametrics
+      homepage.href: https://metrics.dominiksiejak.pl
 
 networks:
   proxy:

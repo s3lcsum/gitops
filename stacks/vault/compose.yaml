@@ -60,6 +60,9 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.vault.loadbalancer.server.port: 8200
+      homepage.group: Security
+      homepage.name: Vault
+      homepage.icon: vault
 
 
 networks:

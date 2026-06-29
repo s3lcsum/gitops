@@ -19,8 +19,12 @@ services:
       - NET_ADMIN
     labels:
       traefik.enable: true
-      traefik.http.routers.wyl.rule: Host(`lan.lake.dominiksiejak.pl`)
+      traefik.http.routers.wyl.rule: Host(`lan.dominiksiejak.pl`)
       traefik.http.services.wyl.loadbalancer.server.url: http://192.168.89.253:8840
+      homepage.group: Network
+      homepage.name: WatchYourLAN
+      homepage.icon: eye
+      homepage.href: https://lan.dominiksiejak.pl
 
 volumes:
   data:

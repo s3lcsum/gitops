@@ -1,0 +1,201 @@
+---
+# Services — manual overrides for Docker auto-discovery
+# Icons: https://github.com/walkxcode/dashboard-icons
+# Secrets use HOMEPAGE_VAR_* env vars — set in docker env or .env
+
+- Infrastructure:
+    - Traefik:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/traefik.png
+        href: https://traefik.dominiksiejak.pl
+        description: Reverse proxy
+        widget:
+          type: traefik
+          url: http://traefik:8080
+
+    - CrowdSec:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/crowdsec.png
+        href: https://traefik.dominiksiejak.pl
+        description: Security engine
+
+    - Portainer:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/portainer.png
+        href: https://portainer.dominiksiejak.pl
+        description: Container management
+        widget:
+          type: portainer
+          url: http://192.168.89.253:9000
+          token: "{{HOMEPAGE_VAR_PORTAINER_TOKEN}}"
+
+    - Authentik:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/authentik.png
+        href: https://auth.dominiksiejak.pl
+        description: SSO / identity
+        widget:
+          type: authentik
+          url: http://authentik-server:9000
+          key: "{{HOMEPAGE_VAR_AUTHENTIK_KEY}}"
+
+    - Cloudflare:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/cloudflare.png
+        href: https://dash.cloudflare.com
+        description: DNS / CDN / tunnels
+        widget:
+          type: cloudflare
+          email: "{{HOMEPAGE_VAR_CLOUDFLARE_EMAIL}}"
+          apiKey: "{{HOMEPAGE_VAR_CLOUDFLARE_API_KEY}}"
+
+    - Tailscale:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tailscale.png
+        href: https://tailscale.com
+        description: VPN mesh
+
+- Network:
+    - AdGuard:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/adguard.png
+        href: https://adguard.dominiksiejak.pl
+        description: DNS filtering
+        widget:
+          type: adguard
+          url: http://192.168.89.253:3000
+          username: "{{HOMEPAGE_VAR_ADGUARD_USER}}"
+          password: "{{HOMEPAGE_VAR_ADGUARD_PASS}}"
+
+    - MikroTik:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/mikrotik.png
+        href: https://192.168.89.1
+        description: Router
+        widget:
+          type: mikrotik
+          url: http://192.168.89.1:8728
+          username: "{{HOMEPAGE_VAR_MIKROTIK_USER}}"
+          password: "{{HOMEPAGE_VAR_MIKROTIK_PASS}}"
+
+    - Synology:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/synology.png
+        href: https://synology.dominiksiejak.pl
+        description: NAS
+        widget:
+          type: synology
+          url: http://192.168.89.X:5000
+          username: "{{HOMEPAGE_VAR_SYNOLOGY_USER}}"
+          password: "{{HOMEPAGE_VAR_SYNOLOGY_PASS}}"
+
+- Monitoring:
+    - Grafana:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/grafana.png
+        href: https://grafana.dominiksiejak.pl
+        description: Dashboards
+        widget:
+          type: grafana
+          url: http://grafana:3000
+          auth:
+            # Grafana Service Account token
+            token: "{{HOMEPAGE_VAR_GRAFANA_TOKEN}}"
+
+    - Gatus:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/gatus.png
+        href: https://gatus.dominiksiejak.pl
+        description: Uptime monitoring
+
+    - Unifi:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/unifi.png
+        href: https://unifi.dominiksiejak.pl
+        description: Network management
+
+- Virtualization:
+    - Proxmox:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/proxmox.png
+        href: https://proxmox.dominiksiejak.pl
+        description: Hypervisor
+        widget:
+          type: proxmox
+          url: https://192.168.89.X:8006
+          tokenId: "{{HOMEPAGE_VAR_PROXMOX_TOKEN_ID}}"
+          tokenSecret: "{{HOMEPAGE_VAR_PROXMOX_TOKEN_SECRET}}"
+
+- Automation:
+    - n8n:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/n8n.png
+        href: https://nodemation.dominiksiejak.pl
+        description: Workflow automation
+
+    - Home Assistant:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant.png
+        href: https://homeassistant.dominiksiejak.pl
+        description: Smart home
+        widget:
+          type: homeassistant
+          url: http://hass:8123
+          token: "{{HOMEPAGE_VAR_HASS_TOKEN}}"
+
+- Storage:
+    - Gitea:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/gitea.png
+        href: https://git.dominiksiejak.pl
+        description: Git hosting
+        widget:
+          type: gitea
+          url: http://gitea:3000
+          token: "{{HOMEPAGE_VAR_GITEA_TOKEN}}"
+
+- Media:
+    - Jellyfin:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyfin.png
+        href: https://jellyfin.dominiksiejak.pl
+        description: Media server
+        widget:
+          type: jellyfin
+          url: http://jellyfin:8096
+          key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
+
+    - Radarr:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/radarr.png
+        href: https://radarr.dominiksiejak.pl
+        description: Movie automation
+        widget:
+          type: radarr
+          url: http://radarr:7878
+          key: "{{HOMEPAGE_VAR_RADARR_KEY}}"
+
+    - Sonarr:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/sonarr.png
+        href: https://sonarr.dominiksiejak.pl
+        description: Series automation
+        widget:
+          type: sonarr
+          url: http://sonarr:8989
+          key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
+
+    - Prowlarr:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prowlarr.png
+        href: https://prowlarr.dominiksiejak.pl
+        description: Indexer manager
+
+    - SABnzbd:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/sabnzbd.png
+        href: https://sabnzbd.dominiksiejak.pl
+        description: Usenet downloader
+        widget:
+          type: sabnzbd
+          url: http://sabnzbd:8080
+          key: "{{HOMEPAGE_VAR_SABNZBD_KEY}}"
+
+    - qBittorrent:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/qbittorrent.png
+        href: https://qbittorrent.dominiksiejak.pl
+        description: Torrent client
+        widget:
+          type: qbittorrent
+          url: http://qbittorrent:8080
+          username: "{{HOMEPAGE_VAR_QBT_USER}}"
+          password: "{{HOMEPAGE_VAR_QBT_PASS}}"
+
+    - Bazarr:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/bazarr.png
+        href: https://bazarr.dominiksiejak.pl
+        description: Subtitle management
+
+    - Calibre-web:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/calibre.png
+        href: https://calibre.dominiksiejak.pl
+        description: E-book library

@@ -13,7 +13,7 @@ x-service-defaults: &service-defaults
     TZ: Europe/Warsaw
 
 services:
-  # 🔒 VPN gateway (WireGuard via Mullvad)
+  # 🔒 VPN gateway (WireGuard via NordVPN)
   gluetun:
     <<: *service-defaults
     image: ghcr.io/qdm12/gluetun:v3.41.1
@@ -52,8 +52,12 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/"]
     labels:
       traefik.enable: true
+      traefik.docker.network: proxy
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
-      traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.dominiksiejak.pl`) || Host(`qbittorrent.lake.dominiksiejak.pl`)
+      traefik.http.routers.qbittorrent.middlewares: remote@file
+      homepage.group: Media
+      homepage.name: qBittorrent
+      homepage.icon: qbittorrent
 
   # 📥 Usenet downloader (VPN-routed)
   sabnzbd:
@@ -63,8 +67,6 @@ services:
     depends_on:
       gluetun:
         condition: service_healthy
-    env_file:
-      - /opt/mediabox/sabnzbd.env
     volumes:
       - sabnzbd_config:/config
       - /mnt/LOCAL_MEDIA/usenet:/mnt/LOCAL_MEDIA/usenet
@@ -76,8 +78,12 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8085/api?mode=version"]
     labels:
       traefik.enable: true
+      traefik.docker.network: proxy
       traefik.http.services.sabnzbd.loadbalancer.server.port: 8085
-      traefik.http.routers.sabnzbd.rule: Host(`sabnzbd.dominiksiejak.pl`) || Host(`sabnzbd.lake.dominiksiejak.pl`)
+      traefik.http.routers.sabnzbd.middlewares: remote@file
+      homepage.group: Media
+      homepage.name: SABnzbd
+      homepage.icon: sabnzbd
 
   # 🌐 Cloudflare bypass for indexers
   flaresolverr:
@@ -103,7 +109,10 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.prowlarr.loadbalancer.server.port: 9696
-      traefik.http.routers.prowlarr.rule: Host(`prowlarr.dominiksiejak.pl`) || Host(`prowlarr.lake.dominiksiejak.pl`)
+      traefik.http.routers.prowlarr.middlewares: remote@file
+      homepage.group: Media
+      homepage.name: Prowlarr
+      homepage.icon: prowlarr
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:9696/ping"]
@@ -128,7 +137,10 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.radarr.loadbalancer.server.port: 7878
-      traefik.http.routers.radarr.rule: Host(`radarr.dominiksiejak.pl`) || Host(`radarr.lake.dominiksiejak.pl`)
+      traefik.http.routers.radarr.middlewares: remote@file
+      homepage.group: Media
+      homepage.name: Radarr
+      homepage.icon: radarr
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:7878/"]
@@ -136,7 +148,7 @@ services:
   # 📺 TV series automation
   sonarr:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/sonarr:4.0.17
+    image: ghcr.io/linuxserver/sonarr:4.0.19
     container_name: sonarr
     depends_on:
       qbittorrent:
@@ -153,29 +165,14 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.sonarr.loadbalancer.server.port: 8989
-      traefik.http.routers.sonarr.rule: Host(`sonarr.dominiksiejak.pl`) || Host(`sonarr.lake.dominiksiejak.pl`)
+      traefik.http.routers.sonarr.middlewares: remote@file
+      homepage.group: Media
+      homepage.name: Sonarr
+      homepage.icon: sonarr
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8989/"]
 
-
-  # 🔄 Subtitle management
-  bazarr:
-    <<: *service-defaults
-    image: lscr.io/linuxserver/bazarr:1.5.6
-    container_name: bazarr
-    volumes:
-      - bazarr_config:/config
-      - /mnt/LOCAL_MEDIA:/mnt/LOCAL_MEDIA
-      - /mnt/NAS_Shared_Media:/mnt/NAS_Shared_Media
-    healthcheck:
-      <<: *healthcheck
-      test: ["CMD", "curl", "-f", "http://localhost:6767/"]
-    labels:
-      traefik.enable: true
-      traefik.docker.network: proxy
-      traefik.http.services.bazarr.loadbalancer.server.port: 6767
-      traefik.http.routers.bazarr.rule: Host(`bazarr.dominiksiejak.pl`) || Host(`bazarr.lake.dominiksiejak.pl`)
 
   # 📺 Media server (primary)
   jellyfin:
@@ -196,7 +193,10 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.jellyfin.loadbalancer.server.port: 8096
-      traefik.http.routers.jellyfin.rule: Host(`jellyfin.dominiksiejak.pl`) || Host(`jellyfin.lake.dominiksiejak.pl`)
+      traefik.http.routers.jellyfin.middlewares: remote@file
+      homepage.group: Media
+      homepage.name: Jellyfin
+      homepage.icon: jellyfin
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8096/System/Ping"]
@@ -221,8 +221,11 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
-      traefik.http.routers.seerr.rule: Host(`seerr.dominiksiejak.pl`) || Host(`seerr.lake.dominiksiejak.pl`)
+      traefik.http.routers.seerr.middlewares: remote@file
       traefik.http.services.seerr.loadbalancer.server.port: 5055
+      homepage.group: Media
+      homepage.name: Seerr
+      homepage.icon: overseerr
 
 networks:
   arr:
@@ -235,7 +238,6 @@ volumes:
   sabnzbd_config:
   radarr_config:
   sonarr_config:
-  bazarr_config:
   jellyfin_config:
   seerr_config:
   prowlarr_config:

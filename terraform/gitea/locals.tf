@@ -15,7 +15,6 @@ locals {
     "mirrors/All-jellyfin-media-server" = { clone_url = "https://github.com/Morzomb/All-jellyfin-media-server.git" }
     "mirrors/Authentik"                 = { clone_url = "https://github.com/goauthentik/authentik.git" }
     "mirrors/backstage"                 = { clone_url = "https://github.com/backstage/backstage.git" }
-    "mirrors/Bazarr"                    = { clone_url = "https://github.com/morpheus65535/bazarr.git" }
     "mirrors/Calibre"                   = { clone_url = "https://github.com/kovidgoyal/calibre.git" }
     "mirrors/calibre-web"               = { clone_url = "https://github.com/janeczku/calibre-web.git" }
     "mirrors/Cloudflared"               = { clone_url = "https://github.com/cloudflare/cloudflared.git" }
@@ -23,7 +22,6 @@ locals {
     "mirrors/CUPS"                      = { clone_url = "https://github.com/OpenPrinting/cups.git" }
     "mirrors/DIUN"                      = { clone_url = "https://github.com/crazy-max/diun.git" }
     "mirrors/docker-adminer"            = { clone_url = "https://git.hubp.de/TimWolla/docker-adminer.git" }
-    "mirrors/docker-bazarr"             = { clone_url = "https://github.com/linuxserver/docker-bazarr.git" }
     "mirrors/docker-calibre"            = { clone_url = "https://github.com/linuxserver/docker-calibre.git" }
     "mirrors/docker-jellyfin"           = { clone_url = "https://github.com/linuxserver/docker-jellyfin.git" }
     "mirrors/docker-prowlarr"           = { clone_url = "https://github.com/linuxserver/docker-prowlarr.git" }

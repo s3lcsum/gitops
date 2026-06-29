@@ -1,0 +1,45 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/homepage/compose.yaml
+# Homepage — Docker label-powered dashboard
+# https://gethomepage.dev
+
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    depends_on:
+      dockerproxy:
+        condition: service_started
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: homepage.dominiksiejak.pl
+      DOCKER_HOST: tcp://dockerproxy:2375
+    env_file: /opt/homepage/homepage.env
+    volumes:
+      - /opt/homepage/config/settings.yaml:/app/config/settings.yaml:ro
+      - /opt/homepage/config/docker.yaml:/app/config/docker.yaml:ro
+      - /opt/homepage/config/services.yaml:/app/config/services.yaml:ro
+      - /opt/homepage/config/bookmarks.yaml:/app/config/bookmarks.yaml:ro
+      - /opt/homepage/config/widgets.yaml:/app/config/widgets.yaml:ro
+    networks:
+      - proxy
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+
+  dockerproxy:
+    image: ghcr.io/tecnativa/docker-socket-proxy:latest
+    container_name: dockerproxy
+    restart: unless-stopped
+    environment:
+      CONTAINERS: 1
+      SERVICES: 1
+      TASKS: 1
+      POST: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

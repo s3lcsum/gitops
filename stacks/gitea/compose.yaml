@@ -6,7 +6,7 @@ services:
     env_file:
       - /opt/gitea/gitea.env
     environment:
-      GITEA__server__ROOT_URL: https://git.lake.dominiksiejak.pl
+      GITEA__server__ROOT_URL: https://git.dominiksiejak.pl
       GITEA__service__ENABLE_PASSWORD_SIGNIN_FORM: true
       GITEA__openid__ENABLE_OPENID_SIGNUP: true
       GITEA__service__DISABLE_REGISTRATION: true
@@ -27,8 +27,12 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
-      traefik.http.routers.gitea.rule: Host(`git.lake.dominiksiejak.pl`)
+      traefik.http.routers.gitea.rule: Host(`git.dominiksiejak.pl`)
       traefik.http.services.gitea.loadbalancer.server.port: 3000
+      homepage.group: Data
+      homepage.name: Gitea
+      homepage.icon: gitea
+      homepage.href: https://git.dominiksiejak.pl
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/healthz"]
       interval: 30s
@@ -44,7 +48,7 @@ services:
   #     - /opt/gitea/gitea.env
   #   environment:
   #     CONFIG_FILE: /data/runner-config.yaml
-  #     GITEA_INSTANCE_URL: https://git.lake.dominiksiejak.pl
+  #     GITEA_INSTANCE_URL: https://git.dominiksiejak.pl
   #   volumes:
   #     - /var/run/docker.sock:/var/run/docker.sock
   #     - /mnt/NAS_Shared_Media/gitea:/data

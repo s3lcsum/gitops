@@ -5,7 +5,20 @@ provider "registry.opentofu.org/go-gitea/gitea" {
   version     = "0.7.0"
   constraints = "0.7.0"
   hashes = [
+    "h1:1X54a1msELlDp/5/Bk+v0QRwQoSPs8/FbhlqZ3OGnNM=",
+    "h1:6XtBlCdOZUUNjgIUmk12anYuc6T9C8rwZTSgXjXZQhk=",
+    "h1:MdQfDLDQ7d1WbWx6V2NeR8fLca8EdzzxBy1TCAZeVDA=",
+    "h1:Xz74q+fLjsQi5Bgzf4hJS3hkgL7yIwJNB/BABmCpWNo=",
+    "h1:fB7NCUiUycA3uT5KtLdAT2xNxSu6HrHhYg0kTiji1g0=",
+    "h1:fBX36ClTTUzyA0iycml9FFe00+r7/WLZR9kxsXMVp58=",
+    "h1:g1jRTBlcqF3cV8nOrXr2TvpuOQcT7YFNY1IwLx+QRRM=",
+    "h1:h8wwkY+MaTrSnUlnmHH96Mr3vJpg61eSkLTAQraysDs=",
     "h1:hgZhNe+B1ir7gnMXba038y74+bb8781jcWYbkOFe3/I=",
+    "h1:i02mTv+NmTp46xsDIyjHiQlkCGNKA62yYGUI2eoWLYI=",
+    "h1:jEfkEjzTEczROd7MD4Q0JlUztSXLU6jgm+itoGLlhlU=",
+    "h1:o/BslDsQQfxS/AgR7X4k4e2/UnvZv3ljGN1PCy1UGns=",
+    "h1:phSCqBMUqarW9G8Oa5vBY0Np8RBhKfcctooAVK48NXc=",
+    "h1:qBssaEbodvyDGZQmcQovV4RvOtkNRcqPtAhlfMII7S0=",
     "zh:12b7da04c4285e1549879909c3f453c9850842c9da59e5f3682100040372cf97",
     "zh:18506790b2c6abf323ad067d02d2fee6638f5d3d76799840d8d09c2ede35153a",
     "zh:199151c28094d187e8a6e824616558310f32c6ac037edf9534fc8b3e2848b9f6",

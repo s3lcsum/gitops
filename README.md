@@ -75,7 +75,7 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 
 ### Mediabox (`stacks/mediabox/`)
 
-[Jellyfin](https://jellyfin.org/), [Seerr](https://github.com/seerr-team/seerr) (image `fallenbagel/jellyseerr`), Sonarr, Radarr, Bazarr, Prowlarr, FlareSolverr, [Gluetun](https://github.com/qdm12/gluetun), qBittorrent, SABnzbd — wired the usual way behind Traefik and the VPN gateway where applicable.
+[Jellyfin](https://jellyfin.org/), [Seerr](https://github.com/seerr-team/seerr) (image `fallenbagel/jellyseerr`), Sonarr, Radarr, Prowlarr, FlareSolverr, [Gluetun](https://github.com/qdm12/gluetun), qBittorrent, SABnzbd — wired the usual way behind Traefik and the VPN gateway where applicable.
 
 ### Not in `stacks/` (still in the environment)
 
@@ -247,7 +247,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 **Gitea** stopped living on a Docker named volume — `/data` is bind-mounted to the NAS (same energy as the mediabox NFS pattern), and Traefik gets `traefik.docker.network: proxy` so it doesn’t pick the wrong attach point. **`gitea.env.example`** now spells out the Authentik OIDC callback / source-name footguns so I don’t rediscover them at 2am.
 
-**Home Assistant** stack grew **HA Time Machine** (`ghcr.io/saihgupr/homeassistanttimemachine`): Traefik + Authentik at `timemachine.lake.dominiksiejak.pl`, secrets via `/opt/hass/timemachine.env` with `stacks/hass/timemachine.env.example` as the template, exports landing under `/opt/hass/timemachine` on the host.
+**Home Assistant** stack grew **HA Time Machine** (`ghcr.io/saihgupr/homeassistanttimemachine`): Traefik + Authentik at `timemachine.dominiksiejak.pl`, secrets via `/opt/hass/timemachine.env` with `stacks/hass/timemachine.env.example` as the template, exports landing under `/opt/hass/timemachine` on the host.
 
 **NetBox** Compose image bumped to **v2.5.13**; Terraform **netbox** provider lock moved with it.
 
@@ -283,7 +283,7 @@ Updated all dependencies to latest versions — Docker images, Terraform provide
 
 ### 05.02.2026
 
-Added a new `smtp` stack running Stalwart SMTP server for send-only notifications. It's exposed publicly on ports 587/465 with SMTP AUTH required, so apps can connect from anywhere without turning into an open relay. Admin UI is behind Traefik at `smtp.lake.dominiksiejak.pl`. Planning to relay outbound through Zoho since my dynamic IP would tank deliverability otherwise.
+Added a new `smtp` stack running Stalwart SMTP server for send-only notifications. It's exposed publicly on ports 587/465 with SMTP AUTH required, so apps can connect from anywhere without turning into an open relay. Admin UI is behind Traefik at `smtp.dominiksiejak.pl`. Planning to relay outbound through Zoho since my dynamic IP would tank deliverability otherwise.
 
 ### 03.02.2026
 
@@ -293,7 +293,7 @@ Also bumped the centralized Postgres stack to **v18** and added a safe `17 -> 18
 
 ### 02.02.2026
 
-Swapped Uptime Kuma for Gatus as the uptime monitoring solution. Gatus is simpler, uses config-as-code (YAML), and doesn't need a database - just SQLite for history. Migrated all monitors from Terraform to the Gatus config file. Removed the whole `terraform/uptime-kuma/` module and the Terraform Cloud workspace for it. Updated Authentik, Vault, and Postgres configs to drop the Uptime Kuma references. Status page now lives at `status.lake.dominiksiejak.pl`.
+Swapped Uptime Kuma for Gatus as the uptime monitoring solution. Gatus is simpler, uses config-as-code (YAML), and doesn't need a database - just SQLite for history. Migrated all monitors from Terraform to the Gatus config file. Removed the whole `terraform/uptime-kuma/` module and the Terraform Cloud workspace for it. Updated Authentik, Vault, and Postgres configs to drop the Uptime Kuma references. Status page now lives at `status.dominiksiejak.pl`.
 
 ### 11.01.2026
 

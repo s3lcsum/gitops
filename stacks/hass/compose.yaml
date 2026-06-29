@@ -17,8 +17,11 @@ services:
     network_mode: host # Otherwise autodiscovery won't work
     labels:
       traefik.enable: true
-      traefik.http.routers.hass.rule: Host(`hass.lake.dominiksiejak.pl`) || Host(`hass.dominiksiejak.pl`)
+      traefik.http.routers.hass.middlewares: remote@file
       traefik.http.services.hass.loadbalancer.server.url: http://host.docker.internal:8123
+      homepage.group: Automation
+      homepage.name: Home Assistant
+      homepage.icon: home-assistant
 
   zigbee2mqtt-wifi:
     <<: *default

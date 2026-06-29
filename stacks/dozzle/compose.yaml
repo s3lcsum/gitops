@@ -12,6 +12,9 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.dozzle.middlewares: authentik@docker
+      homepage.group: Core
+      homepage.name: Dozzle
+      homepage.icon: dozzle
 
 networks:
   proxy:

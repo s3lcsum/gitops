@@ -19,7 +19,7 @@ state = json.load(sys.stdin); \
  if inst.get('status') == 'tainted' and 'index_key' in inst]" | \
 	while read addr; do tofu untaint "$$addr"; done
 
-sync-portainer: ## Rsync stacks/ to ssh portainer:/opt
+sync-portainer: ## Rsync stacks/ to ssh portainer:/opt 
 	-rsync -av --delete "$(GIT_ROOT)/stacks/" portainer:/opt
 
 watch-portainer: ## Watch for changes and sync automatically
