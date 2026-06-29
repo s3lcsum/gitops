@@ -192,8 +192,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   └── assets/                     # Icons and images (e.g. README)
 │
 ├── stacks/                         # Docker Compose stacks (Portainer)
-│   ├── authentik/
 │   ├── adguard/
+│   ├── authentik/
 │   ├── calibre/
 │   ├── cloudflared/
 │   ├── dozzle/
@@ -201,6 +201,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── gitea/
 │   ├── grafana-synthetic-agent/
 │   ├── hass/
+│   ├── homepage/
 │   ├── mediabox/
 │   ├── monitoring/
 │   ├── n8n/
@@ -214,9 +215,13 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ├── terraform/                      # Infrastructure as Code
 │   ├── authentik/
 │   ├── backblaze/
+│   ├── cloudflare/
 │   ├── gcp/
+│   ├── gitea/
+│   ├── kind/
 │   ├── netbox/
 │   ├── portainer/
+│   ├── postgres/
 │   ├── proxmox/
 │   ├── routeros/
 │   ├── synology-nas/
