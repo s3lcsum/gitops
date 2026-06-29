@@ -63,3 +63,12 @@ agents/
 
 # Generated Talos / kubeconfig (terraform/proxmox)
 terraform/proxmox/generated/
+
+# MCP config with live API tokens
+.mcp.json
+
+# Playwright test artifacts
+.playwright-mcp/
+
+# Runtime logs
+logs/
