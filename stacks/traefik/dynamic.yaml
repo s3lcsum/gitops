@@ -10,7 +10,6 @@ http:
           server: ""
           x-powered-by: ""
         forceSTSHeader: true
-        frameDeny: true
         permissionsPolicy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
         referrerPolicy: "strict-origin-when-cross-origin"
         stsIncludeSubdomains: true
@@ -21,6 +20,11 @@ http:
       rateLimit:
         average: 500
         burst: 200
+
+    remote:
+      headers:
+        customRequestHeaders:
+          X-Remote-Bypass: ""
 
     crowdsec-bouncer:
       plugin:
@@ -53,25 +57,25 @@ http:
   # Routers for non-Docker services
   routers:
     synology:
-      rule: "Host(`nas.lake.dominiksiejak.pl`)"
+      rule: "Host(`nas.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: synology
 
     proxmox:
-      rule: "Host(`proxmox.lake.dominiksiejak.pl`)"
+      rule: "Host(`proxmox.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: proxmox
 
     mikrotik:
-      rule: "Host(`router.lake.dominiksiejak.pl`)"
+      rule: "Host(`router.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: mikrotik
 
     argocd:
-      rule: "Host(`argocd.lake.dominiksiejak.pl`)"
+      rule: "Host(`argocd.dominiksiejak.pl`)"
       entryPoints:
         - websecure
       service: argocd-k8s

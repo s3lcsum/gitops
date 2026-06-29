@@ -1,7 +1,7 @@
 variable "netbox_url" {
   description = "NetBox server URL"
   type        = string
-  default     = "https://netbox.lake.dominiksiejak.pl"
+  default     = "https://netbox.dominiksiejak.pl"
 }
 
 variable "netbox_api_token" {

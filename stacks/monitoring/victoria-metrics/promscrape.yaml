@@ -42,4 +42,4 @@ scrape_configs:
     metrics_path: /pve
     params:
       module: [default]
-      target: ["proxmox.lake.dominiksiejak.pl"]
+      target: ["proxmox.dominiksiejak.pl"]

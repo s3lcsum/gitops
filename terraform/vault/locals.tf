@@ -10,7 +10,6 @@ locals {
       ttl         = 300
     }
     allowed_domains = [
-      "lake.dominiksiejak.pl",
       "dominiksiejak.pl",
       "atom.dominiksiejak.pl",
       "local"

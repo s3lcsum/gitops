@@ -30,8 +30,8 @@ resource "vault_jwt_auth_backend_role" "admin" {
 
   bound_audiences = [data.tfe_outputs.authentik.values.applications.vault.client_id]
   allowed_redirect_uris = [
-    "https://vault.lake.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
-    "https://vault.lake.dominiksiejak.pl/oidc/callback",
+    "https://vault.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
+    "https://vault.dominiksiejak.pl/oidc/callback",
     "http://localhost:8250/oidc/callback"
   ]
 

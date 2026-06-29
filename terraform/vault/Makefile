@@ -5,4 +5,4 @@ include $(GIT_ROOT)/terraform/base.Makefile
 
 
 auth: ## Authenticate to Vault using OIDC
-	VAULT_ADDR=https://vault.lake.dominiksiejak.pl vault login -method=oidc -path=oidc
+	VAULT_ADDR=https://vault.dominiksiejak.pl vault login -method=oidc -path=oidc

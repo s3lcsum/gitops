@@ -1,7 +1,7 @@
 variable "vault_address" {
   description = "Vault server address"
   type        = string
-  default     = "https://vault.lake.dominiksiejak.pl"
+  default     = "https://vault.dominiksiejak.pl"
 }
 
 variable "vault_token" {

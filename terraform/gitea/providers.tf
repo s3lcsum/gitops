@@ -19,7 +19,7 @@ terraform {
 }
 
 provider "gitea" {
-  base_url = "https://git.lake.dominiksiejak.pl"
+  base_url = "https://git.dominiksiejak.pl"
   token    = var.gitea_token
   username = var.gitea_username
   password = var.gitea_password

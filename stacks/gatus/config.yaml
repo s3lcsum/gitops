@@ -32,7 +32,7 @@ ui:
 endpoints:
   # --- Core / ops
   - name: "portainer"
-    url: https://portainer.lake.dominiksiejak.pl
+    url: https://portainer.dominiksiejak.pl
     <<: &defaults
       interval: 15m
       client:
@@ -47,15 +47,15 @@ endpoints:
         - "[CERTIFICATE_EXPIRATION] > 48h"
 
   - name: "vault"
-    url: https://vault.lake.dominiksiejak.pl
+    url: https://vault.dominiksiejak.pl
     <<: *defaults
 
   - name: "netbox"
-    url: https://netbox.lake.dominiksiejak.pl
+    url: https://netbox.dominiksiejak.pl
     <<: *defaults
 
   - name: "dozzle"
-    url: https://dozzle.lake.dominiksiejak.pl
+    url: https://dozzle.dominiksiejak.pl
     <<: *defaults
 
   - name: "auth"
@@ -64,103 +64,99 @@ endpoints:
 
   # --- Network / metal (traefik/dynamic.yaml file provider)
   - name: "proxmox"
-    url: https://proxmox.lake.dominiksiejak.pl
+    url: https://proxmox.dominiksiejak.pl
     <<: *defaults
 
   - name: "router"
-    url: https://router.lake.dominiksiejak.pl
+    url: https://router.dominiksiejak.pl
     <<: *defaults
 
   - name: "nas"
-    url: https://nas.lake.dominiksiejak.pl
+    url: https://nas.dominiksiejak.pl
     <<: *defaults
 
   - name: "argocd"
-    url: https://argocd.lake.dominiksiejak.pl
+    url: https://argocd.dominiksiejak.pl
     <<: *defaults
 
   # --- Mediabox
   - name: "jellyfin"
-    url: https://jellyfin.lake.dominiksiejak.pl
+    url: https://jellyfin.dominiksiejak.pl
     <<: *defaults
 
   - name: "seerr"
-    url: https://seerr.lake.dominiksiejak.pl
+    url: https://seerr.dominiksiejak.pl
     <<: *defaults
 
   - name: "radarr"
-    url: https://radarr.lake.dominiksiejak.pl
+    url: https://radarr.dominiksiejak.pl
     <<: *defaults
 
   - name: "sonarr"
-    url: https://sonarr.lake.dominiksiejak.pl
-    <<: *defaults
-
-  - name: "bazarr"
-    url: https://bazarr.lake.dominiksiejak.pl
+    url: https://sonarr.dominiksiejak.pl
     <<: *defaults
 
   - name: "prowlarr"
-    url: https://prowlarr.lake.dominiksiejak.pl
+    url: https://prowlarr.dominiksiejak.pl
     <<: *defaults
 
   - name: "qbittorrent"
-    url: https://qbittorrent.lake.dominiksiejak.pl
+    url: https://qbittorrent.dominiksiejak.pl
     <<: *defaults
 
   - name: "sabnzbd"
-    url: https://sabnzbd.lake.dominiksiejak.pl
+    url: https://sabnzbd.dominiksiejak.pl
     <<: *defaults
 
   - name: "flaresolverr"
-    url: https://flaresolverr.lake.dominiksiejak.pl
+    url: https://flaresolverr.dominiksiejak.pl
     <<: *defaults
 
   # --- Apps
   - name: "n8n"
-    url: https://nodemation.lake.dominiksiejak.pl
+    url: https://nodemation.dominiksiejak.pl
     <<: *defaults
 
   - name: "git"
-    url: https://git.lake.dominiksiejak.pl
+    url: https://git.dominiksiejak.pl
     <<: *defaults
 
   - name: "vaultwarden"
-    url: https://vaultwarden.lake.dominiksiejak.pl
+    url: https://vaultwarden.dominiksiejak.pl
     <<: *defaults
 
   - name: "calibre"
-    url: https://calibre.lake.dominiksiejak.pl
+    url: https://calibre.dominiksiejak.pl
     <<: *defaults
 
   # --- Home Assistant stack
   - name: "hass"
-    url: https://hass.lake.dominiksiejak.pl
+    url: https://hass.dominiksiejak.pl
     <<: *defaults
 
   - name: "zigbee2mqtt-wifi"
-    url: https://zigbee2mqtt-wifi.lake.dominiksiejak.pl
+    url: https://zigbee2mqtt-wifi.dominiksiejak.pl
     <<: *defaults
 
   - name: "zigbee2mqtt-usb"
-    url: https://zigbee2mqtt-usb.lake.dominiksiejak.pl
+    url: https://zigbee2mqtt-usb.dominiksiejak.pl
     <<: *defaults
 
   - name: "hass-timemachine"
-    url: https://hass-timemachine.lake.dominiksiejak.pl
+    url: https://hass-timemachine.dominiksiejak.pl
     <<: *defaults
 
   # --- Observability
   - name: "grafana"
-    url: https://grafana.lake.dominiksiejak.pl
+    url: https://grafana.dominiksiejak.pl
     <<: *defaults
 
   - name: "metrics"
-    url: https://metrics.lake.dominiksiejak.pl
+    url: https://metrics.dominiksiejak.pl
     <<: *defaults
 
   - name: "lan"
-    url: https://lan.lake.dominiksiejak.pl
+    url: https://lan.dominiksiejak.pl
     <<: *defaults
 
   # --- External sanity check

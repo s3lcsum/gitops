@@ -8,9 +8,11 @@ entryPoints:
     address: ":80"
     asDefault: false
     http:
-      middlewares:
-        - crowdsec-bouncer@file
-        # - error-pages-middleware@docker
+      redirections:
+        entrypoint:
+          to: websecure
+          scheme: https
+          permanent: true
 
   websecure:
     address: ":443"
@@ -27,7 +29,6 @@ entryPoints:
           - main: dominiksiejak.pl
             sans:
               - '*.dominiksiejak.pl'
-              - '*.lake.dominiksiejak.pl'
 
   traefik:
     address: ":8080"
@@ -47,7 +48,7 @@ providers:
   docker:
     exposedByDefault: false
     network: proxy
-    defaultRule: "Host(`{{ .ContainerName }}.lake.dominiksiejak.pl`) || Host(`{{ .ContainerName }}.dominiksiejak.pl`)"
+    defaultRule: "Host(`{{ .ContainerName }}.dominiksiejak.pl`)"
   file:
     filename: /etc/traefik/dynamic.yaml
 
