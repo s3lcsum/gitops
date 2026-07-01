@@ -108,13 +108,9 @@ endpoints:
     url: https://sabnzbd.dominiksiejak.pl
     <<: *defaults
 
-  - name: "flaresolverr"
-    url: https://flaresolverr.dominiksiejak.pl
-    <<: *defaults
-
   # --- Apps
   - name: "n8n"
-    url: https://nodemation.dominiksiejak.pl
+    url: https://n8n.dominiksiejak.pl
     <<: *defaults
 
   - name: "git"

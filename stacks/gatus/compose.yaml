@@ -17,10 +17,6 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.routers.gatus.rule: "Host(`status.dominiksiejak.pl`)"
-      homepage.group: Core
-      homepage.name: Gatus
-      homepage.icon: gatus
-      homepage.href: https://status.dominiksiejak.pl
 
 networks:
   proxy:

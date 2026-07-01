@@ -55,9 +55,6 @@ services:
       traefik.docker.network: proxy
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
       traefik.http.routers.qbittorrent.middlewares: remote@file
-      homepage.group: Media
-      homepage.name: qBittorrent
-      homepage.icon: qbittorrent
 
   # 📥 Usenet downloader (VPN-routed)
   sabnzbd:
@@ -81,9 +78,6 @@ services:
       traefik.docker.network: proxy
       traefik.http.services.sabnzbd.loadbalancer.server.port: 8085
       traefik.http.routers.sabnzbd.middlewares: remote@file
-      homepage.group: Media
-      homepage.name: SABnzbd
-      homepage.icon: sabnzbd
 
   # 🌐 Cloudflare bypass for indexers
   flaresolverr:
@@ -110,9 +104,6 @@ services:
       traefik.docker.network: proxy
       traefik.http.services.prowlarr.loadbalancer.server.port: 9696
       traefik.http.routers.prowlarr.middlewares: remote@file
-      homepage.group: Media
-      homepage.name: Prowlarr
-      homepage.icon: prowlarr
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:9696/ping"]
@@ -138,9 +129,6 @@ services:
       traefik.docker.network: proxy
       traefik.http.services.radarr.loadbalancer.server.port: 7878
       traefik.http.routers.radarr.middlewares: remote@file
-      homepage.group: Media
-      homepage.name: Radarr
-      homepage.icon: radarr
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:7878/"]
@@ -166,9 +154,6 @@ services:
       traefik.docker.network: proxy
       traefik.http.services.sonarr.loadbalancer.server.port: 8989
       traefik.http.routers.sonarr.middlewares: remote@file
-      homepage.group: Media
-      homepage.name: Sonarr
-      homepage.icon: sonarr
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8989/"]
@@ -194,9 +179,6 @@ services:
       traefik.enable: true
       traefik.http.services.jellyfin.loadbalancer.server.port: 8096
       traefik.http.routers.jellyfin.middlewares: remote@file
-      homepage.group: Media
-      homepage.name: Jellyfin
-      homepage.icon: jellyfin
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8096/System/Ping"]
@@ -223,9 +205,6 @@ services:
       traefik.docker.network: proxy
       traefik.http.routers.seerr.middlewares: remote@file
       traefik.http.services.seerr.loadbalancer.server.port: 5055
-      homepage.group: Media
-      homepage.name: Seerr
-      homepage.icon: overseerr
 
 networks:
   arr:

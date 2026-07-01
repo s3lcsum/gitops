@@ -28,9 +28,6 @@ services:
       - metrics
     labels:
       traefik.enable: true
-      homepage.group: Core
-      homepage.name: Grafana
-      homepage.icon: grafana
 
   victoria-metrics:
     image: victoriametrics/victoria-metrics:v1.145.0
@@ -53,10 +50,6 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.victoria-metrics.rule: "Host(`metrics.dominiksiejak.pl`)"
-      homepage.group: Core
-      homepage.name: Metrics
-      homepage.icon: victoriametrics
-      homepage.href: https://metrics.dominiksiejak.pl
 
 networks:
   proxy:

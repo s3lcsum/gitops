@@ -1,6 +1,5 @@
 # https://github.com/s3lcsum/gitops/blob/main/stacks/homepage/compose.yaml
 # Homepage — Docker label-powered dashboard
-# https://gethomepage.dev
 
 services:
   homepage:
@@ -11,9 +10,7 @@ services:
       dockerproxy:
         condition: service_started
     environment:
-      HOMEPAGE_ALLOWED_HOSTS: homepage.dominiksiejak.pl
       DOCKER_HOST: tcp://dockerproxy:2375
-    env_file: /opt/homepage/homepage.env
     volumes:
       - /opt/homepage/config/settings.yaml:/app/config/settings.yaml:ro
       - /opt/homepage/config/docker.yaml:/app/config/docker.yaml:ro

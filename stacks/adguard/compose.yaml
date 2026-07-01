@@ -13,9 +13,6 @@ services:
       traefik.enable: true
       traefik.http.routers.adguard.middlewares: authentik@docker,remote@file
       traefik.http.services.adguard.loadbalancer.server.url: http://host.docker.internal:3000
-      homepage.group: Network
-      homepage.name: AdGuard
-      homepage.icon: adguard-home
 
   traefik-adguard-sync:
     image: ghcr.io/simoncaron/traefik-adguard-auto-rewrites:latest

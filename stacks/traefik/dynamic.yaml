@@ -80,6 +80,12 @@ http:
         - websecure
       service: argocd-k8s
 
+    opencode:
+      rule: "Host(`opencode.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      service: opencode
+
   # Services
   services:
     mikrotik:
@@ -106,6 +112,12 @@ http:
       loadBalancer:
         servers:
           - url: 'http://{{ env "ENVOY_GATEWAY_ADDR" | default "192.168.89.241:80" }}/'
+        passHostHeader: true
+
+    opencode:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.89.200:4096/"
         passHostHeader: true
 
   serversTransports:

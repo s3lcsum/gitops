@@ -74,10 +74,6 @@ services:
       traefik.http.services.calibre-web.loadbalancer.server.port: 8083
       traefik.http.routers.calibre-web.rule: Host(`calibre.dominiksiejak.pl`)
       traefik.http.routers.calibre-web.middlewares: remote@file
-      homepage.group: Media
-      homepage.name: Calibre
-      homepage.icon: calibre-web
-      homepage.href: https://calibre.dominiksiejak.pl
 
 networks:
   proxy:

@@ -19,9 +19,6 @@ services:
       traefik.enable: true
       traefik.http.routers.hass.middlewares: remote@file
       traefik.http.services.hass.loadbalancer.server.url: http://host.docker.internal:8123
-      homepage.group: Automation
-      homepage.name: Home Assistant
-      homepage.icon: home-assistant
 
   zigbee2mqtt-wifi:
     <<: *default

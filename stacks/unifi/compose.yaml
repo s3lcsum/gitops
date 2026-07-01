@@ -5,6 +5,7 @@ services:
     image: lscr.io/linuxserver/unifi-network-application:10.4.57
     container_name: unifi
     restart: unless-stopped
+    network_mode: host
     # /opt/unifi/unifi.env must define MONGO_PASS and MONGO_INITDB_ROOT_PASSWORD
     # with the same value (app reads the former, unifi-db init reads the latter).
     env_file:
@@ -14,31 +15,22 @@ services:
       PGID: 1000
       TZ: Europe/Warsaw
       MONGO_USER: unifi
-      MONGO_HOST: unifi-db
+      MONGO_HOST: 127.0.0.1
       MONGO_PORT: 27017
       MONGO_DBNAME: unifi
       MONGO_AUTHSOURCE: admin
     volumes:
       - config:/config
-    ports:
-      - 3478:3478/udp
-      - 10001:10001/udp
-      - 8080:8080
-    networks:
-      - proxy
-      - unifi
     depends_on:
       - unifi-db
     labels:
       traefik.enable: true
       traefik.http.services.unifi.loadbalancer.server.port: 8443
       traefik.http.services.unifi.loadbalancer.server.scheme: https
-      homepage.group: Network
-      homepage.name: UniFi
-      homepage.icon: unifi
+      traefik.http.services.unifi.loadbalancer.serversTransport: insecure@file
 
   unifi-db:
-    image: mongo:8.3.3
+    image: mongo:8.0.4
     container_name: unifi-db
     restart: unless-stopped
     env_file:
@@ -46,14 +38,14 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: unifi
       MONGO_INITDB_DATABASE: unifi
+    ports:
+      - 127.0.0.1:27017:27017
     volumes:
       - db:/data/db
     networks:
       - unifi
 
 networks:
-  proxy:
-    external: true
   unifi:
 
 volumes:

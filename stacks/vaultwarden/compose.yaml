@@ -23,9 +23,6 @@ services:
       start_period: 30s
     labels:
       traefik.enable: true
-      homepage.group: Security
-      homepage.name: Vaultwarden
-      homepage.icon: vaultwarden
 
 networks:
   proxy:

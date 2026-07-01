@@ -30,9 +30,6 @@ services:
       traefik.enable: true
       traefik.http.routers.adminer.entrypoints: websecure
       traefik.http.routers.adminer.middlewares: "authentik@docker"
-      homepage.group: Data
-      homepage.name: Adminer
-      homepage.icon: adminer
 
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:v0.19.1

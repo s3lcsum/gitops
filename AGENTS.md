@@ -142,3 +142,14 @@
 
 - `README.md` — full architecture, services table, changelog
 - `kind/README.md` — cluster management
+
+## Workflow Memory
+
+### apply-portainer
+Triggers: say **"apply portainer"** OR finish editing inside `stacks/**`.
+
+1. Run `make apply` in `terraform/portainer/`
+2. Restart containers with volume-mounted configs Portainer won't auto-reload:
+   - Traefik: restart `traefik` container
+   - Gatus: restart `gatus` container
+   - Any other mounted config files: restart affected container manually

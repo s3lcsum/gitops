@@ -2,4 +2,4 @@
 
 docker:
   - host: tcp://dockerproxy:2375
-    enable: true
+    enable: false
