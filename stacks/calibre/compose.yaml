@@ -15,7 +15,7 @@ x-defaults: &defaults
 services:
   calibre:
     <<: *defaults
-    image: ghcr.io/linuxserver/calibre:7.26.0
+    image: ghcr.io/linuxserver/calibre:9.11.0
     container_name: calibre
     environment:
       DRINODE: /dev/dri/renderD128
