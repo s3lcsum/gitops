@@ -5,7 +5,14 @@ provider "registry.opentofu.org/e-breuninger/netbox" {
   version     = "5.3.0"
   constraints = "5.3.0"
   hashes = [
+    "h1:/dL9wPjrIpNtCp3ZdANiI4ZXZlD9b0cqZvD0YzRdtg8=",
+    "h1:0b22DjOhv9RPaa6sKmBrkZ5t6ZYLu+9a7AjNBsS7GWM=",
+    "h1:JwCpy3fcD8S8RxTtCTy7ac+rxK5eSs+9n76RcT51YMg=",
+    "h1:K1e5bERSI+AAF3EdZ6CnNjsoJFVsAdstjJfNP4/oOhk=",
+    "h1:QlSg3hlSvt77EUf/C6Ob32fmRBhkAQtq84YgIeKv77s=",
     "h1:Zt8/6mX4A1pk8KZe2GIwvPzqgcTXlUyM5b6kGJQuU5s=",
+    "h1:tuD8u2h2hOMY+JfYLqu5Eh+TOcX51gUucm5vnaYbVtE=",
+    "h1:uni30JHRVGkZZ72rIhud2y618aBvJtk/KqvbCzdWI2k=",
     "zh:013829552dbd1d98348cccbc6e6a4eab256d043063a60020f16bb6a0c95febb9",
     "zh:031b175ad0fa3523f82728c40ddb3b7048a13294bf9442da32e2775fe645556a",
     "zh:2d9e1c70df4f0a41358f068a478b36748ec3f71c94e8c972724fda49dddbceda",

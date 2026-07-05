@@ -67,7 +67,7 @@
         widget:
           type: portainer
           url: http://portainer:9000
-          env: 2
+          env: 3
           key: "{{HOMEPAGE_VAR_PORTAINER_TOKEN}}"
 
     - Proxmox:

@@ -4,9 +4,9 @@
 
 - DevOps:
     - GitHub:
-        - url: https://github.com/s3lcsum
+        - href: https://github.com/s3lcsum
           icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/github.png
 
     - Cloudflare:
-        - url: https://dash.cloudflare.com
+        - href: https://dash.cloudflare.com
           icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/cloudflare.png

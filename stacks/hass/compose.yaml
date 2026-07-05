@@ -13,6 +13,7 @@ services:
         condition: service_healthy
     volumes:
       - data:/config
+      - /var/lib/hass/media:/media
       - /var/run/docker.sock:/var/run/docker.sock:ro
     network_mode: host # Otherwise autodiscovery won't work
     labels:

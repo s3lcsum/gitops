@@ -66,8 +66,8 @@ services:
         condition: service_healthy
     volumes:
       - sabnzbd_config:/config
-      - /mnt/LOCAL_MEDIA/usenet:/mnt/LOCAL_MEDIA/usenet
-      - /mnt/LOCAL_MEDIA/usenet/incomplete:/mnt/LOCAL_MEDIA/usenet/incomplete
+      - /mnt/LOCAL_MEDIA:/mnt/LOCAL_MEDIA
+      - /mnt/NAS_Shared_Media:/mnt/NAS_Shared_Media
     networks: []
     network_mode: service:gluetun
     healthcheck:
@@ -206,6 +206,42 @@ services:
       traefik.http.routers.seerr.middlewares: remote@file
       traefik.http.services.seerr.loadbalancer.server.port: 5055
 
+  # 📋 Profile management (TRaSH guides sync with web UI)
+  profilarr:
+    <<: *service-defaults
+    image: ghcr.io/dictionarry-hub/profilarr:latest
+    container_name: profilarr
+    volumes:
+      - profilarr_config:/config
+    environment:
+      <<: *environment
+      ORIGIN: https://profilarr.dominiksiejak.pl
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+      traefik.http.services.profilarr.loadbalancer.server.port: 6868
+      traefik.http.routers.profilarr.middlewares: remote@file
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:6868/"]
+
+  # ♻️ TRaSH guides sync (quality profiles, custom formats, naming)
+  recyclarr:
+    <<: *service-defaults
+    image: recyclarr/recyclarr
+    container_name: recyclarr
+    init: true
+    depends_on:
+      sonarr:
+        condition: service_healthy
+      radarr:
+        condition: service_healthy
+    volumes:
+      - /opt/mediabox/recyclarr:/config
+    environment:
+      <<: *environment
+      CRON_SCHEDULE: "@daily"
+
 networks:
   arr:
     driver: bridge
@@ -221,3 +257,4 @@ volumes:
   seerr_config:
   prowlarr_config:
   flaresolverr_config:
+  profilarr_config:

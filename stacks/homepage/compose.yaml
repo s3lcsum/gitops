@@ -6,11 +6,9 @@ services:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
     restart: unless-stopped
-    depends_on:
-      dockerproxy:
-        condition: service_started
+    env_file: /opt/homepage/homepage.env
     environment:
-      DOCKER_HOST: tcp://dockerproxy:2375
+      HOMEPAGE_ALLOWED_HOSTS: homepage.dominiksiejak.pl
     volumes:
       - /opt/homepage/config/settings.yaml:/app/config/settings.yaml:ro
       - /opt/homepage/config/docker.yaml:/app/config/docker.yaml:ro
@@ -22,20 +20,6 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
-
-  dockerproxy:
-    image: ghcr.io/tecnativa/docker-socket-proxy:latest
-    container_name: dockerproxy
-    restart: unless-stopped
-    environment:
-      CONTAINERS: 1
-      SERVICES: 1
-      TASKS: 1
-      POST: 0
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - proxy
 
 networks:
   proxy:
