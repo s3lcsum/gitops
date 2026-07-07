@@ -26,6 +26,11 @@ http:
         customRequestHeaders:
           X-Remote-Bypass: ""
 
+    opencode-basic-auth:
+      headers:
+        customRequestHeaders:
+          Authorization: "Basic b3BlbmNvZGU6c3VwZXItc2VjcmV0"
+
     crowdsec-bouncer:
       plugin:
         crowdsec-bouncer-traefik-plugin:
@@ -84,6 +89,8 @@ http:
       rule: "Host(`opencode.dominiksiejak.pl`)"
       entryPoints:
         - websecure
+      middlewares:
+        - opencode-basic-auth@file
       service: opencode
 
   # Services

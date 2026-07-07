@@ -75,10 +75,6 @@ endpoints:
     url: https://nas.dominiksiejak.pl
     <<: *defaults
 
-  - name: "argocd"
-    url: https://argocd.dominiksiejak.pl
-    <<: *defaults
-
   # --- Mediabox
   - name: "jellyfin"
     url: https://jellyfin.dominiksiejak.pl

@@ -145,6 +145,8 @@ services:
         condition: service_healthy
       prowlarr:
         condition: service_healthy
+    ports:
+      - 127.0.0.1:8989:8989
     volumes:
       - sonarr_config:/config
       - /mnt/LOCAL_MEDIA:/mnt/LOCAL_MEDIA
@@ -224,24 +226,6 @@ services:
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:6868/"]
-
-  # ♻️ TRaSH guides sync (quality profiles, custom formats, naming)
-  recyclarr:
-    <<: *service-defaults
-    image: recyclarr/recyclarr
-    container_name: recyclarr
-    init: true
-    depends_on:
-      sonarr:
-        condition: service_healthy
-      radarr:
-        condition: service_healthy
-    volumes:
-      - /opt/mediabox/recyclarr:/config
-    environment:
-      <<: *environment
-      CRON_SCHEDULE: "@daily"
-
 networks:
   arr:
     driver: bridge

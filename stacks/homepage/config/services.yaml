@@ -196,6 +196,11 @@
         href: https://prowlarr.dominiksiejak.pl
         description: Indexer manager
 
+    - Profilarr:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/profilarr.png
+        href: https://profilarr.dominiksiejak.pl
+        description: Profile management
+
     - Radarr:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/radarr.png
         href: https://radarr.dominiksiejak.pl
