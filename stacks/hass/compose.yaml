@@ -6,7 +6,7 @@ x-default: &default
 services:
   hass:
     <<: *default
-    image: ghcr.io/home-assistant/home-assistant:2026.6.2
+    image: ghcr.io/home-assistant/home-assistant:2026.7.2
     container_name: hass
     depends_on:
       mosquitto:
