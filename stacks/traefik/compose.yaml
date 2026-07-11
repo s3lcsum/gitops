@@ -51,7 +51,7 @@ services:
       retries: 3
 
   error-pages:
-    image: ghcr.io/tarampampam/error-pages:4.2.1
+    image: ghcr.io/tarampampam/error-pages:4.2.3
     restart: unless-stopped
     container_name: error-pages
     networks:
