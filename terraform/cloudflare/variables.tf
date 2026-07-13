@@ -29,5 +29,6 @@ variable "tunnel_apps" {
   default = {
     "homeassistant-atom.dominiksiejak.pl" = ""
     "dns.dominiksiejak.pl"                = ""
+    "firebird.dominiksiejak.pl"           = "tcp://v-maintenance-firebird:3050"
   }
 }

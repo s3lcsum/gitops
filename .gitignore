@@ -67,6 +67,9 @@ terraform/proxmox/generated/
 # MCP config with live API tokens
 .mcp.json
 
+# OpenCode config with embedded secrets (tokens inline for MCPs)
+.opencode/opencode.json
+
 # Playwright test artifacts
 .playwright-mcp/
 

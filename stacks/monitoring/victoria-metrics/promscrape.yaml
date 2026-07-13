@@ -43,3 +43,10 @@ scrape_configs:
     params:
       module: [default]
       target: ["proxmox.dominiksiejak.pl"]
+
+  - job_name: "vibe"
+    static_configs:
+      - targets:
+          - "192.168.89.200:9100"
+    # MacBook Pro dev machine (en5 USB Ethernet, static IP)
+    # Wi-Fi fallback: 192.168.89.130:9100 (DHCP, may change)

@@ -93,6 +93,12 @@ http:
         - opencode-basic-auth@file
       service: opencode
 
+    hermes:
+      rule: "Host(`hermes.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      service: hermes
+
   # Services
   services:
     mikrotik:
@@ -125,6 +131,12 @@ http:
       loadBalancer:
         servers:
           - url: "http://192.168.89.200:4096/"
+        passHostHeader: true
+
+    hermes:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.89.200:8787/"
         passHostHeader: true
 
   serversTransports:

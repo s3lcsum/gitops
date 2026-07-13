@@ -26,6 +26,7 @@ locals {
     "unifi",
     "vault",
     "vaultwarden",
+    "v-maintenance",
     "watchyourlan",
   ]
 }

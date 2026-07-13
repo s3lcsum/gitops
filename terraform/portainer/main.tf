@@ -42,6 +42,20 @@ import {
 # Stacks are deployed and managed by Portainer (method=string from the repo's compose
 # files). The copy under /opt/<stack> on the host is just a reference mirror (kept in
 # sync by `make sync-portainer`); Portainer owns the actual lifecycle.
+#
+# v-maintenance injects its secret (gitignored .env) straight into the compose via
+# templatefile. portainer_stack has no `env` attribute, and Portainer's string-method
+# deploy is flaky resolving absolute `env_file` paths on update — inlining avoids both.
+data "local_file" "v_maintenance_env" {
+  filename = "${path.module}/../../stacks/v-maintenance/v-maintenance.env"
+}
+
+locals {
+  v_maintenance_isc_password = trimspace(
+    element(regex("ISC_PASSWORD=(\\S+)", data.local_file.v_maintenance_env.content), 0)
+  )
+}
+
 resource "portainer_stack" "stacks" {
   for_each = toset(local.stacks)
 
@@ -50,7 +64,10 @@ resource "portainer_stack" "stacks" {
   endpoint_id     = var.endpoint_id
   name            = each.value
 
-  stack_file_content = file("../../stacks/${each.value}/compose.yaml")
+  stack_file_content = each.key == "v-maintenance" ? templatefile(
+    "../../stacks/${each.value}/compose.yaml",
+    { ISC_PASSWORD = local.v_maintenance_isc_password }
+  ) : file("../../stacks/${each.value}/compose.yaml")
 
   depends_on = [portainer_docker_network.networks]
 }

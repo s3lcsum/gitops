@@ -1,0 +1,22 @@
+services:
+  firebird:
+    image: jacobalberty/firebird:2.5.9-sc
+    container_name: v-maintenance-firebird
+    restart: unless-stopped
+    environment:
+      - ISC_PASSWORD=${ISC_PASSWORD}
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    cpus: 0.5
+    networks:
+      - proxy
+    volumes:
+      - firebird-data:/firebird/data
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  firebird-data:
