@@ -151,6 +151,14 @@ endpoints:
     url: https://lan.dominiksiejak.pl
     <<: *defaults
 
+  - name: "hermes"
+    url: https://hermes.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "opencode"
+    url: https://opencode.dominiksiejak.pl
+    <<: *defaults
+
   # --- External sanity check
   - name: "google"
     url: https://google.com

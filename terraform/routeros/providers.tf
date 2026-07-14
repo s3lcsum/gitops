@@ -10,6 +10,10 @@ terraform {
       source  = "OJFord/wireguard"
       version = "0.4.0"
     }
+    tfe = {
+      source  = "hashicorp/tfe"
+      version = "0.77.0"
+    }
   }
 
   cloud {
