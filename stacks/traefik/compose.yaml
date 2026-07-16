@@ -2,7 +2,7 @@
 
 services:
   traefik:
-    image: ghcr.io/traefik/traefik:v3.7.7
+    image: ghcr.io/traefik/traefik:v3.7.8
     container_name: traefik
     restart: unless-stopped
     user: root
@@ -23,10 +23,6 @@ services:
       - /opt/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
       - /opt/traefik/dynamic.yaml:/etc/traefik/dynamic.yaml:ro
       - traefik-letsencrypt:/letsencrypt
-    labels:
-      traefik.enable: "true"
-      traefik.http.routers.traefik-dashboard.service: api@internal
-      traefik.http.routers.traefik-dashboard.middlewares: authentik@docker
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
       interval: 30s
@@ -51,7 +47,7 @@ services:
       retries: 3
 
   error-pages:
-    image: ghcr.io/tarampampam/error-pages:4.2.3
+    image: ghcr.io/tarampampam/error-pages:4.2.4
     restart: unless-stopped
     container_name: error-pages
     networks:

@@ -2,7 +2,7 @@
 
 services:
   dozzle:
-    image: ghcr.io/amir20/dozzle:v10.6.9
+    image: ghcr.io/amir20/dozzle:v10.6.10
     container_name: dozzle
     restart: unless-stopped
     volumes:
