@@ -4,7 +4,7 @@ terraform {
   required_providers {
     portainer = {
       source  = "portainer/portainer"
-      version = "1.31.1"
+      version = "1.34.0"
     }
     tfe = {
       source  = "hashicorp/tfe"
