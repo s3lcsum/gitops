@@ -26,6 +26,20 @@ resource "authentik_provider_oauth2" "oauth2" {
   invalidation_flow  = data.authentik_flow.default-invalidation-flow.id
   signing_key        = data.authentik_certificate_key_pair.generated.id
 
+  # Grant types the provider is allowed to use. Without "authorization_code"
+  # Authentik rejects the authorization request ("The request is otherwise
+  # malformed"), so an explicit list is required rather than relying on a
+  # possibly-empty default.
+  grant_types = [
+    "authorization_code",
+    "implicit",
+    "hybrid",
+    "client_credentials",
+    "password",
+    "urn:ietf:params:oauth:grant-type:device_code",
+    "refresh_token",
+  ]
+
   property_mappings = lookup(each.value, "mapping", null) != null ? concat(
     data.authentik_property_mapping_provider_scope.oauth2_scopes.ids,
     [authentik_property_mapping_provider_scope.custom_claims[each.key].id]

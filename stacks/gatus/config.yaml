@@ -137,6 +137,8 @@ endpoints:
   - name: "hass-timemachine"
     url: https://hass-timemachine.dominiksiejak.pl
     <<: *defaults
+    client:
+      timeout: 10s
 
   # --- Observability
   - name: "grafana"

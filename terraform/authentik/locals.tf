@@ -60,6 +60,14 @@ locals {
         "https://hass.dominiksiejak.pl/auth/openid/callback",
       ]
     }
+    hermes = {
+      name       = "Hermes"
+      launch_url = "https://hermes.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@latest/icons/hermesagent.svg"
+      redirect_uris = [
+        "https://hermes.dominiksiejak.pl/api/auth/oidc/callback",
+      ]
+    }
     synology = {
       name       = "Synology DSM"
       launch_url = "https://nas.dominiksiejak.pl"
@@ -217,6 +225,14 @@ locals {
       launch_url      = "https://adminer.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/adminer.svg"
       skip_path_regex = ""
+    }
+    adguard = {
+      name            = "AdGuard"
+      external_host   = "https://adguard.dominiksiejak.pl"
+      internal_host   = "http://adguard:3000"
+      launch_url      = "https://adguard.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/adguard.svg"
+      skip_path_regex = "^/(dns-query|control|metrics|install|login|setup).*"
     }
   }
 

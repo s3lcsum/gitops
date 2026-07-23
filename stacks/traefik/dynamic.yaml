@@ -31,6 +31,7 @@ http:
         customRequestHeaders:
           Authorization: "Basic b3BlbmNvZGU6c3VwZXItc2VjcmV0"
 
+
     crowdsec-bouncer:
       plugin:
         crowdsec-bouncer-traefik-plugin:
@@ -98,6 +99,14 @@ http:
       entryPoints:
         - websecure
       service: hermes
+
+    traefik-dashboard:
+      rule: "Host(`traefik.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - authentik@docker
+      service: api@internal
 
   # Services
   services:

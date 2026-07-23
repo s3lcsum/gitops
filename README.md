@@ -249,6 +249,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Changelog
 
+### 23.07.2026
+
+Added Hermes WebUI OIDC SSO via Authentik — created the `hermes` OAuth2 provider in `terraform/authentik/locals.tf`, added explicit `grant_types` to `authentik_provider_oauth2` in `applications.tf` to fix a malformed-request error from Authentik. Migrated Homepage from Docker proxy auto-discovery to a manual `services.yaml` in `stacks/homepage/`, added an AdGuard entry for `homepage.*` labels, and added the AdGuard stack itself to Authentik's app list. Added a Traefik dashboard router at `traefik.dominiksiejak.pl` behind Authentik, and WireGuard `post_up`/`pre_down` commands in `terraform/routeros/wireguard.tf` that resolve `dns.dominiksiejak.pl` dynamically so DNS still works when the VPN is up. Replaced the AdGuard `conf` named volume with a bind mount at `/opt/adguard/conf` and removed the `traefik-adguard-sync` sidecar — it wasn't reliable and manual DNS entries work better. Cleaned up the old Profilarr/recyclarr migration — the latter was already removed. Bumped unifi-db mongo from 8.0.4 to 8.3.4, added a 10s timeout for the hass-timemachine Gatus endpoint to stop spurious failures. All daily image update cron commits are in as usual.
+
 ### 29.06.2026
 
 **Domain flattened.** Dropped the `lake.` subdomain entirely — services now live straight at `*.dominiksiejak.pl`. Updated Traefik defaultRule, cert SANs, `*.lake` wiped from the SANs list. Changed Authentik OIDC redirect URIs, Vault allowed domains, Gitea provider URL, NetBox and Vault addresses, and every compose file that still had the old `lake.` ref. Traefik HTTP (port 80) now does a permanent redirect to HTTPS instead of passing through CrowdSec first.

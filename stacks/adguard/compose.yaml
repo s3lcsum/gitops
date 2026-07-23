@@ -8,29 +8,10 @@ services:
     network_mode: host
     volumes:
       - work:/opt/adguardhome/work
-      - conf:/opt/adguardhome/conf
+      - /opt/adguard/conf:/opt/adguardhome/conf
     labels:
       traefik.enable: true
       traefik.http.routers.adguard.middlewares: authentik@docker,remote@file
       traefik.http.services.adguard.loadbalancer.server.url: http://host.docker.internal:3000
-
-  traefik-adguard-sync:
-    image: ghcr.io/simoncaron/traefik-adguard-auto-rewrites:latest
-    container_name: traefik-adguard-sync
-    restart: always
-    env_file:
-      - /opt/adguard/traefik-adguard-sync.env
-    environment:
-      ADGUARD_API_URL: http://192.168.89.253:3000/control
-      DEFAULT_DNS_RECORD_TARGET: 192.168.89.253
-      LOGGING_LEVEL: WARNING
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik-adguard-state:/state
-    labels:
-      traefik.enable: false
-
 volumes:
   work:
-  conf:
-  traefik-adguard-state:

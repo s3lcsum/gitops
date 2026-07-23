@@ -43,9 +43,10 @@ import {
 # files). The copy under /opt/<stack> on the host is just a reference mirror (kept in
 # sync by `make sync-portainer`); Portainer owns the actual lifecycle.
 #
-# v-maintenance injects its secret (gitignored .env) straight into the compose via
-# templatefile. portainer_stack has no `env` attribute, and Portainer's string-method
-# deploy is flaky resolving absolute `env_file` paths on update — inlining avoids both.
+# v-maintenance injects its secrets (gitignored .env) straight into the
+# compose via templatefile. portainer_stack has no `env` attribute, and Portainer's
+# string-method deploy is flaky resolving absolute `env_file` paths on update —
+# inlining avoids both.
 data "local_file" "v_maintenance_env" {
   filename = "${path.module}/../../stacks/v-maintenance/v-maintenance.env"
 }
