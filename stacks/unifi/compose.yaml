@@ -30,7 +30,7 @@ services:
       traefik.http.services.unifi.loadbalancer.serversTransport: insecure@file
 
   unifi-db:
-    image: mongo:8.3.4
+    image: mongo:8.3.7
     container_name: unifi-db
     restart: unless-stopped
     env_file:
