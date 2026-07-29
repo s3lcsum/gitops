@@ -16,7 +16,7 @@ services:
   # 🔒 VPN gateway (WireGuard via NordVPN)
   gluetun:
     <<: *service-defaults
-    image: ghcr.io/qdm12/gluetun:v3.41.1
+    image: ghcr.io/qdm12/gluetun:v3.41.2
     container_name: gluetun
     env_file:
       - /opt/mediabox/gluetun.env
@@ -211,7 +211,7 @@ services:
   # 📋 Profile management (TRaSH guides sync with web UI)
   profilarr:
     <<: *service-defaults
-    image: ghcr.io/dictionarry-hub/profilarr:v2.0.9
+    image: ghcr.io/dictionarry-hub/profilarr:2.0.9
     container_name: profilarr
     volumes:
       - profilarr_config:/config
