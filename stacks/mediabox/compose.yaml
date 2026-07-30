@@ -16,7 +16,7 @@ services:
   # 🔒 VPN gateway (WireGuard via NordVPN)
   gluetun:
     <<: *service-defaults
-    image: ghcr.io/qdm12/gluetun:v3.41.2
+    image: ghcr.io/qdm12/gluetun:v3.41.3
     container_name: gluetun
     env_file:
       - /opt/mediabox/gluetun.env
@@ -188,7 +188,7 @@ services:
   # 📥 Request manager
   seerr:
     <<: *service-defaults
-    image: ghcr.io/seerr-team/seerr:v3.4.0
+    image: ghcr.io/seerr-team/seerr:v3.4.1
     container_name: seerr
     environment:
       <<: *environment
