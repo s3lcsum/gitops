@@ -26,7 +26,7 @@ Drop a file on the NAS → within ~1 minute: imported, original preserved, metad
 
 Services after change in `stacks/calibre/compose.yaml`:
 
-1. `calibre-web-automated` (CWA) — **replaces `calibre-web`**. Image `ghcr.io/crowbarzz/calibre-web-automated` (tag pinned at build time). Port :8083. Routers: `calibre.dominiksiejak.pl` (public, `remote@file`) and `calibre-api.dominiksiejak.pl` (OPDS/content). Single writer of the library `metadata.db`.
+1. `calibre-web-automated` (CWA) — **replaces `calibre-web`**. Image `crocodilestick/calibre-web-automated` (tag pinned at build time). Port :8083. Routers: `calibre.dominiksiejak.pl` (public, `remote@file`) and `calibre-api.dominiksiejak.pl` (OPDS/content). Single writer of the library `metadata.db`. Env: `NETWORK_SHARE_MODE=true`, `TRUSTED_PROXY_COUNT=2`.
 2. `calibre` (linuxserver/calibre:9.12.0) — unchanged. Manual GUI fallback; keeps its own scratch library; never opens CWA's `metadata.db`.
 3. `calibre-web` — removed. Volume `calibre_web_config` replaced by `cwa_config`.
 
@@ -34,16 +34,18 @@ NAS layout (under `/mnt/NAS_Shared_Media/books/`):
 
 ```
 books/
-├── inbox/    ← CWA incoming folder; SMB drop target from Mac
-└── library/  ← CWA Calibre library (metadata.db; per-book: original + kepub)
+├── inbox/    ← CWA ingest folder (`/cwa-book-ingest`); SMB drop target from Mac; files removed after processing
+└── library/  ← CWA Calibre library (`/calibre-library`); metadata.db + per-book: original + kepub (auto-created if empty)
 ```
 
-CWA incoming + library paths set via CWA env/config (exact keys verified against CWA docs during build; default incoming is `/config/calibre-web-automated/incoming`, so NAS paths must be overridden).
+Untouched originals additionally archived by CWA's built-in backup service to `/config/processed_books` on the `cwa_config` volume (default on; the "separate folder" requirement).
+
+Because the library lives on NFS/SMB: `NETWORK_SHARE_MODE=true` (disables SQLite WAL, switches ingest/metadata watchers to polling). Proxy chain Cloudflare → Traefik → CWA: `TRUSTED_PROXY_COUNT=2`.
 
 ## Data flow
 
 1. User drops file into `inbox` (SMB).
-2. CWA polls (~30s), imports; source format kept byte-identical in the book record.
+2. CWA polls (~30s), imports; source format kept byte-identical in the book record and archived to `/config/processed_books`.
 3. Google Books metadata enrichment (title/author/series/cover). No API key for v1; add later if rate-limited.
 4. DeDRM: Adept-encrypted epub stripped using uploaded ADE key; clean files pass through untouched.
 5. Convert to KEPUB (kepubify bundled in CWA) — Kobo-native format.
