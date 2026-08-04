@@ -12,6 +12,25 @@ alerting:
     token: ${TELEGRAM_BOT_TOKEN}
     id: ${TELEGRAM_CHAT_ID}
 
+  custom:
+    url: "http://192.168.89.130:8645/"
+    method: "POST"
+    body: |
+      {
+        "endpoint_name": "[ENDPOINT_NAME]",
+        "alert_type": "[ALERT_TRIGGERED_OR_RESOLVED]",
+        "alert_description": "[ALERT_DESCRIPTION]",
+        "endpoint_group": "[ENDPOINT_GROUP]",
+        "endpoint_url": "[ENDPOINT_URL]",
+        "result_errors": "[RESULT_ERRORS]"
+      }
+    default-alert:
+      enabled: true
+      failure-threshold: 4
+      success-threshold: 2
+      send-on-resolved: true
+      description: "health check failed"
+
   # email:
   #   host: ${SMTP_HOST}
   #   port: ${SMTP_PORT}
@@ -42,6 +61,7 @@ endpoints:
           failure-threshold: 4
           success-threshold: 2
           send-on-resolved: true
+        - type: custom
       conditions:
         - "[STATUS] < 400"
         - "[CERTIFICATE_EXPIRATION] > 48h"
@@ -60,6 +80,10 @@ endpoints:
 
   - name: "auth"
     url: https://auth.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "unifi"
+    url: https://unifi.dominiksiejak.pl
     <<: *defaults
 
   # --- Network / metal (traefik/dynamic.yaml file provider)

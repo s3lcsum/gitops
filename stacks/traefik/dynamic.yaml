@@ -127,7 +127,7 @@ http:
       loadBalancer:
         servers:
           - url: "https://192.168.89.240:5001/"
-        passHostHeader: true
+        passHostHeader: false
         serversTransport: insecure
 
     argocd-k8s:
@@ -145,7 +145,7 @@ http:
     hermes:
       loadBalancer:
         servers:
-          - url: "http://192.168.89.200:8787/"
+          - url: "http://192.168.89.200:8788/"
         passHostHeader: true
 
   serversTransports:
