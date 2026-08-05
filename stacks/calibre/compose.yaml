@@ -40,10 +40,6 @@ services:
       traefik.http.routers.calibre-gui.service: calibre-gui
       traefik.http.routers.calibre-gui.middlewares: authentik@docker
       traefik.http.services.calibre-gui.loadbalancer.server.port: 8080
-      traefik.http.routers.calibre-api.rule: Host(`calibre-api.dominiksiejak.pl`)
-      traefik.http.routers.calibre-api.service: calibre-api
-      traefik.http.routers.calibre-api.middlewares: authentik@docker
-      traefik.http.services.calibre-api.loadbalancer.server.port: 8083
 
   # First-run: default login admin / admin123 — change immediately.
   # Ingest: anything dropped in /cwa-book-ingest (NAS books/inbox) is auto-imported,
