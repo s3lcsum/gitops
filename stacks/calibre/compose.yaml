@@ -45,35 +45,40 @@ services:
       traefik.http.routers.calibre-api.middlewares: authentik@docker
       traefik.http.services.calibre-api.loadbalancer.server.port: 8083
 
-  # First-run (web UI): set Calibre library path to the directory that contains metadata.db (e.g.
-  # under /mnt/LOCAL_MEDIA/books or /mnt/NAS_Shared_Media/books). Default login
-  # admin / admin123 — change immediately. Admin → Basic Configuration → External Binaries:
-  # unrar /usr/bin/unrar, Calibre converter /usr/bin/ebook-convert (dir /usr/bin/ on newer releases),
-  # kepubify /usr/bin/kepubify (DOCKER_MODS enables conversion tools).
-  calibre-web:
+  # First-run: default login admin / admin123 — change immediately.
+  # Ingest: anything dropped in /cwa-book-ingest (NAS books/inbox) is auto-imported,
+  # metadata-fetched, DRM-stripped (if Adept + DeDRM installed), converted to KEPUB,
+  # then removed from ingest. Untouched originals archived to /config/processed_books.
+  # Library auto-created at /calibre-library (NAS books/library) if empty.
+  # NETWORK_SHARE_MODE=true: library on NFS/SMB → disables SQLite WAL + uses polling watcher.
+  calibre-web-automated:
     <<: *defaults
-    image: ghcr.io/linuxserver/calibre-web:0.6.26
-    container_name: calibre-web
+    image: crocodilestick/calibre-web-automated:v4.0.6
+    container_name: calibre-web-automated
     environment:
-      DOCKER_MODS: linuxserver/mods:universal-calibre
       PUID: 0
       PGID: 0
       TZ: Europe/Warsaw
+      NETWORK_SHARE_MODE: "true"
+      TRUSTED_PROXY_COUNT: "2"
     volumes:
-      - calibre_web_config:/config
-      - /mnt/LOCAL_MEDIA/books:/mnt/LOCAL_MEDIA/books
-      - /mnt/NAS_Shared_Media/books:/mnt/NAS_Shared_Media/books
+      - cwa_config:/config
+      - /mnt/NAS_Shared_Media/books/inbox:/cwa-book-ingest
+      - /mnt/NAS_Shared_Media/books/library:/calibre-library
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8083/"]
+      test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8083/')"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 120s
     labels:
       traefik.enable: true
-      traefik.http.services.calibre-web.loadbalancer.server.port: 8083
       traefik.http.routers.calibre-web.rule: Host(`calibre.dominiksiejak.pl`)
       traefik.http.routers.calibre-web.middlewares: remote@file
+      traefik.http.services.calibre-web-automated.loadbalancer.server.port: 8083
+      traefik.http.routers.calibre-api.rule: Host(`calibre-api.dominiksiejak.pl`)
+      traefik.http.routers.calibre-api.middlewares: remote@file
+      traefik.http.routers.calibre-api.service: calibre-web-automated
 
 networks:
   proxy:
@@ -81,4 +86,4 @@ networks:
 
 volumes:
   calibre_config:
-  calibre_web_config:
+  cwa_config:
