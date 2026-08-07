@@ -2,7 +2,7 @@
 
 services:
   unifi:
-    image: lscr.io/linuxserver/unifi-network-application:10.4.57
+    image: lscr.io/linuxserver/unifi-network-application:10.5.67
     container_name: unifi
     restart: unless-stopped
     network_mode: host
