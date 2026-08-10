@@ -59,7 +59,7 @@ services:
   # 📥 Usenet downloader (VPN-routed)
   sabnzbd:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/sabnzbd:5.0.4
+    image: ghcr.io/linuxserver/sabnzbd:5.1.0
     container_name: sabnzbd
     depends_on:
       gluetun:
