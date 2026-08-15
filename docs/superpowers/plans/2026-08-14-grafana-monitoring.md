@@ -6,7 +6,7 @@
 
 **Architecture:** Add a `blackbox-exporter` container to the monitoring compose stack, scrape it via VictoriaMetrics (`promscrape.yaml`), and declare Grafana side-car state (dashboards, alert rules, contact points, notification policy, templates) as CasC provisioning YAML + JSON under `stacks/monitoring/grafana/provisioning/`. Deploy a `scraparr` exporter in the mediabox stack so the arr-family (Sonarr/Radarr/Prowlarr/Jellyfin) produce metrics the Grafana.com dashboard (22934) needs. Create a **minimal** new `terraform/grafana` module that owns only the service account + token (the single thing CasC cannot create).
 
-**Tech Stack:** Grafana 13.1.3 (CasC), VictoriaMetrics v1.149.0, prom/blackbox-exporter, ghcr.io/thecfu/scraparr, OpenTofu + grafana/grafana + hashicorp/vault providers.
+**Tech Stack:** Grafana 13.1.3 (CasC), VictoriaMetrics v1.149.0, prom/blackbox-exporter, ghcr.io/thecfu/scraparr, OpenTofu + grafana/grafana provider.
 
 ## Global Constraints
 
@@ -22,7 +22,8 @@
 - Alert results queried from `VictoriaMetrics` (uid `victoria-metrics`, URL `http://victoria-metrics:8428`).
 - `secrets` from `stacks/gatus/gatus.env`: TG `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, SMTP creds — copy values, never hardcode new secrets.
 - **Public status page (gatus) stays** — do not remove/touch `stacks/gatus`.
-- Terraform: pin exact provider versions, `required_version = ">= 1.11.5"`, `cloud {}` workspace `gitops-grafana`, tofu (not terraform).
+- Terraform: pin exact provider versions, `required_version = ">= 1.11.5"`, `cloud {}` workspace `gitops-grafana`, tofu (not terraform). Grafana provider authenticates via `TF_VAR_grafana_admin_user` / `TF_VAR_grafana_admin_password` read from `stacks/monitoring/grafana.env` (pre-flight decision: no Vault).
+- **Jellyfin excluded from scraparr** (pre-flight decision: no extractable API key; covered by blackbox probes).
 - Dashboards are **read-only in UI** (`allowUiUpdates: false`).
 - Deployment flow (AGENTS.md): edit `stacks/` → `make apply` in `terraform/portainer` → restart containers with volume-mounted configs (grafana, victoria-metrics) manually.
 - Pre-commit is NOT installed in this shell → use `git commit --no-verify`.
@@ -242,14 +243,14 @@ git commit --no-verify -m "feat(monitoring): import default dashboards via CasC 
 - Modify: `stacks/monitoring/victoria-metrics/promscrape.yaml`
 
 **Interfaces:**
-- Consumes: mediabox `arr` network (sonarr:8989, radarr:7878, prowlarr:9696, jellyfin:8096). API keys read from each app's own `config.xml` (linuxserver images).
-- Produces: endpoint `scraparr:7100/metrics` with sonarr/radarr/prowlarr/jellyfin metrics → dashboard 22934.
+- Consumes: mediabox `arr` network (sonarr:8989, radarr:7878, prowlarr:9696). API keys read from each app's own `config.xml` (linuxserver images). Jellyfin **excluded** (pre-flight decision: no extractable API key; still covered by blackbox probes).
+- Produces: endpoint `scraparr:7100/metrics` with sonarr/radarr/prowlarr metrics → dashboard 22934.
 
 - [ ] **Step 1: Fetch API keys from running arr apps**
 
 ```bash
 # Run from portainer host (adjust paths to arr config volumes)
-for app in sonarr radarr prowlarr jellyfin; do
+for app in sonarr radarr prowlarr; do
   echo "$app: $(grep -oP '(?<=<ApiKey>)[^<]+' /opt/mediabox/${app}/config.xml 2>/dev/null || echo 'NOT-FOUND')"
 done
 ```
@@ -263,7 +264,6 @@ Create `stacks/mediabox/scraparr.env.example`:
 SONARR_API_KEY=your_sonarr_api_key_here
 RADARR_API_KEY=your_radarr_api_key_here
 PROWLARR_API_KEY=your_prowlarr_api_key_here
-JELLYFIN_API_KEY=your_jellyfin_api_key_here
 ```
 
 - [ ] **Step 3: Create real env (gitignored — never commit)**
@@ -308,10 +308,6 @@ radarr:
 prowlarr:
   url: http://prowlarr:9696
   api_key: ${PROWLARR_API_KEY}
-
-jellyfin:
-  url: http://jellyfin:8096
-  api_key: ${JELLYFIN_API_KEY}
 ```
 
 - [ ] **Step 6: Add scraparr scrape job to VM promscrape.yaml**
@@ -339,7 +335,7 @@ cd terraform/portainer && make apply
 docker restart victoria-metrics
 curl -s http://scraparr:7100/metrics | head -5
 ```
-Expected: metrics containing `sonarr`, `radarr`, `prowlarr`, `jellyfin` prefixes.
+Expected: metrics containing `sonarr`, `radarr`, `prowlarr` prefixes.
 
 - [ ] **Step 9: Commit**
 
@@ -358,7 +354,7 @@ git commit --no-verify -m "feat(monitoring): deploy scraparr exporter for arr-st
 
 **Interfaces:**
 - Consumes: datasource uid `victoria-metrics`; alerts from `probe_success` (Task 2) + VM/traefik metrics (Task 2/4); secrets via `${VAR}` env substitution.
-- Produces: contact points `telegram-act`, `email-smtp`; notification policy; alert rule group(s); message templates.
+- Produces: contact point `all-channels` (telegram + email receivers); notification policy; alert rule group(s); message templates.
 
 - [ ] **Step 1: Add alerting secrets to grafana.env.example**
 
@@ -388,17 +384,13 @@ apiVersion: 1
 
 contactPoints:
   - orgId: 1
-    name: telegram-act
+    name: all-channels
     receivers:
       - uid: telegram-act-receiver
         type: telegram
         settings:
           botToken: ${GRAFANA_TELEGRAM_BOT_TOKEN}
           chatid: ${GRAFANA_TELEGRAM_CHAT_ID}
-
-  - orgId: 1
-    name: email-smtp
-    receivers:
       - uid: email-smtp-receiver
         type: email
         settings:
@@ -406,18 +398,12 @@ contactPoints:
 
 policies:
   - orgId: 1
-    receiver: telegram-act
+    receiver: all-channels
     group_by: ["grafana_folder", "alertname"]
     group_wait: 30s
     group_interval: 5m
     repeat_interval: 4h
-    routes:
-      - receiver: telegram-act
-        matchers:
-          - service = "up"
-      - receiver: email-smtp
-        matchers:
-          - service = "down"
+    routes: []
 
 alertRuleGroups:
   - orgId: 1
@@ -533,10 +519,22 @@ git commit --no-verify -m "feat(monitoring): CasC alerting for synthetic + VM in
 - Create: `terraform/grafana/Makefile`
 
 **Interfaces:**
-- Consumes: Vault KV `kv/grafana/admin` (admin user + password), live Grafana at `https://grafana.dominiksiejak.pl`, existing TFC workspace `gitops-grafana`.
+- Consumes: Grafana admin creds from `stacks/monitoring/grafana.env` (`GF_SECURITY_ADMIN_USER` / `GF_SECURITY_ADMIN_PASSWORD`), live Grafana at `https://grafana.dominiksiejak.pl`, TFC workspace `gitops-grafana` (create via API if absent).
 - Produces: `grafana_service_account` "tf-scratch" + token (sensitive output).
 
-- [ ] **Step 1: providers.tf**
+- [ ] **Step 1: Create TFC workspace (if missing)**
+
+Check via API; create `gitops-grafana` if 404:
+
+```bash
+TOK=$(python3 -c "import json; print(json.load(open('$HOME/.terraform.d/credentials.tfrc.json'))['credentials']['app.terraform.io']['token'])")
+ORG_ID=$(curl -s https://app.terraform.io/api/v2/organizations/dominiksiejak -H "Authorization: Bearer $TOK" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['id'])")
+curl -s -X POST https://app.terraform.io/api/v2/organizations/dominiksiejak/workspaces \
+  -H "Authorization: Bearer $TOK" -H "Content-Type: application/vnd.api+json" \
+  -d "{\"data\":{\"type\":\"workspaces\",\"attributes\":{\"name\":\"gitops-grafana\"}}}"
+```
+
+- [ ] **Step 2: providers.tf**
 
 Create `terraform/grafana/providers.tf`:
 
@@ -548,10 +546,6 @@ terraform {
     grafana = {
       source  = "grafana/grafana"
       version = "3.19.0"
-    }
-    vault = {
-      source  = "hashicorp/vault"
-      version = "4.7.0"
     }
   }
 
@@ -567,14 +561,11 @@ terraform {
 
 provider "grafana" {
   url  = var.grafana_url
-  auth = "admin:${data.vault_kv_secret_v2.grafana_admin.data["password"]}"
-}
-
-provider "vault" {
+  auth = "${var.grafana_admin_user}:${var.grafana_admin_password}"
 }
 ```
 
-- [ ] **Step 2: variables.tf**
+- [ ] **Step 3: variables.tf**
 
 Create `terraform/grafana/variables.tf`:
 
@@ -585,21 +576,15 @@ variable "grafana_url" {
   default     = "https://grafana.dominiksiejak.pl"
 }
 
-variable "vault_token" {
-  description = "Vault token used to read grafana admin credentials"
+variable "grafana_admin_user" {
+  description = "Grafana admin username (from stacks/monitoring/grafana.env GF_SECURITY_ADMIN_USER)"
+  type        = string
+}
+
+variable "grafana_admin_password" {
+  description = "Grafana admin password (from stacks/monitoring/grafana.env GF_SECURITY_ADMIN_PASSWORD)"
   type        = string
   sensitive   = true
-}
-```
-
-- [ ] **Step 3: data.tf**
-
-Create `terraform/grafana/data.tf`:
-
-```hcl
-data "vault_kv_secret_v2" "grafana_admin" {
-  mount = "kv"
-  name  = "grafana/admin"
 }
 ```
 
@@ -656,7 +641,9 @@ include $(GIT_ROOT)/terraform/base.Makefile
 
 ```bash
 cd terraform/grafana
-export TF_VAR_vault_token=$(vault token lookup -format=json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['id'])") 2>/dev/null || read -s -p "vault token: " TF_VAR_vault_token
+set -a; source ../portainer/defaults.auto.tfvars 2>/dev/null; set +a  # no-op, just to not clobber
+export TF_VAR_grafana_admin_user=$(grep '^GF_SECURITY_ADMIN_USER=' ../../stacks/monitoring/grafana.env | cut -d= -f2)
+export TF_VAR_grafana_admin_password=$(grep '^GF_SECURITY_ADMIN_PASSWORD=' ../../stacks/monitoring/grafana.env | cut -d= -f2)
 make init
 make plan
 ```
