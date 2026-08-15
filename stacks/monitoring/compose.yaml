@@ -52,7 +52,7 @@ services:
       traefik.http.routers.victoria-metrics.rule: "Host(`metrics.dominiksiejak.pl`)"
 
   blackbox-exporter:
-    image: prom/blackbox-exporter:v0.26.0
+    image: prom/blackbox-exporter:v0.28.0
     container_name: blackbox-exporter
     restart: unless-stopped
     volumes:
