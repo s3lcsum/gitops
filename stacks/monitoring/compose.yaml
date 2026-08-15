@@ -51,6 +51,20 @@ services:
       traefik.enable: true
       traefik.http.routers.victoria-metrics.rule: "Host(`metrics.dominiksiejak.pl`)"
 
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.26.0
+    container_name: blackbox-exporter
+    restart: unless-stopped
+    volumes:
+      - /opt/monitoring/blackbox-exporter/blackbox.yaml:/etc/blackbox_exporter/blackbox.yaml:ro
+    networks:
+      - metrics
+      - proxy
+    command:
+      - "--config.file=/etc/blackbox_exporter/blackbox.yaml"
+    expose:
+      - "9115"
+
 networks:
   proxy:
     external: true
