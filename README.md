@@ -22,7 +22,7 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 | **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + OpenTofu (`terraform/authentik/`) |
 | **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + OpenTofu (`terraform/netbox/`) |
 | **Secrets** | HashiCorp Vault + Vaultwarden | `stacks/vault/`, `stacks/vaultwarden/` |
-| **Monitoring** | Gatus (status), Grafana + VictoriaMetrics (`stacks/monitoring/`), Synthetic Agent | `stacks/gatus/`, `stacks/monitoring/`, `stacks/grafana-synthetic-agent/` |
+| **Monitoring** | Gatus (status), Grafana + VictoriaMetrics (`stacks/monitoring/`) via CasC dashboards/alerting, Blackbox synthetic probes, Synthetic Agent | `stacks/gatus/`, `stacks/monitoring/`, `terraform/grafana/`, `stacks/grafana-synthetic-agent/` |
 | **Media** | Jellyfin + *arr stack + downloaders | `stacks/mediabox/` |
 
 📖 **[Documentation site](docs/index.md)** — MkDocs (networking notes, ADRs, golden paths, Vault runbook).
@@ -65,7 +65,7 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | [Grafana Synthetic Monitoring Agent](https://github.com/grafana/synthetic-monitoring-agent) | Synthetic checks (Grafana Cloud–oriented agent) |
 | [Home Assistant stack](https://www.home-assistant.io/) | HA, Zigbee2MQTT, Mosquitto, optional [HA Time Machine](https://github.com/saihgupr/homeassistanttimemachine) (compose profile) |
 | **Mediabox** (see below) | Media + *arr + VPN-routed downloaders |
-| **Monitoring** | [Grafana](https://grafana.com/), [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics), PVE exporter, [k6](https://k6.io/) smoke |
+| **Monitoring** | [Grafana](https://grafana.com/), [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics), [Blackbox exporter](https://github.com/prometheus/blackbox_exporter) synthetic probes, PVE exporter, [k6](https://k6.io/) smoke — CasC dashboards + alerting (TG + SMTP) |
 | [n8n](https://n8n.io/) | Workflow automation |
 | [NetBox](https://github.com/netbox-community/netbox) | IPAM / DCIM |
 | [PostgreSQL](https://www.postgresql.org/) | Shared database host |
@@ -76,7 +76,7 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 
 ### Mediabox (`stacks/mediabox/`)
 
-[Jellyfin](https://jellyfin.org/), [Seerr](https://github.com/seerr-team/seerr) (image `fallenbagel/jellyseerr`), Sonarr, Radarr, Prowlarr, FlareSolverr, [Gluetun](https://github.com/qdm12/gluetun), qBittorrent, SABnzbd — wired the usual way behind Traefik and the VPN gateway where applicable.
+[Jellyfin](https://jellyfin.org/), [Seerr](https://github.com/seerr-team/seerr) (image `fallenbagel/jellyseerr`), Sonarr, Radarr, Prowlarr, FlareSolverr, [Gluetun](https://github.com/qdm12/gluetun), qBittorrent, SABnzbd, plus a `scraparr` metrics exporter for the arr stack — wired the usual way behind Traefik and the VPN gateway where applicable.
 
 ### Not in `stacks/` (still in the environment)
 
@@ -218,6 +218,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── cloudflare/
 │   ├── gcp/
 │   ├── gitea/
+│   ├── grafana/
 │   ├── kind/
 │   ├── netbox/
 │   ├── portainer/
@@ -248,6 +249,12 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 15.08.2026
+
+**Monitoring as code.** Revamped `stacks/monitoring/` around config-as-code: added a Prometheus [Blackbox exporter](https://github.com/prometheus/blackbox_exporter) probing 25+ public endpoints (`blackbox-*` jobs in `victoria-metrics/promscrape.yaml`), a `scraparr` exporter in `stacks/mediabox/` exporting Sonarr/Radarr/Prowlarr metrics, and moved Grafana to CasC — dashboards for Node, PostgreSQL, Traefik, VictoriaMetrics, Blackbox and the scraparr service are provisioned from `stacks/monitoring/grafana/provisioning/dashboards/` against a single `victoria-metrics` datasource (no stale `$DS_*` refs), and alert rules `Synthetic service down` (`min(probe_success) by (instance) == 0`) and `VictoriaMetrics down` (`up{job="victoria-metrics"} == 0`) are provisioned from `provisioning/alerting/alerting.yaml` into the Monitoring folder, routed to an `all-channels` receiver (Telegram + SMTP email). Added a `terraform/grafana/` module (Terraform Cloud workspace `gitops-grafana`) that creates a provisioner service account + token via the API — the one thing CasC provisioning can't express.
+
+End-to-end verification on 15.08.2026: while the `blackbox-sonarr` probe read 0 for several minutes the rule stayed inactive, because the `== 0` expression feeds a `gt 0` threshold and a `0` value never crosses it (expression evaluates, but the resulting vector never fires). Both rules did fire while VictoriaMetrics was unreachable, via the `execErrState: Alerting` datasource-error path, and resolved cleanly after the container restarted; those firing states were delivered into Alertmanager under the `all-channels` route. External Telegram/SMTP delivery itself could not be observed from the shell — only inferred from Alertmanager state.
 
 ### 04.08.2026
 
