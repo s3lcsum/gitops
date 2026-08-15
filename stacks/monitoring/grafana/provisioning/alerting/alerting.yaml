@@ -1,0 +1,110 @@
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: all-channels
+    receivers:
+      - uid: telegram-act-receiver
+        type: telegram
+        settings:
+          bottoken: ${GRAFANA_TELEGRAM_BOT_TOKEN}
+          chatid: ${GRAFANA_TELEGRAM_CHAT_ID}
+          message: '{{ template "alert_list" . }}'
+      - uid: email-smtp-receiver
+        type: email
+        settings:
+          addresses: "root@mail.dominiksiejak.pl,dreewniak@gmail.com"
+
+policies:
+  - orgId: 1
+    receiver: all-channels
+    group_by: ["grafana_folder", "alertname"]
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 4h
+
+groups:
+  - orgId: 1
+    name: "synthetic-monitoring"
+    folder: "Monitoring"
+    interval: 1m
+    rules:
+      - uid: synthetic-service-down
+        title: "Synthetic service down"
+        condition: "C"
+        data:
+          - refId: "A"
+            datasourceUid: "victoria-metrics"
+            model:
+              expr: "min(probe_success) by (instance) == 0"
+              instant: true
+            relativeTimeRange:
+              from: 300
+              to: 0
+          - refId: "C"
+            datasourceUid: "__expr__"
+            model:
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+                  type: query
+              datasource:
+                type: "__expr__"
+                uid: "__expr__"
+              expression: "A"
+              type: "threshold"
+            relativeTimeRange:
+              from: 300
+              to: 0
+        for: 2m
+        labels:
+          service: up
+        annotations:
+          summary: "Service {{ $labels.instance }} unreachable"
+          description: "Synthetic probe failed for instance {{ $labels.instance }}"
+
+  - orgId: 1
+    name: "victoria-metrics-indicators"
+    folder: "Monitoring"
+    interval: 1m
+    rules:
+      - uid: vm-down
+        title: "VictoriaMetrics down"
+        condition: "C"
+        data:
+          - refId: "A"
+            datasourceUid: "victoria-metrics"
+            model:
+              expr: "up{job=\"victoria-metrics\"} == 0"
+              instant: true
+            relativeTimeRange:
+              from: 300
+              to: 0
+          - refId: "C"
+            datasourceUid: "__expr__"
+            model:
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+                  type: query
+              datasource:
+                type: "__expr__"
+                uid: "__expr__"
+              expression: "A"
+              type: "threshold"
+            relativeTimeRange:
+              from: 300
+              to: 0
+        for: 2m
+        labels:
+          service: down
+        annotations:
+          summary: "VictoriaMetrics is unreachable"
+
+templates:
+  - name: "alert_list"
+    template: |
+      {{ define "alert_list" }}{{ range .Alerts }}• [{{ .Labels.severity }}] {{ .Annotations.summary }} ({{ .Labels.instance }})
+      {{ end }}{{ end }}
