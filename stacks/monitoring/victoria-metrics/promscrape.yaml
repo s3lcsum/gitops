@@ -51,6 +51,12 @@ scrape_configs:
     # MacBook Pro dev machine (en5 USB Ethernet, static IP)
     # Wi-Fi fallback: 192.168.89.130:9100 (DHCP, may change)
 
+  - job_name: scraparr
+    static_configs:
+      - targets:
+          - scraparr:7100
+    metrics_path: /metrics
+
   - job_name: blackbox-portainer
     metrics_path: /probe
     params:

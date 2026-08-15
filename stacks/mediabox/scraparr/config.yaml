@@ -1,0 +1,15 @@
+general:
+  port: 7100
+  log_level: INFO
+
+sonarr:
+  url: http://sonarr:8989
+  api_key: ${SONARR_API_KEY}
+
+radarr:
+  url: http://radarr:7878
+  api_key: ${RADARR_API_KEY}
+
+prowlarr:
+  url: http://prowlarr:9696
+  api_key: ${PROWLARR_API_KEY}
