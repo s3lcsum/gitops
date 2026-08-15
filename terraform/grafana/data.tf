@@ -1,0 +1,1 @@
+# No data sources required for the minimal service-account module.
