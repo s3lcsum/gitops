@@ -36,7 +36,7 @@ groups:
           - refId: "A"
             datasourceUid: "victoria-metrics"
             model:
-              expr: "min(probe_success) by (instance) == 0"
+              expr: "min(probe_success) by (instance)"
               instant: true
             relativeTimeRange:
               from: 300
@@ -46,8 +46,8 @@ groups:
             model:
               conditions:
                 - evaluator:
-                    type: gt
-                    params: [0]
+                    type: lt
+                    params: [1]
                   type: query
               datasource:
                 type: "__expr__"
@@ -76,7 +76,7 @@ groups:
           - refId: "A"
             datasourceUid: "victoria-metrics"
             model:
-              expr: "up{job=\"victoria-metrics\"} == 0"
+              expr: "up{job=\"victoria-metrics\"}"
               instant: true
             relativeTimeRange:
               from: 300
@@ -86,8 +86,8 @@ groups:
             model:
               conditions:
                 - evaluator:
-                    type: gt
-                    params: [0]
+                    type: lt
+                    params: [1]
                   type: query
               datasource:
                 type: "__expr__"
