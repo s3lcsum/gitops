@@ -4,11 +4,15 @@ terraform {
   required_providers {
     portainer = {
       source  = "portainer/portainer"
-      version = "1.34.1"
+      version = "1.34.3"
     }
     tfe = {
       source  = "hashicorp/tfe"
-      version = "0.79.0"
+      version = "0.80.0"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "2.9.0"
     }
   }
 
