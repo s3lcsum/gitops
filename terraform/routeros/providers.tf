@@ -8,11 +8,11 @@ terraform {
     }
     wireguard = {
       source  = "OJFord/wireguard"
-      version = "0.4.0"
+      version = "0.4.1+2"
     }
     tfe = {
       source  = "hashicorp/tfe"
-      version = "0.79.0"
+      version = "0.80.0"
     }
   }
 
