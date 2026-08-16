@@ -250,6 +250,17 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Changelog
 
+### 16.08.2026
+
+**Calibre** got a full reproducible automation + acquisition story:
+
+- CWA (`calibre.dominiksiejak.pl`) stays the single writer of the shared library, and the desktop GUI (`calibre-gui.dominiksiejak.pl`, Authentik-gated) was repointed at that same library. Both now live on `books/library`.
+- The whole setup is restore-from-code: `stacks/calibre/seeds/` carries the GUI `global.py.json`, CWA `cwa_settings`/`settings`, and DeDRM v10.0.3 in the *active* config (`/config/.config/calibre/plugins/`) — the baked-in 7.2.1 was never loaded. `make calibre-restore` rebuilds everything.
+- `make calibre-plugins` installs Quality Check, Manage Series, Kobo Utilities, EpubMerge, KindleUnpack into the GUI (sha-pinned manifest; KoboTouchExtended dropped — it doesn't load in linuxserver/calibre 9.13's frozen-python build, and CWA already does KEPUB + Kobo wifi sync).
+- Metadata provider order puts LubimyCzytac first for Polish books, google/others fall back for EN/ES.
+
+**Book acquisition:** baseline for Readarr + rreading-glasses (plan in progress — see below).
+
 ### 15.08.2026
 
 **Monitoring as code.** Revamped `stacks/monitoring/` around config-as-code: added a Prometheus [Blackbox exporter](https://github.com/prometheus/blackbox_exporter) probing 25+ public endpoints (`blackbox-*` jobs in `victoria-metrics/promscrape.yaml`), a `scraparr` exporter in `stacks/mediabox/` exporting Sonarr/Radarr/Prowlarr metrics, and moved Grafana to CasC — dashboards for Node, PostgreSQL, Traefik, VictoriaMetrics, Blackbox and the scraparr service are provisioned from `stacks/monitoring/grafana/provisioning/dashboards/` against a single `victoria-metrics` datasource (no stale `$DS_*` refs), and alert rules `Synthetic service down` (`min(probe_success) by (instance) < 1`) and `VictoriaMetrics down` (`up{job="victoria-metrics"} < 1`) are provisioned from `provisioning/alerting/alerting.yaml` into the Monitoring folder, routed to an `all-channels` receiver (Telegram + SMTP email). Added a `terraform/grafana/` module (Terraform Cloud workspace `gitops-grafana`) that creates a provisioner service account + token via the API — the one thing CasC provisioning can't express.

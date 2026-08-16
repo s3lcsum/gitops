@@ -170,6 +170,14 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/calibre.svg"
       skip_path_regex = ""
     }
+    calibre-gui = {
+      name            = "Calibre GUI"
+      external_host   = "https://calibre-gui.dominiksiejak.pl"
+      internal_host   = "http://calibre:8080"
+      launch_url      = "https://calibre-gui.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/calibre.svg"
+      skip_path_regex = ""
+    }
     sabnzbd = {
       name            = "SABnzbd"
       external_host   = "https://sabnzbd.dominiksiejak.pl"
