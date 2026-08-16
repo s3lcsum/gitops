@@ -1,0 +1,32 @@
+{
+  "koboTouchExtended": {
+    "name": "KoboTouchExtended",
+    "url": "https://plugins.calibre-ebook.com/211135.zip",
+    "sha256": "9488729c714296a5ed73b972a3b3719b72caf554dc7388adbf48ef53bfc5915d"
+  },
+  "manageSeries": {
+    "name": "Manage Series",
+    "url": "https://plugins.calibre-ebook.com/125729.zip",
+    "sha256": "311c4e0c5c0a9bc6329d96484c6d64c8cbb27d94a6b6f49f8e7efaa9f8e2e583"
+  },
+  "qualityCheck": {
+    "name": "Quality Check",
+    "url": "https://plugins.calibre-ebook.com/125428.zip",
+    "sha256": "d1895d211238158fc5034b7aeb622323deb70b53a0382b638e0f39851a93487b"
+  },
+  "epubMerge": {
+    "name": "EpubMerge",
+    "url": "https://plugins.calibre-ebook.com/169744.zip",
+    "sha256": "187e8913b6e79f2b5d3a870db529e1e44355e5c12beef33a051c890bcb938a35"
+  },
+  "kindleUnpack": {
+    "name": "KindleUnpack - The Plugin",
+    "url": "https://plugins.calibre-ebook.com/171529.zip",
+    "sha256": "ce029b7be56171309675f8e61a4098d082f1238b1a9803c55ca30a3857cb52a5"
+  },
+  "koboUtilities": {
+    "name": "Kobo Utilities",
+    "url": "https://plugins.calibre-ebook.com/366110.zip",
+    "sha256": "2d9ac05734e344bf79cb60c8c10f5b2c686ce68e4f7cddcdeafe7704789f381f"
+  }
+}
