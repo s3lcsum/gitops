@@ -1,9 +1,4 @@
 {
-  "koboTouchExtended": {
-    "name": "KoboTouchExtended",
-    "url": "https://plugins.calibre-ebook.com/211135.zip",
-    "sha256": "9488729c714296a5ed73b972a3b3719b72caf554dc7388adbf48ef53bfc5915d"
-  },
   "manageSeries": {
     "name": "Manage Series",
     "url": "https://plugins.calibre-ebook.com/125729.zip",

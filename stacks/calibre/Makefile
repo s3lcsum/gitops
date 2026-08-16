@@ -65,9 +65,8 @@ calibre-plugins: ## Download (sha-verified), stage, and install GUI plugins
 	rsync -av --delete /tmp/calibre-plugins/ "$(HOST):$(HOST_BASE)/plugins/zips/"
 	@for key in $$(cd $(CALIBRE_DIR)/plugins && python3 -c 'import json,sys;print(" ".join(json.load(open("manifest.json")).keys()))'); do \
 		echo "== install $$key =="; \
-		ssh "$(HOST)" "docker stop calibre || true"; \
-		ssh "$(HOST)" "docker run --rm -e HOME=/config -v $(GUI_VOL):/config -v $(HOST_BASE)/plugins/zips/$$key.zip:/plugin.zip:ro $(GUI_IMAGE) calibre-customize --add-plugin=/plugin.zip"; \
-		ssh "$(HOST)" "docker start calibre"; \
+		ssh "$(HOST)" "docker cp $(HOST_BASE)/plugins/zips/$$key.zip calibre:/tmp/plugin.zip && docker exec -u abc -e HOME=/config calibre calibre-customize --add-plugin=/tmp/plugin.zip"; \
+		ssh "$(HOST)" "docker restart calibre"; \
 	done
 	@echo "plugins installed"
 
