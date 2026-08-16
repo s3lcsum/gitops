@@ -16,6 +16,14 @@ resource "authentik_property_mapping_provider_scope" "custom_claims" {
   expression = each.value.mapping
 }
 
+# OIDC scope mapping returning Authentik group names. The Jellyfin SSO plugin
+# requests the "groups" scope to implement role/group-based admission.
+resource "authentik_property_mapping_provider_scope" "jellyfin_groups" {
+  name       = "jellyfin-groups"
+  scope_name = "groups"
+  expression = "return [group.name for group in user.ak_groups.all()]"
+}
+
 resource "authentik_provider_oauth2" "oauth2" {
   for_each = local.oauth2_applications
 
@@ -40,10 +48,15 @@ resource "authentik_provider_oauth2" "oauth2" {
     "refresh_token",
   ]
 
-  property_mappings = lookup(each.value, "mapping", null) != null ? concat(
-    data.authentik_property_mapping_provider_scope.oauth2_scopes.ids,
-    [authentik_property_mapping_provider_scope.custom_claims[each.key].id]
-  ) : data.authentik_property_mapping_provider_scope.oauth2_scopes.ids
+  property_mappings = each.key == "jellyfin" ? (
+    lookup(each.value, "mapping", null) != null
+    ? concat(local.jellyfin_scope_ids, [authentik_property_mapping_provider_scope.custom_claims["jellyfin"].id])
+    : local.jellyfin_scope_ids
+    ) : (
+    lookup(each.value, "mapping", null) != null
+    ? concat(data.authentik_property_mapping_provider_scope.oauth2_scopes.ids, [authentik_property_mapping_provider_scope.custom_claims[each.key].id])
+    : data.authentik_property_mapping_provider_scope.oauth2_scopes.ids
+  )
 
   allowed_redirect_uris = [
     for uri in each.value.redirect_uris : {
@@ -96,6 +109,11 @@ resource "authentik_application" "dashboard" {
 }
 
 locals {
+  jellyfin_scope_ids = concat(
+    data.authentik_property_mapping_provider_scope.oauth2_scopes.ids,
+    [authentik_property_mapping_provider_scope.jellyfin_groups.id]
+  )
+
   # Intersect config keys with resources in state so evaluation succeeds when config and state drift
   # (e.g. dashboard apps renamed or not yet applied).
   all_app_uuids = merge(

@@ -31,7 +31,11 @@ resource "authentik_user" "service_accounts" {
   name     = each.value.name
   type     = "service_account"
   path     = "service-accounts"
-  groups   = each.value.is_admin ? [authentik_group.admins.id] : []
+  groups = concat(
+    each.value.is_admin ? [authentik_group.admins.id] : [],
+    each.key == "svc_jellyfin" ? [authentik_group.svc.id] : [],
+  )
+  roles = each.key == "svc_jellyfin" ? [authentik_rbac_role.ldap_search.id] : []
 }
 
 resource "authentik_token" "service_account_tokens" {
@@ -41,4 +45,9 @@ resource "authentik_token" "service_account_tokens" {
   identifier  = "${each.key}-ldap-token"
   intent      = "app_password"
   description = "LDAP bind password for ${each.value.name}"
+}
+
+resource "authentik_group" "svc" {
+  name         = "svc"
+  is_superuser = false
 }

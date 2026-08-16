@@ -71,3 +71,16 @@ resource "authentik_policy_binding" "ldap_admin_access" {
   group  = authentik_group.admins.id
   order  = 0
 }
+
+# Grant svc_jellyfin the permission to search the full LDAP directory.
+# Replaces the old `search_group` field (removed in provider v2026.x).
+resource "authentik_rbac_role" "ldap_search" {
+  name = "ldap-search"
+}
+
+resource "authentik_rbac_permission_role" "ldap_search" {
+  role       = authentik_rbac_role.ldap_search.id
+  model      = "authentik_providers_ldap.ldapprovider"
+  permission = "authentik_providers_ldap.search_full_directory"
+  object_id  = authentik_provider_ldap.ldap.id
+}

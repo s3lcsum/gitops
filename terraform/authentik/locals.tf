@@ -68,6 +68,14 @@ locals {
         "https://hermes.dominiksiejak.pl/api/auth/oidc/callback",
       ]
     }
+    ghostfolio = {
+      name       = "Ghostfolio"
+      launch_url = "https://ghostfolio.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/ghostfolio.svg"
+      redirect_uris = [
+        "https://ghostfolio.dominiksiejak.pl/api/auth/oidc/callback",
+      ]
+    }
     synology = {
       name       = "Synology DSM"
       launch_url = "https://nas.dominiksiejak.pl"

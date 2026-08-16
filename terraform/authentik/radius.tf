@@ -81,7 +81,7 @@ resource "authentik_application" "routeros" {
   slug              = "routeros"
   protocol_provider = authentik_provider_radius.routeros.id
   meta_icon         = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/mikrotik.svg"
-  meta_launch_url   = "blank://blank"
+  meta_launch_url   = "https://router.dominiksiejak.pl"
 }
 
 resource "authentik_outpost" "radius" {
