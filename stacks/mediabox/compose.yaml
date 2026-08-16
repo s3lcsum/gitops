@@ -161,6 +161,31 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8989/"]
 
 
+  # 🎥 Subtitle management
+  bazarr:
+    <<: *service-defaults
+    image: linuxserver/bazarr:1.6.0
+    container_name: bazarr
+    depends_on:
+      sonarr:
+        condition: service_healthy
+      radarr:
+        condition: service_healthy
+    volumes:
+      - bazarr_config:/config
+      - /mnt/LOCAL_MEDIA:/mnt/LOCAL_MEDIA
+      - /mnt/NAS_Shared_Media:/mnt/NAS_Shared_Media
+    networks:
+      - proxy
+      - metrics
+    labels:
+      traefik.enable: true
+      traefik.http.services.bazarr.loadbalancer.server.port: 6767
+      traefik.http.routers.bazarr.middlewares: remote@file
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD-SHELL", "curl -fsS http://localhost:6767/ || exit 1"]
+
   # 📺 Media server (primary)
   jellyfin:
     <<: *service-defaults
@@ -258,6 +283,7 @@ volumes:
   sonarr_config:
   jellyfin_config:
   seerr_config:
+  bazarr_config:
   prowlarr_config:
   flaresolverr_config:
   profilarr_config:
