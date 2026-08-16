@@ -43,25 +43,25 @@ calibre-seed: calibre-sync ## Apply GUI global.py.json, CWA DB settings, DeDRM s
 
 calibre-plugins: ## Download (sha-verified), stage, and install GUI plugins
 	@mkdir -p /tmp/calibre-plugins
-	@python3 - "$(CALIBRE_DIR)/plugins/manifest.json" "/tmp/calibre-plugins" <<'PY'
-	import hashlib, json, os, subprocess, sys
-	manifest_path, out_dir = sys.argv[1], sys.argv[2]
-	manifest = json.load(open(manifest_path))
-	failures = []
-	for key, entry in manifest.items():
-	    local = os.path.join(out_dir, f"{key}.zip")
-	    if os.path.exists(local):
-	        os.remove(local)
-	    subprocess.run(["curl", "-sL", "--max-time", "60", "-o", local, entry["url"]], check=True)
-	    h = hashlib.sha256(open(local, "rb").read()).hexdigest()
-	    if h != entry["sha256"]:
-	        failures.append(f"{key}: expected {entry['sha256']} got {h}")
-	        continue
-	    print(f"OK {key} {h}")
-	if failures:
-	    print("SHA256 MISMATCH — aborting:", *failures, sep="\n  ")
-	    sys.exit(1)
-	PY
+	@printf '%s\n' \
+		'import hashlib, json, os, subprocess, sys' \
+		'manifest_path, out_dir = sys.argv[1], sys.argv[2]' \
+		'manifest = json.load(open(manifest_path))' \
+		'failures = []' \
+		'for key, entry in manifest.items():' \
+		'    local = os.path.join(out_dir, f"{key}.zip")' \
+		'    if os.path.exists(local):' \
+		'        os.remove(local)' \
+		'    subprocess.run(["curl", "-sL", "--max-time", "60", "-o", local, entry["url"]], check=True)' \
+		'    h = hashlib.sha256(open(local, "rb").read()).hexdigest()' \
+		'    if h != entry["sha256"]:' \
+		'        failures.append(f"{key}: expected {entry['"'"'sha256'"'"']} got {h}")' \
+		'        continue' \
+		'    print(f"OK {key} {h}")' \
+		'if failures:' \
+		'    print("SHA256 MISMATCH — aborting:", *failures, sep="\n  ")' \
+		'    sys.exit(1)' \
+		| python3 - "$(CALIBRE_DIR)/plugins/manifest.json" "/tmp/calibre-plugins"
 	rsync -av --delete /tmp/calibre-plugins/ "$(HOST):$(HOST_BASE)/plugins/zips/"
 	@for key in $$(cd $(CALIBRE_DIR)/plugins && python3 -c 'import json,sys;print(" ".join(json.load(open("manifest.json")).keys()))'); do \
 		echo "== install $$key =="; \

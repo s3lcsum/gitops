@@ -45,6 +45,9 @@ def main():
     else:
         target = rows[0]
 
+    has_id = "id" in cols
+    row_id = target[cols.index("id")] if has_id else None
+
     updates = []
     for key, value in seed.items():
         if key not in cols:
@@ -53,10 +56,10 @@ def main():
         if key == "id":
             continue
         stored = json.dumps(value) if isinstance(value, (dict, list)) else value
-        updates.append((key, stored, target[cols.index("id")]))
+        updates.append((key, stored, row_id))
 
-    if a.id is None and "id" in cols:
-        where = f"WHERE id = {target[cols.index('id')]}"
+    if a.id is None and has_id:
+        where = f"WHERE id = {row_id}"
     elif a.id is not None:
         where = f"WHERE id = {a.id}"
     else:
@@ -69,7 +72,7 @@ def main():
     set_clause = ", ".join(f"{k} = ?" for k, _, _ in updates)
     cur.execute(f"UPDATE {a.table} SET {set_clause} {where}", [v for _, v, _ in updates])
     conn.commit()
-    print(f"applied {len(updates)} settings to {a.table}{' (id=%d)' % target[cols.index('id')] if 'id' in cols else ''}")
+    print(f"applied {len(updates)} settings to {a.table}{' (id=%d)' % row_id if has_id else ''}")
 
 
 if __name__ == "__main__":
