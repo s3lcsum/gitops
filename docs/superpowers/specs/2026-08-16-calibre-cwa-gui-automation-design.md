@@ -21,7 +21,7 @@
 
 ## Goal
 
-Books appear on the Kobo automatically (metadata-enriched, DeDRM-stripped when possible, converted to KEPUB) with zero manual steps in the daily path, while the desktop GUI is fully outfitted for manual curation — all reproduced from the gitops repo via a Makefile.
+Books appear on the Kobo automatically (metadata-enriched, DeDRM-stripped when possible, converted to KEPUB) with zero manual steps in the daily path, while the desktop GUI is fully outfitted for manual curation — all reproduced from the gitops repo via Makefile targets, so a wiped host is restored in a few commands.
 
 ## Architecture (after change)
 
@@ -51,7 +51,7 @@ Books appear on the Kobo automatically (metadata-enriched, DeDRM-stripped when p
 - All `auto_metadata_update_*` flags already on — no change.
 - `auto_convert` on, target `epub` (+ kepub via Kobo sync) — no change.
 - `config_kobo_sync=1`, `koreader_sync_enabled=1` — no change.
-- **DeDRM**: upload Adobe ADE activation key via CWA → Settings → **Adobe** (user action; the only manual step in the design). After that, Adept-DRM'ed shop epubs are stripped.
+- **DeDRM**: research shows the plugin (`adobekey.py` + DeDRM.zip) is baked into the image at 7.2.1 but under `/root/.config/calibre`, while CWA's active calibre config is `/config/.config/calibre` (per `CALIBRE_CONFIG_DIR`) — its `plugins/` dir is **empty**, so DeDRM is presently inactive. Section 3 seeds DeDRM v10.0.3 into the active config dir. Stripping Adobe Adept still requires an ADE activation key supplied into `dedrm.json` (`adeptkeys`); CWA has no Adobe key UI, so the key file is the only remaining user-managed bit.
 
 ### 2. GUI plugin suite (manifest + Makefile)
 
@@ -69,6 +69,21 @@ Books appear on the Kobo automatically (metadata-enriched, DeDRM-stripped when p
      `docker run --rm -v calibre_calibre_config:/config linuxserver/calibre:9.13.0 calibre-customize --add-plugin=<zip>`
   4. `docker restart calibre` to load plugins.
 - Repo convention respected: no `.sh` scripts, automation via Makefile; no binary blobs committed.
+
+### 3. Configuration-in-code / restore-from-code
+
+All live configuration is codified in `stacks/calibre/seeds/` so a wiped host can be rebuilt in a few commands. Two SQLite DBs (`cwa.db`, `app.db`) and calibre's `global.py.json` hold the CWA/GUI state; none have an export/import UI, so we snapshot the non-default keys as JSON seeds and apply them via `sqlite3`/`calibre` on seed.
+
+- New `stacks/calibre/seeds/`:
+  - `gui-global.py.json` — desktop GUI `library_path` → `/mnt/NAS_Shared_Media/books/library` (the shared-library change).
+  - `cwa_settings.json` — non-default `cwa_settings` keys (metadata provider hierarchy, `auto_metadata_update_*` flags, auto_convert, backup/cleanup, duplicate handling, hardcover schedule).
+  - `app_settings.json` — non-default `settings` keys (kobo_sync, kepubify/converter paths, upload formats, password policy, default language/locale).
+  - `DeDRM.zip` (v10.0.3) + `customize.py.json` + `dedrm.json` — DeDRM placed in the **active** CWA config dir `/config/.config/calibre/plugins/` (fixes the baked-but-inactive 7.2.1 in `/root/.config/calibre`).
+- New `stacks/calibre/Makefile` (in addition to `calibre-plugins`):
+  - `make calibre-seed` — restores `gui-global.py.json`, `cwa_settings.json`, `app_settings.json`, and DeDRM (copy to active config dir + register in `customize.py.json`), then restarts CWA + GUI. Idempotent.
+  - `make calibre-restore` — convenience: `calibre-seed` + `calibre-plugins`.
+- All targets run over `ssh portainer docker …` (matches repo's ssh-to-Portainer pattern).
+- Restore-from-scratch flow: `git clone` → `make apply` (terraform/portainer + authentik) → `make calibre-restore` → user re-uploads ADE key (CWA) + relinks Kobo once.
 
 ## Data flow
 
@@ -110,16 +125,21 @@ Books appear on the Kobo automatically (metadata-enriched, DeDRM-stripped when p
 
 ## Deployment steps
 
-1. Edit CWA `metadata_provider_hierarchy` → `lubimyczytac` first (via CWA UI Settings → Metadata).
-2. Add `stacks/calibre/plugins/manifest.json` + `stacks/calibre/Makefile`.
+1. Add `stacks/calibre/seeds/` (gui-global.py.json, cwa_settings.json, app_settings.json, DeDRM.zip v10.0.3 + customize.py.json + dedrm.json) and `stacks/calibre/plugins/manifest.json` + `stacks/calibre/Makefile`.
+2. Run `make calibre-seed` (restores GUI library_path, CWA DB settings, DeDRM into active config; restarts CWA + GUI).
 3. Run `make calibre-plugins` (downloads, verifies sha, installs, restarts calibre).
-4. User uploads ADE key in CWA → Settings → Adobe.
+4. User supplies Adobe ADE key → `make calibre-seed` re-applies with `dedrm.json` filled (or key pasted via CWA config file on host).
 5. Kobo links to `https://calibre.dominiksiejak.pl/kobo` (device browser sign-in) → normal Sync pulls books.
 6. Run acceptance A1–A5.
 7. `README.md` changelog entry `### 16.08.2026`.
-8. Commit design doc + manifest + Makefile; commit uncommitted `terraform/authentik/locals.tf` calibre-gui addition.
+8. Commit design doc + seeds + manifest + Makefile; commit uncommitted `terraform/authentik/locals.tf` calibre-gui addition.
+
+## Restore-from-scratch
+
+`git clone` → `make apply` (terraform/portainer, deploys compose) → `make calibre-restore` (= calibre-seed + calibre-plugins) → re-upload ADE key + relink Kobo.
 
 ## Testing notes
 
-- CWA config is live state on Portainer; document the one-click settings rather than codifying (no tofu resource for CWA settings).
+- CWA config is live state on Portainer; codified via seeds (no tofu resource for CWA settings).
 - `make calibre-plugins` reruns idempotently (calibre-customize warns/replaces existing plugins; restart is cheap).
+- `make calibre-seed` reruns idempotently (overwrites settings + DeDRM to desired state, restarts).
