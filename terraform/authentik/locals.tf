@@ -108,6 +108,10 @@ locals {
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/grafana.svg"
       redirect_uris = ["https://grafana.dominiksiejak.pl/login/generic_oauth"]
       mapping       = <<-EOF
+        if request.user.ak_groups.filter(name="admins").exists():
+            return {"role": "Admin"}
+        elif request.user.ak_groups.filter(name="users").exists():
+            return {"role": "Editor"}
         return {"role": "Viewer"}
       EOF
     }
