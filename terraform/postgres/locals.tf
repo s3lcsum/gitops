@@ -32,5 +32,13 @@ locals {
       username = "hass_user"
       database = "homeassistant" # HA requires this exact name; don't rename to hass_db
     }
+    bookarr = {
+      username = "rreading_glasses"
+      database = "bookarr_db"
+    }
+    ghostfolio = {
+      username = "ghostfolio_user"
+      database = "ghostfolio_db"
+    }
   }
 }

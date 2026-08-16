@@ -51,5 +51,13 @@ locals {
       username = "hass_user"
       database = "homeassistant"
     }
+    bookarr = {
+      username = "rreading_glasses"
+      database = "bookarr_db"
+    }
+    ghostfolio = {
+      username = "ghostfolio_user"
+      database = "ghostfolio_db"
+    }
   }
 }
