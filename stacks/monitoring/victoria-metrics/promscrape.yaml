@@ -44,6 +44,12 @@ scrape_configs:
       module: [default]
       target: ["proxmox.dominiksiejak.pl"]
 
+  - job_name: "lake"
+    static_configs:
+      - targets:
+          - "192.168.89.254:9100"
+    # Proxmox VE host (Debian 13 trixie)
+
   - job_name: "vibe"
     static_configs:
       - targets:
@@ -491,3 +497,19 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: blackbox-exporter:9115
+
+  - job_name: synology
+    static_configs:
+      - targets:
+          - "192.168.89.240"
+    params:
+      module: [synology]
+    metrics_path: /snmp
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: snmp-exporter:9116
+    scrape_interval: 60s

@@ -75,3 +75,6 @@ terraform/proxmox/generated/
 
 # Runtime logs
 logs/
+
+# Real snmp-exporter config with NAS SNMPv3 credentials
+stacks/monitoring/snmp-exporter/synology.yml
