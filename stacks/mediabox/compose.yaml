@@ -193,7 +193,7 @@ services:
     container_name: jellyfin
     volumes:
       - jellyfin_config:/config
-      - /opt/mediabox/jellyfin-plugins:/config/plugins
+      - /opt/mediabox/jellyfin-plugins/Jellyfin.Plugin.SSO:/config/data/plugins/Community SSO for Jellyfin_4.3.0.34
       - /mnt/LOCAL_MEDIA/tv:/mnt/LOCAL_MEDIA/tv
       - /mnt/NAS_Shared_Media/tv:/mnt/NAS_Shared_Media/tv
       - /mnt/LOCAL_MEDIA/movies:/mnt/LOCAL_MEDIA/movies
@@ -269,12 +269,64 @@ services:
       <<: *healthcheck
       test: ["CMD-SHELL", "curl -fsS http://localhost:7100/metrics >/dev/null || exit 1"]
 
+  # 📚 Book acquisition (Readarr fork; downloads into CWA's ingest dir)
+  readarr:
+    <<: *service-defaults
+    image: ghcr.io/faustvii/readarr:0.9.1
+    container_name: readarr
+    depends_on:
+      qbittorrent:
+        condition: service_healthy
+      sabnzbd:
+        condition: service_healthy
+      prowlarr:
+        condition: service_healthy
+    volumes:
+      - readarr_config:/config
+      - /mnt/LOCAL_MEDIA:/mnt/LOCAL_MEDIA
+      - /mnt/NAS_Shared_Media:/mnt/NAS_Shared_Media
+    networks:
+      - arr
+      - proxy
+      - database
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8787/"]
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+      traefik.http.services.readarr.loadbalancer.server.port: 8787
+      traefik.http.routers.readarr.middlewares: remote@file
+      traefik.http.routers.readarr.rule: Host(`readarr.dominiksiejak.pl`)
+      traefik.http.routers.readarr.service: readarr
+
+  # 📚 GoodReads metadata backend for Readarr (self-hosted rreading-glasses)
+  rreading-glasses:
+    <<: *service-defaults
+    image: blampe/rreading-glasses:latest
+    container_name: rreading-glasses
+    entrypoint: ["/main", "serve"]
+    command:
+      - --upstream=www.goodreads.com
+      - --verbose
+    env_file:
+      - /opt/mediabox/rreading-glasses.env
+    volumes: []
+    networks:
+      - database
+    mem_limit: 128m
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8788/ >/dev/null 2>&1 || exit 1"]
+
 networks:
   arr:
     driver: bridge
   proxy:
     external: true
   metrics:
+    external: true
+  database:
     external: true
 
 volumes:
@@ -288,3 +340,4 @@ volumes:
   prowlarr_config:
   flaresolverr_config:
   profilarr_config:
+  readarr_config:
