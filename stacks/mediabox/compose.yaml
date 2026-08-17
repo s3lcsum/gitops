@@ -193,7 +193,6 @@ services:
     container_name: jellyfin
     volumes:
       - jellyfin_config:/config
-      - /opt/mediabox/jellyfin-plugins/Jellyfin.Plugin.SSO:/config/data/plugins/Community SSO for Jellyfin_4.3.0.34
       - /mnt/LOCAL_MEDIA/tv:/mnt/LOCAL_MEDIA/tv
       - /mnt/NAS_Shared_Media/tv:/mnt/NAS_Shared_Media/tv
       - /mnt/LOCAL_MEDIA/movies:/mnt/LOCAL_MEDIA/movies

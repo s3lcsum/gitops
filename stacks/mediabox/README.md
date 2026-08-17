@@ -1,20 +1,15 @@
 # mediabox
 
-## Jellyfin auth (SSO + LDAP)
+## Jellyfin auth (LDAP only)
 
-Jellyfin adds login paths **in addition to** the default local admin account
-(which is preserved):
+Jellyfin authenticates users against Authentik via the **LDAP-Auth** plugin
+(provided by the **catalog-installed** official plugin; version floats with the
+Jellyfin plugin catalog). Its config is managed via the Jellyfin UI/admin API,
+and it runs alongside the default local admin account (which is preserved).
 
-- **Community SSO for Jellyfin** (`Jellyfin.Plugin.SSO`) — OIDC bridge to
-  Authentik (provider `authentik`). Repo-pinned via the bind mount.
-
-**LDAP authentication** is provided by the **catalog-installed** official
-LDAP-Auth plugin (version floats with the Jellyfin plugin catalog); its config
-is managed via the Jellyfin UI/admin API, not the repo. Only SSO is
-repo-pinned via the bind mount.
-
-The SSO plugin binaries live in `jellyfin-plugins/` and load from
-`/config/data/plugins/<Name>_<version>/` on container start.
+The LDAP plugin is **not** repo-pinned (no bind mount) — it is installed from
+the Jellyfin plugin catalog. Configuration is applied from this repo via the
+`configure-jellyfin-auth.sh` helper using the Jellyfin admin API.
 
 ### Admin API key (required)
 
@@ -25,16 +20,13 @@ committed. Populate `stacks/mediabox/.jellyfin.secrets` from
 
 ```
 JF_API_KEY=<your api key>
-OIDC_CLIENT_SECRET=<authentik jellyfin provider client secret>
 LDAP_SVC_PASSWORD=<svc_jellyfin app_password token, if required>
 ```
 
-`.jellyfin.secrets` is gitignored. `OIDC_CLIENT_SECRET` and
-`LDAP_SVC_PASSWORD` come from Authentik tofu state:
-`authentik_provider_oauth2.oauth2["jellyfin"]` and
-`authentik_token.service_account_tokens["svc_jellyfin"]`.
+`.jellyfin.secrets` is gitignored. `LDAP_SVC_PASSWORD` comes from Authentik
+tofu state: `authentik_token.service_account_tokens["svc_jellyfin"]`.
 
-### Configure the plugins
+### Configure LDAP
 
 ```bash
 bash stacks/mediabox/scripts/configure-jellyfin-auth.sh
@@ -48,13 +40,15 @@ Jellyfin admin API.
 `LdapServer`, `LdapPort`, `UseSsl`, `LdapBaseDn`, `LdapUsernameAttribute`,
 `LdapSearchFilter`, `LdapAdminFilter`, `LdapBindUser`/`LdapBindPassword`.
 
-**Community SSO for Jellyfin** (Flowfin) does **not** honor the generic
-`/Plugins/{id}/Configuration` PUT. Its providers are managed via the plugin's
-own admin API: `POST /sso/OID/Add/{provider}` (body = one `OidConfig` object).
-`OidEndpoint` must point at the **full discovery document**
-(`.../.well-known/openid-configuration`), not the issuer base. `OidSecret` is
-write-only and AES-encrypted at rest, so it reads back as `null` (expected).
-`AllowPrivateNetworkAddresses: true` is required because the plugin performs its
-own DNS query through the LAN resolver, which maps `auth.dominiksiejak.pl` to
-RFC1918 `192.168.89.253` and would otherwise trip the outbound SSRF guard; this
-is audit-logged as a documented downgrade.
+Known-good values (Authentik LDAP outpost, `bind_mode=direct`):
+
+- `LdapServer` = `192.168.89.253` (the LDAP outpost host port 389 — **not**
+  `auth.dominiksiejak.pl`, which is the HTTPS web host with no LDAP listener)
+- `LdapPort` = `389`, `UseSsl` = `false`
+- `LdapBindUser` = `cn=jellyfin,ou=users,dc=dominiksiejak,dc=pl`
+- `LdapBaseDn` = `ou=users,dc=dominiksiejak,dc=pl`
+- `LdapSearchFilter` = `(memberOf=cn=users,ou=groups,dc=dominiksiejak,dc=pl)`
+- `LdapAdminFilter` = `(memberOf=cn=admins,ou=groups,dc=dominiksiejak,dc=pl)`
+
+The helper preserves the existing bind password unless `LDAP_SVC_PASSWORD` is
+set (so it never clobbers a working password with an empty string).

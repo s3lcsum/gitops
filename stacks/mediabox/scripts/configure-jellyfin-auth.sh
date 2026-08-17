@@ -7,10 +7,8 @@ source "$SCRIPT_DIR/jellyfin-plugin.sh"
 
 LDAP_ID="$("$SCRIPT_DIR/jellyfin-plugin.sh" _id "LDAP-Auth" 2>/dev/null || true)"
 [ -z "${LDAP_ID:-}" ] && LDAP_ID="958aad6637844d2ab89aa7b6fab6e25c"
-SSO_ID="505ce9d1-d916-42fa-86ca-673ef241d7df"
 
 echo "LDAP plugin Id: $LDAP_ID"
-echo "SSO plugin GUID: $SSO_ID"
 
 # ---- LDAP-Auth (official Jellyfin plugin) ----
 # Uses the generic /Plugins/{id}/Configuration endpoint. Live schema field names:
@@ -43,53 +41,3 @@ echo "== LDAP-Auth: posting config =="
 jf_api POST "/Plugins/$LDAP_ID/Configuration" "$LDAP_NEW" >/dev/null && echo "posted OK"
 echo "== LDAP-Auth: effective config after post =="
 jf_api GET "/Plugins/$LDAP_ID/Configuration" | python3 -m json.tool
-
-# ---- SSO (Flowfin "Community SSO for Jellyfin") ----
-# Does NOT honor the generic /Plugins/{id}/Configuration PUT. Providers are managed
-# via the plugin's own admin API: POST /sso/OID/Add/{provider} (body = OidConfig).
-# OidEndpoint must point at the full discovery document (/.well-known/openid-configuration).
-# OidSecret is write-only/encrypted at rest; it reads back as null (expected).
-# AllowPrivateNetworkAddresses=true is required: the plugin does its own DNS query through
-# the LAN resolver, which resolves auth.dominiksiejak.pl to RFC1918 192.168.89.253, tripping
-# the outbound SSRF guard otherwise.
-echo "== SSO-Auth: posting 'authentik' provider via /sso/OID/Add =="
-SSO_BODY="$(python3 - "$OIDC_CLIENT_SECRET" <<'PY'
-import json,sys,os
-secret=sys.argv[1]
-print(json.dumps({
-  "Enabled": True,
-  "OidEndpoint": "https://auth.dominiksiejak.pl/application/o/jellyfin/.well-known/openid-configuration",
-  "OidClientId": "jellyfin",
-  "OidSecret": secret,
-  "OidScopes": ["openid", "profile", "email", "groups"],
-  "RoleClaim": "groups",
-  "Roles": ["users"],
-  "AdminRoles": ["admins"],
-  "EnableAuthorization": True,
-  "EnableAllFolders": True,
-  "AllowPrivateNetworkAddresses": True,
-  "BaseUrlOverride": "https://jellyfin.dominiksiejak.pl",
-}))
-PY
-)"
-jf_api POST "/sso/OID/Add/authentik" "$SSO_BODY" >/dev/null && echo "posted OK"
-echo "== SSO-Auth: effective providers (OidSecret withheld=null) =="
-jf_api GET "/sso/OID/Get" | python3 -m json.tool
-echo "== SSO-Auth: connection test =="
-jf_api GET "/sso/OID/Test/authentik" | python3 -m json.tool
-
-# ---- SSO-Auth global config ----
-# The plugin renders the "Sign in with …" buttons by splicing an HTML block into
-# Jellyfin's Branding.LoginDisclaimer. That only happens when the global
-# ManageLoginPageButtons flag is on (defaults false -> no button on the login page).
-# Flowfin's UpdateConfiguration preserves server-managed secrets, so GET/POST of the
-# standard /Plugins/{id}/Configuration is safe with OidSecret absent.
-echo "== SSO-Auth: enable managed login-page buttons =="
-SSO_CFG="$(jf_api GET "/Plugins/$SSO_ID/Configuration")"
-SSO_CFG2="$(echo "$SSO_CFG" | python3 -c "import sys,json; d=json.load(sys.stdin); d['ManageLoginPageButtons']=True; print(json.dumps(d))")"
-jf_api POST "/Plugins/$SSO_ID/Configuration" "$SSO_CFG2" >/dev/null && echo "ManageLoginPageButtons=true posted"
-echo "== verify: LoginDisclaimer now carries the button block =="
-jf_api GET "/Branding/Configuration" | python3 -c "import sys,json; print((json.load(sys.stdin).get('LoginDisclaimer') or '')[:200])"
-
-
-
