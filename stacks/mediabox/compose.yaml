@@ -236,7 +236,7 @@ services:
   # 📋 Profile management (TRaSH guides sync with web UI)
   profilarr:
     <<: *service-defaults
-    image: ghcr.io/dictionarry-hub/profilarr:2.1.0
+    image: ghcr.io/dictionarry-hub/profilarr:2.2.0
     container_name: profilarr
     volumes:
       - profilarr_config:/config

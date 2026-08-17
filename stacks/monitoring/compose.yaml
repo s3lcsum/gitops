@@ -30,7 +30,7 @@ services:
       traefik.enable: true
 
   victoria-metrics:
-    image: victoriametrics/victoria-metrics:v1.149.0
+    image: victoriametrics/victoria-metrics:v1.150.0
     container_name: victoria-metrics
     restart: unless-stopped
     extra_hosts:
@@ -66,7 +66,7 @@ services:
       - "9115"
 
   snmp-exporter:
-    image: prom/snmp-exporter:v0.28.0
+    image: prom/snmp-exporter:v0.30.1
     container_name: snmp-exporter
     restart: unless-stopped
     volumes:
