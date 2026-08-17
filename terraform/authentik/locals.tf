@@ -40,12 +40,6 @@ locals {
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/n8n.svg"
       redirect_uris = ["https://n8n.dominiksiejak.pl/rest/oauth2-credential/callback"]
     }
-    jellyfin = {
-      name          = "Jellyfin"
-      launch_url    = "https://jellyfin.dominiksiejak.pl"
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyfin.svg"
-      redirect_uris = ["https://jellyfin.dominiksiejak.pl/sso/OID/redirect/authentik"]
-    }
     seerr = {
       name          = "Seerr"
       launch_url    = "https://seerr.dominiksiejak.pl/sso/OID/start/authentik"
@@ -173,7 +167,7 @@ locals {
     calibre = {
       name            = "Calibre"
       external_host   = "https://calibre.dominiksiejak.pl"
-      internal_host   = "http://calibre:8080"
+      internal_host   = "http://calibre-web-automated:8083"
       launch_url      = "https://calibre.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/calibre.svg"
       skip_path_regex = ""
@@ -284,7 +278,6 @@ locals {
     "gatus",
     "gitea",
     "grafana",
-    "jellyfin",
     "seerr",
     "n8n",
     "netbox",
