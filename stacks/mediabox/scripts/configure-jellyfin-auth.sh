@@ -77,3 +77,4 @@ echo "== SSO-Auth: effective providers (OidSecret withheld=null) =="
 jf_api GET "/sso/OID/Get" | python3 -m json.tool
 echo "== SSO-Auth: connection test =="
 jf_api GET "/sso/OID/Test/authentik" | python3 -m json.tool
+
