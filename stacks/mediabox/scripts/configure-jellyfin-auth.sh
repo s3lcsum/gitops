@@ -78,3 +78,18 @@ jf_api GET "/sso/OID/Get" | python3 -m json.tool
 echo "== SSO-Auth: connection test =="
 jf_api GET "/sso/OID/Test/authentik" | python3 -m json.tool
 
+# ---- SSO-Auth global config ----
+# The plugin renders the "Sign in with …" buttons by splicing an HTML block into
+# Jellyfin's Branding.LoginDisclaimer. That only happens when the global
+# ManageLoginPageButtons flag is on (defaults false -> no button on the login page).
+# Flowfin's UpdateConfiguration preserves server-managed secrets, so GET/POST of the
+# standard /Plugins/{id}/Configuration is safe with OidSecret absent.
+echo "== SSO-Auth: enable managed login-page buttons =="
+SSO_CFG="$(jf_api GET "/Plugins/$SSO_ID/Configuration")"
+SSO_CFG2="$(echo "$SSO_CFG" | python3 -c "import sys,json; d=json.load(sys.stdin); d['ManageLoginPageButtons']=True; print(json.dumps(d))")"
+jf_api POST "/Plugins/$SSO_ID/Configuration" "$SSO_CFG2" >/dev/null && echo "ManageLoginPageButtons=true posted"
+echo "== verify: LoginDisclaimer now carries the button block =="
+jf_api GET "/Branding/Configuration" | python3 -c "import sys,json; print((json.load(sys.stdin).get('LoginDisclaimer') or '')[:200])"
+
+
+
