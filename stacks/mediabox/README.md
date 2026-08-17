@@ -2,14 +2,18 @@
 
 ## Jellyfin auth (SSO + LDAP)
 
-Task 4 configures two jellyfin login paths **in addition to** the default local
-admin account (which is preserved):
+Jellyfin adds login paths **in addition to** the default local admin account
+(which is preserved):
 
 - **Community SSO for Jellyfin** (`Jellyfin.Plugin.SSO`) — OIDC bridge to
-  Authentik (provider `authentik`).
-- **LDAP Authentication** (`ldapauth`) — Authentik LDAP bind for login.
+  Authentik (provider `authentik`). Repo-pinned via the bind mount.
 
-The plugin binaries live in `jellyfin-plugins/` and load from
+**LDAP authentication** is provided by the **catalog-installed** official
+LDAP-Auth plugin (version floats with the Jellyfin plugin catalog); its config
+is managed via the Jellyfin UI/admin API, not the repo. Only SSO is
+repo-pinned via the bind mount.
+
+The SSO plugin binaries live in `jellyfin-plugins/` and load from
 `/config/data/plugins/<Name>_<version>/` on container start.
 
 ### Admin API key (required)
