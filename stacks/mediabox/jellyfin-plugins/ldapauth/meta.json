@@ -1,0 +1,13 @@
+{
+  "category": "Administration",
+  "changelog": "- Fix 10.11.2 support (#195) @crobibero",
+  "description": "Authenticate your Jellyfin users against an LDAP database, and optionally create users who do not yet exist automatically.\n\nAllows the administrator to customize most aspects of the LDAP authentication process, including customizable search attributes, username attribute, and a search filter for administrative users (set on user creation). The user, via the \"Manual Login\" process, can enter any valid attribute value, which will be mapped back to the specified username attribute automatically as well.\n",
+  "guid": "958aad66-3784-4d2a-b89a-a7b6fab6e25c",
+  "imageUrl": "https://repo.jellyfin.org/releases/plugin/images/jellyfin-plugin-ldapauth.png",
+  "name": "LDAP Authentication",
+  "overview": "Authenticate users against an LDAP database",
+  "owner": "jellyfin",
+  "targetAbi": "10.11.2.0",
+  "timestamp": "2025-11-03T02:58:12Z",
+  "version": "22.0.0.0"
+}
