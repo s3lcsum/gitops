@@ -1,12 +1,10 @@
 auths:
   public:
     version: 3
-    security_level: authPriv
+    security_level: authNoPriv
     username: <SNMP_USER>
     auth_protocol: SHA
-    auth_password: <SNMP_AUTH_PASS>
-    priv_protocol: AES
-    priv_password: <SNMP_PRIV_PASS>
+    password: <SNMP_AUTH_PASS>
 modules:
   synology:
     walk:

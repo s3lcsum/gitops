@@ -21,11 +21,16 @@ LDAP_CFG="$(jf_api GET "/Plugins/$LDAP_ID/Configuration")"
 echo "$LDAP_CFG" > /tmp/ldapcfg.json
 
 LDAP_NEW="$(python3 - "$LDAP_CFG" <<'PY'
-import json,sys
+import json,sys,os
 cfg=json.loads(sys.argv[1])
-cfg["LdapServer"]="auth.dominiksiejak.pl"
+cfg["LdapServer"]="192.168.89.253"
 cfg["LdapPort"]=389
 cfg["UseSsl"]=False
+cfg["LdapBindUser"]="cn=jellyfin,ou=users,dc=dominiksiejak,dc=pl"
+# Preserve the existing (user-configured) bind password unless one is supplied.
+# LDAP_SVC_PASSWORD is empty by default, so never clobber it with "".
+if os.environ.get("LDAP_SVC_PASSWORD"):
+    cfg["LdapBindPassword"]=os.environ.get("LDAP_SVC_PASSWORD")
 cfg["LdapBaseDn"]="ou=users,dc=dominiksiejak,dc=pl"
 cfg["LdapUsernameAttribute"]="cn"
 cfg["LdapSearchFilter"]="(memberOf=cn=users,ou=groups,dc=dominiksiejak,dc=pl)"
@@ -49,7 +54,7 @@ jf_api GET "/Plugins/$LDAP_ID/Configuration" | python3 -m json.tool
 # the outbound SSRF guard otherwise.
 echo "== SSO-Auth: posting 'authentik' provider via /sso/OID/Add =="
 SSO_BODY="$(python3 - "$OIDC_CLIENT_SECRET" <<'PY'
-import json,sys
+import json,sys,os
 secret=sys.argv[1]
 print(json.dumps({
   "Enabled": True,
@@ -63,6 +68,7 @@ print(json.dumps({
   "EnableAuthorization": True,
   "EnableAllFolders": True,
   "AllowPrivateNetworkAddresses": True,
+  "BaseUrlOverride": "https://jellyfin.dominiksiejak.pl",
 }))
 PY
 )"
