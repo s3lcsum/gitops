@@ -59,7 +59,7 @@ services:
   # 📥 Usenet downloader (VPN-routed)
   sabnzbd:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/sabnzbd:5.1.0
+    image: ghcr.io/linuxserver/sabnzbd:5.1.1
     container_name: sabnzbd
     depends_on:
       gluetun:
@@ -290,7 +290,7 @@ services:
       - database
     healthcheck:
       <<: *healthcheck
-      test: ["CMD", "curl", "-f", "http://localhost:8787/"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8787/ >/dev/null 2>&1 || exit 1"]
     labels:
       traefik.enable: true
       traefik.docker.network: proxy

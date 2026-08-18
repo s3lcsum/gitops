@@ -1,0 +1,48 @@
+services:
+  ghostfolio:
+    image: ghostfolio/ghostfolio:3.54.0
+    container_name: ghostfolio
+    restart: unless-stopped
+    env_file:
+      - /opt/ghostfolio/ghostfolio.env
+    networks:
+      - proxy
+      - database
+    depends_on:
+      redis:
+        condition: service_healthy
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+      traefik.http.routers.ghostfolio.rule: Host(`ghostfolio.dominiksiejak.pl`)
+      traefik.http.routers.ghostfolio.entrypoints: websecure
+      traefik.http.services.ghostfolio.loadbalancer.server.port: 3333
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3333/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8.10
+    container_name: gf-redis
+    restart: unless-stopped
+    env_file:
+      - /opt/ghostfolio/ghostfolio.env
+    command:
+      - /bin/sh
+      - -c
+      - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
+    networks:
+      - database
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --pass \"$${REDIS_PASSWORD}\" ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  proxy:
+    external: true
+  database:
+    external: true
