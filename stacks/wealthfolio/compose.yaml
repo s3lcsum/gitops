@@ -1,0 +1,30 @@
+services:
+  wealthfolio:
+    image: wealthfolio/wealthfolio:3.7
+    container_name: wealthfolio
+    restart: unless-stopped
+    env_file:
+      - /opt/wealthfolio/wealthfolio.env
+    volumes:
+      - wealthfolio-data:/data
+    networks:
+      - proxy
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+      traefik.http.routers.wealthfolio.rule: Host(`wealthfolio.dominiksiejak.pl`)
+      traefik.http.routers.wealthfolio.entrypoints: websecure
+      traefik.http.services.wealthfolio.loadbalancer.server.port: 8088
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8088/ >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  wealthfolio-data:
+    name: wealthfolio-data
+
+networks:
+  proxy:
+    external: true
