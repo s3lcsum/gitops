@@ -55,6 +55,7 @@ services:
       - media:/media
       - templates:/templates
       - certs:/certs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
 
 networks:
