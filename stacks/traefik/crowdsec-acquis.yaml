@@ -1,0 +1,8 @@
+# CrowdSec acquisition: tail Traefik's container stdout (docker logs) via the
+# docker socket. The crowdsecurity/traefik-logs parser converts each line into
+# events that the http-* scenarios turn into decisions.
+source: docker
+container_name:
+  - traefik
+labels:
+  type: traefik
