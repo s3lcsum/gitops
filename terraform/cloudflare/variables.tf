@@ -30,5 +30,8 @@ variable "tunnel_apps" {
     "homeassistant-atom.dominiksiejak.pl" = ""
     "dns.dominiksiejak.pl"                = ""
     "firebird.dominiksiejak.pl"           = "tcp://v-maintenance-firebird:3050"
+    "n8n.dominiksiejak.pl"                = "https://traefik"
+    "auth.dominiksiejak.pl"               = "https://traefik"
+    "hass.dominiksiejak.pl"               = "https://traefik"
   }
 }
