@@ -22,8 +22,9 @@ Replace the `data "cloudflare_zone" "main"` lookup with a managed resource:
 
 ```hcl
 resource "cloudflare_zone" "main" {
-  zone = var.zone_name
-  type = "primary"
+  account_id = var.cloudflare_account_id
+  zone       = var.zone_name
+  type       = "full"
 }
 ```
 
@@ -41,7 +42,7 @@ Add a `cloudflare_ruleset` attached to the zone:
 
 - `kind = "zone"` so it applies to all proxied hostname records in the zone.
 - `zone_id = cloudflare_zone.main.id`
-- `phase = 1`
+- `phase = "http_request_firewall_custom"`
 - One custom rule that blocks requests from any country not allowed:
 
 ```

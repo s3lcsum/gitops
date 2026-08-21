@@ -62,20 +62,41 @@ Traefik's HTTPS origin **by container name** (resolved because of change #3):
 
 `local.active_apps` then includes them → tunnel ingress rules + CNAME records.
 
-### 2. `terraform/cloudflare/main.tf` — Access applications
+### 2. `terraform/cloudflare/main.tf` — Access applications + JWT gate
 
 Add three `cloudflare_zero_trust_access_application` resources (type `self_hosted`),
 one per host, each with:
 
-- `name` (e.g. "n8n public tunnel", etc.)
+- `zone_id = data.cloudflare_zone.main.id`
 - `domain` = `<host>.dominiksiejak.pl`
-- `policies = [{ decision = "non_identity" }]` — "open" (no Cloudflare Access login);
-  the apps do their own authentication (Authentik / n8n / HA).
+- `name` (e.g. "n8n public tunnel", etc.)
+- `policies = [{ decision = "non_identity", precedence = 1 }]` — "open" (no Cloudflare
+  Access login); the apps do their own authentication (Authentik / n8n / HA).
 
-The ingress rules in the config point to the HTTPS origin. Optionally, on each ingress
-rule, add an `origin_request.access` gate (`required = true`, `aud_tag`) so cloudflared
-drops requests lacking a valid CF Access JWT (defense-in-depth; "verify it really came
-through Cloudflare", enforced by the connector rather than Traefik).
+Each app exposes a read-only `aud` (audience tag). On each tunnel ingress rule, add an
+`origin_request.access` gate so cloudflared drops requests lacking a valid CF Access JWT:
+
+```
+config {
+  dynamic "ingress_rule" {
+    for_each = local.http_apps (or same map)
+    content {
+      hostname = ingress_rule.key
+      service  = ingress_rule.value
+      origin_request {
+        access {
+          required = true
+          aud_tag  = <matching access app>.aud
+        }
+      }
+    }
+  }
+}
+```
+
+So the connector itself validates the Access JWT assertion — the closest enforceable
+"really came through Cloudflare" on a named tunnel (mTLS is not compatible). Access apps
+remain `non_identity` so users do not get a second login prompt.
 
 ### 3. `stacks/cloudflared/compose.yaml` — join `proxy` network
 
