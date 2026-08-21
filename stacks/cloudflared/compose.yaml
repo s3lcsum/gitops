@@ -7,4 +7,10 @@ services:
     restart: unless-stopped
     env_file:
       - /opt/cloudflared/cloudflared.env
+    networks:
+      - proxy
     command: tunnel run
+
+networks:
+  proxy:
+    external: true
