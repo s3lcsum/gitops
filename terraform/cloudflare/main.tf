@@ -77,7 +77,7 @@ resource "cloudflare_dns_record" "tunnel" {
   for_each = local.active_apps
 
   zone_id = cloudflare_zone.main.id
-  name    = trimsuffix(each.key, ".${var.zone_name}")
+  name    = each.key
   type    = "CNAME"
   content = "${cloudflare_zero_trust_tunnel_cloudflared.homelab.id}.cfargotunnel.com"
   proxied = true

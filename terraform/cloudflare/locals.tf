@@ -32,6 +32,9 @@ locals {
             aud_tag   = [cloudflare_zero_trust_access_application.tunnel[host].aud]
             team_name = var.tunnel_team_name
           }
+          # TLS to origin: cloudflared connects to container `traefik` but SNI/verification
+          # must use the public hostname so Traefik serves the wildcard *.dominiksiejak.pl cert.
+          origin_server_name = host
         }
       }
     ],
