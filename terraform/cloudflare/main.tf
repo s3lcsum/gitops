@@ -18,7 +18,7 @@ resource "cloudflare_ruleset" "country_allowlist" {
     {
       ref         = "skip-messenger-webhook"
       action      = "skip"
-      expression  = "http.host eq \"n8n.dominiksijak.pl\" and starts_with(http.request.uri.path, \"/webhook/messenger\")"
+      expression  = "http.host eq \"n8n.dominiksiejak.pl\" and starts_with(http.request.uri.path, \"/webhook/messenger\")"
       description = "Allow Messenger webhook path to bypass the country allowlist"
       enabled     = true
 
