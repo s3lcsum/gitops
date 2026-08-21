@@ -79,8 +79,7 @@ def get_service(
     discovery_info: DiscoveryInfoType | None = None,
 ) -> BaseNotificationService:
     """Get the Messenger notification service."""
-    conf = config[CONF_ACCESS_TOKEN] if False else config  # keep schema access explicit
-    return Notifier(conf[CONF_ACCESS_TOKEN], conf[CONF_PSID])
+    return Notifier(config[CONF_ACCESS_TOKEN], config[CONF_PSID])
 
 
 class Notifier(BaseNotificationService):
