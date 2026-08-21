@@ -8,5 +8,5 @@ TOFU   ?= tofu
 
 .PHONY: show-token
 
-show-token: ## Print the Cloudflared tunnel token (sensitive)
-	@cd "$(TF_DIR)" && $(TOFU) output -json tunnel_token | jq -r .
+show-token: ## Print the Cloudflare Tunnel registration secret (sensitive)
+	@cd "$(TF_DIR)" && $(TOFU) output -json tunnel_secret | jq -r .

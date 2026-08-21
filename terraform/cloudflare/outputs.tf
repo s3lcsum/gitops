@@ -3,9 +3,9 @@ output "tunnel_id" {
   value       = cloudflare_zero_trust_tunnel_cloudflared.homelab.id
 }
 
-output "tunnel_token" {
-  description = "Cloudflared tunnel token (sensitive). Place this in stacks/cloudflared/cloudflared.env as TUNNEL_TOKEN."
-  value       = cloudflare_zero_trust_tunnel_cloudflared.homelab.tunnel_token
+output "tunnel_secret" {
+  description = "Cloudflare Tunnel registration secret (sensitive). Used as the connector credential for cloudflared."
+  value       = cloudflare_zero_trust_tunnel_cloudflared.homelab.tunnel_secret
   sensitive   = true
 }
 

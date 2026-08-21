@@ -15,6 +15,11 @@ variable "tunnel_name" {
   default     = "homelab"
 }
 
+variable "tunnel_team_name" {
+  description = "Cloudflare Zero Trust organization (team) name, required for origin_request.access"
+  type        = string
+}
+
 variable "tunnel_apps" {
   description = <<-EOT
     Map of public hostnames → internal origin services.
