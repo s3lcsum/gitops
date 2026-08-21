@@ -16,6 +16,18 @@ resource "cloudflare_ruleset" "country_allowlist" {
 
   rules = [
     {
+      ref         = "skip-messenger-webhook"
+      action      = "skip"
+      expression  = "http.host eq \"n8n.dominiksijak.pl\" and starts_with(http.request.uri.path, \"/webhook/messenger\")"
+      description = "Allow Messenger webhook path to bypass the country allowlist"
+      enabled     = true
+
+      action_parameters = {
+        ruleset = "current"
+      }
+    },
+    {
+      ref         = "block-non-allowlisted-countries"
       action      = "block"
       expression  = "ip.geoip.country not in {\"PL\" \"DE\" \"ES\"}"
       description = "Block non-allowlisted countries"
