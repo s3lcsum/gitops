@@ -47,7 +47,7 @@ rules = [
   {
     ref         = "skip-messenger-webhook"
     action      = "skip"
-    expression  = "http.host eq \"n8n.dominiksijak.pl\" and starts_with(http.request.uri.path, \"/webhook/messenger\")"
+    expression  = "http.host eq \"n8n.dominiksiejak.pl\" and starts_with(http.request.uri.path, \"/webhook/messenger\")"
     description = "Allow Messenger webhook path to bypass the country allowlist"
     enabled     = true
 
@@ -101,35 +101,42 @@ git add terraform/cloudflare/main.tf
 git commit -m "chore(cloudflare): exempt messenger webhook path from country block"
 ```
 
-### Task 2: Create per-person HA users and long-lived tokens
+### Task 2: Identity plumbing via n8n (no new HA users)
 
 **Files:**
-- Modify: live HA instance + HA repo docs (tokens are secrets, referenced but never committed)
+- Modify: `stacks/n8n/n8n.env` (gitignored) + `stacks/n8n/n8n.env.example` (placeholders only)
 
 **Interfaces:**
-- Consumes: nothing.
-- Produces: persons = Dominik/Jan/Dantua/Oliwia, each with a `conversation_id` for their chat, and a long-lived token used by the n8n workflow.
+- Consumes: existing HA long-lived API token (the owner token used by `notify_psid` / a shared assistant token).
+- Produces: a PSID→person identity map + per-person `conversation_id`, stored/consumed by the n8n workflow (Task 3). Identity is injected by n8n into the assist prompt; there are NO new HA users.
 
-**Constraints:** four family members (from `notify_psid`): Dominik, Jan, Dantua, Oliwia. Everyone acts equally — all get the same (full) control rights. conversation_language default is `en`; the workflow passes `"language": "pl"` per call.
+**Reasoning (confirmed with user):** creating HA users and minting per-person tokens requires the HA frontend/owner login for each of four people — not automatable, and Jan has no existing HA user. Instead n8n already owns the PSID→person map and will:
+- pass a stable per-person `conversation_id` so each chat keeps its own HA conversation thread,
+- prepend the person's name into the assist call so the LLM knows *who* is speaking,
+- use a single shared HA long-lived token (the assistant carries identity in the prompt, not via token-binding).
 
-- [ ] **Step 1: Create four HA users via the MCP**
+**Constraints:** four family members from `notify_psid`: Dominik, Jan, Dantua, Oliwia. Everyone acts equally. conversation_language default is `en`; the workflow passes `"language": "pl"` per call.
 
-Use the HA MCP config tools to create a local user per family member: `dominik`, `jan`, `dantua`, `oliwia`. (Skip if these users already exist from prior login activity.)
+- [ ] **Step 1: Confirm the shared HA long-lived token**
 
-- [ ] **Step 2: Issue a long-lived token per user**
+Use the existing long-lived token already used by the HA Time Machine (`LONG_LIVED_ACCESS_TOKEN` in `stacks/hass/timemachine.env`, `<...>`) OR the owner token present on the instance. Store its value (or a fresh assistant-scoped one if preferred) as `HA_ASSIST_TOKEN` — the value is a secret, saved into the gitignored `stacks/n8n/n8n.env`, never printed to conversation or committed.
 
-For each of the four users: generate an HA long-lived API token. HA returns each token once — save each into the env/secrets store (below). **Do not print tokens into the conversation.**
+- [ ] **Step 2: Define the PSID→person → conversation_id map**
 
-- [ ] **Step 3: Store tokens in a gitignored .env**
+Use the real PSIDs from the live `notify_psid` config:
 
-Add the four tokens to `stacks/n8n/n8n.env` (gitignored, not committed). Use placeholders in `.env.example` only:
+| PSID | person | conversation_id |
+|------|--------|-----------------|
+| `28826229860312894` | Dominik | `msgr-dominik` |
+| `27948189831503096` | Jan | `msgr-jan` |
+| `27914858414802372` | Dantua | `msgr-dantua` |
+| `38584905417763183` | Oliwia | `msgr-oliwia` |
+
+- [ ] **Step 3: Add the env keys to `.env.example` (placeholders only, never real)**
 
 ```env
-FB_PAGE_ACCESS_TOKEN=...
-HA_TOKEN_DOMINIK=...
-HA_TOKEN_JAN=...
-HA_TOKEN_DANTUA=...
-HA_TOKEN_OLIWIA=...
+HA_ASSIST_TOKEN=your_home_assistant_long_lived_token
+# PSID→person conversation_ids are set in the n8n workflow code, not env
 ```
 
 - [ ] **Step 4: Commit the `.env.example` addition only (never the real `.env`)**
@@ -137,7 +144,7 @@ HA_TOKEN_OLIWIA=...
 ```bash
 cd /Users/Apple/Developer/s3lcsum/gitops
 git add stacks/n8n/n8n.env.example
-git commit -m "chore(n8n): document HA per-user token env keys"
+git commit -m "chore(n8n): document HA assistant token env key"
 ```
 
 ### Task 3: Build the n8n Messenger webhook workflow
@@ -169,28 +176,28 @@ Add an **Extract JSON** (or Code) node that pulls out:
 - `messageText` from `...["messaging"][0]["message"]["text"]`
 - query params `hubVerifyToken`, `hubChallenge`.
 
-- [ ] **Step 3: Identity map PS → person → token key**
+- [ ] **Step 3: Identity map PS → person → conversation**
 
-Add a **Switch / Code** node producing a person label + HA token env key from a map (use the real PSIDs from `notify_psid` config):
+Add a **Switch / Code** node producing a person label + per-person `conversation_id` from a map (real PSIDs from `notify_psid` config). Identity is injected at the prompt level — there is no per-user HA token (Task 2):
 
 ```js
 const map = {
-  "28826229860312894": { person: "Dominik", tokenEnv: "HA_TOKEN_DOMINIK" },
-  "27948189831503096": { person: "Jan",     tokenEnv: "HA_TOKEN_JAN" },
-  "27914858414802372": { person: "Dantua",  tokenEnv: "HA_TOKEN_DANTUA" },
-  "38584905417763183": { person: "Oliwia",  tokenEnv: "HA_TOKEN_OLIWIA" },
+  "28826229860312894": { person: "Dominik", convId: "msgr-dominik" },
+  "27948189831503096": { person: "Jan",     convId: "msgr-jan" },
+  "27914858414802372": { person: "Dantua",  convId: "msgr-dantua" },
+  "38584905417763183": { person: "Oliwia",  convId: "msgr-oliwia" },
 };
 const sender = $json.senderId;
 return map[sender] ? { found: true, ...map[sender] } : { found: false, senderId: sender };
 ```
 
-- [ ] **Step 4: Call HA conversation/process**
+- [ ] **Step 4: Call HA conversation/process (shared token + injected identity)**
 
-Add an **HTTP Request** node GET/POST to the HA API:
+Add an **HTTP Request** node POST to the HA API:
 - Method: POST
-- URL: `https://hass.dominiksijak.pl/api/conversation/process`
-- Header: `Authorization: Bearer {{ HA_TOKEN_<person> }}`
-- Body (JSON):
+- URL: `https://hass.dominiksiejak.pl/api/conversation/process`
+- Header: `Authorization: Bearer {{ HA_ASSIST_TOKEN }}` (single shared assistant token, Task 2)
+- Body (JSON): the person's name is prepended to the text so the LLM knows who is speaking.
 ```json
 { "text": "{{msg}}", "language": "pl", "conversation_id": "{{conversation_id}}" }
 ```
@@ -217,9 +224,9 @@ Set `conversation_id` to a stable per-person id, e.g. `msgr-dominik`. This keeps
 
 If `found=false` → reply to the same PSID "Nie rozpoznaj ci." + log for admins to add. If HA call fails/timeout/non-200 → same-thread canned fallback + error log. Never drop silently.
 
-- [ ] **Step 7: If n8n needs the tokens in env, add to compose.yaml**
+- [ ] **Step 7: If n8n needs the token in env, add to compose.yaml**
 
-The compose already has `env_file: /opt/n8n/n8n.env`. Confirm the four `HA_TOKEN_*` keys live there; if not add them. Update `n8n.env.example` with placeholders. If compose.yaml changes, `make apply` in `terraform/portainer/` and restart n8n.
+The compose already has `env_file: /opt/n8n/n8n.env`. Confirm `HA_ASSIST_TOKEN` and `FB_PAGE_ACCESS_TOKEN` live there; if not add them. Update `n8n.env.example` with placeholders. If compose.yaml changes, `make apply` in `terraform/portainer/` and restart n8n.
 
 - [ ] **Step 8: Commit env-example/compose if changed**
 
@@ -318,5 +325,5 @@ git commit -m "docs(readme): messenger AI assistant + Cloudflare webhook bypass"
 - **Spec coverage:** CF exemption (Task 1), HA users/tokens (Task 2), n8n webhook + identity map + HA call + reply (Task 3), Meta handshake (Task 4), error handling (Task 3 Step 6), read-only + control tests (Task 5), Cloudflare verification (Task 6). Out of scope: role-based perms, voice, additional family members beyond the four.
 - **No placeholders:** each task has concrete commands/payloads.
 - **Confirmed Cloudflare semantics:** `skip` with `action_parameters = { "ruleset": "current" }` skips remaining rules *below* it in the same ruleset → skip must be the **first** rule, before the country block. Source: developers.cloudflare.com/ruleset-engine/managed-rulesets/create-exception ("Skip all remaining rules").
-- **Type consistency:** webhook path `/webhook/messenger`; env keys `HA_TOKEN_<PERSON>` and `FB_PAGE_ACCESS_TOKEN` used consistently across Task 2 → 4 → 5. `conversation_id` per person stable (`msgr-dominik`, etc.).
+- **Type consistency:** webhook path `/webhook/messenger`; env keys `HA_ASSIST_TOKEN` and `FB_PAGE_ACCESS_TOKEN` used consistently across Task 2 → 4 → 5. `conversation_id` per person stable (`msgr-dominik`, etc.).
 - **Secret handling:** real token values are never printed or committed; the identity map holds PSIDs only.
