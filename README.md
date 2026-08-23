@@ -219,7 +219,6 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── gcp/
 │   ├── gitea/
 │   ├── grafana/
-│   ├── kind/
 │   ├── netbox/
 │   ├── portainer/
 │   ├── postgres/
@@ -249,6 +248,13 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 23.08.2026
+
+**Messenger → Home Assistant AI assistant.** Family members can now message the Facebook Page and get answers/actions from Home Assistant, authenticated as the requester:
+- New n8n workflow **Messenger Assistant** (`/webhook/messenger`) verifies Meta's webhook handshake, maps PSID → person (Dominik/Jan/Dantua/Oliwia), calls HA's `/api/conversation/process` with a per-person `conversation_id`, and replies through the Messenger Graph API.
+- Identity is n8n-injected (person name + stable per-person conversation thread); uses a dedicated HA long-lived token + a Messenger page-token credential stored in n8n.
+- Cloudflare: added a high-priority `skip` rule to the country-allowlist ruleset so the `/webhook/messenger` path on `n8n.dominiksiejak.pl` bypasses the PL/DE/ES geo-block (Meta's servers are US-hosted), while the rest of the zone stays allowlisted.
 
 ### 16.08.2026
 
