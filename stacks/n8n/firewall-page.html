@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add IP to Firewall</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, sans-serif; background:#0b1220; color:#e6e6e6;
+         display:flex; align-items:center; justify-content:center; min-height:100vh;
+         margin:0; padding:16px; }
+  .card { background:#1e2030; border:1px solid #2a3a5a; border-radius:16px;
+          padding:24px; width:100%; max-width:380px; box-shadow:0 8px 24px rgba(0,0,0,.4); }
+  h1 { font-size:1.25rem; margin:0 0 4px; }
+  .who { font-size:.85rem; color:#9fb3d1; margin-bottom:16px; }
+  label { display:block; font-size:.85rem; color:#9fb3d1; margin:14px 0 6px; }
+  input { width:100%; padding:12px; border:1px solid #3a4a6a; border-radius:10px;
+          background:#12203c; color:#e6e6e6; font-size:1rem; }
+  .ttls { display:flex; gap:8px; }
+  .ttl { flex:1; padding:12px; border:1px solid #3a4a6a; border-radius:10px;
+         background:#12203c; color:#e6e6e6; font-size:1rem; cursor:pointer; transition:.1s; }
+  .ttl.sel { background:#2f6fed; color:#fff; border-color:#2f6fed; }
+  button.submit { width:100%; padding:12px; border:none; border-radius:12px;
+            background:#2f6fed; color:#fff; font-weight:600; font-size:1rem;
+            cursor:pointer; margin-top:20px; }
+  .msg { margin-top:14px; padding:10px; border-radius:8px; font-size:.9rem;
+         white-space:pre-line; display:none; }
+  .msg.ok { display:block; background:#132b1e; color:#7ee2a8; border:1px solid #1f6b3a; }
+  .msg.err { display:block; background:#3b1212; color:#f88; border:1px solid #8b1a1a; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>&#128293; Add IP to Firewall</h1>
+  <div class="who">Logged in as: <b>__NAME__</b></div>
+  <label for="ip">IP Address</label>
+  <input id="ip" value="" placeholder="Detecting your IP…">
+  <label>Time to Live</label>
+  <div class="ttls">
+    <button type="button" class="ttl" data-ttl="1d">1d</button>
+    <button type="button" class="ttl sel" data-ttl="7d">7d</button>
+    <button type="button" class="ttl" data-ttl="30d">30d</button>
+  </div>
+  <button class="submit" id="submit" type="button">Add to Firewall</button>
+  <div class="msg" id="msg"></div>
+</div>
+<script>
+  let ttl = "7d";
+  const $ = id => document.getElementById(id);
+  const setMsg = (ok, txt) => { const m = $("msg"); m.className = ok ? "msg ok" : "msg err"; m.textContent = txt; };
+  (async () => {
+    try {
+      const j = await (await fetch("https://api.ipify.org?format=json")).json();
+      if (j.ip) { $("ip").value = j.ip; } else { $("ip").placeholder = "Enter your IP"; }
+    } catch (e) { $("ip").placeholder = "Enter your IP"; }
+  })();
+  document.querySelectorAll(".ttl").forEach(b => {
+    b.onclick = () => {
+      document.querySelectorAll(".ttl").forEach(x => x.classList.remove("sel"));
+      b.classList.add("sel"); ttl = b.dataset.ttl;
+    };
+  });
+  $("submit").onclick = async () => {
+    const ip = $("ip").value.trim();
+    if (!ip) { setMsg(false, "Enter your IP."); return; }
+    setMsg(true, "Adding…");
+    try {
+      const res = await fetch("/webhook/firewall", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ip, ttl })
+      });
+      const j = await res.json();
+      if (j.ok) { setMsg(true, "Added! Expires " + j.expires); }
+      else { setMsg(false, j.detail || "Request failed"); }
+    } catch (e) { setMsg(false, "Network error: " + e.message); }
+  };
+</script>
+</body>
+</html>
