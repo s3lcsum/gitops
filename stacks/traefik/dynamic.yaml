@@ -26,6 +26,18 @@ http:
         customRequestHeaders:
           X-Remote-Bypass: ""
 
+    strip-authentik:
+      headers:
+        customRequestHeaders:
+          X-Authentik-User: ""
+          X-Authentik-Name: ""
+          X-Authentik-Email: ""
+          X-Authentik-Uid: ""
+          X-Authentik-Groups: ""
+          X-Authentik-Username: ""
+          X-Authentik-Entitlements: ""
+          X-Authentik-Jwt: ""
+
     opencode-basic-auth:
       headers:
         customRequestHeaders:
@@ -107,6 +119,23 @@ http:
       middlewares:
         - authentik@docker
       service: api@internal
+
+    enter:
+      rule: "Host(`enter.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - authentik@docker
+      service: n8n@docker
+
+    n8n-webhook:
+      rule: "Host(`n8n.dominiksiejak.pl`) && PathPrefix(`/webhook`)"
+      entryPoints:
+        - websecure
+      priority: 200
+      middlewares:
+        - strip-authentik
+      service: n8n@docker
 
   # Services
   services:
