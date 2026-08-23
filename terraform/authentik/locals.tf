@@ -57,7 +57,7 @@ locals {
     hermes = {
       name       = "Hermes"
       launch_url = "https://hermes.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@latest/icons/hermesagent.svg"
+      icon_url   = "https://raw.githubusercontent.com/nesquena/hermes-webui/master/static/favicon.svg"
       redirect_uris = [
         "https://hermes.dominiksiejak.pl/api/auth/oidc/callback",
       ]
@@ -68,6 +68,14 @@ locals {
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/ghostfolio.svg"
       redirect_uris = [
         "https://ghostfolio.dominiksiejak.pl/api/auth/oidc/callback",
+      ]
+    }
+    wealthfolio = {
+      name       = "Wealthfolio"
+      launch_url = "https://wealthfolio.dominiksiejak.pl"
+      icon_url   = "https://raw.githubusercontent.com/wealthfolio/wealthfolio/main/app-icon.png"
+      redirect_uris = [
+        "https://wealthfolio.dominiksiejak.pl/api/v1/auth/oidc/callback",
       ]
     }
     synology = {
@@ -117,6 +125,20 @@ locals {
         return {"role": "Viewer"}
       EOF
     }
+    # Calibre-Web Automated (calibre.dominiksiejak.pl) — native OIDC SSO via the
+    # generic OAuth provider in CWA. Callback path is fixed by CWA.
+    # CWA emits the redirect_uri with scheme http (Flask-Dance url_for ignores
+    # X-Forwarded-Proto), so both http and https must be allowed; Traefik
+    # 301-redirects the http callback to https before it reaches the app.
+    calibre-web-automated = {
+      name       = "Calibre-Web Automated"
+      launch_url = "https://calibre.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/calibre.svg"
+      redirect_uris = [
+        "https://calibre.dominiksiejak.pl/login/generic/authorized",
+        "http://calibre.dominiksiejak.pl/login/generic/authorized",
+      ]
+    }
   }
 
   #───────────────────────────────────────────────────────────────────────────────
@@ -164,14 +186,9 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sonarr.svg"
       skip_path_regex = "^/api/.*"
     }
-    calibre = {
-      name            = "Calibre"
-      external_host   = "https://calibre.dominiksiejak.pl"
-      internal_host   = "http://calibre-web-automated:8083"
-      launch_url      = "https://calibre.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/calibre.svg"
-      skip_path_regex = ""
-    }
+    # calibre.dominiksiejak.pl (CWA) is NOT forward-auth'd — CWA handles its own
+    # auth: local users + native OIDC SSO via the "calibre-web-automated" app.
+    # No proxy application here; only calibre-gui is Authentik-gated.
     calibre-gui = {
       name            = "Calibre GUI"
       external_host   = "https://calibre-gui.dominiksiejak.pl"
@@ -241,8 +258,16 @@ locals {
       external_host   = "https://adguard.dominiksiejak.pl"
       internal_host   = "http://adguard:3000"
       launch_url      = "https://adguard.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/adguard.svg"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/adguard-home.svg"
       skip_path_regex = "^/(dns-query|control|metrics|install|login|setup).*"
+    }
+    enter = {
+      name            = "Firewall Access"
+      external_host   = "https://enter.dominiksiejak.pl"
+      internal_host   = "http://n8n:5678"
+      launch_url      = "https://enter.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/firewall.svg"
+      skip_path_regex = ""
     }
   }
 
@@ -273,8 +298,8 @@ locals {
   #───────────────────────────────────────────────────────────────────────────────
 
   user_accessible_apps = toset([
-    "calibre",
     "dozzle",
+    "enter",
     "gatus",
     "gitea",
     "grafana",
