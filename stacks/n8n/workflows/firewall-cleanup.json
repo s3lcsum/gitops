@@ -1,0 +1,196 @@
+{
+  "connections": {
+    "Compute Auth": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "List Address List",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Filter Expired": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Split In Batches",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "List Address List": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Filter Expired",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Compute Auth",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Compute Auth",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Delete Entry",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "name": "Firewall Cleanup",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "parameters": {},
+      "position": [
+        -400,
+        0
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1
+    },
+    {
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "position": [
+        -400,
+        200
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
+    },
+    {
+      "id": "compute-auth",
+      "name": "Compute Auth",
+      "parameters": {
+        "jsCode": "const user = $env.ROUTEROS_API_USER;\nconst pass = $env.ROUTEROS_API_PASS;\nconst auth = Buffer.from(`${user}:${pass}`).toString('base64');\nreturn [{ json: { auth: `Basic ${auth}`, apiUrl: $env.ROUTEROS_API_URL } }];",
+        "mode": "runOnceForAllItems"
+      },
+      "position": [
+        -100,
+        100
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "list-address-list",
+      "name": "List Address List",
+      "parameters": {
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json.auth }}"
+            }
+          ]
+        },
+        "method": "GET",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false
+            }
+          }
+        },
+        "sendHeaders": true,
+        "url": "={{ $json.apiUrl }}/ip/firewall/address-list"
+      },
+      "position": [
+        200,
+        100
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "filter-expired",
+      "name": "Filter Expired",
+      "parameters": {
+        "jsCode": "const listName = 'allowed-wan';\nconst now = Date.now();\nconst auth = $('Compute Auth').first().json.auth;\nconst apiUrl = $('Compute Auth').first().json.apiUrl;\nconst entries = $input.all()[0].json;\n\nif (!Array.isArray(entries)) {\n  return [];\n}\n\nconst expired = entries\n  .filter(e => {\n    if (e.list !== listName) return false;\n    const m = (e.comment || '').match(/^ttl:(\\d+)$/);\n    return m && Number(m[1]) < now;\n  })\n  .map(e => ({\n    json: {\n      id: e['.id'],\n      address: e.address,\n      comment: e.comment,\n      auth: auth,\n      apiUrl: apiUrl\n    }\n  }));\n\nreturn expired;",
+        "mode": "runOnceForAllItems"
+      },
+      "position": [
+        500,
+        100
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "split-in-batches",
+      "name": "Split In Batches",
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "position": [
+        800,
+        100
+      ],
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3
+    },
+    {
+      "id": "delete-entry",
+      "name": "Delete Entry",
+      "parameters": {
+        "jsCode": "const auth = $input.first().json.auth;\nconst apiUrl = $input.first().json.apiUrl;\nconst entryId = $input.first().json.id;\n\n// RouterOS .id starts with * \u2014 must NOT be URL-encoded\nconst url = `${apiUrl}/ip/firewall/address-list/${entryId}`;\n\nconst response = await fetch(url, {\n  method: 'DELETE',\n  headers: {\n    'Authorization': auth\n  }\n});\n\nreturn [{\n  json: {\n    id: entryId,\n    status: response.status,\n    ok: response.ok\n  }\n}];",
+        "mode": "runOnceForEachItem"
+      },
+      "position": [
+        1100,
+        100
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null
+}

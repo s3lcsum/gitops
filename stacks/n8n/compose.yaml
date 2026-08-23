@@ -17,6 +17,7 @@ services:
       N8N_HOST: n8n.dominiksiejak.pl
       N8N_PROTOCOL: https
       N8N_SSRF_PROTECTION_ENABLED: false
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
     volumes:
       - config:/home/node/.n8n
     networks:
