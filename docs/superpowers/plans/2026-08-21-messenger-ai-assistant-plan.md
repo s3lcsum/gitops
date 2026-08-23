@@ -107,7 +107,7 @@ git commit -m "chore(cloudflare): exempt messenger webhook path from country blo
 - Modify: `stacks/n8n/n8n.env` (gitignored) + `stacks/n8n/n8n.env.example` (placeholders only)
 
 **Interfaces:**
-- Consumes: existing HA long-lived API token (the owner token used by `notify_psid` / a shared assistant token).
+- Consumes: a fresh dedicated HA long-lived API token (USER-minted, Task 2 Step 1) for the assistant.
 - Produces: a PSID→person identity map + per-person `conversation_id`, stored/consumed by the n8n workflow (Task 3). Identity is injected by n8n into the assist prompt; there are NO new HA users.
 
 **Reasoning (confirmed with user):** creating HA users and minting per-person tokens requires the HA frontend/owner login for each of four people — not automatable, and Jan has no existing HA user. Instead n8n already owns the PSID→person map and will:
@@ -117,9 +117,13 @@ git commit -m "chore(cloudflare): exempt messenger webhook path from country blo
 
 **Constraints:** four family members from `notify_psid`: Dominik, Jan, Dantua, Oliwia. Everyone acts equally. conversation_language default is `en`; the workflow passes `"language": "pl"` per call.
 
-- [ ] **Step 1: Confirm the shared HA long-lived token**
+- [ ] **Step 1: Mint a fresh dedicated assistant token (USER action)**
 
-Use the existing long-lived token already used by the HA Time Machine (`LONG_LIVED_ACCESS_TOKEN` in `stacks/hass/timemachine.env`, `<...>`) OR the owner token present on the instance. Store its value (or a fresh assistant-scoped one if preferred) as `HA_ASSIST_TOKEN` — the value is a secret, saved into the gitignored `stacks/n8n/n8n.env`, never printed to conversation or committed.
+Do NOT reuse an existing HA token (timemachine.env or owner token). Create a NEW, dedicated HA long-lived token for the assistant:
+1. In your browser: log into `https://hass.dominiksiejak.pl` as an owner.
+2. Profile → Security → Long-lived access tokens → Create token, name it `Messenger Assistant`.
+3. Copy the token value into the gitignored `stacks/n8n/n8n.env` as `HA_ASSIST_TOKEN=...`.
+The value is a secret — saved only into the gitignored env file, never printed to conversation or committed. This step is USER-only (token minting requires the HA owner UI).
 
 - [ ] **Step 2: Define the PSID→person → conversation_id map**
 
