@@ -279,7 +279,7 @@
           "responseCode": 500
         },
         "respondWith": "json",
-        "responseBody": "={ \"ok\": false, \"detail\": \"Router error\" }"
+        "responseBody": "={ \"ok\": false, \"detail\": \"Router error: {{ $json.error?.statusCode || 'unknown' }}\" }"
       },
       "position": [
         1520,
