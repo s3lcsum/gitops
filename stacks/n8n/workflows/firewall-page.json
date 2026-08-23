@@ -1,0 +1,223 @@
+{
+  "active": true,
+  "activeVersion": {
+    "authors": "Dominik Sk",
+    "autosaved": false,
+    "connections": {
+      "Render HTML": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Respond to Webhook",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Render HTML",
+              "type": "main"
+            }
+          ]
+        ]
+      }
+    },
+    "createdAt": "2026-08-23T20:10:52.810Z",
+    "description": null,
+    "name": null,
+    "nodeGroups": [],
+    "nodes": [
+      {
+        "id": "webhook-1",
+        "name": "Webhook",
+        "parameters": {
+          "httpMethod": "GET",
+          "options": {},
+          "path": "firewall-page",
+          "responseMode": "responseNode"
+        },
+        "position": [
+          240,
+          300
+        ],
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "webhookId": "firewall-page"
+      },
+      {
+        "id": "code-1",
+        "name": "Render HTML",
+        "parameters": {
+          "jsCode": "const html = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Add IP to Firewall</title>\n<style>\n  :root { color-scheme: dark; }\n  * { box-sizing: border-box; }\n  body { font-family: system-ui, -apple-system, sans-serif; background:#0b1220; color:#e6e6e6;\n         display:flex; align-items:center; justify-content:center; min-height:100vh;\n         margin:0; padding:16px; }\n  .card { background:#1e2030; border:1px solid #2a3a5a; border-radius:16px;\n          padding:24px; width:100%; max-width:380px; box-shadow:0 8px 24px rgba(0,0,0,.4); }\n  h1 { font-size:1.25rem; margin:0 0 4px; }\n  .who { font-size:.85rem; color:#9fb3d1; margin-bottom:16px; }\n  label { display:block; font-size:.85rem; color:#9fb3d1; margin:14px 0 6px; }\n  input { width:100%; padding:12px; border:1px solid #3a4a6a; border-radius:10px;\n          background:#12203c; color:#e6e6e6; font-size:1rem; }\n  .ttls { display:flex; gap:8px; }\n  .ttl { flex:1; padding:12px; border:1px solid #3a4a6a; border-radius:10px;\n         background:#12203c; color:#e6e6e6; font-size:1rem; cursor:pointer; transition:.1s; }\n  .ttl.sel { background:#2f6fed; color:#fff; border-color:#2f6fed; }\n  button.submit { width:100%; padding:12px; border:none; border-radius:12px;\n            background:#2f6fed; color:#fff; font-weight:600; font-size:1rem;\n            cursor:pointer; margin-top:20px; }\n  .msg { margin-top:14px; padding:10px; border-radius:8px; font-size:.9rem;\n         white-space:pre-line; display:none; }\n  .msg.ok { display:block; background:#132b1e; color:#7ee2a8; border:1px solid #1f6b3a; }\n  .msg.err { display:block; background:#3b1212; color:#f88; border:1px solid #8b1a1a; }\n</style>\n</head>\n<body>\n<div class=\"card\">\n  <h1>&#128293; Add IP to Firewall</h1>\n  <div class=\"who\">Logged in as: <b>__NAME__</b></div>\n  <label for=\"ip\">IP Address</label>\n  <input id=\"ip\" value=\"\" placeholder=\"Detecting your IP\u2026\">\n  <label>Time to Live</label>\n  <div class=\"ttls\">\n    <button type=\"button\" class=\"ttl\" data-ttl=\"1d\">1d</button>\n    <button type=\"button\" class=\"ttl sel\" data-ttl=\"7d\">7d</button>\n    <button type=\"button\" class=\"ttl\" data-ttl=\"30d\">30d</button>\n  </div>\n  <button class=\"submit\" id=\"submit\" type=\"button\">Add to Firewall</button>\n  <div class=\"msg\" id=\"msg\"></div>\n</div>\n<script>\n  let ttl = \"7d\";\n  const $ = id => document.getElementById(id);\n  const setMsg = (ok, txt) => { const m = $(\"msg\"); m.className = ok ? \"msg ok\" : \"msg err\"; m.textContent = txt; };\n  (async () => {\n    try {\n      const j = await (await fetch(\"https://api.ipify.org?format=json\")).json();\n      if (j.ip) { $(\"ip\").value = j.ip; } else { $(\"ip\").placeholder = \"Enter your IP\"; }\n    } catch (e) { $(\"ip\").placeholder = \"Enter your IP\"; }\n  })();\n  document.querySelectorAll(\".ttl\").forEach(b => {\n    b.onclick = () => {\n      document.querySelectorAll(\".ttl\").forEach(x => x.classList.remove(\"sel\"));\n      b.classList.add(\"sel\"); ttl = b.dataset.ttl;\n    };\n  });\n  $(\"submit\").onclick = async () => {\n    const ip = $(\"ip\").value.trim();\n    if (!ip) { setMsg(false, \"Enter your IP.\"); return; }\n    setMsg(true, \"Adding\u2026\");\n    try {\n      const res = await fetch(\"/webhook/firewall\", {\n        method: \"POST\",\n        headers: { \"Content-Type\": \"application/json\" },\n        body: JSON.stringify({ ip, ttl })\n      });\n      const j = await res.json();\n      if (j.ok) { setMsg(true, \"Added! Expires \" + j.expires); }\n      else { setMsg(false, j.detail || \"Request failed\"); }\n    } catch (e) { setMsg(false, \"Network error: \" + e.message); }\n  };\n</script>\n</body>\n</html>`;\n\nconst name = ($input.first().json.headers && ($input.first().json.headers[\"x-authentik-name\"] || $input.first().json.headers[\"X-Authentik-Name\"])) || \"user\";\nreturn { rendered: html.replace(\"__NAME__\", name) };"
+        },
+        "position": [
+          460,
+          300
+        ],
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2
+      },
+      {
+        "id": "respond-1",
+        "name": "Respond to Webhook",
+        "parameters": {
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Content-Type",
+                  "value": "text/html"
+                }
+              ]
+            }
+          },
+          "respondWith": "text",
+          "responseBody": "={{ $json.rendered }}"
+        },
+        "position": [
+          680,
+          300
+        ],
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1
+      }
+    ],
+    "updatedAt": "2026-08-23T20:10:52.810Z",
+    "versionId": "6260a1ce-3a7e-4dd1-8121-baa957749189",
+    "workflowId": "zjc3kAMZEgcMXymX",
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-08-23T20:11:23.242Z",
+        "event": "activated",
+        "id": 22,
+        "userId": "5e138df3-9f3f-446b-a1b8-6f597f0c3d0d",
+        "versionId": "6260a1ce-3a7e-4dd1-8121-baa957749189",
+        "workflowId": "zjc3kAMZEgcMXymX"
+      }
+    ]
+  },
+  "activeVersionId": "6260a1ce-3a7e-4dd1-8121-baa957749189",
+  "connections": {
+    "Render HTML": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond to Webhook",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Render HTML",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2026-08-23T20:10:52.806Z",
+  "description": null,
+  "id": "zjc3kAMZEgcMXymX",
+  "isArchived": false,
+  "meta": null,
+  "name": "firewall-page",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "id": "webhook-1",
+      "name": "Webhook",
+      "parameters": {
+        "httpMethod": "GET",
+        "options": {},
+        "path": "firewall-page",
+        "responseMode": "responseNode"
+      },
+      "position": [
+        240,
+        300
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "firewall-page"
+    },
+    {
+      "id": "code-1",
+      "name": "Render HTML",
+      "parameters": {
+        "jsCode": "const html = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Add IP to Firewall</title>\n<style>\n  :root { color-scheme: dark; }\n  * { box-sizing: border-box; }\n  body { font-family: system-ui, -apple-system, sans-serif; background:#0b1220; color:#e6e6e6;\n         display:flex; align-items:center; justify-content:center; min-height:100vh;\n         margin:0; padding:16px; }\n  .card { background:#1e2030; border:1px solid #2a3a5a; border-radius:16px;\n          padding:24px; width:100%; max-width:380px; box-shadow:0 8px 24px rgba(0,0,0,.4); }\n  h1 { font-size:1.25rem; margin:0 0 4px; }\n  .who { font-size:.85rem; color:#9fb3d1; margin-bottom:16px; }\n  label { display:block; font-size:.85rem; color:#9fb3d1; margin:14px 0 6px; }\n  input { width:100%; padding:12px; border:1px solid #3a4a6a; border-radius:10px;\n          background:#12203c; color:#e6e6e6; font-size:1rem; }\n  .ttls { display:flex; gap:8px; }\n  .ttl { flex:1; padding:12px; border:1px solid #3a4a6a; border-radius:10px;\n         background:#12203c; color:#e6e6e6; font-size:1rem; cursor:pointer; transition:.1s; }\n  .ttl.sel { background:#2f6fed; color:#fff; border-color:#2f6fed; }\n  button.submit { width:100%; padding:12px; border:none; border-radius:12px;\n            background:#2f6fed; color:#fff; font-weight:600; font-size:1rem;\n            cursor:pointer; margin-top:20px; }\n  .msg { margin-top:14px; padding:10px; border-radius:8px; font-size:.9rem;\n         white-space:pre-line; display:none; }\n  .msg.ok { display:block; background:#132b1e; color:#7ee2a8; border:1px solid #1f6b3a; }\n  .msg.err { display:block; background:#3b1212; color:#f88; border:1px solid #8b1a1a; }\n</style>\n</head>\n<body>\n<div class=\"card\">\n  <h1>&#128293; Add IP to Firewall</h1>\n  <div class=\"who\">Logged in as: <b>__NAME__</b></div>\n  <label for=\"ip\">IP Address</label>\n  <input id=\"ip\" value=\"\" placeholder=\"Detecting your IP\u2026\">\n  <label>Time to Live</label>\n  <div class=\"ttls\">\n    <button type=\"button\" class=\"ttl\" data-ttl=\"1d\">1d</button>\n    <button type=\"button\" class=\"ttl sel\" data-ttl=\"7d\">7d</button>\n    <button type=\"button\" class=\"ttl\" data-ttl=\"30d\">30d</button>\n  </div>\n  <button class=\"submit\" id=\"submit\" type=\"button\">Add to Firewall</button>\n  <div class=\"msg\" id=\"msg\"></div>\n</div>\n<script>\n  let ttl = \"7d\";\n  const $ = id => document.getElementById(id);\n  const setMsg = (ok, txt) => { const m = $(\"msg\"); m.className = ok ? \"msg ok\" : \"msg err\"; m.textContent = txt; };\n  (async () => {\n    try {\n      const j = await (await fetch(\"https://api.ipify.org?format=json\")).json();\n      if (j.ip) { $(\"ip\").value = j.ip; } else { $(\"ip\").placeholder = \"Enter your IP\"; }\n    } catch (e) { $(\"ip\").placeholder = \"Enter your IP\"; }\n  })();\n  document.querySelectorAll(\".ttl\").forEach(b => {\n    b.onclick = () => {\n      document.querySelectorAll(\".ttl\").forEach(x => x.classList.remove(\"sel\"));\n      b.classList.add(\"sel\"); ttl = b.dataset.ttl;\n    };\n  });\n  $(\"submit\").onclick = async () => {\n    const ip = $(\"ip\").value.trim();\n    if (!ip) { setMsg(false, \"Enter your IP.\"); return; }\n    setMsg(true, \"Adding\u2026\");\n    try {\n      const res = await fetch(\"/webhook/firewall\", {\n        method: \"POST\",\n        headers: { \"Content-Type\": \"application/json\" },\n        body: JSON.stringify({ ip, ttl })\n      });\n      const j = await res.json();\n      if (j.ok) { setMsg(true, \"Added! Expires \" + j.expires); }\n      else { setMsg(false, j.detail || \"Request failed\"); }\n    } catch (e) { setMsg(false, \"Network error: \" + e.message); }\n  };\n</script>\n</body>\n</html>`;\n\nconst name = ($input.first().json.headers && ($input.first().json.headers[\"x-authentik-name\"] || $input.first().json.headers[\"X-Authentik-Name\"])) || \"user\";\nreturn { rendered: html.replace(\"__NAME__\", name) };"
+      },
+      "position": [
+        460,
+        300
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "respond-1",
+      "name": "Respond to Webhook",
+      "parameters": {
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html"
+              }
+            ]
+          }
+        },
+        "respondWith": "text",
+        "responseBody": "={{ $json.rendered }}"
+      },
+      "position": [
+        680,
+        300
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1
+    }
+  ],
+  "pinData": null,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "shared": [
+    {
+      "createdAt": "2026-08-23T20:10:52.809Z",
+      "project": {
+        "createdAt": "2026-06-07T13:48:01.085Z",
+        "creatorId": "5e138df3-9f3f-446b-a1b8-6f597f0c3d0d",
+        "customTelemetryTags": [],
+        "description": null,
+        "icon": null,
+        "id": "t62SHEeW7afd6c92",
+        "name": "Dominik Sk <dreewniak@gmail.com>",
+        "type": "personal",
+        "updatedAt": "2026-06-11T05:57:14.073Z"
+      },
+      "projectId": "t62SHEeW7afd6c92",
+      "role": "workflow:owner",
+      "updatedAt": "2026-08-23T20:10:52.809Z",
+      "workflowId": "zjc3kAMZEgcMXymX"
+    }
+  ],
+  "sourceWorkflowId": null,
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2026-08-23T20:10:52.806Z",
+  "versionCounter": 1,
+  "versionId": "6260a1ce-3a7e-4dd1-8121-baa957749189"
+}
