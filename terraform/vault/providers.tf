@@ -10,19 +10,11 @@ terraform {
       source  = "hashicorp/random"
       version = "3.9.0"
     }
-    tfe = {
-      source  = "hashicorp/tfe"
-      version = "0.80.0"
-    }
   }
 
-  cloud {
-    hostname     = "app.terraform.io"
-    organization = "dominiksiejak"
-
-    workspaces {
-      name = "gitops-vault"
-    }
+  backend "gcs" {
+    bucket = "dominiksiejak-gitops-tfstate"
+    prefix = "gitops-vault"
   }
 }
 

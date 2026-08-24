@@ -55,7 +55,7 @@ endpoints:
     <<: &defaults
       interval: 15m
       client:
-        timeout: 3s
+        timeout: 15s
       alerts:
         - type: telegram
           failure-threshold: 4

@@ -1,0 +1,382 @@
+{
+  "name": "authentik-login-firewall",
+  "nodes": [
+    {
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "parameters": {
+        "httpMethod": "POST",
+        "options": {},
+        "path": "authentik-login",
+        "responseMode": "responseNode"
+      },
+      "position": [200, 300],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2
+    },
+    {
+      "id": "validate-secret",
+      "name": "Validate Secret",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.headers['x-webhook-secret'] }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "={{ $env.AUTHENTIK_WEBHOOK_SECRET }}"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [420, 300],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2
+    },
+    {
+      "id": "check-login-event",
+      "name": "Check Login Event",
+      "parameters": {
+        "conditions": {
+          "combinator": "or",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.event?.action || $json.body.action }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "login"
+            },
+            {
+              "leftValue": "={{ $json.body.event?.action || $json.body.action }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "authorize_application"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [640, 300],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2
+    },
+    {
+      "id": "compute-expiry",
+      "name": "Compute Expiry",
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\nconst event = body.event && typeof body.event === 'object' ? body.event : body;\nconst ip = String(event.client_ip || body.client_ip || '').trim();\nconst user = event.user?.username || event.user?.name || body.user?.username || 'unknown';\nconst ttlMs = 7 * 24 * 60 * 60 * 1000;\nconst now = Date.now();\nconst expiresMs = now + ttlMs;\nreturn [{ json: { ip, user, expires_ms: expiresMs, expires_iso: new Date(expiresMs).toISOString() } }];"
+      },
+      "position": [860, 200],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "validate-ip",
+      "name": "Validate IP",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ip }}",
+              "operator": {
+                "operation": "regex",
+                "type": "string"
+              },
+              "rightValue": "^(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$"
+            },
+            {
+              "leftValue": "={{ $json.ip }}",
+              "operator": {
+                "operation": "notEquals",
+                "type": "string"
+              },
+              "rightValue": "0.0.0.0"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [1080, 200],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2
+    },
+    {
+      "id": "load-routeros-env",
+      "name": "Load RouterOS Env",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "apiUrl",
+              "name": "apiUrl",
+              "type": "string",
+              "value": "={{ $env.ROUTEROS_API_URL }}"
+            },
+            {
+              "id": "user",
+              "name": "user",
+              "type": "string",
+              "value": "={{ $env.ROUTEROS_API_USER }}"
+            },
+            {
+              "id": "pass",
+              "name": "pass",
+              "type": "string",
+              "value": "={{ $env.ROUTEROS_API_PASS }}"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      },
+      "position": [1300, 120],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "compute-auth",
+      "name": "Compute Auth",
+      "parameters": {
+        "jsCode": "const prev = $input.first().json;\nconst auth = Buffer.from(String(prev.user) + ':' + String(prev.pass)).toString('base64');\nconst { user, pass, ...rest } = prev;\nreturn [{ json: { ...rest, auth_header: 'Basic ' + auth } }];"
+      },
+      "position": [1520, 120],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "put-routeros",
+      "name": "PUT to RouterOS",
+      "parameters": {
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json.auth_header }}"
+            }
+          ]
+        },
+        "jsonBody": "={ \"address\": \"{{ $json.ip }}\", \"list\": \"allowed-wan\", \"comment\": \"ttl:{{ $json.expires_ms }}\", \"disabled\": false }",
+        "method": "PUT",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "={{ $json.apiUrl }}/ip/firewall/address-list"
+      },
+      "position": [1740, 120],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "respond-success",
+      "name": "Respond Success",
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        },
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true, \"ip\": \"{{ $node[\"Compute Expiry\"].json.ip }}\", \"user\": \"{{ $node[\"Compute Expiry\"].json.user }}\", \"expires\": \"{{ $node[\"Compute Expiry\"].json.expires_iso }}\" }"
+      },
+      "position": [1960, 120],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1
+    },
+    {
+      "id": "respond-secret-fail",
+      "name": "Respond Secret Fail",
+      "parameters": {
+        "options": {
+          "responseCode": 403
+        },
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": false, \"detail\": \"forbidden\" }"
+      },
+      "position": [640, 500],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1
+    },
+    {
+      "id": "respond-not-login",
+      "name": "Respond Not Login",
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        },
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true, \"skipped\": true }"
+      },
+      "position": [860, 450],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1
+    },
+    {
+      "id": "respond-bad-ip",
+      "name": "Respond Bad IP",
+      "parameters": {
+        "options": {
+          "responseCode": 400
+        },
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": false, \"detail\": \"invalid ip\" }"
+      },
+      "position": [1300, 360],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1
+    },
+    {
+      "id": "respond-error",
+      "name": "Respond Error",
+      "parameters": {
+        "options": {
+          "responseCode": 500
+        },
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": false, \"detail\": \"router error\" }"
+      },
+      "position": [1960, 360],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Validate Secret",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Validate Secret": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Check Login Event",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Respond Secret Fail",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Check Login Event": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Compute Expiry",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Respond Not Login",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Compute Expiry": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Validate IP",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Validate IP": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Load RouterOS Env",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Respond Bad IP",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Load RouterOS Env": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Compute Auth",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Compute Auth": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "PUT to RouterOS",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PUT to RouterOS": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond Success",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Respond Error",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

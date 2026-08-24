@@ -10,19 +10,11 @@ terraform {
       source  = "OJFord/wireguard"
       version = "0.4.1+2"
     }
-    tfe = {
-      source  = "hashicorp/tfe"
-      version = "0.80.0"
-    }
   }
 
-  cloud {
-    hostname     = "app.terraform.io"
-    organization = "dominiksiejak"
-
-    workspaces {
-      name = "gitops-routeros"
-    }
+  backend "gcs" {
+    bucket = "dominiksiejak-gitops-tfstate"
+    prefix = "gitops-routeros"
   }
 }
 

@@ -12,8 +12,8 @@ http:
   address: 0.0.0.0:3000
   session_ttl: 30d
 users:
-  - name: dsiejak
-    password: $2a$10$hPPmYty3eDqrMd2y.2ZMNOK3b706CSNhd84jdqru.AMGRtxU0w02C
+  - name: admin
+    password: SET_ON_HOST_generate_with_adguard_or_htpasswd
 auth_attempts: 5
 block_auth_min: 15
 http_proxy: ""
@@ -168,9 +168,6 @@ filtering:
       answer: 192.168.89.253
       enabled: true
     - domain: adminer.dominiksiejak.pl
-      answer: 192.168.89.253
-      enabled: true
-    - domain: argocd.dominiksiejak.pl
       answer: 192.168.89.253
       enabled: true
     - domain: auth.dominiksiejak.pl

@@ -39,8 +39,7 @@ provider "registry.opentofu.org/hashicorp/random" {
 }
 
 provider "registry.opentofu.org/hashicorp/tfe" {
-  version     = "0.80.0"
-  constraints = "0.80.0"
+  version = "0.80.0"
   hashes = [
     "h1:2dTi5a5F+sPjmUdjAWJEDVY4EosGe2FUv+MfvnLBHvQ=",
     "h1:DrIYVrJ1L+Stkb/zMhRXxMqPC57cHmTj8IyqJlKI4vM=",

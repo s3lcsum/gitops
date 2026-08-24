@@ -44,6 +44,7 @@ resource "authentik_token" "service_account_tokens" {
   user        = authentik_user.service_accounts[each.key].id
   identifier  = "${each.key}-ldap-token"
   intent      = "app_password"
+  expiring    = false
   description = "LDAP bind password for ${each.value.name}"
 }
 

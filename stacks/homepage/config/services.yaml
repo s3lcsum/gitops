@@ -16,9 +16,10 @@
         description: Dashboards
         widget:
           type: grafana
+          version: 2
           url: http://grafana:3000
-          auth:
-            token: "{{HOMEPAGE_VAR_GRAFANA_TOKEN}}"
+          username: "{{HOMEPAGE_VAR_GRAFANA_USER}}"
+          password: "{{HOMEPAGE_VAR_GRAFANA_PASS}}"
 
     - Gatus:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/gatus.png
@@ -156,6 +157,26 @@
         href: https://netbox.dominiksiejak.pl
         description: Infrastructure DCIM
 
+    - Ghostfolio:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/ghostfolio.png
+        href: https://ghostfolio.dominiksiejak.pl
+        description: Personal finance
+
+    - Wealthfolio:
+        icon: https://raw.githubusercontent.com/wealthfolio/wealthfolio/main/app-icon.png
+        href: https://wealthfolio.dominiksiejak.pl
+        description: Personal finance
+
+- Dev:
+    - Hermes:
+        href: https://hermes.dominiksiejak.pl
+        description: AI agent gateway
+
+    - OpenCode:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/opencode.png
+        href: https://opencode.dominiksiejak.pl
+        description: Coding agent
+
 - Automation:
     - Home Assistant:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant.png
@@ -165,6 +186,21 @@
           type: homeassistant
           url: https://hass.dominiksiejak.pl
           key: "{{HOMEPAGE_VAR_HASS_TOKEN}}"
+
+    - Zigbee2MQTT (WiFi):
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/zigbee2mqtt.png
+        href: https://zigbee2mqtt-wifi.dominiksiejak.pl
+        description: Zigbee coordinator (WiFi)
+
+    - Zigbee2MQTT (USB):
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/zigbee2mqtt.png
+        href: https://zigbee2mqtt-usb.dominiksiejak.pl
+        description: Zigbee coordinator (USB)
+
+    - HASS Time Machine:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant.png
+        href: https://hass-timemachine.dominiksiejak.pl
+        description: Home Assistant config snapshots
 
     - n8n:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/n8n.png
@@ -219,6 +255,25 @@
           url: http://sonarr:8989
           key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
 
+    - Bazarr:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/bazarr.png
+        href: https://bazarr.dominiksiejak.pl
+        description: Subtitle management
+        widget:
+          type: bazarr
+          url: http://bazarr:6767
+          username: "{{HOMEPAGE_VAR_BAZARR_USER}}"
+          key: "{{HOMEPAGE_VAR_BAZARR_KEY}}"
+
+    - Readarr:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/readarr.png
+        href: https://readarr.dominiksiejak.pl
+        description: Book automation
+        widget:
+          type: readarr
+          url: http://readarr:8787
+          key: "{{HOMEPAGE_VAR_READARR_KEY}}"
+
     - Jellyfin:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyfin.png
         href: https://jellyfin.dominiksiejak.pl
@@ -237,3 +292,13 @@
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/calibre-web.png
         href: https://calibre.dominiksiejak.pl
         description: E-book library
+
+    - Calibre Gui:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/calibre.png
+        href: https://calibre-gui.dominiksiejak.pl
+        description: Calibre desktop (KasmVNC)
+
+    - Calibre Api:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/calibre-web.png
+        href: https://calibre-api.dominiksiejak.pl
+        description: Calibre OPDS / API

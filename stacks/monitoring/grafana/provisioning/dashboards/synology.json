@@ -2326,6 +2326,33 @@
           "interval": "",
           "legendFormat": "",
           "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoria-metrics"
+          },
+          "expr": "diskHealthStatus{job=~'$job',instance=~'$instance'}",
+          "format": "table",
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoria-metrics"
+          },
+          "expr": "diskBadSector{job=~'$job',instance=~'$instance'}",
+          "format": "table",
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoria-metrics"
+          },
+          "expr": "diskRemainLife{job=~'$job',instance=~'$instance'}",
+          "format": "table",
+          "refId": "G"
         }
       ],
       "title": "Hard Drives",
@@ -2339,7 +2366,10 @@
                 "diskType",
                 "Value #C",
                 "diskModel",
-                "Value #A"
+                "Value #A",
+                "Value #E",
+                "Value #F",
+                "Value #G"
               ]
             }
           }
@@ -2359,6 +2389,9 @@
             "indexByName": {
               "Value #A": 4,
               "Value #C": 3,
+              "Value #E": 5,
+              "Value #F": 6,
+              "Value #G": 7,
               "diskID": 0,
               "diskModel": 2,
               "diskType": 1
@@ -2366,6 +2399,9 @@
             "renameByName": {
               "Value #A": "Temperature",
               "Value #C": "Status",
+              "Value #E": "Health",
+              "Value #F": "Bad Sectors",
+              "Value #G": "Remain Life",
               "diskID": "Disk",
               "diskModel": "Model",
               "diskType": "Type"
@@ -4146,7 +4182,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 60
+        "y": 67
       },
       "id": 78,
       "panels": [],
@@ -4215,7 +4251,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 61
+        "y": 68
       },
       "id": 113,
       "interval": "",
@@ -4321,7 +4357,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 61
+        "y": 68
       },
       "id": 114,
       "interval": "",
@@ -4425,7 +4461,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 69
+        "y": 76
       },
       "id": 146,
       "links": [],
@@ -4538,7 +4574,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 69
+        "y": 76
       },
       "id": 149,
       "interval": "",
@@ -4632,7 +4668,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 77
+        "y": 84
       },
       "id": 55,
       "panels": [],
@@ -4702,7 +4738,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 78
+        "y": 85
       },
       "id": 112,
       "interval": "5s",
@@ -4746,6 +4782,107 @@
       ],
       "title": "SNMP Exporter - Scrape Time - $instance",
       "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "victoria-metrics"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": 600000,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 60
+      },
+      "id": 156,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "victoria-metrics"
+          },
+          "expr": "storageIOLA1{job=~'$job',instance=~'$instance'}",
+          "refId": "A"
+        }
+      ],
+      "title": "Disk Load % - $instance",
+      "transformations": [
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "pattern": "^sata.*|nvme.*|Time|sd.$"
+            }
+          }
+        }
+      ],
       "type": "timeseries"
     }
   ],

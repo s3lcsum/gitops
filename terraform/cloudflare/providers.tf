@@ -12,16 +12,12 @@ terraform {
     }
   }
 
-  cloud {
-    hostname     = "app.terraform.io"
-    organization = "dominiksiejak"
-
-    workspaces {
-      name = "gitops-cloudflare"
-    }
+  backend "gcs" {
+    bucket = "dominiksiejak-gitops-tfstate"
+    prefix = "gitops-cloudflare"
   }
 }
 
 provider "cloudflare" {
-  # Use CLOUDFLARE_API_TOKEN env var or TF_VAR_cloudflare_api_token
+  api_token = var.cloudflare_api_token
 }

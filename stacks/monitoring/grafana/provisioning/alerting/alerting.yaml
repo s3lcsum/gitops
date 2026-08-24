@@ -2,7 +2,7 @@ apiVersion: 1
 
 contactPoints:
   - orgId: 1
-    name: all-channels
+    name: grafana-telegram
     receivers:
       - uid: telegram-act-receiver
         type: telegram
@@ -10,6 +10,9 @@ contactPoints:
           bottoken: ${GRAFANA_TELEGRAM_BOT_TOKEN}
           chatid: ${GRAFANA_TELEGRAM_CHAT_ID}
           message: '{{ template "alert_list" . }}'
+  - orgId: 1
+    name: grafana-email
+    receivers:
       - uid: email-smtp-receiver
         type: email
         settings:
@@ -17,11 +20,16 @@ contactPoints:
 
 policies:
   - orgId: 1
-    receiver: all-channels
+    receiver: grafana-telegram
     group_by: ["grafana_folder", "alertname"]
     group_wait: 30s
     group_interval: 5m
     repeat_interval: 4h
+    routes:
+      - receiver: grafana-email
+        matchers:
+          - severity = urgent
+        continue: true
 
 groups:
   - orgId: 1
@@ -57,12 +65,47 @@ groups:
             relativeTimeRange:
               from: 300
               to: 0
-        for: 2m
+        for: 5m
         labels:
-          service: up
+          severity: warning
         annotations:
           summary: "Service {{ $labels.instance }} unreachable"
           description: "Synthetic probe failed for instance {{ $labels.instance }}"
+
+      - uid: synthetic-service-down-24h
+        title: "Synthetic service down 24h"
+        condition: "C"
+        data:
+          - refId: "A"
+            datasourceUid: "victoria-metrics"
+            model:
+              expr: "min(probe_success) by (instance)"
+              instant: true
+            relativeTimeRange:
+              from: 300
+              to: 0
+          - refId: "C"
+            datasourceUid: "__expr__"
+            model:
+              conditions:
+                - evaluator:
+                    type: lt
+                    params: [1]
+                  type: query
+              datasource:
+                type: "__expr__"
+                uid: "__expr__"
+              expression: "A"
+              type: "threshold"
+            relativeTimeRange:
+              from: 300
+              to: 0
+        for: 24h
+        labels:
+          severity: urgent
+        annotations:
+          summary: "Service {{ $labels.instance }} down for over 24h"
+          description: "Synthetic probe failing for instance {{ $labels.instance }} for over 24h"
 
   - orgId: 1
     name: "victoria-metrics-indicators"
@@ -99,9 +142,44 @@ groups:
               to: 0
         for: 2m
         labels:
-          service: down
+          severity: warning
         annotations:
           summary: "VictoriaMetrics is unreachable"
+
+      - uid: vm-down-24h
+        title: "VictoriaMetrics down 24h"
+        condition: "C"
+        data:
+          - refId: "A"
+            datasourceUid: "victoria-metrics"
+            model:
+              expr: "up{job=\"victoria-metrics\"}"
+              instant: true
+            relativeTimeRange:
+              from: 300
+              to: 0
+          - refId: "C"
+            datasourceUid: "__expr__"
+            model:
+              conditions:
+                - evaluator:
+                    type: lt
+                    params: [1]
+                  type: query
+              datasource:
+                type: "__expr__"
+                uid: "__expr__"
+              expression: "A"
+              type: "threshold"
+            relativeTimeRange:
+              from: 300
+              to: 0
+        for: 24h
+        labels:
+          severity: urgent
+        annotations:
+          summary: "VictoriaMetrics down for over 24h"
+          description: "VictoriaMetrics unreachable for over 24h"
 
 templates:
   - name: "alert_list"

@@ -14,6 +14,7 @@ locals {
     "dozzle",
     "gatus",
     "gitea",
+    "ghostfolio",
     "grafana-synthetic-agent",
     "hass",
     "homepage",
@@ -26,6 +27,7 @@ locals {
     "unifi",
     "vault",
     "vaultwarden",
+    "wealthfolio",
     "v-maintenance",
     "watchyourlan",
   ]

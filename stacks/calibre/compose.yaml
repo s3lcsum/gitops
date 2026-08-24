@@ -56,13 +56,17 @@ services:
       PGID: 0
       TZ: Europe/Warsaw
       NETWORK_SHARE_MODE: "true"
-      TRUSTED_PROXY_COUNT: "2"
+      # Only Traefik sits in front (no Cloudflare tunnel) — 1 proxy hop.
+      # ProxyFix needs exact count: 2 makes it demand 2 X-Forwarded-Proto
+      # values, returning None for 1 → request.url stays http → OAuth
+      # callback fails with oauthlib InsecureTransportError.
+      TRUSTED_PROXY_COUNT: "1"
     volumes:
       - cwa_config:/config
       - /mnt/NAS_Shared_Media/books/inbox:/cwa-book-ingest
       - /mnt/NAS_Shared_Media/books/library:/calibre-library
     healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8083/')"]
+      test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8083/login')"]
       interval: 30s
       timeout: 10s
       retries: 5

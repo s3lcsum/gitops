@@ -11,7 +11,6 @@ services:
       - /opt/gatus/config.yaml:/config/config.yaml:ro
     networks:
       - proxy
-      - metrics
       - database
     labels:
       traefik.enable: true
@@ -20,8 +19,6 @@ services:
 
 networks:
   proxy:
-    external: true
-  metrics:
     external: true
   database:
     external: true
