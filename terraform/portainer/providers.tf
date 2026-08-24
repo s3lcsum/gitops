@@ -6,23 +6,15 @@ terraform {
       source  = "portainer/portainer"
       version = "1.34.3"
     }
-    tfe = {
-      source  = "hashicorp/tfe"
-      version = "0.80.0"
-    }
     local = {
       source  = "hashicorp/local"
       version = "2.9.0"
     }
   }
 
-  cloud {
-    hostname     = "app.terraform.io"
-    organization = "dominiksiejak"
-
-    workspaces {
-      name = "gitops-portainer"
-    }
+  backend "gcs" {
+    bucket = "dominiksiejak-gitops-tfstate"
+    prefix = "gitops-portainer"
   }
 }
 

@@ -15,6 +15,8 @@ On Hermes, `~/.local/bin/kind-hermes-ensure.sh` (LaunchAgent `ai.kind.hermes`) s
 curl -H 'Host: whoami.hermes.local' http://127.0.0.1/
 ```
 
+The OpenTofu `terraform/kind` module was removed. Manage clusters with the `kind` CLI and the YAML under `kind/clusters/`.
+
 ## Prerequisites
 
 Hermes (this Intel Mac) — Colima is already the KIND Docker provider:
@@ -55,17 +57,4 @@ kind get clusters
 # Switch context
 kubectl config use-context kind-local
 kubectl config use-context kind-hermes
-```
-
-## Terraform
-
-The `terraform/kind/` module (when present on the branch) manages both clusters via the `tehcyx/kind` provider.
-Run it locally on each machine — `local` on the primary MacBook, `hermes` on the Hermes MacBook.
-State is stored in GCS (bucket `dominiksiejak-gitops-tfstate`).
-
-```bash
-cd terraform/kind
-tofu init
-tofu apply -var="cluster_target=local"   # on this MacBook
-tofu apply -var="cluster_target=hermes"  # on Hermes
 ```

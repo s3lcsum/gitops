@@ -1,8 +1,23 @@
-# Phone Firewall Page — `enter.dominiksiejak.pl`
+# Phone Firewall Allowlist — Authentik login webhook
 
 **Date:** 2026-08-23
-**Status:** Approved
+**Updated:** 2026-08-24
+**Status:** Superseded (implementation)
 **Author:** opencode
+
+The `enter.dominiksiejak.pl` phone page was removed. WAN allowlisting is now:
+
+1. Authentik fires a notification webhook on `login` and `authorize_application`.
+2. Traefik routes `https://n8n.dominiksiejak.pl/webhook/authentik-login` **without** forward-auth (Authentik is the caller).
+3. n8n workflow `authentik-login-firewall` checks `X-Webhook-Secret`, requires a unicast IPv4, then `PUT`s RouterOS `allowed-wan` with `ttl:<unix_ms>`.
+4. `firewall-cleanup` deletes expired `ttl:` entries every 5 minutes.
+
+See `terraform/authentik/notifications.tf` and `stacks/n8n/workflows/authentik-login-firewall.json`.
+The original page-based design below is historical.
+
+---
+
+# Phone Firewall Page — `enter.dominiksiejak.pl` (historical)
 
 ---
 

@@ -3,6 +3,12 @@ variable "cloudflare_account_id" {
   type        = string
 }
 
+variable "cloudflare_api_token" {
+  description = "Cloudflare API token used by the provider"
+  type        = string
+  sensitive   = true
+}
+
 variable "zone_name" {
   description = "Cloudflare DNS zone name to manage records in"
   type        = string
@@ -12,7 +18,8 @@ variable "zone_name" {
 variable "tunnel_name" {
   description = "Human-readable name for the Cloudflare Tunnel"
   type        = string
-  default     = "homelab"
+  # Keep this equal to the live tunnel name. Renaming forces a new tunnel UUID.
+  default = "homelab"
 }
 
 variable "tunnel_team_name" {

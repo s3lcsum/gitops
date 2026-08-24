@@ -35,6 +35,8 @@ services:
       - proxy
     extra_hosts:
       - "mosquitto:host-gateway"
+    env_file:
+      - /opt/hass/mqtt.env
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
@@ -56,6 +58,8 @@ services:
       - proxy
     extra_hosts:
       - "mosquitto:host-gateway"
+    env_file:
+      - /opt/hass/mqtt.env
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
@@ -68,6 +72,7 @@ services:
     container_name: mosquitto
     volumes:
       - /opt/hass/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - /opt/hass/mosquitto.passwd:/mosquitto/config/passwd:ro
       - mosquitto_data:/mosquitto/data
     network_mode: host # Because home-assistant have to be on the same network as the coordinator
     healthcheck:

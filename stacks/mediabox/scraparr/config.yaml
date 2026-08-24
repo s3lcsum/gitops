@@ -13,3 +13,11 @@ radarr:
 prowlarr:
   url: http://prowlarr:9696
   api_key: ${PROWLARR_API_KEY}
+
+jellyseerr:
+  url: http://seerr:5055
+  api_key: ${JELLYSEERR_API_KEY}
+
+bazarr:
+  url: http://bazarr:6767
+  api_key: ${BAZARR_API_KEY}

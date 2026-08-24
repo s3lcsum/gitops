@@ -44,7 +44,7 @@ locals {
       name          = "Seerr"
       launch_url    = "https://seerr.dominiksiejak.pl/sso/OID/start/authentik"
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyseerr.svg"
-      redirect_uris = ["http://seerr.dominiksiejak.pl/login?provider=authentik&callback=true"]
+      redirect_uris = ["https://seerr.dominiksiejak.pl/login?provider=authentik&callback=true"]
     }
     homeassistant = {
       name       = "Home Assistant"
@@ -261,13 +261,61 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/adguard-home.svg"
       skip_path_regex = "^/(dns-query|control|metrics|install|login|setup).*"
     }
-    enter = {
-      name            = "Firewall Access"
-      external_host   = "https://enter.dominiksiejak.pl"
+    n8n-gateway = {
+      name            = "n8n (gateway)"
+      external_host   = "https://n8n.dominiksiejak.pl"
       internal_host   = "http://n8n:5678"
-      launch_url      = "https://enter.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/firewall.svg"
+      launch_url      = "https://n8n.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/n8n.svg"
+      skip_path_regex = "^/webhook.*"
+    }
+    router = {
+      name            = "RouterOS"
+      external_host   = "https://router.dominiksiejak.pl"
+      internal_host   = "http://192.168.89.1"
+      launch_url      = "https://router.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/mikrotik.svg"
       skip_path_regex = ""
+    }
+    bazarr = {
+      name            = "Bazarr"
+      external_host   = "https://bazarr.dominiksiejak.pl"
+      internal_host   = "http://bazarr:6767"
+      launch_url      = "https://bazarr.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/bazarr.svg"
+      skip_path_regex = "^/api/.*"
+    }
+    readarr = {
+      name            = "Readarr"
+      external_host   = "https://readarr.dominiksiejak.pl"
+      internal_host   = "http://readarr:8787"
+      launch_url      = "https://readarr.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/readarr.svg"
+      skip_path_regex = "^/api/.*"
+    }
+    prowlarr = {
+      name            = "Prowlarr"
+      external_host   = "https://prowlarr.dominiksiejak.pl"
+      internal_host   = "http://prowlarr:9696"
+      launch_url      = "https://prowlarr.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/prowlarr.svg"
+      skip_path_regex = "^/api/.*"
+    }
+    profilarr = {
+      name            = "Profilarr"
+      external_host   = "https://profilarr.dominiksiejak.pl"
+      internal_host   = "http://profilarr:6868"
+      launch_url      = "https://profilarr.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/profilarr.svg"
+      skip_path_regex = "^/api/.*"
+    }
+    jellyfin = {
+      name            = "Jellyfin"
+      external_host   = "https://jellyfin.dominiksiejak.pl"
+      internal_host   = "http://jellyfin:8096"
+      launch_url      = "https://jellyfin.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyfin.svg"
+      skip_path_regex = "^/(health|socket|System|Users/authenticate|Users/authenticateByName|Sessions|QuickConnect|Branding|web/).*"
     }
   }
 
@@ -280,11 +328,6 @@ locals {
       name       = "Gatus"
       launch_url = "https://status.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/gatus.svg"
-    }
-    prowlarr = {
-      name       = "Prowlarr"
-      launch_url = "https://prowlarr.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/prowlarr.svg"
     }
     esphome = {
       name       = "ESPHome"
@@ -299,7 +342,6 @@ locals {
 
   user_accessible_apps = toset([
     "dozzle",
-    "enter",
     "gatus",
     "gitea",
     "grafana",
@@ -309,6 +351,10 @@ locals {
     "qbittorrent",
     "radarr",
     "sonarr",
+    "bazarr",
+    "readarr",
+    "prowlarr",
+    "n8n-gateway",
     "synology",
     "vaultwarden",
     "victoriametrics",

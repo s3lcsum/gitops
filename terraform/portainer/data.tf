@@ -1,7 +1,10 @@
-# Terraform Cloud outputs from Authentik workspace (OAuth app credentials). Only read when OAuth is enabled.
-data "tfe_outputs" "authentik" {
+# Authentik remote state (GCS) for OAuth app credentials. Only read when OAuth is enabled.
+data "terraform_remote_state" "authentik" {
   count = var.enable_oauth ? 1 : 0
 
-  organization = "dominiksiejak"
-  workspace    = "gitops-authentik"
+  backend = "gcs"
+  config = {
+    bucket = "dominiksiejak-gitops-tfstate"
+    prefix = "gitops-authentik"
+  }
 }

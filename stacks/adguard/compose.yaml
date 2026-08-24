@@ -11,7 +11,7 @@ services:
       - /opt/adguard/conf:/opt/adguardhome/conf
     labels:
       traefik.enable: true
-      traefik.http.routers.adguard.middlewares: authentik@docker,remote@file
+      traefik.http.routers.adguard.middlewares: authentik@docker
       traefik.http.services.adguard.loadbalancer.server.url: http://host.docker.internal:3000
 volumes:
   work:

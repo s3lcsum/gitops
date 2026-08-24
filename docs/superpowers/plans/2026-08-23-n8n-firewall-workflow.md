@@ -1,4 +1,10 @@
-# Phone Firewall Page — Implementation Plan
+# Phone Firewall Allowlist — Implementation Plan
+
+> Historical plan for `enter.dominiksiejak.pl`. **Superseded** by Authentik login
+> webhooks (`terraform/authentik/notifications.tf` + `stacks/n8n/workflows/authentik-login-firewall.json`).
+> Do not implement the `enter.` Traefik router or `firewall-page` workflow.
+
+**Goal (current):** On Authentik `login` / `authorize_application`, whitelist the client IPv4 on RouterOS `allowed-wan` for 7 days. Cleanup job deletes expired `ttl:` entries.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

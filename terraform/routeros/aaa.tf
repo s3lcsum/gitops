@@ -2,14 +2,17 @@
 # The RADIUS secret is consumed from the gitops-authentik workspace output.
 # The local admin account remains as fallback if Authentik/RADIUS is unreachable.
 
-data "tfe_outputs" "authentik" {
-  organization = "dominiksiejak"
-  workspace    = "gitops-authentik"
+data "terraform_remote_state" "authentik" {
+  backend = "gcs"
+  config = {
+    bucket = "dominiksiejak-gitops-tfstate"
+    prefix = "gitops-authentik"
+  }
 }
 
 resource "routeros_radius" "authentik" {
   address = "192.168.89.253"
-  secret  = data.tfe_outputs.authentik.values.radius.secret
+  secret  = data.terraform_remote_state.authentik.outputs.radius.secret
   service = ["login"]
 }
 

@@ -21,6 +21,11 @@ http:
         average: 500
         burst: 200
 
+    webhook-rate-limit:
+      rateLimit:
+        average: 10
+        burst: 20
+
     remote:
       headers:
         customRequestHeaders:
@@ -38,11 +43,13 @@ http:
           X-Authentik-Entitlements: ""
           X-Authentik-Jwt: ""
 
+    # htpasswd line from env (bcrypt). Generate:
+    #   htpasswd -nbB opencode 'the-password'
+    # Store as OPENCODE_HTPASSWD in /opt/traefik/traefik.env — never in git.
     opencode-basic-auth:
-      headers:
-        customRequestHeaders:
-          Authorization: "Basic b3BlbmNvZGU6c3VwZXItc2VjcmV0"
-
+      basicAuth:
+        users:
+          - '{{ env "OPENCODE_HTPASSWD" }}'
 
     crowdsec-bouncer:
       plugin:
@@ -90,13 +97,9 @@ http:
       rule: "Host(`router.dominiksiejak.pl`)"
       entryPoints:
         - websecure
+      middlewares:
+        - authentik@docker
       service: mikrotik
-
-    argocd:
-      rule: "Host(`argocd.dominiksiejak.pl`)"
-      entryPoints:
-        - websecure
-      service: argocd-k8s
 
     opencode:
       rule: "Host(`opencode.dominiksiejak.pl`)"
@@ -120,14 +123,6 @@ http:
         - authentik@docker
       service: api@internal
 
-    enter:
-      rule: "Host(`enter.dominiksiejak.pl`)"
-      entryPoints:
-        - websecure
-      middlewares:
-        - authentik@docker
-      service: n8n@docker
-
     n8n-webhook:
       rule: "Host(`n8n.dominiksiejak.pl`) && PathPrefix(`/webhook`)"
       entryPoints:
@@ -135,6 +130,7 @@ http:
       priority: 200
       middlewares:
         - strip-authentik
+        - webhook-rate-limit
       service: n8n@docker
 
   # Services
@@ -158,12 +154,6 @@ http:
           - url: "https://192.168.89.240:5001/"
         passHostHeader: false
         serversTransport: insecure
-
-    argocd-k8s:
-      loadBalancer:
-        servers:
-          - url: 'http://{{ env "ENVOY_GATEWAY_ADDR" | default "192.168.89.241:80" }}/'
-        passHostHeader: true
 
     opencode:
       loadBalancer:

@@ -1,6 +1,13 @@
-# Terraform Cloud Management
+# Terraform Cloud Management (legacy)
 
-This Terraform configuration manages your Terraform Cloud organization and workspaces as infrastructure as code.
+**This module is leftover from the TFC era.** Child modules now store state in GCS
+(`dominiksiejak-gitops-tfstate`, prefix `gitops-<dirname>`). Do not add new TFC
+workspaces here; local `tofu apply` against GCS is the source of truth.
+
+The resources in this directory still describe historical TFC workspaces. Applying
+it can fight local GCS state. Treat it as read-only unless you are explicitly
+decommissioning TFC.
+
 
 ## Overview
 

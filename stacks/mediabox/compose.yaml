@@ -54,7 +54,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
-      traefik.http.routers.qbittorrent.middlewares: remote@file
+      traefik.http.routers.qbittorrent.middlewares: authentik@docker
 
   # 📥 Usenet downloader (VPN-routed)
   sabnzbd:
@@ -77,7 +77,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.sabnzbd.loadbalancer.server.port: 8085
-      traefik.http.routers.sabnzbd.middlewares: remote@file
+      traefik.http.routers.sabnzbd.middlewares: authentik@docker
 
   # 🌐 Cloudflare bypass for indexers
   flaresolverr:
@@ -103,7 +103,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.prowlarr.loadbalancer.server.port: 9696
-      traefik.http.routers.prowlarr.middlewares: remote@file
+      traefik.http.routers.prowlarr.middlewares: authentik@docker
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:9696/ping"]
@@ -128,7 +128,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.radarr.loadbalancer.server.port: 7878
-      traefik.http.routers.radarr.middlewares: remote@file
+      traefik.http.routers.radarr.middlewares: authentik@docker
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:7878/"]
@@ -155,7 +155,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.sonarr.loadbalancer.server.port: 8989
-      traefik.http.routers.sonarr.middlewares: remote@file
+      traefik.http.routers.sonarr.middlewares: authentik@docker
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8989/"]
@@ -181,7 +181,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.bazarr.loadbalancer.server.port: 6767
-      traefik.http.routers.bazarr.middlewares: remote@file
+      traefik.http.routers.bazarr.middlewares: authentik@docker
     healthcheck:
       <<: *healthcheck
       test: ["CMD-SHELL", "curl -fsS http://localhost:6767/ || exit 1"]
@@ -205,7 +205,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.services.jellyfin.loadbalancer.server.port: 8096
-      traefik.http.routers.jellyfin.middlewares: remote@file
+      traefik.http.routers.jellyfin.middlewares: authentik@docker
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:8096/System/Ping"]
@@ -247,7 +247,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.profilarr.loadbalancer.server.port: 6868
-      traefik.http.routers.profilarr.middlewares: remote@file
+      traefik.http.routers.profilarr.middlewares: authentik@docker
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:6868/"]
@@ -295,7 +295,7 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.readarr.loadbalancer.server.port: 8787
-      traefik.http.routers.readarr.middlewares: remote@file
+      traefik.http.routers.readarr.middlewares: authentik@docker
       traefik.http.routers.readarr.rule: Host(`readarr.dominiksiejak.pl`)
       traefik.http.routers.readarr.service: readarr
 

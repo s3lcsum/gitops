@@ -20,7 +20,11 @@ state = json.load(sys.stdin); \
 	while read addr; do tofu untaint "$$addr"; done
 
 sync-portainer: ## Rsync stacks/ to ssh portainer:/opt
-	-rsync -av --delete "$(GIT_ROOT)/stacks/" portainer:/opt
+	-rsync -av --delete \
+		--exclude 'adguard/conf/AdGuardHome.yaml' \
+		--exclude 'hass/mosquitto.passwd' \
+		--exclude 'monitoring/snmp-exporter/synology.yml' \
+		"$(GIT_ROOT)/stacks/" portainer:/opt
 
 watch-portainer: ## Watch for changes and sync automatically
 	fswatch -r --exclude '.*\.swp$$' --exclude '\.git' "$(GIT_ROOT)/stacks" | \

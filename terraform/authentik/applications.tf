@@ -16,6 +16,14 @@ resource "authentik_property_mapping_provider_scope" "custom_claims" {
   expression = each.value.mapping
 }
 
+# Provides the `groups` claim to CWA (calibre-web-automated) so it can auto-assign
+# the admin role based on Authentik group membership (admin group = "admins").
+resource "authentik_property_mapping_provider_scope" "calibre_web_groups" {
+  name       = "calibre-web-automated-groups"
+  scope_name = "groups"
+  expression = "return [g.name for g in request.user.ak_groups.all()]"
+}
+
 resource "authentik_provider_oauth2" "oauth2" {
   for_each = local.oauth2_applications
 
@@ -32,19 +40,18 @@ resource "authentik_provider_oauth2" "oauth2" {
   # possibly-empty default.
   grant_types = [
     "authorization_code",
-    "implicit",
-    "hybrid",
-    "client_credentials",
-    "password",
-    "urn:ietf:params:oauth:grant-type:device_code",
     "refresh_token",
   ]
 
-  property_mappings = lookup(each.value, "mapping", null) != null ? (
-    concat(data.authentik_property_mapping_provider_scope.oauth2_scopes.ids, [authentik_property_mapping_provider_scope.custom_claims[each.key].id])
+  property_mappings = each.key == "calibre-web-automated" ? concat(
+    data.authentik_property_mapping_provider_scope.oauth2_scopes.ids,
+    [authentik_property_mapping_provider_scope.calibre_web_groups.id]
     ) : (
-    data.authentik_property_mapping_provider_scope.oauth2_scopes.ids
-  )
+    lookup(each.value, "mapping", null) != null ? (
+      concat(data.authentik_property_mapping_provider_scope.oauth2_scopes.ids, [authentik_property_mapping_provider_scope.custom_claims[each.key].id])
+      ) : (
+      data.authentik_property_mapping_provider_scope.oauth2_scopes.ids
+  ))
 
   allowed_redirect_uris = [
     for uri in each.value.redirect_uris : {

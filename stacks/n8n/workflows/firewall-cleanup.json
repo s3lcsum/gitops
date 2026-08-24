@@ -38,13 +38,24 @@
         [
           {
             "index": 0,
-            "node": "Compute Auth",
+            "node": "Load RouterOS Env",
             "type": "main"
           }
         ]
       ]
     },
     "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Load RouterOS Env",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Load RouterOS Env": {
       "main": [
         [
           {
@@ -102,10 +113,44 @@
       "typeVersion": 1.2
     },
     {
+      "id": "load-routeros-env",
+      "name": "Load RouterOS Env",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "apiUrl",
+              "name": "apiUrl",
+              "type": "string",
+              "value": "={{ $env.ROUTEROS_API_URL }}"
+            },
+            {
+              "id": "user",
+              "name": "user",
+              "type": "string",
+              "value": "={{ $env.ROUTEROS_API_USER }}"
+            },
+            {
+              "id": "pass",
+              "name": "pass",
+              "type": "string",
+              "value": "={{ $env.ROUTEROS_API_PASS }}"
+            }
+          ]
+        }
+      },
+      "position": [
+        -250,
+        100
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
       "id": "compute-auth",
       "name": "Compute Auth",
       "parameters": {
-        "jsCode": "const user = $env.ROUTEROS_API_USER;\nconst pass = $env.ROUTEROS_API_PASS;\nconst auth = Buffer.from(`${user}:${pass}`).toString('base64');\nreturn [{ json: { auth: `Basic ${auth}`, apiUrl: $env.ROUTEROS_API_URL } }];",
+        "jsCode": "const d = $input.first().json;\nconst auth = Buffer.from(String(d.user) + ':' + String(d.pass)).toString('base64');\nreturn [{ json: { auth: 'Basic ' + auth, apiUrl: d.apiUrl } }];",
         "mode": "runOnceForAllItems"
       },
       "position": [

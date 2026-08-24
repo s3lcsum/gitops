@@ -4,8 +4,8 @@ resource "vault_jwt_auth_backend" "oidc" {
   type               = "oidc"
   description        = "Authentik"
   oidc_discovery_url = "https://auth.dominiksiejak.pl/application/o/vault/"
-  oidc_client_id     = data.tfe_outputs.authentik.values.applications.vault.client_id
-  oidc_client_secret = data.tfe_outputs.authentik.values.applications.vault.client_secret
+  oidc_client_id     = data.terraform_remote_state.authentik.outputs.applications.vault.client_id
+  oidc_client_secret = data.terraform_remote_state.authentik.outputs.applications.vault.client_secret
   default_role       = "admin"
 
   tune {
@@ -28,7 +28,7 @@ resource "vault_jwt_auth_backend_role" "admin" {
     groups = "admins"
   }
 
-  bound_audiences = [data.tfe_outputs.authentik.values.applications.vault.client_id]
+  bound_audiences = [data.terraform_remote_state.authentik.outputs.applications.vault.client_id]
   allowed_redirect_uris = [
     "https://vault.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
     "https://vault.dominiksiejak.pl/oidc/callback",
@@ -46,9 +46,87 @@ resource "vault_policy" "admin" {
   name = "admin"
 
   policy = <<-EOT
-    # Full access to all paths
-    path "*" {
+    # Scoped admin for known mounts (no catch-all path "*")
+    path "kv/*" {
+      capabilities = ["create", "read", "update", "delete", "list", "patch"]
+    }
+    path "database/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "pki*" {
       capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+    }
+    path "auth/*" {
+      capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+    }
+    path "identity/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "cubbyhole/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "oidc/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "sys/mounts" {
+      capabilities = ["read", "list"]
+    }
+    path "sys/mounts/*" {
+      capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+    }
+    path "sys/policy" {
+      capabilities = ["read", "list"]
+    }
+    path "sys/policy/*" {
+      capabilities = ["create", "read", "update", "delete"]
+    }
+    path "sys/policies/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "sys/auth" {
+      capabilities = ["read", "list"]
+    }
+    path "sys/auth/*" {
+      capabilities = ["create", "read", "update", "delete", "sudo"]
+    }
+    path "sys/health" {
+      capabilities = ["read", "sudo"]
+    }
+    path "sys/capabilities-self" {
+      capabilities = ["update"]
+    }
+    path "sys/capabilities" {
+      capabilities = ["update"]
+    }
+    path "sys/internal/ui/mounts" {
+      capabilities = ["read"]
+    }
+    path "sys/internal/ui/mounts/*" {
+      capabilities = ["read"]
+    }
+    path "sys/internal/ui/resultant-acl" {
+      capabilities = ["read"]
+    }
+    path "sys/audit" {
+      capabilities = ["read", "list", "sudo"]
+    }
+    path "sys/audit/*" {
+      capabilities = ["create", "read", "update", "delete", "sudo"]
+    }
+    path "sys/leases/*" {
+      capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+    }
+    path "sys/revoke" {
+      capabilities = ["update", "sudo"]
+    }
+    path "sys/renew" {
+      capabilities = ["update"]
+    }
+    path "sys/wrapping/*" {
+      capabilities = ["create", "update"]
+    }
+    path "sys/tools/*" {
+      capabilities = ["update"]
     }
   EOT
 }

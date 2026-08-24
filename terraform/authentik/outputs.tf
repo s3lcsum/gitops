@@ -18,3 +18,9 @@ output "applications" {
   }
   sensitive = true
 }
+
+output "webhook_secret" {
+  description = "Shared secret for Authentik → n8n firewall webhook"
+  value       = random_password.webhook_secret.result
+  sensitive   = true
+}

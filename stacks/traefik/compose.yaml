@@ -17,7 +17,7 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 9100:9100 # Prometheus metrics
+      - 127.0.0.1:9100:9100 # Prometheus metrics (localhost only)
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /opt/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro

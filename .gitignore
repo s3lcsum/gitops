@@ -55,6 +55,9 @@ site/
 # Python virtual environments
 .venv/
 
+# Python bytecode
+**/__pycache__/
+
 # Local Claude Code worktrees / cache (not part of this repo)
 .claude/
 
@@ -78,3 +81,9 @@ logs/
 
 # Real snmp-exporter config with NAS SNMPv3 credentials
 stacks/monitoring/snmp-exporter/synology.yml
+
+# AdGuard user hashes — host-managed (see AdGuardHome.yaml.example)
+stacks/adguard/conf/AdGuardHome.yaml
+
+# Mosquitto password file — host-managed (see mqtt.env.example)
+stacks/hass/mosquitto.passwd
