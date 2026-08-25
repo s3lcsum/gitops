@@ -97,8 +97,6 @@ http:
       rule: "Host(`router.dominiksiejak.pl`)"
       entryPoints:
         - websecure
-      middlewares:
-        - authentik@docker
       service: mikrotik
 
     opencode:
