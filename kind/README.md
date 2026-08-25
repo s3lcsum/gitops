@@ -29,6 +29,8 @@ Bootstrap (only when the `argocd-server` deploy is missing — afterwards Git is
 make -C kubernetes/argocd bootstrap
 ```
 
+Helm installs the vendored chart; `application.yaml` is applied afterwards. The Application CR is kept out of the Helm templates so the first install can validate against the live API, and so Argo is not a child of itself.
+
 UI (Traefik hostPort 80):
 
 ```bash

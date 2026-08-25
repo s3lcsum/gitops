@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: argocd
-  namespace: {{ .Release.Namespace }}
+  namespace: argocd
   labels:
     app.kubernetes.io/name: argocd
     app.kubernetes.io/part-of: argocd
@@ -18,7 +18,7 @@ spec:
         - values.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: {{ .Release.Namespace }}
+    namespace: argocd
   syncPolicy:
     automated:
       prune: true

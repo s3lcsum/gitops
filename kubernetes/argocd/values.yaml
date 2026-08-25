@@ -20,6 +20,13 @@ argo-cd:
   configs:
     params:
       server.insecure: true
+    cm:
+      # Nested Application CRs should not keep a parent app Progressing.
+      resource.customizations.health.argoproj.io_Application: |
+        hs = {}
+        hs.status = "Healthy"
+        hs.message = "Application CR"
+        return hs
 
   server:
     ingress:
