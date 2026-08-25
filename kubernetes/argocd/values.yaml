@@ -1,0 +1,36 @@
+# Overrides for the vendored argo-cd chart (charts/argo-cd, 10.4.0 / app v3.5.1).
+# Nested under the dependency name. Do not edit charts/argo-cd/values.yaml.
+argo-cd:
+  global:
+    domain: argocd.vibe.local
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+    # Single-node KIND: skip anti-affinity / zone pinning.
+    affinity:
+      podAntiAffinity: none
+      nodeAffinity:
+        type: none
+
+  crds:
+    install: true
+    keep: true
+
+  configs:
+    params:
+      server.insecure: true
+
+  server:
+    ingress:
+      enabled: true
+      controller: generic
+      ingressClassName: traefik
+      hostname: argocd.vibe.local
+      tls: false
+
+  dex:
+    enabled: false
+
+  notifications:
+    enabled: false

@@ -35,6 +35,7 @@
   - GCS state prefix convention: `gitops-<dirname>` (e.g., `gitops-portainer`).
 - `kubernetes/` — Referenced by pre-commit exclude, present but not in README.
 - `kind/` — KIND cluster configs. On the basement Intel MacBook (hostname `vibe`), cluster `vibe` runs via Colima + KIND (`kind-vibe` context). Ensure script: `~/.local/bin/kind-vibe-ensure.sh`. Ingress: Traefik (`kind/traefik-values.yaml`). Smoke: `curl -H 'Host: whoami.vibe.local' http://127.0.0.1/`. Unrelated to Hermes the AI gateway. Do not talk to Portainer Docker (`ssh://portainer`) when managing this cluster.
+- `kubernetes/argocd/` — Self-managed Argo CD on `kind-vibe`. Vendored upstream Helm chart is `kubernetes/argocd/charts/argo-cd` (do not fetch argo-helm at sync time). Overrides: `kubernetes/argocd/values.yaml`. Bootstrap: `make -C kubernetes/argocd bootstrap`. After that Argo CD reconciles itself from `https://github.com/s3lcsum/gitops.git` path `kubernetes/argocd`. UI: `curl -H 'Host: argocd.vibe.local' http://127.0.0.1/`.
 
 ## Networking
 

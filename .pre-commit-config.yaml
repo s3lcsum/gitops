@@ -4,9 +4,11 @@ repos:
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^kubernetes/.*/charts/
       - id: end-of-file-fixer
+        exclude: ^kubernetes/.*/charts/
       - id: check-yaml
-        exclude: ^kubernetes/.*/templates/
+        exclude: (^kubernetes/.*/templates/|^kubernetes/.*/charts/)
       - id: check-json
       - id: check-added-large-files
         args: [ --maxkb=5120 ]
@@ -14,9 +16,11 @@ repos:
       - id: detect-aws-credentials
         args: [ --allow-missing-credentials ]
       - id: detect-private-key
+        exclude: ^kubernetes/.*/charts/
       - id: double-quote-string-fixer
       - id: forbid-new-submodules
       - id: mixed-line-ending
+        exclude: ^kubernetes/.*/charts/
       - id: pretty-format-json
         exclude: ^(stacks/n8n/workflows/|stacks/monitoring/grafana/provisioning/dashboards/)
 
