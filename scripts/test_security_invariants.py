@@ -42,8 +42,9 @@ check('Debug Payload' not in wf, 'debug node must not sit on the webhook hot pat
 check('const pass = $env.ROUTEROS_API_PASS' not in wf, 'Code nodes must not read RouterOS password from $env')
 
 mqtt = (REPO / 'stacks/hass/mosquitto.conf').read_text()
-check('allow_anonymous false' in mqtt, 'LAN MQTT listener must require a password')
+check('listener_allow_anonymous false' in mqtt, 'LAN MQTT listener must require a password')
 check('listener 1883 127.0.0.1' in mqtt, 'localhost MQTT listener must remain for HA/healthcheck')
+check('listener 1883 0.0.0.0' not in mqtt, 'MQTT must not bind 0.0.0.0 on the same port as localhost')
 
 cloud = (REPO / 'terraform/cloudflare/main.tf').read_text()
 check('from = cloudflare_zero_trust_tunnel_cloudflared.homelab' in cloud, 'Cloudflare tunnel rename needs a moved block')

@@ -171,7 +171,7 @@ Gotchas baked in:
 
 - `terraform/portainer/locals.tf` is the source of truth for deployed stacks — README tables should match it
 - Gitea: bind-mounts `/data` to NAS; needs `traefik.docker.network: proxy`
-- Home Assistant stack: mosquitto has dual listeners (anonymous `127.0.0.1` for HA/healthcheck; password on `0.0.0.0` for LAN/z2m). Create `/opt/hass/mosquitto.passwd` and `/opt/hass/mqtt.env` before sync. HA + zigbee2mqtt `depends_on` with `condition: service_healthy`; HA Time Machine behind `profile: timemachine`
+- Home Assistant stack: mosquitto has split listeners (anonymous `127.0.0.1` for HA/healthcheck; password on `192.168.89.253` for LAN and `172.17.0.1` for Docker host-gateway). Do not bind `0.0.0.0:1883` together with localhost. Create `/opt/hass/mosquitto.passwd` (uid 1883, mode 640) and `/opt/hass/mqtt.env` before sync. HA + zigbee2mqtt `depends_on` with `condition: service_healthy`; HA Time Machine behind `profile: timemachine`
 - Authentik compose: Docker socket `:ro`; `AUTHENTIK_LOG_LEVEL=info`
 - `stacks/postgres/init.sh` no longer exists — DB provisioning is Terraform+Vault only, not manual
 
