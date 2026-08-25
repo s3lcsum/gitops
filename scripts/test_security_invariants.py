@@ -23,8 +23,12 @@ check('OPENCODE_HTPASSWD=opencode:$$2y$$' in ex, 'htpasswd example must escape $
 
 n8n = (REPO / 'stacks/n8n/compose.yaml').read_text()
 check('N8N_SSRF_PROTECTION_ENABLED: true' in n8n, 'n8n SSRF protection must be enabled')
+check('N8N_SSRF_ALLOWED_IP_RANGES: "192.168.89.1/32"' in n8n, 'n8n must allowlist the RouterOS LAN IP for SSRF')
 check('N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"' in n8n, 'n8n Code nodes must not read $env')
 check('authentik@docker' in n8n, 'n8n UI must use Authentik forward-auth')
+ex_n8n = (REPO / 'stacks/n8n/n8n.env.example').read_text()
+check('ROUTEROS_API_URL=http://192.168.89.1/rest' in ex_n8n, 'n8n must call RouterOS on the LAN, not via Authentik')
+check('router.dominiksiejak.pl/rest' not in ex_n8n, 'n8n must not hairpin RouterOS REST through Traefik/Authentik')
 
 pg = (REPO / 'stacks/postgres/compose.yaml').read_text()
 check('127.0.0.1:5432:5432' in pg, 'Postgres must bind localhost only')
