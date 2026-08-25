@@ -1,4 +1,4 @@
-# Traefik on the hermes KIND cluster.
+# Traefik on the vibe KIND cluster (basement Intel Mac, hostname vibe).
 # KIND extraPortMappings forward host :80/:443 onto the control-plane node;
 # hostPort binds those node ports into Traefik.
 service:

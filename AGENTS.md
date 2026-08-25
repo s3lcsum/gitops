@@ -34,7 +34,7 @@
 - `terraform/` — OpenTofu modules. State: **GCS** (`dominiksiejak-gitops-tfstate`), migrated from TFC Apr 2026.
   - GCS state prefix convention: `gitops-<dirname>` (e.g., `gitops-portainer`).
 - `kubernetes/` — Referenced by pre-commit exclude, present but not in README.
-- `kind/` — KIND cluster configs. On the Hermes MacBook (`vibe`), cluster `hermes` runs via Colima + KIND (`kind-hermes` context). Ensure script: `~/.local/bin/kind-hermes-ensure.sh`. Ingress: Traefik (`kind/traefik-values.yaml`). Smoke: `curl -H 'Host: whoami.hermes.local' http://127.0.0.1/`. Do not talk to Portainer Docker (`ssh://portainer`) when managing this cluster.
+- `kind/` — KIND cluster configs. On the basement Intel MacBook (hostname `vibe`), cluster `vibe` runs via Colima + KIND (`kind-vibe` context). Ensure script: `~/.local/bin/kind-vibe-ensure.sh`. Ingress: Traefik (`kind/traefik-values.yaml`). Smoke: `curl -H 'Host: whoami.vibe.local' http://127.0.0.1/`. Unrelated to Hermes the AI gateway. Do not talk to Portainer Docker (`ssh://portainer`) when managing this cluster.
 
 ## Networking
 
