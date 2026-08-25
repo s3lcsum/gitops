@@ -184,6 +184,10 @@ endpoints:
   - name: "opencode"
     url: https://opencode.dominiksiejak.pl
     <<: *defaults
+    conditions:
+      # Public probe must see Traefik basicAuth, not the app.
+      - "[STATUS] == 401"
+      - "[CERTIFICATE_EXPIRATION] > 48h"
 
   # --- External sanity check
   - name: "google"
