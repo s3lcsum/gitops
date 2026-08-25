@@ -486,7 +486,7 @@ scrape_configs:
   - job_name: blackbox-opencode
     metrics_path: /probe
     params:
-      module: [http_2xx]
+      module: [http_401]
     static_configs:
       - targets:
           - "https://opencode.dominiksiejak.pl"

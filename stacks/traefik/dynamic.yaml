@@ -50,6 +50,8 @@ http:
       basicAuth:
         users:
           - '{{ env "OPENCODE_HTPASSWD" }}'
+        realm: opencode
+        removeHeader: true
 
     crowdsec-bouncer:
       plugin:
@@ -105,6 +107,7 @@ http:
         - websecure
       middlewares:
         - opencode-basic-auth@file
+        - rate-limit@file
       service: opencode
 
     hermes:
