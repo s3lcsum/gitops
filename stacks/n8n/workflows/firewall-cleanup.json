@@ -78,7 +78,9 @@
       ]
     }
   },
+  "id": "3RDTBOC2mQQDIJsU",
   "name": "Firewall Cleanup",
+  "active": true,
   "nodeGroups": [],
   "nodes": [
     {
