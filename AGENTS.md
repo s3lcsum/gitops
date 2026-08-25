@@ -165,6 +165,7 @@ Gotchas baked in:
 - UI is Authentik forward-auth (`authentik@docker`). `/webhook*` is a higher-priority Traefik router **without** Authentik (Authentik/Meta call these).
 - Login → WAN allowlist: Authentik notification webhook → `stacks/n8n/workflows/authentik-login-firewall.json`. After `tofu apply` in `terraform/authentik`, copy `tofu output -raw webhook_secret` into `/opt/n8n/n8n.env` as `AUTHENTIK_WEBHOOK_SECRET`.
 - Do not put RouterOS passwords in Code nodes (`N8N_BLOCK_ENV_ACCESS_IN_NODE=true`); Set node copies `$env` then Code hashes locally.
+- `ROUTEROS_API_URL` must be `http://192.168.89.1/rest` (LAN). `https://router.dominiksiejak.pl/rest` is behind Authentik; n8n's PUT follows the login redirect and Authentik returns Django CSRF 403. With SSRF protection on, allowlist that IP (`N8N_SSRF_ALLOWED_IP_RANGES=192.168.89.1/32`).
 - MCP servers configured in `.mcp.json`: `n8n-mcp` (HTTP), `n8n-mcp-tools` (stdio/validation)
 
 ## Gotchas
