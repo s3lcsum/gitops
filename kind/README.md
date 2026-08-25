@@ -1,25 +1,27 @@
 # KIND Clusters
 
-Two single-node KIND clusters — one local-dev cluster and one on Hermes (the basement homelab MacBook, hostname `vibe`).
+Two single-node KIND clusters — same recipe (hostPorts 80/443), different names and machines.
 
 | Cluster | Host | Purpose | Runtime |
 |---------|------|---------|---------|
 | `local` | Primary MacBook | Local dev / experimentation | Podman (`KIND_EXPERIMENTAL_PROVIDER=podman`) when available |
-| `hermes` | Hermes MacBook (`vibe`) | Homelab workloads | **Colima** (Intel Mac: Homebrew has no Podman 6 bottle; official 5.8.6 pkg needs sudo) |
+| `vibe` | Basement Intel MacBook (hostname `vibe`) | Homelab workloads on this box | **Colima** (Intel Mac: Homebrew has no Podman 6 bottle; official 5.8.6 pkg needs sudo) |
 
 Both expose ports 80 and 443 on the host so Traefik can bind via `hostPort`.
 
-On Hermes, `~/.local/bin/kind-hermes-ensure.sh` (LaunchAgent `ai.kind.hermes`) starts Colima and creates/reuses the cluster. Traefik values: `kind/traefik-values.yaml`. Health check:
+The cluster name is the machine hostname. It is **not** related to Hermes (the AI gateway that also happens to run on `vibe`). KIND prefixes kubeconfig as `kind-<name>`, so the context is `kind-vibe`.
+
+On `vibe`, `~/.local/bin/kind-vibe-ensure.sh` (LaunchAgent `ai.kind.vibe`) starts Colima and creates/reuses the cluster. Traefik values: `kind/traefik-values.yaml`. Health check:
 
 ```bash
-curl -H 'Host: whoami.hermes.local' http://127.0.0.1/
+curl -H 'Host: whoami.vibe.local' http://127.0.0.1/
 ```
 
 The OpenTofu `terraform/kind` module was removed. Manage clusters with the `kind` CLI and the YAML under `kind/clusters/`.
 
 ## Prerequisites
 
-Hermes (this Intel Mac) — Colima is already the KIND Docker provider:
+`vibe` (this Intel Mac) — Colima is already the KIND Docker provider:
 
 ```bash
 brew install colima kind kubectl helm
@@ -39,9 +41,9 @@ export KIND_EXPERIMENTAL_PROVIDER=podman
 ```bash
 # Create
 kind create cluster --config kind/clusters/local.yaml
-kind create cluster --config kind/clusters/hermes.yaml
+kind create cluster --config kind/clusters/vibe.yaml
 
-# Ingress on hermes (after the cluster exists)
+# Ingress on vibe (after the cluster exists)
 helm repo add traefik https://traefik.github.io/charts
 helm upgrade --install traefik traefik/traefik \
   --namespace traefik --create-namespace \
@@ -49,12 +51,12 @@ helm upgrade --install traefik traefik/traefik \
 
 # Delete
 kind delete cluster --name local
-kind delete cluster --name hermes
+kind delete cluster --name vibe
 
 # List
 kind get clusters
 
 # Switch context
 kubectl config use-context kind-local
-kubectl config use-context kind-hermes
+kubectl config use-context kind-vibe
 ```

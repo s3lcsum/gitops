@@ -1,5 +1,5 @@
 {
   "install": "command -v brew >/dev/null 2>&1 || exit 0\nbrew list --formula colima >/dev/null 2>&1 || brew install colima\nbrew list --formula kind >/dev/null 2>&1 || brew install kind\nbrew list --formula helm >/dev/null 2>&1 || brew install helm\nbrew list --formula kubernetes-cli >/dev/null 2>&1 || brew install kubernetes-cli",
-  "name": "Hermes MacBook (vibe)",
-  "start": "if [ -x /Users/Apple/.local/bin/kind-hermes-ensure.sh ]; then /Users/Apple/.local/bin/kind-hermes-ensure.sh; fi"
+  "name": "vibe MacBook",
+  "start": "if [ -x /Users/Apple/.local/bin/kind-vibe-ensure.sh ]; then /Users/Apple/.local/bin/kind-vibe-ensure.sh; fi"
 }
