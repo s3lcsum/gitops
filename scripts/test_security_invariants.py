@@ -18,6 +18,8 @@ check('b3BlbmNvZGU6c3VwZXItc2VjcmV0' not in dyn, 'opencode basic auth secret is 
 check("Authorization: \"Basic " not in dyn, 'Traefik must not inject a static Authorization header')
 check('basicAuth:' in dyn and 'OPENCODE_HTPASSWD' in dyn, 'opencode route must use Traefik basicAuth from env')
 check('webhook-rate-limit' in dyn, 'n8n webhook router must be rate-limited')
+ex = (REPO / 'stacks/traefik/traefik.env.example').read_text()
+check('OPENCODE_HTPASSWD=opencode:$$2y$$' in ex, 'htpasswd example must escape $ for Compose interpolation')
 
 n8n = (REPO / 'stacks/n8n/compose.yaml').read_text()
 check('N8N_SSRF_PROTECTION_ENABLED: true' in n8n, 'n8n SSRF protection must be enabled')
