@@ -19,6 +19,26 @@ curl -H 'Host: whoami.vibe.local' http://127.0.0.1/
 
 The OpenTofu `terraform/kind` module was removed. Manage clusters with the `kind` CLI and the YAML under `kind/clusters/`.
 
+## Argo CD (self-managed)
+
+Charts and values live in `kubernetes/argocd/`. The upstream `argo-cd` Helm chart is vendored at `kubernetes/argocd/charts/argo-cd` (currently 10.4.0 / app v3.5.1). Cluster-specific overrides are `kubernetes/argocd/values.yaml`. Argo CD then reconciles that same path from `https://github.com/s3lcsum/gitops.git` (`main`).
+
+Bootstrap (only when the `argocd-server` deploy is missing — afterwards Git is the source of truth):
+
+```bash
+make -C kubernetes/argocd bootstrap
+```
+
+UI (Traefik hostPort 80):
+
+```bash
+curl -H 'Host: argocd.vibe.local' http://127.0.0.1/
+# admin password:
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 --decode; echo
+```
+
+Re-vendor a newer upstream chart with `make -C kubernetes/argocd vendor CHART_VERSION=10.x.y` and bump the wrapper `Chart.yaml` dependency version + `values.yaml` comment in the same commit.
+
 ## Prerequisites
 
 `vibe` (this Intel Mac) — Colima is already the KIND Docker provider:

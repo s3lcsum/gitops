@@ -16,7 +16,7 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 |-------|------|-------|
 | **Compute** | Proxmox VE hosts running LXC containers | OpenTofu (`terraform/proxmox/`) |
 | **Containers** | Docker stacks managed via Portainer | Compose files in `stacks/` |
-| **Kubernetes** | Talos + platform workloads (Grafana stack, automation, etc.) | Manifests / GitOps outside this repo’s `stacks/` |
+| **Kubernetes** | Talos (Proxmox) for some platform apps; KIND `vibe` on the basement Mac | OpenTofu (`terraform/proxmox/`); `kind/` + `kubernetes/argocd/` |
 | **Networking** | MikroTik RouterOS config | OpenTofu (`terraform/routeros/`) |
 | **Edge** | Traefik reverse proxy + CrowdSec | `stacks/traefik/` |
 | **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + OpenTofu (`terraform/authentik/`) |
@@ -212,6 +212,11 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── vaultwarden/
 │   └── watchyourlan/
 │
+├── kind/                           # KIND cluster configs (vibe + local)
+│
+├── kubernetes/                     # In-cluster GitOps (KIND vibe)
+│   └── argocd/                     # Self-managed Argo CD (vendored chart + values)
+│
 ├── terraform/                      # Infrastructure as Code
 │   ├── authentik/
 │   ├── backblaze/
@@ -240,6 +245,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Migrate backups from Proxmox to NAS
 - [x] Use Authentik LDAP for Synology
 - [ ] Add NUT/UPS integration
+- [x] (retroactively added) KIND cluster on vibe + self-managed Argo CD
 - [ ] k3s single-node cluster
 - [ ] Self-hosted LLM (Ollama)
 - [ ] Separated subnets (IoT isolation)
@@ -248,6 +254,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 25.08.2026
+
+**Argo CD on KIND `vibe`, managing itself from this repo.** Chart + values are in `kubernetes/argocd/` — the upstream Helm chart is vendored under `charts/argo-cd`, not pulled from argo-helm at sync time. Bootstrap with `make -C kubernetes/argocd bootstrap`; after that the in-cluster Application tracks `main`. UI is `argocd.vibe.local` through the KIND Traefik hostPorts.
 
 ### 23.08.2026
 
