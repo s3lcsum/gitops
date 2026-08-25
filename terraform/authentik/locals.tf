@@ -261,22 +261,6 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/adguard-home.svg"
       skip_path_regex = "^/(dns-query|control|metrics|install|login|setup).*"
     }
-    n8n-gateway = {
-      name            = "n8n (gateway)"
-      external_host   = "https://n8n.dominiksiejak.pl"
-      internal_host   = "http://n8n:5678"
-      launch_url      = "https://n8n.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/n8n.svg"
-      skip_path_regex = "^/webhook.*"
-    }
-    router = {
-      name            = "RouterOS"
-      external_host   = "https://router.dominiksiejak.pl"
-      internal_host   = "http://192.168.89.1"
-      launch_url      = "https://router.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/mikrotik.svg"
-      skip_path_regex = ""
-    }
     bazarr = {
       name            = "Bazarr"
       external_host   = "https://bazarr.dominiksiejak.pl"
@@ -329,11 +313,6 @@ locals {
       launch_url = "https://status.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/gatus.svg"
     }
-    esphome = {
-      name       = "ESPHome"
-      launch_url = "https://esphome.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/esphome.svg"
-    }
   }
 
   #───────────────────────────────────────────────────────────────────────────────
@@ -354,7 +333,6 @@ locals {
     "bazarr",
     "readarr",
     "prowlarr",
-    "n8n-gateway",
     "synology",
     "vaultwarden",
     "victoriametrics",
