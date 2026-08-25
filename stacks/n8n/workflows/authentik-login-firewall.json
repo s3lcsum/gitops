@@ -1,5 +1,7 @@
 {
+  "id": "w72dTPBXqHZKN1ip",
   "name": "authentik-login-firewall",
+  "active": true,
   "nodes": [
     {
       "id": "webhook-trigger",
@@ -12,7 +14,8 @@
       },
       "position": [200, 300],
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2
+      "typeVersion": 2,
+      "webhookId": "63c51090-87d9-4f00-9c18-eec357240fba"
     },
     {
       "id": "validate-secret",

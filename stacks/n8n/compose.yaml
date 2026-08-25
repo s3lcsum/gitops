@@ -16,6 +16,8 @@ services:
       N8N_HOST: n8n.dominiksiejak.pl
       N8N_PROTOCOL: https
       N8N_SSRF_PROTECTION_ENABLED: true
+      # Firewall workflows call RouterOS on the LAN. SSRF blocks RFC1918 unless allowlisted.
+      N8N_SSRF_ALLOWED_IP_RANGES: "192.168.89.1/32"
       N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"
     volumes:
       - config:/home/node/.n8n
@@ -27,7 +29,6 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.services.n8n.loadbalancer.server.port: 5678
-      traefik.http.routers.n8n.middlewares: authentik@docker
 
 networks:
   proxy:

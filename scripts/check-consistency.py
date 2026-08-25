@@ -45,13 +45,14 @@ EXTERNAL_ROUTED = {'portainer'}
 # publicly-proxied *.dominiksiejak.pl hostname, so absence in services.yaml is correct.
 HOMEPAGE_LAN_IP = {'nas', 'proxmox', 'router', 'adguard'}
 
-# Authentik app slugs that have no HTTP Traefik host by design (LDAP) + external apps.
-AUTH_NO_HTTP_ROUTE = {'ldap'} | {'routeros'} | EXTERNAL_ROUTED
+# Authentik app slugs that have no HTTP Traefik host by design (LDAP, RADIUS)
+# plus Traefik hosts covered by those apps instead of a proxy provider.
+AUTH_NO_HTTP_ROUTE = {'ldap', 'routeros', 'router'} | EXTERNAL_ROUTED
 
 # Authentik apps the operator intentionally keeps as dashboard-only / hostname-renamed,
 # so "no matching Traefik route" is expected — still reported, never a blocking error.
 # AUTH_OK_NO_ROUTE: slug/host names that are not Traefik hosts (OIDC-only, LDAP, aliases)
-AUTH_OK_NO_ROUTE = {'esphome', 'watchyourlan', 'n8n-gateway'}
+AUTH_OK_NO_ROUTE = {'watchyourlan'}
 
 # Homepage hosts that intentionally have no Authentik app (native auth, basicAuth, OPDS, IdP).
 HOMEPAGE_NO_AUTH = {'auth', 'calibre-api', 'lan', 'opencode', 'unifi'}

@@ -70,7 +70,7 @@
 - Traefik file routers and compose labels use a single `Host()` of `{name}.dominiksiejak.pl` (no hello/lake aliases)
 - Forward-auth: `authentik@docker` on the UI. Webhooks and native-OIDC apps (HA, Seerr, Calibre-Web) stay off Authentik at the edge.
 - Use object syntax for labels
-- Traefik has `host.docker.internal:host-gateway` to reach host-networked services (HA, ESPHome)
+- Traefik has `host.docker.internal:host-gateway` to reach host-networked Home Assistant
 
 ### Centralized PostgreSQL
 - Single Postgres stack at `stacks/postgres/`. No separate DB instances.
@@ -162,16 +162,17 @@ Gotchas baked in:
 ## n8n automation
 
 - Instance: `https://n8n.dominiksiejak.pl`, API at `/api/v1` (disabled by default; `N8N_API_ENABLED=false`)
-- UI is Authentik forward-auth (`authentik@docker`). `/webhook*` is a higher-priority Traefik router **without** Authentik (Authentik/Meta call these).
+- Authentik has one n8n app (OAuth2, for credentials / the dashboard tile). There is no Traefik forward-auth proxy for it. `/webhook*` is a higher-priority Traefik router (Authentik/Meta call these).
 - Login → WAN allowlist: Authentik notification webhook → `stacks/n8n/workflows/authentik-login-firewall.json`. After `tofu apply` in `terraform/authentik`, copy `tofu output -raw webhook_secret` into `/opt/n8n/n8n.env` as `AUTHENTIK_WEBHOOK_SECRET`.
 - Do not put RouterOS passwords in Code nodes (`N8N_BLOCK_ENV_ACCESS_IN_NODE=true`); Set node copies `$env` then Code hashes locally.
+- `ROUTEROS_API_URL` must be `http://192.168.89.1/rest` (LAN). Do not hairpin through `https://router.dominiksiejak.pl`. With SSRF protection on, allowlist that IP (`N8N_SSRF_ALLOWED_IP_RANGES=192.168.89.1/32`).
 - MCP servers configured in `.mcp.json`: `n8n-mcp` (HTTP), `n8n-mcp-tools` (stdio/validation)
 
 ## Gotchas
 
 - `terraform/portainer/locals.tf` is the source of truth for deployed stacks — README tables should match it
 - Gitea: bind-mounts `/data` to NAS; needs `traefik.docker.network: proxy`
-- Home Assistant stack: mosquitto has dual listeners (anonymous `127.0.0.1` for HA/healthcheck; password on `0.0.0.0` for LAN/z2m). Create `/opt/hass/mosquitto.passwd` and `/opt/hass/mqtt.env` before sync. HA + zigbee2mqtt `depends_on` with `condition: service_healthy`; HA Time Machine behind `profile: timemachine`
+- Home Assistant stack: mosquitto has split listeners (anonymous `127.0.0.1` for HA/healthcheck; password on `192.168.89.253` for LAN and `172.17.0.1` for Docker host-gateway). Do not bind `0.0.0.0:1883` together with localhost. Create `/opt/hass/mosquitto.passwd` (uid 1883, mode 640) and `/opt/hass/mqtt.env` before sync. HA + zigbee2mqtt `depends_on` with `condition: service_healthy`; HA Time Machine behind `profile: timemachine`
 - Authentik compose: Docker socket `:ro`; `AUTHENTIK_LOG_LEVEL=info`
 - `stacks/postgres/init.sh` no longer exists — DB provisioning is Terraform+Vault only, not manual
 

@@ -23,6 +23,7 @@ sync-portainer: ## Rsync stacks/ to ssh portainer:/opt
 	-rsync -av --delete \
 		--exclude 'adguard/conf/AdGuardHome.yaml' \
 		--exclude 'hass/mosquitto.passwd' \
+		--exclude 'traefik/.opencode-basic.pass' \
 		--exclude 'monitoring/snmp-exporter/synology.yml' \
 		"$(GIT_ROOT)/stacks/" portainer:/opt
 
