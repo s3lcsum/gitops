@@ -81,7 +81,7 @@ http:
           logLevel: "INFO"
 
 
-  # Routers for non-Docker services
+  # Routers for non-Docker services (nas/proxmox/router/hermes: native OIDC — no authentik@docker)
   routers:
     synology:
       rule: "Host(`nas.dominiksiejak.pl`)"

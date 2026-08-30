@@ -56,6 +56,22 @@ cloud = (REPO / 'terraform/cloudflare/main.tf').read_text()
 check('from = cloudflare_zero_trust_tunnel_cloudflared.homelab' in cloud, 'Cloudflare tunnel rename needs a moved block')
 check('name              = "dominiksiejak"' in cloud, 'Pages project name must match dominiksiejak.pages.dev')
 
+portainer_prov = (REPO / 'terraform/portainer/providers.tf').read_text()
+check('skip_ssl_verify = var.portainer_skip_ssl_verify' in portainer_prov,
+      'Portainer provider must gate skip_ssl_verify behind a variable (default false)')
+check('skip_ssl_verify = true' not in portainer_prov,
+      'Portainer must not hardcode skip_ssl_verify = true')
+
+cf_vars = (REPO / 'terraform/cloudflare/variables.tf').read_text()
+check('tcp://v-maintenance-firebird:3050' not in cf_vars,
+      'Firebird TCP must not be in default tunnel_apps')
+
+ak = (REPO / 'stacks/authentik/compose.yaml').read_text()
+check('trustForwardHeader: false' in ak,
+      'Authentik forwardauth must not trust client X-Forwarded-* (trustForwardHeader: false)')
+check('AUTHENTIK_LISTEN__TRUSTED_PROXY_CIDRS' in ak,
+      'Authentik must pin TRUSTED_PROXY_CIDRS to private/Docker ranges')
+
 
 if errors:
     print('security invariants failed:')

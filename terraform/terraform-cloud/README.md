@@ -1,12 +1,12 @@
-# Terraform Cloud Management (legacy)
+# Terraform Cloud Management — DO NOT APPLY
 
-**This module is leftover from the TFC era.** Child modules now store state in GCS
-(`dominiksiejak-gitops-tfstate`, prefix `gitops-<dirname>`). Do not add new TFC
-workspaces here; local `tofu apply` against GCS is the source of truth.
+**DEAD / retired.** Child modules store state in GCS
+(`dominiksiejak-gitops-tfstate`, prefix `gitops-<dirname>`). Local `tofu apply`
+against those flat modules is the source of truth.
 
-The resources in this directory still describe historical TFC workspaces. Applying
-it can fight local GCS state. Treat it as read-only unless you are explicitly
-decommissioning TFC.
+`make apply` / `plan` / `init` in this directory **refuse** on purpose. Keep the
+tree only as historical reference of old TFC workspace names until you delete
+the GCS state prefix `gitops-terraform-cloud` and remove the directory.
 
 
 ## Overview

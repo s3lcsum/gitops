@@ -231,9 +231,9 @@ locals {
     }
     watchyourlan = {
       name            = "WatchYourLAN"
-      external_host   = "https://watchyourlan.dominiksiejak.pl"
+      external_host   = "https://lan.dominiksiejak.pl"
       internal_host   = "http://watchyourlan:8840"
-      launch_url      = "https://watchyourlan.dominiksiejak.pl"
+      launch_url      = "https://lan.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/watchyourlan.png"
       skip_path_regex = ""
     }
@@ -254,12 +254,13 @@ locals {
       skip_path_regex = ""
     }
     adguard = {
-      name            = "AdGuard"
-      external_host   = "https://adguard.dominiksiejak.pl"
-      internal_host   = "http://adguard:3000"
-      launch_url      = "https://adguard.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/adguard-home.svg"
-      skip_path_regex = "^/(dns-query|control|metrics|install|login|setup).*"
+      name          = "AdGuard"
+      external_host = "https://adguard.dominiksiejak.pl"
+      internal_host = "http://adguard:3000"
+      launch_url    = "https://adguard.dominiksiejak.pl"
+      icon_url      = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/adguard-home.svg"
+      # DoH only — /control is the admin API and must stay Authentik-gated.
+      skip_path_regex = "^/dns-query.*"
     }
     bazarr = {
       name            = "Bazarr"

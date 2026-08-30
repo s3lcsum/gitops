@@ -17,6 +17,8 @@ apps", and — for safe infra YAML — auto-repaired:
                -> terraform/authentik/locals.tf                        (REPORT-ONLY, terraform)
   Invariant 3  homepage.dominiksiejak.pl shows every app and uses a built-in widget where one
                exists -> stacks/homepage/config/services.yaml          (AUTO-FIXED)
+  Invariant 4  every Traefik host has an auth class (forward-auth|native-oidc|public|lan-only)
+               -> scripts/auth_classification.yaml                     (REPORT-ONLY)
 
 Secondary, report-only views: gatus config and README host mentions.
 
@@ -52,21 +54,59 @@ AUTH_NO_HTTP_ROUTE = {'ldap', 'routeros', 'router'} | EXTERNAL_ROUTED
 # Authentik apps the operator intentionally keeps as dashboard-only / hostname-renamed,
 # so "no matching Traefik route" is expected — still reported, never a blocking error.
 # AUTH_OK_NO_ROUTE: slug/host names that are not Traefik hosts (OIDC-only, LDAP, aliases)
-AUTH_OK_NO_ROUTE = {'watchyourlan'}
+AUTH_OK_NO_ROUTE = set()
 
 # Homepage hosts that intentionally have no Authentik app (native auth, basicAuth, OPDS, IdP).
-HOMEPAGE_NO_AUTH = {'auth', 'calibre-api', 'lan', 'opencode', 'unifi'}
+HOMEPAGE_NO_AUTH = {'auth', 'calibre-api', 'opencode', 'unifi'}
 HOST_RE = re.compile(r'https?://([a-z0-9][a-z0-9-]*)\.' + re.escape(DOMAIN) + r'(?:/|["\s]|$)')
 RULE_LABEL_RE = re.compile(r'traefik\.http\.routers\.([a-z0-9_-]+)\.rule:\s*(.+)')
 ROUTER_RE = re.compile(r'traefik\.http\.routers\.([a-z0-9_-]+)\.')
 
 HOST_RULE_RE = re.compile(r'Host\(\s*`([a-z0-9][a-z0-9-]*)\.' + re.escape(DOMAIN) + r'`')
 
+AUTH_CLASSES = ('forward-auth', 'native-oidc', 'public', 'lan-only')
+
 GC = []  # (verb, detail) applied → for change summary
 
 CHANGES = []
 def note(verb, detail):
     CHANGES.append((verb, detail))
+
+
+def auth_classification():
+    """Load host → class map from scripts/auth_classification.yaml.
+
+    Returns (by_host, by_class, problems) where problems are structural YAML issues.
+    """
+    import yaml
+    path = REPO / 'scripts' / 'auth_classification.yaml'
+    problems = []
+    if not path.exists():
+        return {}, {c: set() for c in AUTH_CLASSES}, [
+            f'missing {path.relative_to(REPO)}'
+        ]
+    raw = yaml.safe_load(path.read_text()) or {}
+    by_class = {c: set() for c in AUTH_CLASSES}
+    by_host = {}
+    for cls in AUTH_CLASSES:
+        entries = raw.get(cls, []) or []
+        if not isinstance(entries, list):
+            problems.append(f"auth_classification.yaml: '{cls}' must be a list")
+            continue
+        for h in entries:
+            if not isinstance(h, str) or not h:
+                problems.append(f"auth_classification.yaml: invalid entry under '{cls}': {h!r}")
+                continue
+            if h in by_host:
+                problems.append(
+                    f"auth_classification.yaml: '{h}' listed under both '{by_host[h]}' and '{cls}'"
+                )
+            by_host[h] = cls
+            by_class[cls].add(h)
+    for key in raw:
+        if key not in AUTH_CLASSES and not str(key).startswith('#'):
+            problems.append(f"auth_classification.yaml: unknown class '{key}'")
+    return by_host, by_class, problems
 
 
 # ---------------------------------------------------------------------------
@@ -278,6 +318,7 @@ def main():
     gatus = gatus_hosts()
     readme = readme_hosts()
     hp_hosts = set(hp)
+    class_by_host, _class_sets, class_problems = auth_classification()
 
     missing_bb = sorted(truth - bb)
     extra_bb = sorted(bb - truth)
@@ -290,8 +331,21 @@ def main():
     })
     missing_hp = sorted(truth - hp_hosts - HOMEPAGE_LAN_IP - {'homepage'})
     extra_hp = sorted(hp_hosts - truth)
+    unclassified = sorted(truth - set(class_by_host))
+    stale_class = sorted(set(class_by_host) - truth)
 
     errors, warnings = [], []
+    for p in class_problems:
+        errors.append(p)
+    for h in unclassified:
+        errors.append(
+            f"auth classification missing for '{h}.{DOMAIN}' "
+            f"(add to scripts/auth_classification.yaml: forward-auth|native-oidc|public|lan-only)"
+        )
+    for h in stale_class:
+        warnings.append(
+            f"auth_classification.yaml lists '{h}' but no Traefik route (stale — remove or fix)"
+        )
     for h in missing_bb:
         errors.append(f"blackbox missing for '{h}.{DOMAIN}': Grafana won't probe it")
     for h in extra_bb:
@@ -338,8 +392,9 @@ def main():
         print(json.dumps({
             'errors': errors, 'warnings': warnings, 'truth': sorted(truth),
             'blackbox': sorted(bb), 'homepage': sorted(hp_hosts), 'auth': sorted(auth),
+            'auth_classification': class_by_host,
+            'unclassified': unclassified,
         }, indent=2))
-        blocked = errors if args.dry_run or {e for e in errors if e.startswith('Authentik') or e.startswith('blackbox')} else [e for e in errors if any(x in e for x in ('blackbox', 'homepage'))]
         sys.exit(1 if errors else 0)
 
     print('Consistency check — %d Traefik-routed hosts\n' % len(truth))
@@ -347,7 +402,10 @@ def main():
     for w in warnings: print(f"  ! {w}")
     if not errors and not warnings:
         print('  ✓ no drift detected')
-    print('\nauto-fixable: blackbox (promscrape.yaml) + homepage (services.yaml); manual: terraform/auth')
+    print(
+        '\nauto-fixable: blackbox (promscrape.yaml) + homepage (services.yaml); '
+        'manual: terraform/auth + scripts/auth_classification.yaml'
+    )
     sys.exit(1 if errors else 0)
 
 

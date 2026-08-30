@@ -41,9 +41,10 @@ variable "tunnel_apps" {
   default = {
     "homeassistant-atom.dominiksiejak.pl" = ""
     "dns.dominiksiejak.pl"                = ""
-    "firebird.dominiksiejak.pl"           = "tcp://v-maintenance-firebird:3050"
-    "n8n.dominiksiejak.pl"                = "https://traefik"
-    "auth.dominiksiejak.pl"               = "https://traefik"
-    "hass.dominiksiejak.pl"               = "https://traefik"
+    # Firebird TCP on the tunnel is opt-in only — do not expose DB protocol by default.
+    "firebird.dominiksiejak.pl" = ""
+    "n8n.dominiksiejak.pl"      = "https://traefik"
+    "auth.dominiksiejak.pl"     = "https://traefik"
+    "hass.dominiksiejak.pl"     = "https://traefik"
   }
 }

@@ -2,10 +2,12 @@
 
 A reference repository showcasing how I like to manage my home lab infrastructure — treating personal infra with the same rigor you'd expect in a production environment. Everything is versioned, automated where it makes sense, and documented properly.
 
+**Public by design:** the repo (and the LAN map / hostnames in it) is intentionally public. Treat topology as non-secret; protect credentials and private Cloudflare/state separately.
+
 **What's here:**
 
 - `stacks/` — Docker Compose stacks deployed via Portainer
-- `terraform/` — Infrastructure as Code modules for various providers
+- `terraform/` — Infrastructure as Code modules for various providers (OpenTofu state in **GCS**, not Terraform Cloud)
 - `docs/` — MkDocs: ADRs, golden paths, runbooks, networking notes
 
 ---
@@ -18,10 +20,10 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 | **Containers** | Docker stacks managed via Portainer | Compose files in `stacks/` |
 | **Kubernetes** | Talos (Proxmox) for some platform apps; KIND `vibe` on the basement Mac | OpenTofu (`terraform/proxmox/`); `kind/` + `kubernetes/argocd/` |
 | **Networking** | MikroTik RouterOS config | OpenTofu (`terraform/routeros/`) |
-| **Edge** | Traefik reverse proxy + CrowdSec | `stacks/traefik/` |
+| **Edge** | Traefik + CrowdSec on direct WAN; Cloudflare Tunnel/Access for specific hosts | `stacks/traefik/`, `stacks/cloudflared/`, `terraform/cloudflare/` |
 | **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + OpenTofu (`terraform/authentik/`) |
 | **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + OpenTofu (`terraform/netbox/`) |
-| **Secrets** | HashiCorp Vault + Vaultwarden | `stacks/vault/`, `stacks/vaultwarden/` |
+| **Secrets** | HashiCorp Vault (retiring) + Vaultwarden | `stacks/vault/`, `stacks/vaultwarden/` — migrating toward Infisical |
 | **Monitoring** | Gatus (status), Grafana + VictoriaMetrics (`stacks/monitoring/`) via CasC dashboards/alerting, Blackbox synthetic probes, Synthetic Agent | `stacks/gatus/`, `stacks/monitoring/`, `terraform/grafana/`, `stacks/grafana-synthetic-agent/` |
 | **Media** | Jellyfin + *arr stack + downloaders | `stacks/mediabox/` |
 
@@ -92,6 +94,15 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 - **Router**: MikroTik hAP ac3
 - **Wireless**: TP-Link Deco M4R x3 (mesh)
 - **Remote Access**: Public IP with WireGuard / ngrok (backup)
+
+**Dual WAN edge (both intentional — do not "pick one"):**
+
+| Path | What sits on it |
+|------|-----------------|
+| **Direct WAN :80/:443** | Traefik + CrowdSec + Authentik forward-auth / native OIDC. **RouterOS firewall allowlist** is the IP gate. Cloudflare Access is *not* required on this path. |
+| **Cloudflare Tunnel + Access** | Separate ingress for specific hosts/services (JWT / Access where configured). Extra layer for those apps — complements RouterOS, does not replace it. |
+
+Auth class for every Traefik host lives in `scripts/auth_classification.yaml` (`make consistency` fails if a host is unclassified).
 
 **IP Allocation:**
 
@@ -177,6 +188,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - **`.env.example` files**: Committed to the repo — contain structure and placeholder values
 - **`.env` files**: Never committed — contain actual secrets (gitignored)
 - **Sensitive Terraform variables**: Stored in `defaults.auto.tfvars` or passed via environment
+- **Vault (retiring):** still used for Postgres static creds + some OAuth KV. Target is Infisical (or simpler) — see roadmap. Do not tear down Vault in a drive-by change.
 
 ---
 
@@ -231,7 +243,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── routeros/
 │   ├── synology-nas/
 │   ├── vault/
-│   └── terraform-cloud/
+│   └── terraform-cloud/            # DEAD — TFC bootstrap; DO NOT APPLY (GCS is SoT)
 │
 ├── mkdocs.yml                      # MkDocs configuration
 └── README.md
@@ -247,6 +259,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Add NUT/UPS integration
 - [x] (retroactively added) KIND cluster on vibe + self-managed Argo CD
 - [ ] k3s single-node cluster
+- [ ] Retire HashiCorp Vault → Infisical (or simpler) for secrets / DB passwords
+- [ ] Move `terraform/cloudflare` (zone/tunnel/Access/Workers) to a private sibling repo
 - [ ] Self-hosted LLM (Ollama)
 - [ ] Separated subnets (IoT isolation)
 - [ ] Use Terraform for RouterOS management (or via NetBox)?
@@ -254,6 +268,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 30.08.2026
+
+Security follow-up: Portainer tofu talks to `https://portainer.dominiksiejak.pl` with TLS verify (no hardcoded `skip_ssl_verify`); Firebird off tunnel defaults; Authentik forwardauth stops trusting client `X-Forwarded-*` + pinned `TRUSTED_PROXY_CIDRS`; every Traefik host must be classified in `scripts/auth_classification.yaml` (`make consistency`); dual-WAN (direct CrowdSec+Auth vs CF tunnel/Access) documented as intentional; Vault marked retiring; `terraform/terraform-cloud` Makefile refuses apply.
 
 ### 25.08.2026
 

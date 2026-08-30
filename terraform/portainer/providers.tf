@@ -19,7 +19,9 @@ terraform {
 }
 
 provider "portainer" {
-  endpoint        = var.portainer_endpoint
-  api_key         = var.portainer_api_key
-  skip_ssl_verify = true
+  endpoint = var.portainer_endpoint
+  api_key  = var.portainer_api_key
+  # Prefer https://portainer.dominiksiejak.pl (Traefik LE cert). Only set
+  # portainer_skip_ssl_verify=true for the self-signed IP:9443 bootstrap URL.
+  skip_ssl_verify = var.portainer_skip_ssl_verify
 }

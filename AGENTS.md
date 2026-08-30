@@ -33,6 +33,7 @@
   - Traefik labels handle routing. Always `traefik.enable: true`. Only add custom hostname rule if different from `{service}.dominiksiejak.pl`.
 - `terraform/` — OpenTofu modules. State: **GCS** (`dominiksiejak-gitops-tfstate`), migrated from TFC Apr 2026.
   - GCS state prefix convention: `gitops-<dirname>` (e.g., `gitops-portainer`).
+  - `terraform/terraform-cloud/` is dead TFC bootstrap — **DO NOT APPLY**.
 - `kind/` — KIND cluster configs. On the basement Intel MacBook (hostname `vibe`), cluster `vibe` runs via Colima + KIND (`kind-vibe` context). Ensure script: `~/.local/bin/kind-vibe-ensure.sh`. Ingress: Traefik (`kind/traefik-values.yaml`). Smoke: `curl -H 'Host: whoami.vibe.local' http://127.0.0.1/`. Unrelated to Hermes the AI gateway. Do not talk to Portainer Docker (`ssh://portainer`) when managing this cluster.
 - `kubernetes/argocd/` — Self-managed Argo CD on `kind-vibe`. Vendored upstream Helm chart is `kubernetes/argocd/charts/argo-cd` (do not fetch argo-helm at sync time). Overrides: `kubernetes/argocd/values.yaml`. Bootstrap: `make -C kubernetes/argocd bootstrap`. After that Argo CD reconciles itself from `https://github.com/s3lcsum/gitops.git` path `kubernetes/argocd`. UI: `curl -H 'Host: argocd.vibe.local' http://127.0.0.1/`.
 
@@ -44,6 +45,11 @@
 - Internal hostname pattern: `{service}.dominiksiejak.pl`
 - Public hostname pattern: `*.dominiksiejak.pl` (external IP, ports 80/443)
 - Remote Docker: accessible via `ssh://portainer` (configured in `.mcp.json` Docker MCP server)
+- **Public-by-design:** this repo is public and includes LAN topology / hostnames intentionally. Do not "fix" by privatizing or stripping the map.
+- **Dual WAN edge (both intentional — do not collapse to one):**
+  - **Direct WAN :80/:443** → Traefik + CrowdSec + Authentik forward-auth / native OIDC. RouterOS firewall allowlist is the IP gate for WAN; CF Access is not a substitute for that path.
+  - **Cloudflare Tunnel + Access** → separate path for specific hosts (JWT / Access where configured). Extra layer, not either/or with RouterOS.
+- Auth class per Traefik host: `scripts/auth_classification.yaml` (`forward-auth` | `native-oidc` | `public` | `lan-only`). Unclassified hosts fail `make consistency`.
 
 ## Compose Conventions
 
@@ -74,15 +80,14 @@
 
 ### Centralized PostgreSQL
 - Single Postgres stack at `stacks/postgres/`. No separate DB instances.
-- **DB provisioning is managed via Terraform+Vault, not by editing init scripts.**
-- New DB user: add entry to `terraform/postgres/locals.tf` + `terraform/vault/locals.tf` → apply both
-- Password fetched from Vault: `vault read database/static-creds/<username>`
+- **Today:** DB provisioning via Terraform+Vault (static roles), not init scripts.
+- **Retirement:** Vault is being retired (target: Infisical or simpler). Until migration lands, still: add entry to `terraform/postgres/locals.tf` + `terraform/vault/locals.tf` → apply both; password via `vault read database/static-creds/<username>`. DB password story TBD during cutover.
 - Service connects via `env_file` pointing at `/opt/<stack>/<service>.env`
 - Postgres is **localhost-only** on host (`127.0.0.1:5432`)
 - Service needing DB must join `database` network
 
 ### Vault OIDC login from a remote machine (SSH tunnel trick)
-`terraform/vault` `make auth` (and any `vault login -method=oidc`) opens a browser on the
+**Legacy while Vault still runs.** `terraform/vault` `make auth` (and any `vault login -method=oidc`) opens a browser on the
 **Mac** and listens on `localhost:8250` for the OIDC callback. If you're SSHed in from a
 laptop, the browser redirect to `localhost:8250` goes nowhere on your machine. Fix:
 1. On the Mac: `cd terraform/vault && make auth` — it prints an auth URL and waits.
@@ -119,8 +124,10 @@ has no default for `vault_token` and will prompt otherwise.
 
 - **Never commit `*.env` or `*.tfvars`** — both gitignored
 - `.mcp.json` contains live API tokens (HA, n8n, Cloudflare) — do not leak or commit changes exposing them
-- Vault manages DB passwords (static creds). Vault access is **Traefik-only** (no host port 8200)
+- **Vault being retired** — still manages DB static creds + some OAuth KV today (`stacks/vault`, `terraform/vault`, GCP KMS auto-unseal). Target: Infisical (or simpler) for `.env` / secrets; do not rip out Vault terraform in drive-by PRs.
+- Vault access is **Traefik-only** (no host port 8200) while it remains.
 - Terraform variables passed via environment or `defaults.auto.tfvars`
+- OpenTofu state: **GCS** (`dominiksiejak-gitops-tfstate`). `terraform/terraform-cloud/` is dead TFC bootstrap — **DO NOT APPLY**.
 
 ## Verification order before big changes
 
@@ -149,7 +156,8 @@ against it:
 Usage:
 - `make consistency` — dry-run report; exits non-zero on blocking drift (good for CI/pre-commit).
 - `make consistency-fix` — repairs the auto-fixable YAML (blackbox + homepage), exits non-zero
-  if any terraform/README issue remains for manual review.
+  if any terraform/README/auth-classification issue remains for manual review.
+- Auth classification: every Traefik host must be in `scripts/auth_classification.yaml`.
 
 Gotchas baked in:
 - `EXTERNAL_ROUTED` = `{"portainer"}` (routed but configured outside this repo).

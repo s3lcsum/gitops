@@ -44,7 +44,7 @@ repos:
         entry: python3 scripts/check-consistency.py
         language: system
         pass_filenames: false
-        files: ^(stacks/|terraform/authentik/|scripts/check-consistency\.py)
+        files: ^(stacks/|terraform/authentik/|scripts/check-consistency\.py|scripts/auth_classification\.yaml)
       - id: gitops-security-invariants
         name: gitops security invariants
         entry: python3 scripts/test_security_invariants.py
