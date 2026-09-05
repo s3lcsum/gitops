@@ -76,6 +76,9 @@ terraform/proxmox/generated/
 # Playwright test artifacts
 .playwright-mcp/
 
+# Wrangler local cache (account metadata; do not commit)
+**/.wrangler/
+
 # Runtime logs
 logs/
 

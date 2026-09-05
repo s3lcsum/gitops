@@ -17,6 +17,7 @@ forward-auth:
   - jellyfin
   - lan
   - metrics
+  - opencode
   - profilarr
   - prowlarr
   - qbittorrent
@@ -50,7 +51,6 @@ public:
   - auth             # IdP itself
   - calibre-api      # OPDS / device sync
   - homepage         # intentional unauthenticated catalog (config in repo)
-  - opencode         # Traefik basicAuth (not SSO)
   - status           # Gatus status page
   - unifi            # controller local auth
 

@@ -15,11 +15,14 @@ def check(cond, msg):
 
 dyn = (REPO / 'stacks/traefik/dynamic.yaml').read_text()
 check('b3BlbmNvZGU6c3VwZXItc2VjcmV0' not in dyn, 'opencode basic auth secret is hardcoded in dynamic.yaml')
-check("Authorization: \"Basic " not in dyn, 'Traefik must not inject a static Authorization header')
-check('basicAuth:' in dyn and 'OPENCODE_HTPASSWD' in dyn, 'opencode route must use Traefik basicAuth from env')
+check('authentik@docker' in dyn and 'opencode-upstream-auth@file' in dyn,
+      'opencode route must use Authentik edge + upstream Basic from env')
+check('OPENCODE_UPSTREAM_BASIC' in dyn, 'opencode upstream Authorization must come from env')
+check('opencode-basic-auth' not in dyn and 'OPENCODE_HTPASSWD' not in dyn,
+      'legacy opencode Traefik basicAuth middleware must be gone')
 check('webhook-rate-limit' in dyn, 'n8n webhook router must be rate-limited')
 ex = (REPO / 'stacks/traefik/traefik.env.example').read_text()
-check('OPENCODE_HTPASSWD=opencode:$$2y$$' in ex, 'htpasswd example must escape $ for Compose interpolation')
+check('OPENCODE_UPSTREAM_BASIC=' in ex, 'traefik.env.example must document OPENCODE_UPSTREAM_BASIC')
 
 n8n = (REPO / 'stacks/n8n/compose.yaml').read_text()
 check('N8N_SSRF_PROTECTION_ENABLED: true' in n8n, 'n8n SSRF protection must be enabled')
@@ -71,6 +74,34 @@ check('trustForwardHeader: false' in ak,
       'Authentik forwardauth must not trust client X-Forwarded-* (trustForwardHeader: false)')
 check('AUTHENTIK_LISTEN__TRUSTED_PROXY_CIDRS' in ak,
       'Authentik must pin TRUSTED_PROXY_CIDRS to private/Docker ranges')
+
+gitignore = (REPO / '.gitignore').read_text()
+check('**/.wrangler/' in gitignore, 'root .gitignore must ignore Wrangler caches')
+
+check(not (REPO / 'terraform/05-network').exists(),
+      'numbered Terragrunt forks must not sit next to live GCS modules')
+check(not (REPO / 'terraform/30-services').exists(),
+      'portainer rsync --delete wrapper must not exist')
+
+check(not (REPO / 'terraform/cloudflare/cribfinder-catalog.json').exists(),
+      'cribfinder catalog dump must not be in this public repo')
+links = (REPO / 'terraform/cloudflare/shorturl-links.json').read_text()
+check('wa.me' not in links, 'shorturl catalog must not include a WhatsApp / phone URL')
+shorturl_js = (REPO / 'terraform/cloudflare/shorturl.js').read_text()
+check('JSON.stringify(links' not in shorturl_js, 'shorturl GET / must not dump the catalog')
+check('ALLOWED_PROTOCOLS' in shorturl_js, 'shorturl must allowlist redirect schemes')
+check('url.dominiksiejak.pl' in cloud and 'cribfinder.dominiksiejak.pl' in cloud,
+      'country WAF skip list must include url. and cribfinder.')
+
+tf_make = (REPO / 'terraform/Makefile').read_text()
+check('APPLY_MODULES' in tf_make and 'grep -vx terraform-cloud' in tf_make,
+      'apply-all must skip terraform-cloud and non-module directories')
+
+portainer_mk = (REPO / 'terraform/portainer/Makefile').read_text()
+check("--exclude 'adguard/conf/AdGuardHome.yaml'" in portainer_mk,
+      'portainer rsync --delete must exclude host-managed secrets')
+check("--exclude '*.env'" in portainer_mk,
+      'portainer rsync --delete must exclude *.env so host secrets survive sync')
 
 
 if errors:

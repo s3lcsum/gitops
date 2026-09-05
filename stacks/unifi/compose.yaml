@@ -36,6 +36,9 @@ services:
     env_file:
       - /opt/unifi/unifi.env
     environment:
+      # mongo image sets glibc.pthread.rseq=0; on kernel 6.19+/7.0.x that trips
+      # SERVER-121912 and mongod refuses to start. Force rseq=1 to bypass.
+      GLIBC_TUNABLES: glibc.pthread.rseq=1
       MONGO_INITDB_ROOT_USERNAME: unifi
       MONGO_INITDB_DATABASE: unifi
     ports:

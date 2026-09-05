@@ -13,6 +13,7 @@ consistency-fix: ## Repair auto-fixable drift (blackbox promscrape + homepage se
 test: ## Security invariants + consistency (read-only)
 	python3 scripts/test_security_invariants.py
 	python3 scripts/check-consistency.py
+	node --test terraform/cloudflare/shorturl.test.mjs
 
 serve: ## Start MkDocs development server (http://localhost:8000)
 	uvx --with mkdocs-material --with mkdocs-git-revision-date-localized-plugin mkdocs serve

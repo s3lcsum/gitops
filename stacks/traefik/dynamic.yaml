@@ -43,15 +43,15 @@ http:
           X-Authentik-Entitlements: ""
           X-Authentik-Jwt: ""
 
-    # htpasswd line from env (bcrypt). Generate:
-    #   htpasswd -nbB opencode 'the-password'
-    # Store as OPENCODE_HTPASSWD in /opt/traefik/traefik.env — never in git.
-    opencode-basic-auth:
-      basicAuth:
-        users:
-          - '{{ env "OPENCODE_HTPASSWD" }}'
-        realm: opencode
-        removeHeader: true
+    # Upstream credential for the opencode server (Basic scheme, single shared token).
+    # Authentik approves users at the edge; only Traefik knows this secret, so nothing
+    # else can reach the server. Store as OPENCODE_UPSTREAM_BASIC in
+    # /opt/traefik/traefik.env — never in git.
+    # Generate: printf 'opencode:<token>' | base64
+    opencode-upstream-auth:
+      headers:
+        customRequestHeaders:
+          Authorization: 'Basic {{ env "OPENCODE_UPSTREAM_BASIC" }}'
 
     crowdsec-bouncer:
       plugin:
@@ -83,6 +83,13 @@ http:
 
   # Routers for non-Docker services (nas/proxmox/router/hermes: native OIDC — no authentik@docker)
   routers:
+    # Traefik runtime API for internal widgets (entrypoint :8080 is not published)
+    traefik-api-internal:
+      rule: "PathPrefix(`/api`)"
+      entryPoints:
+        - traefik
+      service: api@internal
+
     synology:
       rule: "Host(`nas.dominiksiejak.pl`)"
       entryPoints:
@@ -106,7 +113,8 @@ http:
       entryPoints:
         - websecure
       middlewares:
-        - opencode-basic-auth@file
+        - authentik@docker
+        - opencode-upstream-auth@file
         - rate-limit@file
       service: opencode
 

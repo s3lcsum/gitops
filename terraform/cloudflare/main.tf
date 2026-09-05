@@ -19,7 +19,7 @@ resource "cloudflare_ruleset" "country_allowlist" {
     {
       ref         = "skip-messenger-webhook"
       action      = "skip"
-      expression  = "(http.host eq \"n8n.dominiksiejak.pl\" and starts_with(http.request.uri.path, \"/webhook/messenger\")) or http.host in {\"dominiksiejak.pl\" \"www.dominiksiejak.pl\" \"miedzysztuka.dominiksiejak.pl\"}"
+      expression  = "(http.host eq \"n8n.dominiksiejak.pl\" and starts_with(http.request.uri.path, \"/webhook/messenger\")) or http.host in {\"dominiksiejak.pl\" \"www.dominiksiejak.pl\" \"miedzysztuka.dominiksiejak.pl\" \"url.dominiksiejak.pl\" \"cribfinder.dominiksiejak.pl\"}"
       description = "Allow Messenger webhook path + public sites to bypass the country allowlist"
       enabled     = true
 

@@ -20,7 +20,11 @@ state = json.load(sys.stdin); \
 	while read addr; do tofu untaint "$$addr"; done
 
 sync-portainer: ## Rsync stacks/ to ssh portainer:/opt
+	# --delete is safe only if host-only secrets are excluded. Missing local
+	# *.env would otherwise wipe /opt/<stack>/*.env on the Portainer host.
 	-rsync -av --delete \
+		--exclude '*.env' \
+		--exclude '.jellyfin.secrets' \
 		--exclude 'adguard/conf/AdGuardHome.yaml' \
 		--exclude 'hass/mosquitto.passwd' \
 		--exclude 'traefik/.opencode-basic.pass' \

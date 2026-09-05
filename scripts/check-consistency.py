@@ -43,6 +43,16 @@ DOMAIN = 'dominiksiejak.pl'
 # defined OUTSIDE this repo's stacks/ (e.g. the Portainer-managed portainer container).
 EXTERNAL_ROUTED = {'portainer'}
 
+# Blackbox jobs that probe hosts outside Traefik (external sites, CF Pages apex).
+# --fix must not delete these.
+BLACKBOX_EXTRA_JOBS = {
+    'google',
+    'inpost',
+    'easypack24',
+    'usertesting',
+    'miedzy-sztuka-a-nauka',  # public event apex; Pages hostname is miedzysztuka
+}
+
 # Hosts the homepage deliberately surfaces over a LAN/hypervisor IP instead of the
 # publicly-proxied *.dominiksiejak.pl hostname, so absence in services.yaml is correct.
 HOMEPAGE_LAN_IP = {'nas', 'proxmox', 'router', 'adguard'}
@@ -57,7 +67,7 @@ AUTH_NO_HTTP_ROUTE = {'ldap', 'routeros', 'router'} | EXTERNAL_ROUTED
 AUTH_OK_NO_ROUTE = set()
 
 # Homepage hosts that intentionally have no Authentik app (native auth, basicAuth, OPDS, IdP).
-HOMEPAGE_NO_AUTH = {'auth', 'calibre-api', 'opencode', 'unifi'}
+HOMEPAGE_NO_AUTH = {'auth', 'calibre-api', 'unifi'}
 HOST_RE = re.compile(r'https?://([a-z0-9][a-z0-9-]*)\.' + re.escape(DOMAIN) + r'(?:/|["\s]|$)')
 RULE_LABEL_RE = re.compile(r'traefik\.http\.routers\.([a-z0-9_-]+)\.rule:\s*(.+)')
 ROUTER_RE = re.compile(r'traefik\.http\.routers\.([a-z0-9_-]+)\.')
@@ -321,7 +331,7 @@ def main():
     class_by_host, _class_sets, class_problems = auth_classification()
 
     missing_bb = sorted(truth - bb)
-    extra_bb = sorted(bb - truth)
+    extra_bb = sorted(bb - truth - BLACKBOX_EXTRA_JOBS)
     stale_auth = sorted({h for h in auth - truth - AUTH_NO_HTTP_ROUTE if h not in AUTH_OK_NO_ROUTE})
     # "auth shows ALL apps": a host that is a real user-facing app (present on homepage)
     # and NOT an internal router/standalone service should have an Authentik app.
@@ -377,7 +387,7 @@ def main():
 
     if args.fix and not args.dry_run:
         bb_path = REPO / 'stacks' / 'monitoring' / 'victoria-metrics' / 'promscrape.yaml'
-        if missing_bb or (bb - truth):
+        if missing_bb or extra_bb:
             bb_path.write_text(fix_blackbox(bb_path.read_text(), missing_bb, extra_bb))
         hp_path = REPO / 'stacks' / 'homepage' / 'config' / 'services.yaml'
         if missing_hp:
