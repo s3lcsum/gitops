@@ -6,7 +6,7 @@ x-default: &default
 services:
   hass:
     <<: *default
-    image: ghcr.io/home-assistant/home-assistant:2026.8.3
+    image: ghcr.io/home-assistant/home-assistant:2026.9.1
     container_name: hass
     depends_on:
       mosquitto:
@@ -23,7 +23,7 @@ services:
 
   zigbee2mqtt-wifi:
     <<: *default
-    image: ghcr.io/koenkk/zigbee2mqtt:2.13.0
+    image: ghcr.io/koenkk/zigbee2mqtt:2.14.1
     container_name: zigbee2mqtt-wifi
     user: "1000:1000"
     depends_on:
@@ -45,7 +45,7 @@ services:
 
   zigbee2mqtt-usb:
     <<: *default
-    image: ghcr.io/koenkk/zigbee2mqtt:2.13.0
+    image: ghcr.io/koenkk/zigbee2mqtt:2.14.1
     container_name: zigbee2mqtt-usb
     depends_on:
       mosquitto:
@@ -116,10 +116,13 @@ networks:
 
 volumes:
   data:
+    name: hass_data
     driver: local
     driver_opts:
       type: none
       device: /var/lib/hass
       o: bind
   mosquitto_data:
+    name: hass_mosquitto_data
   ha_time_machine_data:
+    name: hass_ha_time_machine_data
