@@ -81,7 +81,7 @@
 ### Centralized PostgreSQL
 - Single Postgres stack at `stacks/postgres/`. No separate DB instances.
 - **Today:** DB provisioning via Terraform+Vault (static roles), not init scripts.
-- **Retirement:** Vault is being retired (target: Infisical or simpler). Until migration lands, still: add entry to `terraform/postgres/locals.tf` + `terraform/vault/locals.tf` → apply both; password via `vault read database/static-creds/<username>`. DB password story TBD during cutover.
+- **Retirement:** Vault is being retired (target: TBD — Infisical was dropped because OIDC SSO needs a paid license). Until migration lands, still: add entry to `terraform/postgres/locals.tf` + `terraform/vault/locals.tf` → apply both; password via `vault read database/static-creds/<username>`. DB password story TBD during cutover.
 - Service connects via `env_file` pointing at `/opt/<stack>/<service>.env`
 - Postgres is **localhost-only** on host (`127.0.0.1:5432`)
 - Service needing DB must join `database` network
@@ -124,7 +124,7 @@ has no default for `vault_token` and will prompt otherwise.
 
 - **Never commit `*.env` or `*.tfvars`** — both gitignored
 - `.mcp.json` contains live API tokens (HA, n8n, Cloudflare) — do not leak or commit changes exposing them
-- **Vault being retired** — still manages DB static creds + some OAuth KV today (`stacks/vault`, `terraform/vault`, GCP KMS auto-unseal). Target: Infisical (or simpler) for `.env` / secrets; do not rip out Vault terraform in drive-by PRs.
+- **Vault being retired** — still manages DB static creds + some OAuth KV today (`stacks/vault`, `terraform/vault`, GCP KMS auto-unseal). Target: TBD (Infisical dropped — OIDC SSO requires a paid Enterprise licence); do not rip out Vault terraform in drive-by PRs.
 - Vault access is **Traefik-only** (no host port 8200) while it remains.
 - Terraform variables passed via environment or `defaults.auto.tfvars`
 - OpenTofu state: **GCS** (`dominiksiejak-gitops-tfstate`). `terraform/terraform-cloud/` is dead TFC bootstrap — **DO NOT APPLY**.

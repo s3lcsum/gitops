@@ -23,7 +23,7 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 | **Edge** | Traefik + CrowdSec on direct WAN; Cloudflare Tunnel/Access for specific hosts | `stacks/traefik/`, `stacks/cloudflared/`, `terraform/cloudflare/` |
 | **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + OpenTofu (`terraform/authentik/`) |
 | **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + OpenTofu (`terraform/netbox/`) |
-| **Secrets** | HashiCorp Vault (retiring) + Infisical + Vaultwarden | `stacks/vault/`, `stacks/infisical/`, `stacks/vaultwarden/` — Infisical is the Vault replacement target |
+| **Secrets** | HashiCorp Vault (retiring) + Vaultwarden | `stacks/vault/`, `stacks/vaultwarden/` — Vault replacement target TBD |
 | **Monitoring** | Gatus (status), Grafana + VictoriaMetrics (`stacks/monitoring/`) via CasC dashboards/alerting, Blackbox synthetic probes, Synthetic Agent | `stacks/gatus/`, `stacks/monitoring/`, `terraform/grafana/`, `stacks/grafana-synthetic-agent/` |
 | **Media** | Jellyfin + *arr stack + downloaders | `stacks/mediabox/` |
 
@@ -64,7 +64,6 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | [Gatus](https://github.com/TwiN/gatus) | Uptime / status page |
 | [Gitea](https://github.com/go-gitea/gitea) | Git hosting |
 | [Homepage](https://gethomepage.dev/) | Dashboard (Docker label auto-discovery) |
-| [Infisical](https://infisical.com/) | Secrets management (Vault replacement target) |
 | [Grafana Synthetic Monitoring Agent](https://github.com/grafana/synthetic-monitoring-agent) | Synthetic checks (Grafana Cloud–oriented agent) |
 | [Home Assistant stack](https://www.home-assistant.io/) | HA, Zigbee2MQTT, Mosquitto, optional [HA Time Machine](https://github.com/saihgupr/homeassistanttimemachine) (compose profile) |
 | **Mediabox** (see below) | Media + *arr + VPN-routed downloaders |
@@ -189,7 +188,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - **`.env.example` files**: Committed to the repo — contain structure and placeholder values
 - **`.env` files**: Never committed — contain actual secrets (gitignored)
 - **Sensitive Terraform variables**: Stored in `defaults.auto.tfvars` or passed via environment
-- **Vault (retiring) / Infisical:** Vault still used for Postgres static creds + some OAuth KV. Infisical stack is up at `infisical.dominiksiejak.pl` (central Postgres + Redis sidecar); cutover of consumers is still TODO — do not tear down Vault until that lands.
+- **Vault (retiring):** Vault still used for Postgres static creds + some OAuth KV. Replacement target TBD — Infisical was evaluated and dropped (OIDC SSO is a paid-license feature). Do not tear down Vault until a replacement lands.
 
 ---
 
@@ -215,7 +214,6 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── grafana-synthetic-agent/
 │   ├── hass/
 │   ├── homepage/
-│   ├── infisical/
 │   ├── mediabox/
 │   ├── monitoring/
 │   ├── n8n/
@@ -261,8 +259,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Add NUT/UPS integration
 - [x] (retroactively added) KIND cluster on vibe + self-managed Argo CD
 - [ ] k3s single-node cluster
-- [x] (retroactively added) Stand up Infisical stack (`stacks/infisical/`) as Vault replacement target
-- [ ] Cut over secrets / DB passwords from HashiCorp Vault → Infisical; then retire Vault
+- [ ] Cut over secrets / DB passwords from HashiCorp Vault → a replacement with free OIDC SSO; then retire Vault
 - [ ] Move `terraform/cloudflare` (zone/tunnel/Access/Workers) to a private sibling repo
 - [ ] Self-hosted LLM (Ollama)
 - [ ] Separated subnets (IoT isolation)
@@ -271,6 +268,14 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 06.09.2026
+
+Removed **Ghostfolio** — Wealthfolio covers personal finance now. Gone: `stacks/ghostfolio/` (compose + `gf-redis` sidecar), the `ghostfolio` Authentik OAuth2 app, `ghostfolio_db` / `ghostfolio_user` in the postgres + vault locals, homepage tile, gatus probe, blackbox job, AdGuard DNS rewrite, and its auth classification. Containers and the Postgres DB were dropped with it.
+
+### 06.09.2026
+
+Removed **Infisical** — no OIDC SSO in the community edition (it's an Enterprise `LICENSE_KEY` feature), so it was a dead end as the Vault replacement. Gone: `stacks/infisical/` (compose + env), the `infisical` Authentik OAuth2 app, `infisical_db` / `infisical_user` in the postgres + vault locals, homepage tile, gatus probe, blackbox job, and its auth classification. Containers, the Redis volume, and the Postgres DB were removed with it. Vault stays until a replacement with free OIDC SSO shows up.
 
 ### 06.09.2026
 

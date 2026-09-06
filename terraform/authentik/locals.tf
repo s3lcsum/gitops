@@ -62,14 +62,6 @@ locals {
         "https://hermes.dominiksiejak.pl/api/auth/oidc/callback",
       ]
     }
-    ghostfolio = {
-      name       = "Ghostfolio"
-      launch_url = "https://ghostfolio.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/ghostfolio.svg"
-      redirect_uris = [
-        "https://ghostfolio.dominiksiejak.pl/api/auth/oidc/callback",
-      ]
-    }
     wealthfolio = {
       name       = "Wealthfolio"
       launch_url = "https://wealthfolio.dominiksiejak.pl"
@@ -96,15 +88,6 @@ locals {
         "https://vault.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
         "https://vault.dominiksiejak.pl/oidc/callback",
         "http://localhost:8250/oidc/callback",
-      ]
-    }
-    infisical = {
-      name       = "Infisical"
-      launch_url = "https://infisical.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/infisical.svg"
-      # Native OIDC SSO is an Infisical Pro/self-hosted-license feature; app is ready for when enabled.
-      redirect_uris = [
-        "https://infisical.dominiksiejak.pl/api/v1/sso/oidc/callback",
       ]
     }
     gitea = {

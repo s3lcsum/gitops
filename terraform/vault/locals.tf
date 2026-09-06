@@ -55,11 +55,5 @@ locals {
       username = "rreading_glasses"
       database = "bookarr_db"
     }
-    ghostfolio = {
-      username = "ghostfolio_user"
-      database = "ghostfolio_db"
-    }
-    # infisical intentionally absent: Vault is being retired, so no new static
-    # roles. infisical_user's password is set directly (see stacks/infisical).
   }
 }

@@ -36,13 +36,5 @@ locals {
       username = "rreading_glasses"
       database = "bookarr_db"
     }
-    ghostfolio = {
-      username = "ghostfolio_user"
-      database = "ghostfolio_db"
-    }
-    infisical = {
-      username = "infisical_user"
-      database = "infisical_db"
-    }
   }
 }
