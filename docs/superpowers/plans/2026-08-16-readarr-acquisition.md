@@ -99,7 +99,7 @@ git commit --no-verify -m "feat(readarr): provision bookarr_db + rreading_glasse
 
 **Interfaces:**
 - Consumes: Task 1's `bookarr_db` creds (rreading-glasses env), existing `gluetun`/`qbittorrent`/`mabnzbd`/`prowlarr` services, `x-service-defaults` anchor.
-- Produces: 
+- Produces:
   - `readarr` service, `readarr.dominiksiejak.pl` via Traefik `remote@file`, joins `proxy, arr, database`.
   - `rreading-glasses` service on `database` network, internal port 8788.
   - mediabox `env_file `/opt/mediabox/mediabox.env` referenced (add to compose as file already exists for other services if not already).
@@ -341,7 +341,7 @@ git commit --no-verify -m "docs(readarr): manual first-run config + e2e verifica
 ## Task 6: README changelog + gatus/homepage tiles (deferred)
 
 **Files:**
-- Skip gatus/homepage per spec non-goals (deferred). 
+- Skip gatus/homepage per spec non-goals (deferred).
 - Modify: `README.md` changelog.
 
 **Interfaces:**

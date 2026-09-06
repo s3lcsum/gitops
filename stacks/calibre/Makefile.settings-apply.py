@@ -15,17 +15,17 @@ import argparse, json, sqlite3, sys
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--db", required=True)
-    ap.add_argument("--table", required=True)
-    ap.add_argument("--seed", required=True)
-    ap.add_argument("--id", type=int, default=None)
+    ap.add_argument('--db', required=True)
+    ap.add_argument('--table', required=True)
+    ap.add_argument('--seed', required=True)
+    ap.add_argument('--id', type=int, default=None)
     a = ap.parse_args()
 
     with open(a.seed) as f:
         seed = json.load(f)
 
     conn = sqlite3.connect(a.db)
-    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute('PRAGMA journal_mode=WAL')
     cur = conn.cursor()
     cols = [r[1] for r in cur.execute(f"PRAGMA table_info({a.table})")]
     rows = cur.execute(f"SELECT * FROM {a.table}").fetchall()
@@ -45,15 +45,15 @@ def main():
     else:
         target = rows[0]
 
-    has_id = "id" in cols
-    row_id = target[cols.index("id")] if has_id else None
+    has_id = 'id' in cols
+    row_id = target[cols.index('id')] if has_id else None
 
     updates = []
     for key, value in seed.items():
         if key not in cols:
             print(f"WARN: column {key!r} not found in {a.table}; skipped")
             continue
-        if key == "id":
+        if key == 'id':
             continue
         stored = json.dumps(value) if isinstance(value, (dict, list)) else value
         updates.append((key, stored, row_id))
@@ -63,17 +63,17 @@ def main():
     elif a.id is not None:
         where = f"WHERE id = {a.id}"
     else:
-        where = ""
+        where = ''
 
     if not updates:
-        print("no columns to update")
+        print('no columns to update')
         return
 
-    set_clause = ", ".join(f"{k} = ?" for k, _, _ in updates)
+    set_clause = ', '.join(f"{k} = ?" for k, _, _ in updates)
     cur.execute(f"UPDATE {a.table} SET {set_clause} {where}", [v for _, v, _ in updates])
     conn.commit()
     print(f"applied {len(updates)} settings to {a.table}{' (id=%d)' % row_id if has_id else ''}")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
