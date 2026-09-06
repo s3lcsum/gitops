@@ -47,6 +47,11 @@ EXTERNAL_ROUTED = {'portainer'}
 # publicly-proxied *.dominiksiejak.pl hostname, so absence in services.yaml is correct.
 HOMEPAGE_LAN_IP = {'nas', 'proxmox', 'router', 'adguard'}
 
+# blackbox jobs that intentionally probe targets we do not route (internet canaries:
+# is the WAN up at all?). Traefik hosts are the source of truth for *our* services,
+# but these are deliberately external, so they are not drift.
+EXTERNAL_PROBES = {'google', 'inpost', 'easypack24', 'usertesting'}
+
 # Authentik app slugs that have no HTTP Traefik host by design (LDAP, RADIUS)
 # plus Traefik hosts covered by those apps instead of a proxy provider.
 AUTH_NO_HTTP_ROUTE = {'ldap', 'routeros', 'router'} | EXTERNAL_ROUTED
@@ -321,7 +326,7 @@ def main():
     class_by_host, _class_sets, class_problems = auth_classification()
 
     missing_bb = sorted(truth - bb)
-    extra_bb = sorted(bb - truth)
+    extra_bb = sorted(bb - truth - EXTERNAL_PROBES)
     stale_auth = sorted({h for h in auth - truth - AUTH_NO_HTTP_ROUTE if h not in AUTH_OK_NO_ROUTE})
     # "auth shows ALL apps": a host that is a real user-facing app (present on homepage)
     # and NOT an internal router/standalone service should have an Authentik app.

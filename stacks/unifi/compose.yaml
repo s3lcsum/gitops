@@ -30,6 +30,12 @@ services:
       traefik.http.services.unifi.loadbalancer.serversTransport: insecure@file
 
   unifi-db:
+    # MongoDB 8.0+ refuses to start on Linux kernel >= 6.19 (tcmalloc/rseq bug,
+    # SERVER-121912) and exits with "known incompatibility with this version of
+    # MongoDB". On a kernel 7.x Proxmox host this crash-loops forever.
+    # MongoDB 7.0.x is unaffected and starts normally. Do NOT bump this to 8.x
+    # unless the host kernel is pinned below 6.19; moving an existing 8.x data
+    # dir back to 7.x needs a mongodump/restore, which requires a running 8.x.
     image: mongo:8.3.8
     container_name: unifi-db
     restart: unless-stopped

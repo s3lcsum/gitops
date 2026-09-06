@@ -193,6 +193,55 @@ endpoints:
       - "[STATUS] == 401"
       - "[CERTIFICATE_EXPIRATION] > 48h"
 
+  # --- Remaining Traefik-routed hosts (check-consistency requires a probe per host)
+  - name: "adguard"
+    url: https://adguard.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "adminer"
+    url: https://adminer.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "bazarr"
+    url: https://bazarr.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "calibre-api"
+    url: https://calibre-api.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "calibre-gui"
+    url: https://calibre-gui.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "ghostfolio"
+    url: https://ghostfolio.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "homepage"
+    url: https://homepage.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "profilarr"
+    url: https://profilarr.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "readarr"
+    url: https://readarr.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "status"
+    url: https://status.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "traefik"
+    url: https://traefik.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "wealthfolio"
+    url: https://wealthfolio.dominiksiejak.pl
+    <<: *defaults
+
   # --- External sanity check
   - name: "google"
     url: https://google.com

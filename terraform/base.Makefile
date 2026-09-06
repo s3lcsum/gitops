@@ -2,7 +2,7 @@
 
 # Shared OpenTofu make targets for terraform/* modules.
 
-.PHONY: help header init plan apply destroy validate fmt pre-apply pre-destroy help-migrate-tfc migrate-tfc-pull migrate-tfc-push
+.PHONY: help header init plan apply destroy validate fmt check clean pre-apply pre-destroy help-migrate-tfc migrate-tfc-pull migrate-tfc-push
 .DEFAULT_GOAL := help
 
 # TFC → GCS (OpenTofu cannot migrate automatically). Run from this module directory, e.g. cd terraform/portainer && make migrate-tfc-pull
@@ -89,3 +89,21 @@ plan: init ## Create an execution plan
 apply: init ## Apply the configuration (with auto-approve)
 	@$(MAKE) header CMD="tofu apply -auto-approve $(TOFU_ARGS)"
 	@tofu apply -auto-approve $(TOFU_ARGS)
+
+validate: init ## Validate the configuration
+	@$(MAKE) header CMD="tofu validate"
+	@tofu validate
+
+fmt: ## Rewrite .tf files to canonical format (recursive)
+	@$(MAKE) header CMD="tofu fmt -recursive"
+	@tofu fmt -recursive
+
+check: validate fmt ## Validate + format (the pre-apply gate in AGENTS.md)
+	@echo "check: ok"
+
+clean: ## Remove local OpenTofu working dir (state lives in GCS)
+	@rm -rf .terraform
+
+destroy: init ## DESTROY all resources managed by this module
+	@$(MAKE) header CMD="tofu destroy -auto-approve $(TOFU_ARGS)"
+	@tofu destroy -auto-approve $(TOFU_ARGS)

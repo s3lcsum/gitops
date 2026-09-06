@@ -19,6 +19,12 @@ include $(GIT_ROOT)/terraform/base.Makefile
 
 POSTGRES_TUNNEL_LOCAL_PORT ?= 15432
 
+# Postgres binds 127.0.0.1:5432 on the Portainer host by intent, so the host/port in
+# defaults.auto.tfvars is unreachable from any other machine and plain `make plan`
+# dies with "connection refused". Default to the tunnel; export
+# POSTGRES_SSH_TARGET= (empty) to force a direct connection.
+POSTGRES_SSH_TARGET ?= portainer
+
 define POSTGRES_TUNNEL_RUN
 bash -c 'set -euo pipefail; ssh -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -N -L 127.0.0.1:$(POSTGRES_TUNNEL_LOCAL_PORT):127.0.0.1:5432 "$(POSTGRES_SSH_TARGET)" & pid=$$!; trap "kill $$pid 2>/dev/null; wait $$pid 2>/dev/null || true" EXIT INT TERM; sleep 0.4; $(1) -var=postgres_host=127.0.0.1 -var=postgres_port=$(POSTGRES_TUNNEL_LOCAL_PORT)'
 endef
