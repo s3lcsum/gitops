@@ -40,5 +40,9 @@ locals {
       username = "ghostfolio_user"
       database = "ghostfolio_db"
     }
+    infisical = {
+      username = "infisical_user"
+      database = "infisical_db"
+    }
   }
 }

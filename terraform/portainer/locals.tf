@@ -18,6 +18,7 @@ locals {
     "grafana-synthetic-agent",
     "hass",
     "homepage",
+    "infisical",
     "mediabox",
     "monitoring",
     "n8n",

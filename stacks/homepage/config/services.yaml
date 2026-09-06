@@ -55,6 +55,11 @@
         href: https://vault.dominiksiejak.pl
         description: Secrets engine
 
+    - Infisical:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/infisical.png
+        href: https://infisical.dominiksiejak.pl
+        description: Secrets management
+
     - Vaultwarden:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/vaultwarden.png
         href: https://vaultwarden.dominiksiejak.pl
