@@ -311,6 +311,16 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyfin.svg"
       skip_path_regex = "^/(health|socket|System|Users/authenticate|Users/authenticateByName|Sessions|QuickConnect|Branding|web/).*"
     }
+    # Traefik does forward-auth (authentik@docker) and injects the upstream
+    # basic credential, so the browser never sees an auth prompt.
+    opencode = {
+      name            = "OpenCode"
+      external_host   = "https://opencode.dominiksiejak.pl"
+      internal_host   = "http://192.168.89.200:4096"
+      launch_url      = "https://opencode.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/opencode.png"
+      skip_path_regex = ""
+    }
   }
 
   #───────────────────────────────────────────────────────────────────────────────

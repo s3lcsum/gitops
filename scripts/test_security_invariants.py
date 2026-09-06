@@ -2,6 +2,7 @@
 """Fail CI if high-severity gitops regressions land again."""
 
 from pathlib import Path
+import re
 import sys
 
 REPO = Path(__file__).resolve().parent.parent
@@ -15,11 +16,18 @@ def check(cond, msg):
 
 dyn = (REPO / 'stacks/traefik/dynamic.yaml').read_text()
 check('b3BlbmNvZGU6c3VwZXItc2VjcmV0' not in dyn, 'opencode basic auth secret is hardcoded in dynamic.yaml')
-check("Authorization: \"Basic " not in dyn, 'Traefik must not inject a static Authorization header')
-check('basicAuth:' in dyn and 'OPENCODE_HTPASSWD' in dyn, 'opencode route must use Traefik basicAuth from env')
+check('Basic b3BlbmNvZGU6' not in dyn, 'Traefik must not inject a static Authorization header')
+# Edge auth for opencode is Authentik SSO; Traefik only injects the upstream
+# credential from env so the browser never sees a prompt.
+opencode_router = re.search(r'\n    opencode:\n(?:.*\n)*?      service: opencode', dyn)
+opencode_router = opencode_router.group(0) if opencode_router else ''
+check('authentik@docker' in opencode_router, 'opencode route must use Authentik forward-auth')
+check('opencode-upstream-auth@file' in opencode_router, 'opencode route must inject the upstream basic credential')
+check('opencode-basic-auth' not in dyn, 'opencode must not prompt for Traefik basicAuth')
 check('webhook-rate-limit' in dyn, 'n8n webhook router must be rate-limited')
 ex = (REPO / 'stacks/traefik/traefik.env.example').read_text()
-check('OPENCODE_HTPASSWD=opencode:$$2y$$' in ex, 'htpasswd example must escape $ for Compose interpolation')
+check('OPENCODE_UPSTREAM_BASIC=' in ex, 'traefik.env.example must document OPENCODE_UPSTREAM_BASIC')
+check('OPENCODE_HTPASSWD' not in ex, 'retired OPENCODE_HTPASSWD must not be documented anymore')
 
 n8n = (REPO / 'stacks/n8n/compose.yaml').read_text()
 check('N8N_SSRF_PROTECTION_ENABLED: true' in n8n, 'n8n SSRF protection must be enabled')

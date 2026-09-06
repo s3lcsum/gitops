@@ -43,15 +43,13 @@ http:
           X-Authentik-Entitlements: ""
           X-Authentik-Jwt: ""
 
-    # htpasswd line from env (bcrypt). Generate:
-    #   htpasswd -nbB opencode 'the-password'
-    # Store as OPENCODE_HTPASSWD in /opt/traefik/traefik.env — never in git.
-    opencode-basic-auth:
-      basicAuth:
-        users:
-          - '{{ env "OPENCODE_HTPASSWD" }}'
-        realm: opencode
-        removeHeader: true
+    # opencode serve runs with OPENCODE_SERVER_PASSWORD; Traefik injects the
+    # upstream credential so the browser never gets an auth prompt (edge auth
+    # is Authentik forward-auth on the router).
+    opencode-upstream-auth:
+      headers:
+        customRequestHeaders:
+          Authorization: 'Basic {{ env "OPENCODE_UPSTREAM_BASIC" }}'
 
     crowdsec-bouncer:
       plugin:
@@ -106,7 +104,8 @@ http:
       entryPoints:
         - websecure
       middlewares:
-        - opencode-basic-auth@file
+        - authentik@docker
+        - opencode-upstream-auth@file
         - rate-limit@file
       service: opencode
 

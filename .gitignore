@@ -87,4 +87,3 @@ stacks/adguard/conf/AdGuardHome.yaml
 
 # Mosquitto password file — host-managed (see mqtt.env.example)
 stacks/hass/mosquitto.passwd
-stacks/traefik/.opencode-basic.pass
