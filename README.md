@@ -23,7 +23,7 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 | **Edge** | Traefik + CrowdSec on direct WAN; Cloudflare Tunnel/Access for specific hosts | `stacks/traefik/`, `stacks/cloudflared/`, `terraform/cloudflare/` |
 | **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + OpenTofu (`terraform/authentik/`) |
 | **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + OpenTofu (`terraform/netbox/`) |
-| **Secrets** | HashiCorp Vault (retiring) + Vaultwarden | `stacks/vault/`, `stacks/vaultwarden/` — migrating toward Infisical |
+| **Secrets** | HashiCorp Vault (retiring) + Infisical + Vaultwarden | `stacks/vault/`, `stacks/infisical/`, `stacks/vaultwarden/` — Infisical is the Vault replacement target |
 | **Monitoring** | Gatus (status), Grafana + VictoriaMetrics (`stacks/monitoring/`) via CasC dashboards/alerting, Blackbox synthetic probes, Synthetic Agent | `stacks/gatus/`, `stacks/monitoring/`, `terraform/grafana/`, `stacks/grafana-synthetic-agent/` |
 | **Media** | Jellyfin + *arr stack + downloaders | `stacks/mediabox/` |
 
@@ -64,6 +64,7 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | [Gatus](https://github.com/TwiN/gatus) | Uptime / status page |
 | [Gitea](https://github.com/go-gitea/gitea) | Git hosting |
 | [Homepage](https://gethomepage.dev/) | Dashboard (Docker label auto-discovery) |
+| [Infisical](https://infisical.com/) | Secrets management (Vault replacement target) |
 | [Grafana Synthetic Monitoring Agent](https://github.com/grafana/synthetic-monitoring-agent) | Synthetic checks (Grafana Cloud–oriented agent) |
 | [Home Assistant stack](https://www.home-assistant.io/) | HA, Zigbee2MQTT, Mosquitto, optional [HA Time Machine](https://github.com/saihgupr/homeassistanttimemachine) (compose profile) |
 | **Mediabox** (see below) | Media + *arr + VPN-routed downloaders |
@@ -72,7 +73,7 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | [NetBox](https://github.com/netbox-community/netbox) | IPAM / DCIM |
 | [PostgreSQL](https://www.postgresql.org/) | Shared database host |
 | [Traefik](https://traefik.io/) | Reverse proxy (+ CrowdSec integration in config) |
-| [Vault](https://www.hashicorp.com/products/vault) | Secrets |
+| [Vault](https://www.hashicorp.com/products/vault) | Secrets (retiring) |
 | [Vaultwarden](https://github.com/dani-garcia/vaultwarden) | Bitwarden-compatible passwords |
 | [WatchYourLAN](https://github.com/aceberg/watchyourlan) | LAN host visibility |
 
@@ -188,7 +189,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - **`.env.example` files**: Committed to the repo — contain structure and placeholder values
 - **`.env` files**: Never committed — contain actual secrets (gitignored)
 - **Sensitive Terraform variables**: Stored in `defaults.auto.tfvars` or passed via environment
-- **Vault (retiring):** still used for Postgres static creds + some OAuth KV. Target is Infisical (or simpler) — see roadmap. Do not tear down Vault in a drive-by change.
+- **Vault (retiring) / Infisical:** Vault still used for Postgres static creds + some OAuth KV. Infisical stack is up at `infisical.dominiksiejak.pl` (central Postgres + Redis sidecar); cutover of consumers is still TODO — do not tear down Vault until that lands.
 
 ---
 
@@ -214,6 +215,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── grafana-synthetic-agent/
 │   ├── hass/
 │   ├── homepage/
+│   ├── infisical/
 │   ├── mediabox/
 │   ├── monitoring/
 │   ├── n8n/
@@ -259,7 +261,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Add NUT/UPS integration
 - [x] (retroactively added) KIND cluster on vibe + self-managed Argo CD
 - [ ] k3s single-node cluster
-- [ ] Retire HashiCorp Vault → Infisical (or simpler) for secrets / DB passwords
+- [x] (retroactively added) Stand up Infisical stack (`stacks/infisical/`) as Vault replacement target
+- [ ] Cut over secrets / DB passwords from HashiCorp Vault → Infisical; then retire Vault
 - [ ] Move `terraform/cloudflare` (zone/tunnel/Access/Workers) to a private sibling repo
 - [ ] Self-hosted LLM (Ollama)
 - [ ] Separated subnets (IoT isolation)
@@ -268,6 +271,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 06.09.2026
+
+Stood up **Infisical** as the Vault replacement target — `stacks/infisical/` (pinned `infisical/infisical:v0.165.6` + Redis sidecar), Traefik at `infisical.dominiksiejak.pl`, DB via central Postgres (`infisical_db` / `infisical_user` in postgres+vault locals), Authentik OAuth2 app ready for licensed OIDC SSO later. Vault stays until consumer cutover.
 
 ### 30.08.2026
 

@@ -98,6 +98,15 @@ locals {
         "http://localhost:8250/oidc/callback",
       ]
     }
+    infisical = {
+      name       = "Infisical"
+      launch_url = "https://infisical.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/infisical.svg"
+      # Native OIDC SSO is an Infisical Pro/self-hosted-license feature; app is ready for when enabled.
+      redirect_uris = [
+        "https://infisical.dominiksiejak.pl/api/v1/sso/oidc/callback",
+      ]
+    }
     gitea = {
       name       = "Gitea"
       launch_url = "https://git.dominiksiejak.pl"

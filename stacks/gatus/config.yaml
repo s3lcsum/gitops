@@ -70,6 +70,10 @@ endpoints:
     url: https://vault.dominiksiejak.pl
     <<: *defaults
 
+  - name: "infisical"
+    url: https://infisical.dominiksiejak.pl
+    <<: *defaults
+
   - name: "netbox"
     url: https://netbox.dominiksiejak.pl
     <<: *defaults

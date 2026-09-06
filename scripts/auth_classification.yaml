@@ -35,6 +35,7 @@ native-oidc:
   - grafana
   - hass             # Home Assistant
   - hermes
+  - infisical        # native login; OIDC SSO needs Infisical license
   - n8n              # UI OIDC; /webhook* bypasses Authentik by design
   - nas              # Synology DSM OIDC
   - netbox
