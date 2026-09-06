@@ -274,6 +274,14 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ### 06.09.2026
 
+Housekeeping pass — unstuck `make apply` and a few crash loops:
+- **Infisical actually boots now.** It was in `portainer/locals.tf` without `stacks/infisical/infisical.env`, so Portainer could never start it and every `make apply` re-planned `active = false -> true` forever. Added the env file (gitignored, rsynced like every other stack), and pointed `REDIS_URL` at `infisical-redis` — `gf-redis` also claims the `redis` alias on the shared `database` network, so plain `redis` authenticated against ghostfolio's instance. Dropped Infisical from the Vault static roles (Vault is retiring; a static role would rotate the password out from under the `.env`). SMTP reuses the vaultwarden relay.
+- **Gitea is back.** Both bleve indexes (`issues.bleve`, `repos.bleve`) were built by a different Gitea version and failed with `camelCaseKeepWhole` / `codeTokenizer` not registered. Renamed them; Gitea regenerates on boot.
+- **unifi-db pinned to `mongo:7.0.40`.** MongoDB 8.0+ refuses to start on Linux kernel >= 6.19 (tcmalloc/`rseq`, [SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)) and crash-looped on the 7.x Proxmox kernel. 7.0.x is unaffected. **The old UniFi database was replaced with a fresh one** — 8.x data can't be read by 7.x, and `mongodump` needs a running 8.x, so devices need re-adopting. Don't bump this back to 8.x unless the host kernel is pinned below 6.19.
+- Tooling: `terraform/base.Makefile` grew the `validate`/`fmt`/`check`/`clean`/`destroy` targets AGENTS.md always claimed (`make check` was broken in all 13 modules); `terraform/postgres` now defaults `POSTGRES_SSH_TARGET=portainer` since Postgres is localhost-only on the host; `check-consistency.py` got an `EXTERNAL_PROBES` allowlist so `--fix` stops deleting the google/inpost/easypack24/usertesting WAN canaries; gatus now probes all 12 routed hosts it was missing.
+
+### 06.09.2026
+
 Stood up **Infisical** as the Vault replacement target — `stacks/infisical/` (pinned `infisical/infisical:v0.165.6` + Redis sidecar), Traefik at `infisical.dominiksiejak.pl`, DB via central Postgres (`infisical_db` / `infisical_user` in postgres+vault locals), Authentik OAuth2 app ready for licensed OIDC SSO later. Vault stays until consumer cutover.
 
 ### 30.08.2026
