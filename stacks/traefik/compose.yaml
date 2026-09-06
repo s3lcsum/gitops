@@ -2,7 +2,7 @@
 
 services:
   traefik:
-    image: ghcr.io/traefik/traefik:v3.7.11
+    image: ghcr.io/traefik/traefik:v3.7.13
     container_name: traefik
     restart: unless-stopped
     user: root
@@ -30,7 +30,7 @@ services:
       retries: 3
 
   crowdsec:
-    image: ghcr.io/crowdsecurity/crowdsec:v1.7.8
+    image: ghcr.io/crowdsecurity/crowdsec:v1.8.1
     container_name: crowdsec
     restart: unless-stopped
     networks:
@@ -49,7 +49,7 @@ services:
       retries: 3
 
   error-pages:
-    image: ghcr.io/tarampampam/error-pages:4.2.4
+    image: ghcr.io/tarampampam/error-pages:4.2.5
     restart: unless-stopped
     container_name: error-pages
     networks:

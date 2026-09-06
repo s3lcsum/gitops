@@ -255,7 +255,7 @@ services:
   # 📊 Arr-stack Prometheus exporter
   scraparr:
     <<: *service-defaults
-    image: ghcr.io/thecfu/scraparr:3.1.0
+    image: ghcr.io/thecfu/scraparr:3.2.0
     container_name: scraparr
     env_file:
       - /opt/mediabox/scraparr.env
@@ -271,7 +271,7 @@ services:
   # 📚 Book acquisition (Readarr fork; downloads into CWA's ingest dir)
   readarr:
     <<: *service-defaults
-    image: ghcr.io/faustvii/readarr:0.9.1
+    image: ghcr.io/faustvii/readarr:0.10.0
     container_name: readarr
     depends_on:
       qbittorrent:
