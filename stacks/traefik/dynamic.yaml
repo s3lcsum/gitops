@@ -26,6 +26,17 @@ http:
         average: 10
         burst: 20
 
+    # LAN-only gate — WAN clients get 403. RouterOS DNAT preserves the client IP
+    # and Traefik only honours X-Forwarded-For from trusted peers, so a public
+    # client cannot spoof its way past this.
+    lan-only:
+      ipAllowList:
+        sourceRange:
+          - "127.0.0.1/32"
+          - "10.0.0.0/8"
+          - "172.16.0.0/12"
+          - "192.168.0.0/16"
+
     remote:
       headers:
         customRequestHeaders:

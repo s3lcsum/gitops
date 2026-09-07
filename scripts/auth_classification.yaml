@@ -3,45 +3,44 @@
 #   forward-auth — Traefik middleware authentik@docker
 #   native-oidc  — app handles OIDC/SSO itself (or native admin login + OIDC)
 #   public       — intentional unauthenticated / edge-only auth (basicAuth, IdP, catalog)
-#   lan-only     — not meant for WAN (none today)
+#   lan-only     — not meant for WAN (Traefik lan-only@file ipAllowList)
 #
 # Adding a new Traefik host without classifying it fails `make consistency` / pre-commit.
 
 forward-auth:
-  - adguard
-  - adminer
-  - bazarr
+  - adguard           # still WAN: /dns-query (DoH) is served to external clients
   - calibre-gui
   - dozzle
   - hass-timemachine
-  - jellyfin
   - lan
   - metrics
   - opencode          # Authentik SSO at the edge; Traefik injects upstream basic
-  - profilarr
-  - prowlarr
-  - qbittorrent
-  - radarr
-  - readarr
-  - sabnzbd
-  - sonarr
   - traefik
   - zigbee2mqtt-usb
   - zigbee2mqtt-wifi
 
 native-oidc:
+  - bazarr
   - calibre          # CWA native OIDC
   - git              # Gitea
   - grafana
   - hass             # Home Assistant
   - hermes
+  - jellyfin
   - n8n              # UI OIDC; /webhook* bypasses Authentik by design
   - nas              # Synology DSM OIDC
   - netbox
   - portainer
+  - profilarr
+  - prowlarr
   - proxmox
+  - qbittorrent
+  - radarr
+  - readarr
   - router           # RouterOS native SSO
+  - sabnzbd
   - seerr
+  - sonarr
   - vault
   - vaultwarden
   - wealthfolio
@@ -53,4 +52,5 @@ public:
   - status           # Gatus status page
   - unifi            # controller local auth
 
-lan-only: []
+lan-only:
+  - adminer          # DB login form — no auth of its own, WAN clients get 403
