@@ -1,10 +1,14 @@
 services:
   firebird:
-    image: jacobalberty/firebird:2.5.9-sc
+    image: firebirdsql/firebird:5.0.4
     container_name: v-maintenance-firebird
     restart: unless-stopped
     environment:
-      - ISC_PASSWORD=${ISC_PASSWORD}
+      - FIREBIRD_ROOT_PASSWORD=${ISC_PASSWORD}
+      # Remote clients still speak the Firebird 2.5 wire protocol: keep
+      # Legacy_Auth enabled and new FB3+ datatypes mapped down to 2.5 types.
+      - FIREBIRD_USE_LEGACY_AUTH=true
+      - FIREBIRD_CONF_DataTypeCompatibility=2.5
     security_opt:
       - no-new-privileges:true
     mem_limit: 512m
@@ -12,7 +16,13 @@ services:
     networks:
       - proxy
     volumes:
-      - firebird-data:/firebird/data
+      - firebird-data:/var/lib/firebird/data
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 5 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/3050'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 networks:
   proxy:
