@@ -1,6 +1,6 @@
 services:
   wealthfolio:
-    image: wealthfolio/wealthfolio:3.7
+    image: wealthfolio/wealthfolio:3.8
     container_name: wealthfolio
     restart: unless-stopped
     env_file:
