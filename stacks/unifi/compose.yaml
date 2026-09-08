@@ -36,6 +36,7 @@ services:
     # Do NOT bump to 8.x unless the host kernel is pinned below 6.19. Going
     # back afterwards needs mongodump/restore out of a running 8.x, which is
     # impossible while it cannot boot, so it means a fresh DB (see README).
+    # Re-checked 2026-09-08: portainer host still on 7.0.14-15-pve, still blocked.
     image: mongo:7.0.40
     container_name: unifi-db
     restart: unless-stopped
