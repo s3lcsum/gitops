@@ -188,6 +188,15 @@ def parse_compose_images(compose_path):
     current_service = None
     in_service_block = False
     anchor_images = {}  # anchor_name -> image_str
+    pending_alias = None  # image inherited by the current service via `<<: *anchor`
+
+    def flush_service():
+        """Emit an image inherited from a merge-key anchor, if no explicit one won."""
+        nonlocal current_service, pending_alias
+        if current_service and pending_alias:
+            images.append((current_service, pending_alias))
+        current_service = None
+        pending_alias = None
 
     with open(compose_path) as f:
         lines = f.readlines()
@@ -211,8 +220,18 @@ def parse_compose_images(compose_path):
         # Detect service definitions:  service_name:
         svc_match = re.match(r'^\s{2}(\w[\w-]*):\s*$', stripped)
         if svc_match:
+            flush_service()
             current_service = svc_match.group(1)
             in_service_block = current_service is not None
+            continue
+
+        # Merge key:  <<: *anchor - the service inherits (and may override)
+        # everything in the anchor block, including `image:`.
+        merge_match = re.match(r'^\s*<<:\s*\*(\w+)', stripped)
+        if merge_match and current_service:
+            resolved = anchor_images.get(merge_match.group(1))
+            if resolved:
+                pending_alias = resolved
             continue
 
         # Image line
@@ -226,12 +245,16 @@ def parse_compose_images(compose_path):
                 if resolved:
                     images.append((current_service, resolved))
             else:
+                # An explicit image always beats the merged-in anchor value.
                 images.append((current_service, img_val))
+            pending_alias = None
             continue
 
         # Detect end of a service block (next top-level key)
         if re.match(r'^\w', stripped) and current_service and not stripped.startswith(' '):
-            current_service = None
+            flush_service()
+
+    flush_service()
 
     return images
 
@@ -259,6 +282,7 @@ def check_ghcr(registry, image_path, current_tag):
         'adminer/adminer': 'vrana/adminer',
         'prometheuscommunity/postgres-exporter': 'prometheus-community/postgres_exporter',
         'hashicorp/vault': 'hashicorp/vault',
+        'goauthentik/server': 'goauthentik/authentik',
     }
 
     repo_path = ghcr_repo_mappings.get(image_path, image_path)
@@ -279,6 +303,11 @@ def check_ghcr(registry, image_path, current_tag):
         out2, err2, rc2 = sh(['gh', 'api', api_url, '--jq', '.[].name'], timeout=20)
         if rc2 == 0:
             tags = [t.strip() for t in out2.split('\n') if t.strip()]
+
+    # Some repos prefix release tags with a path (e.g. authentik's
+    # 'version/2026.8.1'). Strip it when what remains is version-like.
+    tags = [re.sub(r'^[A-Za-z][\w.-]*/', '', t) if re.match(r'^[A-Za-z][\w.-]*/\d', t) else t
+            for t in tags]
 
     # n8n tags are "n8n@x.y.z" - strip the prefix
     if is_n8n:
