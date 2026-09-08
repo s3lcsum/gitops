@@ -43,7 +43,8 @@ services:
       - /opt/traefik/crowdsec-acquis.yaml:/etc/crowdsec/acquis.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:6060/health"]
+      # crowdsec 1.8.x dropped curl from the image; cscli probes the LAPI directly
+      test: ["CMD", "cscli", "lapi", "status"]
       interval: 30s
       timeout: 5s
       retries: 3
