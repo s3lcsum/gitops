@@ -62,7 +62,14 @@ AUTH_NO_HTTP_ROUTE = {'ldap', 'routeros', 'router'} | EXTERNAL_ROUTED
 AUTH_OK_NO_ROUTE = set()
 
 # Homepage hosts that intentionally have no Authentik app (native auth, basicAuth, OPDS, IdP).
-HOMEPAGE_NO_AUTH = {'auth', 'calibre-api', 'unifi'}
+HOMEPAGE_NO_AUTH = {
+    'auth', 'calibre-api', 'unifi',
+    # arr stack + Jellyfin own their auth now — no Authentik proxy provider
+    'bazarr', 'jellyfin', 'profilarr', 'prowlarr', 'qbittorrent', 'radarr',
+    'readarr', 'sabnzbd', 'sonarr',
+    # LAN-gated via lan-only@file, not an Authentik app
+    'adminer',
+}
 HOST_RE = re.compile(r'https?://([a-z0-9][a-z0-9-]*)\.' + re.escape(DOMAIN) + r'(?:/|["\s]|$)')
 RULE_LABEL_RE = re.compile(r'traefik\.http\.routers\.([a-z0-9_-]+)\.rule:\s*(.+)')
 ROUTER_RE = re.compile(r'traefik\.http\.routers\.([a-z0-9_-]+)\.')

@@ -146,14 +146,6 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/victoriametrics.svg"
       skip_path_regex = ""
     }
-    qbittorrent = {
-      name            = "qBittorrent"
-      external_host   = "https://qbittorrent.dominiksiejak.pl"
-      internal_host   = "http://qbittorrent:8080"
-      launch_url      = "https://qbittorrent.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/qbittorrent.svg"
-      skip_path_regex = ""
-    }
     dozzle = {
       name            = "Dozzle"
       external_host   = "https://dozzle.dominiksiejak.pl"
@@ -161,22 +153,6 @@ locals {
       launch_url      = "https://dozzle.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/dozzle.svg"
       skip_path_regex = ""
-    }
-    radarr = {
-      name            = "Radarr"
-      external_host   = "https://radarr.dominiksiejak.pl"
-      internal_host   = "http://radarr:7878"
-      launch_url      = "https://radarr.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/radarr.svg"
-      skip_path_regex = "^/api/.*"
-    }
-    sonarr = {
-      name            = "Sonarr"
-      external_host   = "https://sonarr.dominiksiejak.pl"
-      internal_host   = "http://sonarr:8989"
-      launch_url      = "https://sonarr.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sonarr.svg"
-      skip_path_regex = "^/api/.*"
     }
     # calibre.dominiksiejak.pl (CWA) is NOT forward-auth'd — CWA handles its own
     # auth: local users + native OIDC SSO via the "calibre-web-automated" app.
@@ -187,14 +163,6 @@ locals {
       internal_host   = "http://calibre:8080"
       launch_url      = "https://calibre-gui.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/calibre.svg"
-      skip_path_regex = ""
-    }
-    sabnzbd = {
-      name            = "SABnzbd"
-      external_host   = "https://sabnzbd.dominiksiejak.pl"
-      internal_host   = "http://sabnzbd:8085"
-      launch_url      = "https://sabnzbd.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sabnzbd.svg"
       skip_path_regex = ""
     }
     traefik = {
@@ -237,14 +205,6 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/home-assistant.svg"
       skip_path_regex = ""
     }
-    adminer = {
-      name            = "Adminer"
-      external_host   = "https://adminer.dominiksiejak.pl"
-      internal_host   = "http://adminer:8080"
-      launch_url      = "https://adminer.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/adminer.svg"
-      skip_path_regex = ""
-    }
     adguard = {
       name          = "AdGuard"
       external_host = "https://adguard.dominiksiejak.pl"
@@ -253,46 +213,6 @@ locals {
       icon_url      = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/adguard-home.svg"
       # DoH only — /control is the admin API and must stay Authentik-gated.
       skip_path_regex = "^/dns-query.*"
-    }
-    bazarr = {
-      name            = "Bazarr"
-      external_host   = "https://bazarr.dominiksiejak.pl"
-      internal_host   = "http://bazarr:6767"
-      launch_url      = "https://bazarr.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/bazarr.svg"
-      skip_path_regex = "^/api/.*"
-    }
-    readarr = {
-      name            = "Readarr"
-      external_host   = "https://readarr.dominiksiejak.pl"
-      internal_host   = "http://readarr:8787"
-      launch_url      = "https://readarr.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/readarr.svg"
-      skip_path_regex = "^/api/.*"
-    }
-    prowlarr = {
-      name            = "Prowlarr"
-      external_host   = "https://prowlarr.dominiksiejak.pl"
-      internal_host   = "http://prowlarr:9696"
-      launch_url      = "https://prowlarr.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/prowlarr.svg"
-      skip_path_regex = "^/api/.*"
-    }
-    profilarr = {
-      name            = "Profilarr"
-      external_host   = "https://profilarr.dominiksiejak.pl"
-      internal_host   = "http://profilarr:6868"
-      launch_url      = "https://profilarr.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/profilarr.svg"
-      skip_path_regex = "^/api/.*"
-    }
-    jellyfin = {
-      name            = "Jellyfin"
-      external_host   = "https://jellyfin.dominiksiejak.pl"
-      internal_host   = "http://jellyfin:8096"
-      launch_url      = "https://jellyfin.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyfin.svg"
-      skip_path_regex = "^/(health|socket|System|Users/authenticate|Users/authenticateByName|Sessions|QuickConnect|Branding|web/).*"
     }
     # Traefik does forward-auth (authentik@docker) and injects the upstream
     # basic credential, so the browser never sees an auth prompt.
@@ -330,12 +250,6 @@ locals {
     "seerr",
     "n8n",
     "netbox",
-    "qbittorrent",
-    "radarr",
-    "sonarr",
-    "bazarr",
-    "readarr",
-    "prowlarr",
     "synology",
     "vaultwarden",
     "victoriametrics",
