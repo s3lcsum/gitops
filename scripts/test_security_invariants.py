@@ -31,7 +31,9 @@ check('OPENCODE_HTPASSWD' not in ex, 'retired OPENCODE_HTPASSWD must not be docu
 
 n8n = (REPO / 'stacks/n8n/compose.yaml').read_text()
 check('N8N_SSRF_PROTECTION_ENABLED: true' in n8n, 'n8n SSRF protection must be enabled')
-check('N8N_SSRF_ALLOWED_IP_RANGES: "192.168.89.1/32"' in n8n, 'n8n must allowlist the RouterOS LAN IP for SSRF')
+_ssrf = re.search(r'N8N_SSRF_ALLOWED_IP_RANGES:\s*"([^"]*)"', n8n)
+check(bool(_ssrf) and '192.168.89.1/32' in _ssrf.group(1).split(','),
+      'n8n must allowlist the RouterOS LAN IP for SSRF')
 check('N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"' in n8n, 'n8n Code nodes must not read $env')
 check('authentik@docker' not in n8n, 'n8n UI must not use a second Authentik proxy app')
 ex_n8n = (REPO / 'stacks/n8n/n8n.env.example').read_text()
