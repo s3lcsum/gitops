@@ -80,7 +80,7 @@ services:
   # 🌐 Cloudflare bypass for indexers
   flaresolverr:
     <<: *service-defaults
-    image: ghcr.io/flaresolverr/flaresolverr:v3.5.0
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
     container_name: flaresolverr
     volumes:
       - flaresolverr_config:/app/data
