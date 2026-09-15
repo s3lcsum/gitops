@@ -269,6 +269,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Changelog
 
+### 07.09.2026
+
+Removed **v-maintenance** — the Firebird box nobody talks to anymore. Gone: `stacks/v-maintenance/` (compose + env), the `v-maintenance` entry in `portainer/locals.tf`, the `templatefile()` hack in `portainer/main.tf` that inlined `ISC_PASSWORD` (the last `hashicorp/local` user there, so the provider went with it), and the opt-in `firebird.dominiksiejak.pl` slot in the Cloudflare `tunnel_apps` map. It had no Traefik host, so nothing else referenced it — no auth class, homepage tile, gatus probe or blackbox job to clean up. Containers and the `firebird-data` volume get dropped on the next `make apply` in `terraform/portainer`.
+
 ### 06.09.2026
 
 Removed **Ghostfolio** — Wealthfolio covers personal finance now. Gone: `stacks/ghostfolio/` (compose + `gf-redis` sidecar), the `ghostfolio` Authentik OAuth2 app, `ghostfolio_db` / `ghostfolio_user` in the postgres + vault locals, homepage tile, gatus probe, blackbox job, AdGuard DNS rewrite, and its auth classification. Containers and the Postgres DB were dropped with it.

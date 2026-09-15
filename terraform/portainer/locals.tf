@@ -27,7 +27,6 @@ locals {
     "vault",
     "vaultwarden",
     "wealthfolio",
-    "v-maintenance",
     "watchyourlan",
   ]
 }
