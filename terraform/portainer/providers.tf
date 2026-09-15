@@ -6,10 +6,6 @@ terraform {
       source  = "portainer/portainer"
       version = "1.35.0"
     }
-    local = {
-      source  = "hashicorp/local"
-      version = "2.9.0"
-    }
   }
 
   backend "gcs" {
