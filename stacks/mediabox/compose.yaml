@@ -159,7 +159,7 @@ services:
   # 🎥 Subtitle management
   bazarr:
     <<: *service-defaults
-    image: linuxserver/bazarr:1.6.0
+    image: lscr.io/linuxserver/bazarr:1.6.1
     container_name: bazarr
     depends_on:
       sonarr:
