@@ -108,7 +108,7 @@ services:
   # 🎥 Movie automation
   radarr:
     <<: *service-defaults
-    image: lscr.io/linuxserver/radarr:6.3.0
+    image: lscr.io/linuxserver/radarr:6.4.4
     container_name: radarr
     depends_on:
       qbittorrent:
@@ -132,7 +132,7 @@ services:
   # 📺 TV series automation
   sonarr:
     <<: *service-defaults
-    image: ghcr.io/linuxserver/sonarr:4.0.19
+    image: ghcr.io/linuxserver/sonarr:4.0.20
     container_name: sonarr
     depends_on:
       qbittorrent:
