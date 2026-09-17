@@ -179,7 +179,7 @@
           ]
         },
         "jsonBody": "={ \"address\": \"{{ $json.ip }}\", \"list\": \"allowed-wan\", \"comment\": \"ttl:{{ $json.expires_ms }}\", \"disabled\": false }",
-        "method": "PUT",
+        "method": "POST",
         "options": {},
         "sendBody": true,
         "sendHeaders": true,
