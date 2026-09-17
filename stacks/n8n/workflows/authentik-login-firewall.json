@@ -125,70 +125,27 @@
       "typeVersion": 2
     },
     {
-      "id": "load-routeros-env",
-      "name": "Load RouterOS Env",
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "apiUrl",
-              "name": "apiUrl",
-              "type": "string",
-              "value": "={{ $env.ROUTEROS_API_URL }}"
-            },
-            {
-              "id": "user",
-              "name": "user",
-              "type": "string",
-              "value": "={{ $env.ROUTEROS_API_USER }}"
-            },
-            {
-              "id": "pass",
-              "name": "pass",
-              "type": "string",
-              "value": "={{ $env.ROUTEROS_API_PASS }}"
-            }
-          ]
-        },
-        "includeOtherFields": true
-      },
-      "position": [1300, 120],
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4
-    },
-    {
-      "id": "compute-auth",
-      "name": "Compute Auth",
-      "parameters": {
-        "jsCode": "const prev = $input.first().json;\nconst auth = Buffer.from(String(prev.user) + ':' + String(prev.pass)).toString('base64');\nconst { user, pass, ...rest } = prev;\nreturn [{ json: { ...rest, auth_header: 'Basic ' + auth } }];"
-      },
-      "position": [1520, 120],
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2
-    },
-    {
       "id": "put-routeros",
       "name": "PUT to RouterOS",
       "parameters": {
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "={{ $json.auth_header }}"
-            }
-          ]
-        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
         "jsonBody": "={ \"address\": \"{{ $json.ip }}\", \"list\": \"allowed-wan\", \"comment\": \"ttl:{{ $json.expires_ms }}\", \"disabled\": false }",
         "method": "POST",
         "options": {},
         "sendBody": true,
-        "sendHeaders": true,
         "specifyBody": "json",
-        "url": "={{ $json.apiUrl }}/ip/firewall/address-list"
+        "url": "http://192.168.89.1/rest/ip/firewall/address-list"
       },
       "position": [1740, 120],
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "eTkZPZyTIeqFEZyR",
+          "name": "RouterOS n8n-admin"
+        }
+      }
     },
     {
       "id": "respond-success",
@@ -325,7 +282,7 @@
         [
           {
             "index": 0,
-            "node": "Load RouterOS Env",
+            "node": "PUT to RouterOS",
             "type": "main"
           }
         ],
@@ -333,28 +290,6 @@
           {
             "index": 0,
             "node": "Respond Bad IP",
-            "type": "main"
-          }
-        ]
-      ]
-    },
-    "Load RouterOS Env": {
-      "main": [
-        [
-          {
-            "index": 0,
-            "node": "Compute Auth",
-            "type": "main"
-          }
-        ]
-      ]
-    },
-    "Compute Auth": {
-      "main": [
-        [
-          {
-            "index": 0,
-            "node": "PUT to RouterOS",
             "type": "main"
           }
         ]
