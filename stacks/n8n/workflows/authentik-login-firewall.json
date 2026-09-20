@@ -10,39 +10,19 @@
         "httpMethod": "POST",
         "options": {},
         "path": "authentik-login",
-        "responseMode": "responseNode"
+        "responseMode": "responseNode",
+        "authentication": "headerAuth"
       },
       "position": [200, 300],
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "webhookId": "63c51090-87d9-4f00-9c18-eec357240fba"
-    },
-    {
-      "id": "validate-secret",
-      "name": "Validate Secret",
-      "parameters": {
-        "conditions": {
-          "combinator": "and",
-          "conditions": [
-            {
-              "leftValue": "={{ $json.headers['x-webhook-secret'] }}",
-              "operator": {
-                "operation": "equals",
-                "type": "string"
-              },
-              "rightValue": "={{ $env.AUTHENTIK_WEBHOOK_SECRET }}"
-            }
-          ],
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict"
-          }
+      "webhookId": "63c51090-87d9-4f00-9c18-eec357240fba",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "u7SVmRfRlNAtiyUT",
+          "name": "authentik-webhook-secret"
         }
-      },
-      "position": [420, 300],
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2
+      }
     },
     {
       "id": "check-login-event",
@@ -102,7 +82,7 @@
                 "operation": "regex",
                 "type": "string"
               },
-              "rightValue": "^(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$|^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^(?:[0-9a-fA-F]{1,4}:){1,7}:$|^::(?:[0-9a-fA-F]{1,4}:){0,6}[0-9a-fA-F]{0,4}$|^(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{0,4}$|^(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}$"
+              "rightValue": "^(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$|^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::(?:[0-9a-fA-F]{1,4}:){0,6}[0-9a-fA-F]{0,4}$|^(?:[0-9a-fA-F]{1,4}:){1,7}:$|^(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{0,4}$|^(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}$"
             },
             {
               "leftValue": "={{ $json.ip }}",
@@ -162,20 +142,6 @@
       "typeVersion": 1.1
     },
     {
-      "id": "respond-secret-fail",
-      "name": "Respond Secret Fail",
-      "parameters": {
-        "options": {
-          "responseCode": 403
-        },
-        "respondWith": "json",
-        "responseBody": "={ \"ok\": false, \"detail\": \"forbidden\" }"
-      },
-      "position": [640, 500],
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.1
-    },
-    {
       "id": "respond-not-login",
       "name": "Respond Not Login",
       "parameters": {
@@ -224,25 +190,7 @@
         [
           {
             "index": 0,
-            "node": "Validate Secret",
-            "type": "main"
-          }
-        ]
-      ]
-    },
-    "Validate Secret": {
-      "main": [
-        [
-          {
-            "index": 0,
             "node": "Check Login Event",
-            "type": "main"
-          }
-        ],
-        [
-          {
-            "index": 0,
-            "node": "Respond Secret Fail",
             "type": "main"
           }
         ]
