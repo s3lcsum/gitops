@@ -83,7 +83,7 @@
       "id": "compute-expiry",
       "name": "Compute Expiry",
       "parameters": {
-        "jsCode": "const body = $input.first().json.body || {};\nconst event = body.event && typeof body.event === 'object' ? body.event : body;\nconst ip = String(event.client_ip || body.client_ip || '').trim();\nconst user = event.user?.username || event.user?.name || body.user?.username || 'unknown';\nconst ttlMs = 7 * 24 * 60 * 60 * 1000;\nconst now = Date.now();\nconst expiresMs = now + ttlMs;\nreturn [{ json: { ip, user, expires_ms: expiresMs, expires_iso: new Date(expiresMs).toISOString() } }];"
+        "jsCode": "const body = $input.first().json.body || {};\nconst event = body.event && typeof body.event === 'object' ? body.event : body;\nconst ip = String(event.client_ip || body.client_ip || '').trim();\nconst user = event.user?.username || event.user?.name || body.user?.username || 'unknown';\nconst ttlMs = 7 * 24 * 60 * 60 * 1000;\nconst now = Date.now();\nconst expiresMs = now + ttlMs;\nconst isIpv6 = ip.includes(':');\nconst apiUrl = isIpv6\n  ? 'http://192.168.89.1/rest/ipv6/firewall/address-list'\n  : 'http://192.168.89.1/rest/ip/firewall/address-list';\nreturn [{ json: { ip, user, expires_ms: expiresMs, expires_iso: new Date(expiresMs).toISOString(), api_url: apiUrl } }];"
       },
       "position": [860, 200],
       "type": "n8n-nodes-base.code",
@@ -135,7 +135,7 @@
         "options": {},
         "sendBody": true,
         "specifyBody": "json",
-        "url": "http://192.168.89.1/rest/ip/firewall/address-list"
+        "url": "={{ $json.api_url }}"
       },
       "position": [1740, 120],
       "type": "n8n-nodes-base.httpRequest",
