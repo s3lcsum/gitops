@@ -18,3 +18,8 @@ output "miedzysztuka_hostname" {
   description = "Public hostname for the miedzysztuka Pages custom domain"
   value       = cloudflare_pages_domain.miedzysztuka.name
 }
+
+output "polibiurokc_hostname" {
+  description = "Public hostname for the Polibiuro K C Pages custom domain"
+  value       = cloudflare_pages_domain.polibiurokc.name
+}

@@ -253,6 +253,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Roadmap
 
+- [x] (retroactively added) Website for Polibiuro K C (Jarocin) on Cloudflare Pages
 - [ ] Migrate cloud drives to NAS
 - [ ] Migrate backups from Proxmox to NAS
 - [x] Use Authentik LDAP for Synology
@@ -268,6 +269,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 21.09.2026
+
+Started a site for dad's copier shop — **Polibiuro K C** in Jarocin. Private GitHub repo `s3lcsum/polibiurokc` (static HTML, same Pages pattern as miedzysztuka), Cloudflare Pages + `polibiurokc.dominiksiejak.pl` CNAME, skip the country allowlist so the public company page isn't geo-blocked. [x] (retroactively added)
 
 ### 07.09.2026
 
