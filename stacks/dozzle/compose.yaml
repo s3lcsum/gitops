@@ -2,7 +2,7 @@
 
 services:
   dozzle:
-    image: ghcr.io/amir20/dozzle:v11.1.0
+    image: ghcr.io/amir20/dozzle:v11.1.1
     container_name: dozzle
     restart: unless-stopped
     # v11 prompts a setup wizard when /data is empty and sessions are signed
