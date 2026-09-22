@@ -270,6 +270,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Changelog
 
+### 22.09.2026
+
+Public copier-shop site is on **polkc.dominiksiejak.pl** now — Cloudflare Pages project `polkc`, same Workers & Pages slot as miedzysztuka, country-allowlist skip so it isn't geo-blocked. Files sit in `sites/polkc/` until there's a private sibling repo. [x] (retroactively added)
+
 ### 21.09.2026
 
 Started a site for dad's copier shop — **Polibiuro K C** in Jarocin. Private GitHub repo `s3lcsum/polibiurokc` (static HTML, same Pages pattern as miedzysztuka), Cloudflare Pages + `polibiurokc.dominiksiejak.pl` CNAME, skip the country allowlist so the public company page isn't geo-blocked. [x] (retroactively added)

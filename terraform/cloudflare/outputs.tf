@@ -19,7 +19,7 @@ output "miedzysztuka_hostname" {
   value       = cloudflare_pages_domain.miedzysztuka.name
 }
 
-output "polibiurokc_hostname" {
+output "polkc_hostname" {
   description = "Public hostname for the Polibiuro K C Pages custom domain"
-  value       = cloudflare_pages_domain.polibiurokc.name
+  value       = cloudflare_pages_domain.polkc.name
 }
