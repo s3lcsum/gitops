@@ -13,6 +13,7 @@ resource "portainer_settings" "default" {
       authorization_uri               = data.terraform_remote_state.authentik[0].outputs.applications.portainer.authorization_uri
       redirect_uri                    = data.terraform_remote_state.authentik[0].outputs.applications.portainer.redirect_uri
       resource_uri                    = data.terraform_remote_state.authentik[0].outputs.applications.portainer.resource_uri
+      logout_uri                      = data.terraform_remote_state.authentik[0].outputs.applications.portainer.logout_uri
       user_identifier                 = "email"
       oauth_auto_create_users         = true
       oauth_auto_map_team_memberships = false
