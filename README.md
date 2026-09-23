@@ -264,10 +264,15 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Self-hosted LLM (Ollama)
 - [ ] Separated subnets (IoT isolation)
 - [ ] Use Terraform for RouterOS management (or via NetBox)?
+- [x] (retroactively added) Static `x-webhook-secret` on public n8n webhooks; Authentik login firewall is IPv4-only
 
 ---
 
 ## Changelog
+
+### 23.09.2026
+
+Public n8n webhooks that had no extra auth now require header `x-webhook-secret`. Authentik and the Focus shortcut keep their paths (`authentik-login`, `focus-work`). Toggl → calendar moved to `toggl-to-calendar`. The Ghostfolio CSV import webhook is gone. Names: WAN allowlist on login / `wan-allowlist` / `WAN_ALLOWLIST_SECRET`, Focus to Toggl / `focus-toggl` / `FOCUS_TOGGL_SECRET`, Toggl to Google Calendar / `toggl-to-calendar` / `TOGGL_CALENDAR_SECRET`. Authentik login → firewall is IPv4 only again — an IPv6 client IP gets a 400 and never touches RouterOS. Messenger is still Meta's webhook and was left as-is.
 
 ### 07.09.2026
 

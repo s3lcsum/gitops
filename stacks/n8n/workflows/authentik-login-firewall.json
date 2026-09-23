@@ -1,6 +1,6 @@
 {
   "id": "w72dTPBXqHZKN1ip",
-  "name": "authentik-login-firewall",
+  "name": "WAN allowlist on login",
   "active": true,
   "nodes": [
     {
@@ -13,14 +13,17 @@
         "responseMode": "responseNode",
         "authentication": "headerAuth"
       },
-      "position": [200, 300],
+      "position": [
+        200,
+        300
+      ],
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "webhookId": "63c51090-87d9-4f00-9c18-eec357240fba",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "u7SVmRfRlNAtiyUT",
-          "name": "authentik-webhook-secret"
+          "id": "58suiQVjjFvERDku",
+          "name": "wan-allowlist"
         }
       }
     },
@@ -55,7 +58,10 @@
           }
         }
       },
-      "position": [640, 300],
+      "position": [
+        640,
+        300
+      ],
       "type": "n8n-nodes-base.if",
       "typeVersion": 2
     },
@@ -63,9 +69,12 @@
       "id": "compute-expiry",
       "name": "Compute Expiry",
       "parameters": {
-        "jsCode": "const body = $input.first().json.body || {};\nconst event = body.event && typeof body.event === 'object' ? body.event : body;\nconst ip = String(event.client_ip || body.client_ip || '').trim();\nconst user = event.user?.username || event.user?.name || body.user?.username || 'unknown';\nconst ttlMs = 7 * 24 * 60 * 60 * 1000;\nconst now = Date.now();\nconst expiresMs = now + ttlMs;\nconst isIpv6 = ip.includes(':');\nconst apiUrl = isIpv6\n  ? 'http://192.168.89.1/rest/ipv6/firewall/address-list/add'\n  : 'http://192.168.89.1/rest/ip/firewall/address-list/add';\nreturn [{ json: { ip, user, expires_ms: expiresMs, expires_iso: new Date(expiresMs).toISOString(), api_url: apiUrl } }];"
+        "jsCode": "const body = $input.first().json.body || {};\nconst event = body.event && typeof body.event === 'object' ? body.event : body;\nconst ip = String(event.client_ip || body.client_ip || '').trim();\nconst user = event.user?.username || event.user?.name || body.user?.username || 'unknown';\nconst ttlMs = 7 * 24 * 60 * 60 * 1000;\nconst now = Date.now();\nconst expiresMs = now + ttlMs;\nconst apiUrl = 'http://192.168.89.1/rest/ip/firewall/address-list/add';\nreturn [{ json: { ip, user, expires_ms: expiresMs, expires_iso: new Date(expiresMs).toISOString(), api_url: apiUrl } }];"
       },
-      "position": [860, 200],
+      "position": [
+        860,
+        200
+      ],
       "type": "n8n-nodes-base.code",
       "typeVersion": 2
     },
@@ -82,7 +91,7 @@
                 "operation": "regex",
                 "type": "string"
               },
-              "rightValue": "^(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$|^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::(?:[0-9a-fA-F]{1,4}:){0,6}[0-9a-fA-F]{0,4}$|^(?:[0-9a-fA-F]{1,4}:){1,7}:$|^(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{0,4}$|^(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}$"
+              "rightValue": "^(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$"
             },
             {
               "leftValue": "={{ $json.ip }}",
@@ -100,7 +109,10 @@
           }
         }
       },
-      "position": [1080, 200],
+      "position": [
+        1080,
+        200
+      ],
       "type": "n8n-nodes-base.if",
       "typeVersion": 2
     },
@@ -117,7 +129,10 @@
         "specifyBody": "json",
         "url": "={{ $json.api_url }}"
       },
-      "position": [1740, 120],
+      "position": [
+        1740,
+        120
+      ],
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "credentials": {
@@ -137,7 +152,10 @@
         "respondWith": "json",
         "responseBody": "={ \"ok\": true, \"ip\": \"{{ $node[\"Compute Expiry\"].json.ip }}\", \"user\": \"{{ $node[\"Compute Expiry\"].json.user }}\", \"expires\": \"{{ $node[\"Compute Expiry\"].json.expires_iso }}\" }"
       },
-      "position": [1960, 120],
+      "position": [
+        1960,
+        120
+      ],
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1
     },
@@ -151,7 +169,10 @@
         "respondWith": "json",
         "responseBody": "={ \"ok\": true, \"skipped\": true }"
       },
-      "position": [860, 450],
+      "position": [
+        860,
+        450
+      ],
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1
     },
@@ -165,7 +186,10 @@
         "respondWith": "json",
         "responseBody": "={ \"ok\": false, \"detail\": \"invalid ip\" }"
       },
-      "position": [1300, 360],
+      "position": [
+        1300,
+        360
+      ],
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1
     },
@@ -179,7 +203,10 @@
         "respondWith": "json",
         "responseBody": "={ \"ok\": false, \"detail\": \"router error\" }"
       },
-      "position": [1960, 360],
+      "position": [
+        1960,
+        360
+      ],
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1
     }
