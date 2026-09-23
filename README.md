@@ -271,7 +271,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ### 23.09.2026
 
-Wired **ismc-exporter** on vibe into VictoriaMetrics — scrapes `192.168.89.200:65002` (`vibe-ismc` job) for SMC temps/fans/power plus NVMe SMART. Host side: `/usr/local/bin/{iSMC,ismc-exporter}` + LaunchAgent `tech.skowronski.ismc-exporter`.
+Wired **ismc-exporter** on vibe into VictoriaMetrics — scrapes `192.168.89.200:65002` (`vibe-ismc` job) for SMC temps/fans/power plus NVMe SMART. Host side: `/usr/local/bin/{iSMC,ismc-exporter}` + LaunchAgent `tech.skowronski.ismc-exporter`. Grafana dashboard `ismc-vibe` (Monitoring folder) covers temps, fans, power, and NVMe SMART.
 
 ### 07.09.2026
 
