@@ -54,6 +54,17 @@
           }
         ]
       ]
+    },
+    "Delete Entry": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Split In Batches",
+            "type": "main"
+          }
+        ]
+      ]
     }
   },
   "id": "3RDTBOC2mQQDIJsU",
