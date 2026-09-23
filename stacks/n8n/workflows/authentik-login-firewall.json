@@ -1,6 +1,6 @@
 {
   "id": "w72dTPBXqHZKN1ip",
-  "name": "authentik-login-firewall",
+  "name": "WAN allowlist on login",
   "active": true,
   "nodes": [
     {
@@ -23,7 +23,7 @@
       "credentials": {
         "httpHeaderAuth": {
           "id": "58suiQVjjFvERDku",
-          "name": "authentik-login-webhook"
+          "name": "wan-allowlist"
         }
       }
     },

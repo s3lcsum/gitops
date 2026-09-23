@@ -1,6 +1,6 @@
 {
   "id": "60spqj9OfT64ZL1q",
-  "name": "focus-webhook",
+  "name": "Focus to Toggl",
   "active": true,
   "nodes": [
     {
@@ -305,7 +305,7 @@
       "credentials": {
         "httpHeaderAuth": {
           "id": "405ZBMMtAsiAIevM",
-          "name": "focus-work-webhook"
+          "name": "focus-toggl"
         }
       }
     },

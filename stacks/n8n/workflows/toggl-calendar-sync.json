@@ -1,6 +1,6 @@
 {
   "id": "4dVHTshAnUXeUQvv",
-  "name": "toggl-calendar-sync",
+  "name": "Toggl to Google Calendar",
   "active": true,
   "nodes": [
     {
@@ -36,7 +36,7 @@
       ],
       "parameters": {
         "httpMethod": "POST",
-        "path": "toggl-calendar-sync",
+        "path": "toggl-to-calendar",
         "responseMode": "lastNode",
         "options": {},
         "authentication": "headerAuth"
@@ -44,7 +44,7 @@
       "credentials": {
         "httpHeaderAuth": {
           "id": "2QYHR5LnH5cutA5V",
-          "name": "toggl-calendar-sync-webhook"
+          "name": "toggl-to-calendar"
         }
       }
     },
