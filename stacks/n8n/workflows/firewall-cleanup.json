@@ -1,16 +1,5 @@
 {
   "connections": {
-    "Compute Auth": {
-      "main": [
-        [
-          {
-            "index": 0,
-            "node": "List Address List",
-            "type": "main"
-          }
-        ]
-      ]
-    },
     "Filter Expired": {
       "main": [
         [
@@ -38,7 +27,7 @@
         [
           {
             "index": 0,
-            "node": "Load RouterOS Env",
+            "node": "List Address List",
             "type": "main"
           }
         ]
@@ -49,18 +38,7 @@
         [
           {
             "index": 0,
-            "node": "Load RouterOS Env",
-            "type": "main"
-          }
-        ]
-      ]
-    },
-    "Load RouterOS Env": {
-      "main": [
-        [
-          {
-            "index": 0,
-            "node": "Compute Auth",
+            "node": "List Address List",
             "type": "main"
           }
         ]
@@ -68,10 +46,22 @@
     },
     "Split In Batches": {
       "main": [
+        [],
         [
           {
             "index": 0,
             "node": "Delete Entry",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Delete Entry": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Split In Batches",
             "type": "main"
           }
         ]
@@ -115,65 +105,11 @@
       "typeVersion": 1.2
     },
     {
-      "id": "load-routeros-env",
-      "name": "Load RouterOS Env",
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "apiUrl",
-              "name": "apiUrl",
-              "type": "string",
-              "value": "={{ $env.ROUTEROS_API_URL }}"
-            },
-            {
-              "id": "user",
-              "name": "user",
-              "type": "string",
-              "value": "={{ $env.ROUTEROS_API_USER }}"
-            },
-            {
-              "id": "pass",
-              "name": "pass",
-              "type": "string",
-              "value": "={{ $env.ROUTEROS_API_PASS }}"
-            }
-          ]
-        }
-      },
-      "position": [
-        -250,
-        100
-      ],
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4
-    },
-    {
-      "id": "compute-auth",
-      "name": "Compute Auth",
-      "parameters": {
-        "jsCode": "const d = $input.first().json;\nconst auth = Buffer.from(String(d.user) + ':' + String(d.pass)).toString('base64');\nreturn [{ json: { auth: 'Basic ' + auth, apiUrl: d.apiUrl } }];",
-        "mode": "runOnceForAllItems"
-      },
-      "position": [
-        -100,
-        100
-      ],
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2
-    },
-    {
       "id": "list-address-list",
       "name": "List Address List",
       "parameters": {
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "={{ $json.auth }}"
-            }
-          ]
-        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
         "method": "GET",
         "options": {
           "response": {
@@ -182,21 +118,26 @@
             }
           }
         },
-        "sendHeaders": true,
-        "url": "={{ $json.apiUrl }}/ip/firewall/address-list"
+        "url": "http://192.168.89.1/rest/ip/firewall/address-list"
       },
       "position": [
         200,
         100
       ],
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "eTkZPZyTIeqFEZyR",
+          "name": "RouterOS n8n-admin"
+        }
+      }
     },
     {
       "id": "filter-expired",
       "name": "Filter Expired",
       "parameters": {
-        "jsCode": "const listName = 'allowed-wan';\nconst now = Date.now();\nconst auth = $('Compute Auth').first().json.auth;\nconst apiUrl = $('Compute Auth').first().json.apiUrl;\nconst entries = $input.all()[0].json;\n\nif (!Array.isArray(entries)) {\n  return [];\n}\n\nconst expired = entries\n  .filter(e => {\n    if (e.list !== listName) return false;\n    const m = (e.comment || '').match(/^ttl:(\\d+)$/);\n    return m && Number(m[1]) < now;\n  })\n  .map(e => ({\n    json: {\n      id: e['.id'],\n      address: e.address,\n      comment: e.comment,\n      auth: auth,\n      apiUrl: apiUrl\n    }\n  }));\n\nreturn expired;",
+        "jsCode": "const listName = 'allowed-wan';\nconst now = Date.now();\nconst entries = $input.all().map(i => i.json);\n\nconst expired = entries\n  .filter(e => {\n    if (e.list !== listName) return false;\n    const m = (e.comment || '').match(/^ttl:(\\d+)$/);\n    return m && Number(m[1]) < now;\n  })\n  .map(e => ({\n    json: {\n      id: e['.id'],\n      address: e.address,\n      comment: e.comment\n    }\n  }));\n\nreturn expired;",
         "mode": "runOnceForAllItems"
       },
       "position": [
@@ -224,15 +165,24 @@
       "id": "delete-entry",
       "name": "Delete Entry",
       "parameters": {
-        "jsCode": "const auth = $input.first().json.auth;\nconst apiUrl = $input.first().json.apiUrl;\nconst entryId = $input.first().json.id;\n\n// RouterOS .id starts with * \u2014 must NOT be URL-encoded\nconst url = `${apiUrl}/ip/firewall/address-list/${entryId}`;\n\nconst response = await fetch(url, {\n  method: 'DELETE',\n  headers: {\n    'Authorization': auth\n  }\n});\n\nreturn [{\n  json: {\n    id: entryId,\n    status: response.status,\n    ok: response.ok\n  }\n}];",
-        "mode": "runOnceForEachItem"
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "method": "DELETE",
+        "options": {},
+        "url": "={{ 'http://192.168.89.1/rest/ip/firewall/address-list/' + $json.id }}"
       },
       "position": [
         1100,
         100
       ],
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "eTkZPZyTIeqFEZyR",
+          "name": "RouterOS n8n-admin"
+        }
+      }
     }
   ],
   "pinData": {},
