@@ -1,0 +1,760 @@
+{
+  "id": "4dVHTshAnUXeUQvv",
+  "name": "toggl-calendar-sync",
+  "active": true,
+  "nodes": [
+    {
+      "id": "75f85ef7-ebba-54ce-a679-d9757632f3ef",
+      "name": "Hourly Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        },
+        "misfirePolicy": "skip"
+      }
+    },
+    {
+      "id": "8de90432-6740-5c75-aa65-1e3acb03830a",
+      "name": "Sync Now Webhook",
+      "webhookId": "d93ae94d-00ec-43d9-b069-291b9362f2e4",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "toggl-calendar-sync",
+        "responseMode": "lastNode",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "2QYHR5LnH5cutA5V",
+          "name": "toggl-calendar-sync-webhook"
+        }
+      }
+    },
+    {
+      "id": "b96a8c64-959e-504c-b6d1-e2286ecd9c2f",
+      "name": "Get Sync Meta",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        80
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "yCdUzlNRSpJESMzO"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "singleton_key",
+              "condition": "eq",
+              "keyValue": "meta"
+            }
+          ]
+        },
+        "returnAll": true
+      }
+    },
+    {
+      "id": "8bf7af15-4efa-5e71-ae31-249df463794b",
+      "name": "Compute Window",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        80
+      ],
+      "parameters": {
+        "jsCode": "const meta=$input.first().json;\nconst now=new Date();\nconst start=new Date(now.getTime()-30*24*60*60*1000);\nreturn [{json:{\n  calendar_id: meta.calendar_id || '8c8fc35e0478c9bf6e2a7f86f29b90448a0f81ff59854727d20efbfa7a93cdb7@group.calendar.google.com',\n  timeMin: start.toISOString(),\n  timeMax: now.toISOString(),\n  sync_now: now.toISOString(),\n  backfill_done: !!meta.backfill_done,\n  meta_id: meta.id\n}}];"
+      }
+    },
+    {
+      "id": "dafa306c-fca1-5994-8994-1f43fed8a3f5",
+      "name": "Fetch Toggl Entries",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        680,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.track.toggl.com/api/v9/me/time_entries?start_date={{ $json.timeMin }}&end_date={{ $json.timeMax }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "options": {}
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "2221f098-4806-5e29-80fc-499b1cde0de8",
+      "name": "Fetch Toggl Projects",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        680,
+        200
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.track.toggl.com/api/v9/workspaces/3825058/projects?active=both",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "options": {}
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "a081a9d9-fe3b-56ec-ab0c-8b705475e205",
+      "name": "List Calendar Events",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        680,
+        400
+      ],
+      "parameters": {
+        "resource": "event",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "8c8fc35e0478c9bf6e2a7f86f29b90448a0f81ff59854727d20efbfa7a93cdb7@group.calendar.google.com"
+        },
+        "timeMin": "={{ $('Compute Window').item.json.timeMin }}",
+        "timeMax": "={{ $('Compute Window').item.json.timeMax }}",
+        "returnAll": true,
+        "options": {
+          "singleEvents": true,
+          "showDeleted": false
+        }
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "LorPyV1FeJrqDuIa",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "id": "53746ba8-fc68-583b-8846-113deefba4fe",
+      "name": "Wait All Sources",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        940,
+        200
+      ],
+      "parameters": {
+        "numberInputs": 4
+      }
+    },
+    {
+      "id": "b511ced5-1776-5071-a9ae-2f2a4be9c8c8",
+      "name": "Plan Calendar Diff",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const window=$('Compute Window').first().json;\nconst entriesRaw=$('Fetch Toggl Entries').all().map(i=>i.json);\nconst entries=entriesRaw.flatMap(e=>Array.isArray(e)?e:[e]).filter(e=>e && e.id);\nconst projectsRaw=$('Fetch Toggl Projects').all().map(i=>i.json);\nconst projects=projectsRaw.flatMap(p=>Array.isArray(p)?p:[p]);\nconst projectName={};\nfor (const p of projects) if (p && p.id) projectName[p.id]=p.name || 'No Project';\nconst gcalRaw=$('List Calendar Events').all().map(i=>i.json);\nconst events=gcalRaw.filter(e=>e && e.id);\nconst mappingsRaw=$('Get Calendar Mappings').all().map(i=>i.json);\nconst mappings=mappingsRaw.filter(m=>m && m.toggl_entry_id && m.google_event_id);\nconst byToggl={};\nfor (const ev of events) {\n  let tid=(ev.extendedProperties && ev.extendedProperties.private && ev.extendedProperties.private.toggl_entry_id) || null;\n  if (!tid && typeof ev.description === 'string') {\n    const m = ev.description.match(/\\[toggl:(\\d+)\\]/);\n    if (m) tid = m[1];\n  }\n  if (tid) byToggl[String(tid)]=ev;\n}\nfor (const m of mappings) {\n  const tid = String(m.toggl_entry_id);\n  if (!byToggl[tid]) byToggl[tid] = { id: m.google_event_id, _from_mapping: true };\n}\nconst syncNow=new Date(window.sync_now);\nconst desired=[];\nfor (const e of entries) {\n  const start=e.start; let end=e.stop;\n  const running = Number(e.duration) < 0 || !e.stop;\n  if (running) end = syncNow.toISOString();\n  if (!start || !end) continue;\n  const pname = e.project_id ? (projectName[e.project_id] || 'Project') : 'No Project';\n  const desc = (e.description || '').trim();\n  const title = desc ? `${pname} \u2014 ${desc}` : pname;\n  desired.push({\n    toggl_entry_id: String(e.id),\n    title,\n    start_iso: start,\n    end_iso: end,\n    project_id: e.project_id || null,\n    project_name: pname,\n    description: desc,\n    workspace_id: e.workspace_id || 3825058,\n    is_running: running,\n    canonical: {title, start, end, project_id: e.project_id || null, description: desc}\n  });\n}\nconst desiredIds=new Set(desired.map(d=>d.toggl_entry_id));\nconst actions=[];\nconst queueDelete = (tid, gid, source) => {\n  if (!gid || desiredIds.has(tid)) return;\n  if (actions.some(a => a.op === 'delete' && a.toggl_entry_id === tid)) return;\n  actions.push({ op: 'delete', toggl_entry_id: tid, google_event_id: gid, source, calendar_id: window.calendar_id, sync_now: window.sync_now });\n};\nfor (const d of desired) {\n  const existing=byToggl[d.toggl_entry_id];\n  if (!existing) {\n    actions.push({op:'create', ...d});\n    continue;\n  }\n  if (existing._from_mapping) {\n    actions.push({op:'update', google_event_id: existing.id, ...d});\n    continue;\n  }\n  const norm=(v)=>{ try { return new Date(v).toISOString(); } catch(e) { return String(v||''); } };\n  const sameTitle=(existing.summary||'')===d.title;\n  const sameStart=norm(existing.start && (existing.start.dateTime||existing.start.date))===norm(d.start_iso);\n  const sameEnd=norm(existing.end && (existing.end.dateTime||existing.end.date))===norm(d.end_iso);\n  if (!sameTitle || !sameStart || !sameEnd) {\n    actions.push({op:'update', google_event_id: existing.id, ...d});\n  } else {\n    actions.push({op:'noop', google_event_id: existing.id, ...d});\n  }\n}\nfor (const m of mappings) {\n  queueDelete(String(m.toggl_entry_id), m.google_event_id, 'mapping');\n}\nfor (const [tid, ev] of Object.entries(byToggl)) {\n  if (ev._from_mapping) continue;\n  queueDelete(tid, ev.id, 'calendar');\n}\nreturn actions.map(a=>({json:a}));"
+      }
+    },
+    {
+      "id": "5ec6f241-a636-5f0b-9184-c451d78cab51",
+      "name": "Action Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1400,
+        200
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "create",
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.op }}",
+                    "rightValue": "create",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              }
+            },
+            {
+              "outputKey": "update",
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.op }}",
+                    "rightValue": "update",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              }
+            },
+            {
+              "outputKey": "delete",
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.op }}",
+                    "rightValue": "delete",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      }
+    },
+    {
+      "id": "92f4ef47-c2a5-56ac-8900-7fe6e1aa6461",
+      "name": "Create Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1640,
+        40
+      ],
+      "parameters": {
+        "additionalFields": {
+          "description": "={{ ($json.description || '') + '\\n\\n[toggl:' + $json.toggl_entry_id + ']' }}",
+          "summary": "={{ $json.title }}",
+          "extendedPropertiesUi": {
+            "propertyValues": [
+              {
+                "key": "toggl_entry_id",
+                "private": true,
+                "value": "={{ $json.toggl_entry_id }}"
+              }
+            ]
+          }
+        },
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "8c8fc35e0478c9bf6e2a7f86f29b90448a0f81ff59854727d20efbfa7a93cdb7@group.calendar.google.com"
+        },
+        "end": "={{ $json.end_iso }}",
+        "operation": "create",
+        "resource": "event",
+        "start": "={{ $json.start_iso }}"
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "LorPyV1FeJrqDuIa",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "id": "0e15ecb7-0ac6-5e60-b818-cd381125719a",
+      "name": "Update Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1640,
+        200
+      ],
+      "parameters": {
+        "resource": "event",
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "8c8fc35e0478c9bf6e2a7f86f29b90448a0f81ff59854727d20efbfa7a93cdb7@group.calendar.google.com"
+        },
+        "eventId": "={{ $json.google_event_id }}",
+        "updateFields": {
+          "summary": "={{ $json.title }}",
+          "description": "={{ ($json.description || '') + '\\n\\n[toggl:' + $json.toggl_entry_id + ']' }}",
+          "start": "={{ $json.start_iso }}",
+          "end": "={{ $json.end_iso }}",
+          "extendedPropertiesUi": {
+            "propertyValues": [
+              {
+                "key": "toggl_entry_id",
+                "private": true,
+                "value": "={{ $json.toggl_entry_id }}"
+              }
+            ]
+          }
+        }
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "LorPyV1FeJrqDuIa",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "id": "3f7d2926-bc4f-5e51-bfb9-20aef694e12a",
+      "name": "Delete Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "onError": "continueRegularOutput",
+      "position": [
+        1640,
+        360
+      ],
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "method": "DELETE",
+        "nodeCredentialType": "googleCalendarOAuth2Api",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        },
+        "url": "=https://www.googleapis.com/calendar/v3/calendars/{{ encodeURIComponent($json.calendar_id) }}/events/{{ $json.google_event_id }}"
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "LorPyV1FeJrqDuIa",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "id": "f541f428-fc48-5839-b0c9-d715c37120ab",
+      "name": "Upsert Mapping",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1880,
+        120
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "MTg7lr2c9RQTgKiz"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "toggl_entry_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Plan Calendar Diff').item.json.toggl_entry_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "toggl_entry_id": "={{ $('Plan Calendar Diff').item.json.toggl_entry_id }}",
+            "google_event_id": "={{ $json.id || $('Plan Calendar Diff').item.json.google_event_id }}",
+            "workspace_id": "={{ $('Plan Calendar Diff').item.json.workspace_id }}",
+            "project_id": "={{ $('Plan Calendar Diff').item.json.project_id }}",
+            "project_name": "={{ $('Plan Calendar Diff').item.json.project_name }}",
+            "description": "={{ $('Plan Calendar Diff').item.json.description }}",
+            "start_iso": "={{ $('Plan Calendar Diff').item.json.start_iso }}",
+            "end_iso": "={{ $('Plan Calendar Diff').item.json.end_iso }}",
+            "canonical_title": "={{ $('Plan Calendar Diff').item.json.title }}",
+            "is_running": "={{ $('Plan Calendar Diff').item.json.is_running }}",
+            "updated_at": "={{ $now.toISO() }}"
+          }
+        }
+      }
+    },
+    {
+      "id": "d4055f3e-e429-5333-a732-5686fd1eb5b7",
+      "name": "Delete Mapping",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "onError": "continueRegularOutput",
+      "position": [
+        1880,
+        360
+      ],
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "MTg7lr2c9RQTgKiz"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "condition": "eq",
+              "keyName": "toggl_entry_id",
+              "keyValue": "={{ $('Plan Calendar Diff').item.json.toggl_entry_id }}"
+            }
+          ]
+        },
+        "matchType": "allConditions",
+        "operation": "deleteRows",
+        "resource": "row"
+      }
+    },
+    {
+      "id": "43011760-a0e0-51d9-9e7c-ac23e61d474a",
+      "name": "Mark Sync Done",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2100,
+        200
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "yCdUzlNRSpJESMzO"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "singleton_key",
+              "condition": "eq",
+              "keyValue": "meta"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "backfill_done": true,
+            "last_incremental_at": "={{ $now.toISO() }}",
+            "last_full_sync_at": "={{ $now.toISO() }}",
+            "notes": "hourly sync completed"
+          }
+        }
+      }
+    },
+    {
+      "id": "346fb522-dd13-596a-9bb3-d0e3a429f5a4",
+      "name": "Finish Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2100,
+        80
+      ],
+      "parameters": {
+        "numberInputs": 2
+      }
+    },
+    {
+      "id": "cal-map-get",
+      "name": "Get Calendar Mappings",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        680,
+        560
+      ],
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "MTg7lr2c9RQTgKiz"
+        },
+        "operation": "get",
+        "resource": "row",
+        "returnAll": true
+      }
+    }
+  ],
+  "connections": {
+    "Hourly Schedule": {
+      "main": [
+        [
+          {
+            "node": "Get Sync Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sync Now Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Sync Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Sync Meta": {
+      "main": [
+        [
+          {
+            "node": "Compute Window",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Window": {
+      "main": [
+        [
+          {
+            "node": "Fetch Toggl Entries",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Toggl Projects",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "List Calendar Events",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Calendar Mappings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Toggl Entries": {
+      "main": [
+        [
+          {
+            "node": "Wait All Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Toggl Projects": {
+      "main": [
+        [
+          {
+            "node": "Wait All Sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "List Calendar Events": {
+      "main": [
+        [
+          {
+            "node": "Wait All Sources",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Wait All Sources": {
+      "main": [
+        [
+          {
+            "node": "Plan Calendar Diff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan Calendar Diff": {
+      "main": [
+        [
+          {
+            "node": "Action Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Action Switch": {
+      "main": [
+        [
+          {
+            "node": "Create Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Event": {
+      "main": [
+        [
+          {
+            "node": "Upsert Mapping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Event": {
+      "main": [
+        [
+          {
+            "node": "Upsert Mapping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Event": {
+      "main": [
+        [
+          {
+            "node": "Delete Mapping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Mapping": {
+      "main": [
+        [
+          {
+            "node": "Finish Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Mapping": {
+      "main": [
+        [
+          {
+            "node": "Finish Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finish Merge": {
+      "main": [
+        [
+          {
+            "node": "Mark Sync Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Calendar Mappings": {
+      "main": [
+        [
+          {
+            "node": "Wait All Sources",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Europe/Warsaw",
+    "executionOrder": "v1"
+  }
+}
