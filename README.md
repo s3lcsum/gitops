@@ -269,6 +269,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Changelog
 
+### 23.09.2026
+
+Wired **ismc-exporter** on vibe into VictoriaMetrics — scrapes `192.168.89.200:65002` (`vibe-ismc` job) for SMC temps/fans/power plus NVMe SMART. Host side: `/usr/local/bin/{iSMC,ismc-exporter}` + LaunchAgent `tech.skowronski.ismc-exporter`. Grafana dashboard `ismc-vibe` (Monitoring folder) covers temps, fans, power, and NVMe SMART.
+
 ### 07.09.2026
 
 Removed **v-maintenance** — the Firebird box nobody talks to anymore. Gone: `stacks/v-maintenance/` (compose + env), the `v-maintenance` entry in `portainer/locals.tf`, the `templatefile()` hack in `portainer/main.tf` that inlined `ISC_PASSWORD` (the last `hashicorp/local` user there, so the provider went with it), and the opt-in `firebird.dominiksiejak.pl` slot in the Cloudflare `tunnel_apps` map. It had no Traefik host, so nothing else referenced it — no auth class, homepage tile, gatus probe or blackbox job to clean up. Containers and the `firebird-data` volume get dropped on the next `make apply` in `terraform/portainer`.
