@@ -24,6 +24,12 @@ resource "authentik_property_mapping_provider_scope" "calibre_web_groups" {
   expression = "return [g.name for g in request.user.ak_groups.all()]"
 }
 
+resource "authentik_property_mapping_provider_scope" "argocd_groups" {
+  name       = "argocd-groups"
+  scope_name = "groups"
+  expression = "return [g.name for g in request.user.ak_groups.all()]"
+}
+
 resource "authentik_provider_oauth2" "oauth2" {
   for_each = local.oauth2_applications
 
@@ -43,15 +49,12 @@ resource "authentik_provider_oauth2" "oauth2" {
     "refresh_token",
   ]
 
-  property_mappings = each.key == "calibre-web-automated" ? concat(
+  property_mappings = concat(
     data.authentik_property_mapping_provider_scope.oauth2_scopes.ids,
-    [authentik_property_mapping_provider_scope.calibre_web_groups.id]
-    ) : (
-    lookup(each.value, "mapping", null) != null ? (
-      concat(data.authentik_property_mapping_provider_scope.oauth2_scopes.ids, [authentik_property_mapping_provider_scope.custom_claims[each.key].id])
-      ) : (
-      data.authentik_property_mapping_provider_scope.oauth2_scopes.ids
-  ))
+    lookup(each.value, "mapping", null) != null ? [authentik_property_mapping_provider_scope.custom_claims[each.key].id] : [],
+    each.key == "calibre-web-automated" ? [authentik_property_mapping_provider_scope.calibre_web_groups.id] : [],
+    each.key == "argocd" ? [authentik_property_mapping_provider_scope.argocd_groups.id] : [],
+  )
 
   allowed_redirect_uris = [
     for uri in each.value.redirect_uris : {

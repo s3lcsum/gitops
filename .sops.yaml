@@ -1,0 +1,6 @@
+# SOPS age recipient for gitops secrets. Private key stays local:
+#   ~/.config/sops/age/keys.txt  (or SOPS_AGE_KEY_FILE)
+creation_rules:
+  - path_regex: kubernetes/argocd/.*\.enc\.ya?ml$
+    encrypted_regex: ^(data|stringData)$
+    age: age1y7n3ycqfhr496qzscsv2hjpxcgd59rd7f4th2vgzd8dchphp345s6754vp

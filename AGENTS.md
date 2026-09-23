@@ -34,7 +34,7 @@
 - `terraform/` — OpenTofu modules. State: **GCS** (`dominiksiejak-gitops-tfstate`), migrated from TFC Apr 2026.
   - GCS state prefix convention: `gitops-<dirname>` (e.g., `gitops-portainer`).
   - `terraform/terraform-cloud/` is dead TFC bootstrap — **DO NOT APPLY**.
-- `kubernetes/argocd/` — Self-managed Argo CD for the kubeadm node (context `k8s`). Vendored upstream Helm chart is `kubernetes/argocd/charts/argo-cd` (do not fetch argo-helm at sync time). Overrides: `kubernetes/argocd/values.yaml`. Bootstrap: `make -C kubernetes/argocd bootstrap`. The Application tracks `https://github.com/s3lcsum/gitops.git` path `kubernetes/argocd` with manual sync. UI: `kubectl --context k8s -n argocd port-forward svc/argocd-server 8080:80`.
+- `kubernetes/argocd/` — Self-managed Argo CD for the kubeadm node (context `k8s@lake`). Vendored upstream Helm chart is `kubernetes/argocd/charts/argo-cd` (do not fetch argo-helm at sync time). Overrides: `kubernetes/argocd/values.yaml`. Bootstrap: `make -C kubernetes/argocd bootstrap` (repo creds from committed `repo-credentials.enc.yaml` via SOPS, or gitignored plaintext; chart sync does not touch the Secret). The Application is `templates/application.yaml` and tracks this repo path `kubernetes/argocd` with manual sync. UI: `kubectl --context k8s@lake -n argocd port-forward svc/argocd-server 8080:80` (that port is the Authentik OIDC redirect). Local admin is disabled. Authentik app slug `argocd`; OIDC client secret is SOPS-encrypted `oidc-client.enc.yaml` (`make oidc` decrypts with local age key at `~/.config/sops/age/keys.txt`). Group `admins` is Argo CD `role:admin`. Secrets under `kubernetes/argocd/*.enc.yaml` are age+SOPS (root `.sops.yaml`); never commit the age private key.
 
 ## Networking
 

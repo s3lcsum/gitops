@@ -1,0 +1,12 @@
+# Copy to oidc-client.yaml (gitignored), fill secret, then:
+#   make encrypt-oidc   → commits as oidc-client.enc.yaml (SOPS/age)
+# `make oidc` decrypts and merges into argocd-secret (do not kubectl apply this file).
+# Apply would replace argocd-secret and wipe the server key.
+# Value: tofu output -raw 'applications.argocd.client_secret' in terraform/authentik.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-secret
+  namespace: argocd
+stringData:
+  oidc.authentik.clientSecret: replace-with-tofu-output

@@ -47,8 +47,6 @@ apps:
     app: traefik
   - path: unifi/unifi.env
     app: unifi
-  - path: v-maintenance/v-maintenance.env
-    app: v-maintenance
   - path: vaultwarden/vaultwarden.env
     app: vaultwarden
   - path: watchyourlan/watchyourlan.env

@@ -1,0 +1,25 @@
+# Gitignored plaintext. Encrypt with: make encrypt-oidc
+# Committed ciphertext: oidc-client.enc.yaml (SOPS/age).
+# Do not kubectl apply this file — use make oidc.
+apiVersion: v1
+kind: Secret
+metadata:
+    name: argocd-secret
+    namespace: argocd
+stringData:
+    oidc.authentik.clientSecret: ENC[AES256_GCM,data:gNzRo2Gw+Znk+QW0ER7hdFcon2BSUMEuRJWD/stHRXG2iE86coyRZA==,iv:xiDFuLZ5yVppv03VSU0DIStEWFezydZvbSvnk8O7Zxo=,tag:WFG1zSz+T6I5U7AQu7jTGw==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBtd2hzT09QYjAvbVhjODht
+            RktKQTRpR1ovUmJRR1dEZzZkZkdCN1YraUM0CmRzYVhxZ3hhRGdSM01FVWVONkw2
+            QktXMmY1Z2xpNnhJOG1XRGJaNVE3aWMKLS0tIDYwaUR3TnNycFJMVWtmQ2RWVkxx
+            YTdXNmd2OXMycytFeTdLNTV0UUg4aHcKY21Bj7BEzA8eAetOSLNHj/Ed9czKsYk/
+            haA+Paw8M6hDxiyoDcO/yPbDhdR/Cwqf3op8lUuvdpcViCGDFwyBqA==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1y7n3ycqfhr496qzscsv2hjpxcgd59rd7f4th2vgzd8dchphp345s6754vp
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-09-23T23:49:57Z"
+    mac: ENC[AES256_GCM,data:x802xk5FIElZr2u8z6JM0Y7U11E+itFqJ/SAziXoAKGPHWYC1m/Tgd/QW6AR9zQJ7dmChyLDSouIHTVeHr0hdi35VfAVO77co2mH6VZb0x+ru2J0eqI10NayVP67KnVTarqibSOLkZWg0hbvJuzDY2zsAGP37boHBiVqQ47hm80=,iv:8iEOw2oG+2FbEPTwe2DnkNEdzpwS01d7wGq3ihE6Dco=,tag:vg1mEyZjQOImnqGEQF9a0Q==,type:str]
+    version: 3.13.3

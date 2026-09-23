@@ -18,9 +18,32 @@ argo-cd:
     keep: true
 
   configs:
+    cm:
+      # Must match the port-forward. Authentik redirects the browser here.
+      url: http://localhost:8080
+      admin.enabled: false
+      oidc.config: |
+        name: Authentik
+        issuer: https://auth.dominiksiejak.pl/application/o/argocd/
+        clientID: argocd
+        clientSecret: $oidc.authentik.clientSecret
+        requestedScopes:
+          - openid
+          - profile
+          - email
+          - groups
+    rbac:
+      policy.csv: |
+        g, admins, role:admin
     params:
       # ClusterIP only. Port-forward uses HTTP. Turn this off when an ingress terminates TLS.
       server.insecure: true
+    # Public URL. PAT is the one-time repo-credentials.yaml Secret. Anonymous GitHub is 60 req/h.
+    repositories:
+      gitops:
+        type: git
+        name: gitops
+        url: https://github.com/s3lcsum/gitops.git
 
   controller:
     resources:

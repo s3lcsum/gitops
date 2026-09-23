@@ -1,0 +1,3 @@
+# Public age recipient for SOPS (see repo-root .sops.yaml).
+# Private key: ~/.config/sops/age/keys.txt — never commit.
+age1y7n3ycqfhr496qzscsv2hjpxcgd59rd7f4th2vgzd8dchphp345s6754vp

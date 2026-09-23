@@ -90,3 +90,11 @@ stacks/adguard/conf/AdGuardHome.yaml
 
 # Mosquitto password file — host-managed (see mqtt.env.example)
 stacks/hass/mosquitto.passwd
+
+# Argo CD plaintext secrets (encrypt → *.enc.yaml with make -C kubernetes/argocd encrypt)
+kubernetes/argocd/repo-credentials.yaml
+kubernetes/argocd/oidc-client.yaml
+
+# age private keys — never commit
+**/age/keys.txt
+*.agekey

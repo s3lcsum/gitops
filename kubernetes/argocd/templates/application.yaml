@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: argocd
-  namespace: argocd
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: argocd
     app.kubernetes.io/part-of: argocd
@@ -18,7 +18,7 @@ spec:
         - values.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: {{ .Release.Namespace }}
   # Sync is manual. Automated prune/selfHeal on main would apply a bad push
   # and overwrite a live fix.
   syncPolicy:
