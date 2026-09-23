@@ -46,6 +46,7 @@
     },
     "Split In Batches": {
       "main": [
+        [],
         [
           {
             "index": 0,
@@ -168,7 +169,7 @@
         "genericAuthType": "httpBasicAuth",
         "method": "DELETE",
         "options": {},
-        "url": "http://192.168.89.1/rest/ip/firewall/address-list/{{ $json.id }}"
+        "url": "={{ 'http://192.168.89.1/rest/ip/firewall/address-list/' + $json.id }}"
       },
       "position": [
         1100,
