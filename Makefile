@@ -12,6 +12,7 @@ consistency-fix: ## Repair auto-fixable drift (blackbox promscrape + homepage se
 
 test: ## Security invariants + consistency (read-only)
 	python3 scripts/test_security_invariants.py
+	python3 scripts/test_phase_env.py
 	python3 scripts/check-consistency.py
 
 serve: ## Start MkDocs development server (http://localhost:8000)

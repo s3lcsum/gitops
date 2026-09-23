@@ -28,6 +28,7 @@ native-oidc:
   - hermes
   - jellyfin
   - n8n              # UI OIDC; /webhook* bypasses Authentik by design
+  - phase            # Phase Console native Authentik OAuth
   - nas              # Synology DSM OIDC
   - netbox
   - portainer

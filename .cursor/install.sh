@@ -3,7 +3,7 @@
 #
 # macOS : brew-based (preserves the original "vibe MacBook" path).
 # Linux : installs the real toolchain needed to work this repo from a cloud VM
-#         (OpenTofu, tflint, pre-commit, uv/uvx, kubectl, helm, kind).
+#         (OpenTofu, tflint, pre-commit, uv/uvx, kubectl, helm).
 #
 # Idempotent: every step guards on `command -v` so re-runs are cheap.
 set -euo pipefail
@@ -13,8 +13,6 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 install_macos() {
   command -v brew >/dev/null 2>&1 || { echo "brew not found; skipping macos setup"; exit 0; }
-  brew list --formula colima         >/dev/null 2>&1 || brew install colima
-  brew list --formula kind          >/dev/null 2>&1 || brew install kind
   brew list --formula helm          >/dev/null 2>&1 || brew install helm
   brew list --formula kubernetes-cli >/dev/null 2>&1 || brew install kubernetes-cli
   echo "macos toolchain ready"
@@ -64,14 +62,6 @@ install_linux() {
     tar -xzf /tmp/helm.tgz -C /tmp linux-amd64/helm >/dev/null
     sudo install -m 0755 /tmp/linux-amd64/helm /usr/local/bin/helm
     rm -rf /tmp/helm.tgz /tmp/linux-amd64
-  }
-
-  # kind
-  command -v kind >/dev/null 2>&1 || {
-    KIND_VERSION=v0.24.0
-    curl -fsSL "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64" -o /tmp/kind
-    sudo install -m 0755 /tmp/kind /usr/local/bin/kind
-    rm -f /tmp/kind
   }
 
   echo "linux toolchain ready"

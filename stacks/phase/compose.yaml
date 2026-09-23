@@ -1,0 +1,133 @@
+# https://github.com/s3lcsum/gitops/blob/main/stacks/phase/compose.yaml
+
+services:
+  migrations:
+    image: phasehq/backend:v2.72.0
+    container_name: phase-migrations
+    command: python manage.py migrate
+    env_file:
+      - /opt/phase/phase.env
+    environment:
+      OAUTH_REDIRECT_URI: https://phase.dominiksiejak.pl
+      ALLOWED_HOSTS: phase.dominiksiejak.pl,backend
+      ALLOWED_ORIGINS: https://phase.dominiksiejak.pl
+      SESSION_COOKIE_DOMAIN: phase.dominiksiejak.pl
+      DATABASE_HOST: postgres
+      REDIS_HOST: redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - phase
+      - database
+
+  backend:
+    image: phasehq/backend:v2.72.0
+    container_name: phase-backend
+    restart: unless-stopped
+    env_file:
+      - /opt/phase/phase.env
+    environment:
+      OAUTH_REDIRECT_URI: https://phase.dominiksiejak.pl
+      ALLOWED_HOSTS: phase.dominiksiejak.pl,backend
+      ALLOWED_ORIGINS: https://phase.dominiksiejak.pl
+      SESSION_COOKIE_DOMAIN: phase.dominiksiejak.pl
+      DATABASE_HOST: postgres
+      REDIS_HOST: redis
+      EXTERNAL_MIGRATION: 'true'
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    networks:
+      - phase
+      - database
+      - proxy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/')",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+      traefik.http.routers.phase-api.rule: Host(`phase.dominiksiejak.pl`) && PathPrefix(`/service`)
+      traefik.http.routers.phase-api.priority: 20
+      traefik.http.routers.phase-api.middlewares: phase-strip
+      traefik.http.routers.phase-api.service: phase-backend
+      traefik.http.middlewares.phase-strip.stripprefix.prefixes: /service
+      traefik.http.services.phase-backend.loadbalancer.server.port: 8000
+
+  worker:
+    image: phasehq/backend:v2.72.0
+    container_name: phase-worker
+    restart: unless-stopped
+    command: python manage.py rqworker default
+    env_file:
+      - /opt/phase/phase.env
+    environment:
+      OAUTH_REDIRECT_URI: https://phase.dominiksiejak.pl
+      ALLOWED_HOSTS: phase.dominiksiejak.pl,backend
+      ALLOWED_ORIGINS: https://phase.dominiksiejak.pl
+      SESSION_COOKIE_DOMAIN: phase.dominiksiejak.pl
+      DATABASE_HOST: postgres
+      REDIS_HOST: redis
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    networks:
+      - phase
+      - database
+
+  frontend:
+    image: phasehq/frontend:v2.72.0
+    container_name: phase
+    restart: unless-stopped
+    env_file:
+      - /opt/phase/phase.env
+    environment:
+      NEXTAUTH_URL: https://phase.dominiksiejak.pl
+      BACKEND_API_BASE: http://backend:8000
+      NEXT_PUBLIC_BACKEND_API_BASE: https://phase.dominiksiejak.pl/service
+    depends_on:
+      - backend
+    networks:
+      - phase
+      - proxy
+    labels:
+      traefik.enable: true
+      traefik.docker.network: proxy
+      traefik.http.routers.phase.rule: Host(`phase.dominiksiejak.pl`)
+      traefik.http.routers.phase.priority: 1
+      traefik.http.routers.phase.service: phase
+      traefik.http.services.phase.loadbalancer.server.port: 3000
+
+  redis:
+    image: docker.io/valkey/valkey:9.1.1
+    container_name: phase-redis
+    restart: unless-stopped
+    networks:
+      - phase
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+networks:
+  phase:
+    driver: bridge
+  proxy:
+    external: true
+  database:
+    external: true

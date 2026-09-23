@@ -1,0 +1,292 @@
+{
+  "id": "sa0Ufb9jP9QQO0Pf",
+  "name": "work-reconcile-schedule",
+  "nodes": [
+    {
+      "id": "faa9e149-be89-5737-a6d2-868c16f37d2e",
+      "name": "Reconcile Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        820
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        },
+        "skipDurableScheduler": true,
+        "misfirePolicy": "skip"
+      }
+    },
+    {
+      "id": "2b7ef33a-f1ec-5930-a9ae-cf4ed80dbe7d",
+      "name": "Get Controller (Sched)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        220,
+        820
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RQF9wB5DfMaXfV6R"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "singleton_key",
+              "condition": "eq",
+              "keyValue": "controller"
+            }
+          ]
+        },
+        "returnAll": true
+      }
+    },
+    {
+      "id": "706577d3-61c8-5a1b-b41e-1cac8190ce2c",
+      "name": "Save Reconcile State",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1540,
+        880
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RQF9wB5DfMaXfV6R"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "singleton_key",
+              "condition": "eq",
+              "keyValue": "controller"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_active": "={{ $json.work_active }}",
+            "last_source": "={{ $json.last_source }}",
+            "last_event_at": "={{ $json.last_event_at }}",
+            "last_inpost_entry_id": "={{ $json.last_inpost_entry_id }}",
+            "suppress_focus_until": "={{ $json.suppress_focus_until }}",
+            "notes": "={{ $json.notes }}"
+          }
+        }
+      }
+    },
+    {
+      "id": "5b12b2e5-82b9-5cee-8569-027cf50d2298",
+      "name": "Reconcile Decide",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        920
+      ],
+      "parameters": {
+        "jsCode": "const plan = $('Decide Schedule Actions').first().json;\nconst cur = $input.first().json;\nconst entry = cur && cur.id ? cur : null;\nconst has = !!(entry && entry.id);\nconst isInPost = has && Number(entry.project_id || 0) === Number(plan.inpost_project_id);\nconst known = !!plan.work_active;\nif (isInPost === known) return [{ json: { skip: true } }];\n// Drift detected (missed webhook)\nconst desired = isInPost;\nreturn [{ json: {\n  skip: false,\n  desired,\n  shortcut: desired ? 'Set Work Focus' : 'Clear Work Focus',\n  work_active: desired,\n  last_inpost_entry_id: desired ? String(entry.id) : '',\n  last_source: 'reconcile',\n  last_event_at: new Date().toISOString(),\n  suppress_focus_until: new Date(Date.now() + 120000).toISOString(),\n  notes: `reconcile drift work=${desired}`\n} }];"
+      }
+    },
+    {
+      "id": "3f2a9f56-1aba-57ea-8ebe-ffedc459eb1b",
+      "name": "Reconcile Current Timer",
+      "disabled": false,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        920
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.track.toggl.com/api/v9/me/time_entries/current",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "99ad32b1-3f62-5dce-a5b7-5962f156bd99",
+      "name": "SSH Reconcile Focus",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        880
+      ],
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "={{ `shortcuts run '${$('Reconcile Decide').item.json.shortcut}'` }}",
+        "cwd": "/Users/Apple",
+        "operation": "execute",
+        "resource": "command"
+      },
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "Yy9vPF9jQvlHsVtX",
+          "name": "vibe Focus SSH"
+        }
+      }
+    },
+    {
+      "id": "04d5260b-173e-50a1-be7b-cd5615091ca7",
+      "name": "Decide Schedule Actions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        820
+      ],
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nreturn [{ json: {\n  rowId: row.id,\n  work_active: !!row.work_active,\n  workspace_id: Number(row.workspace_id || 3825058),\n  inpost_project_id: Number(row.inpost_project_id || 215500877),\n  last_inpost_entry_id: row.last_inpost_entry_id || '',\n  suppress_focus_until: row.suppress_focus_until,\n  suppress_toggl_until: row.suppress_toggl_until\n} }];"
+      }
+    },
+    {
+      "id": "42d63405-08a0-51b1-b8ce-ae3170251843",
+      "name": "Reconcile Needed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        920
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Reconcile Schedule": {
+      "main": [
+        [
+          {
+            "node": "Get Controller (Sched)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Controller (Sched)": {
+      "main": [
+        [
+          {
+            "node": "Decide Schedule Actions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reconcile Current Timer": {
+      "main": [
+        [
+          {
+            "node": "Reconcile Decide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reconcile Decide": {
+      "main": [
+        [
+          {
+            "node": "Reconcile Needed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reconcile Needed?": {
+      "main": [
+        [
+          {
+            "node": "Save Reconcile State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Reconcile State": {
+      "main": [
+        [
+          {
+            "node": "SSH Reconcile Focus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Schedule Actions": {
+      "main": [
+        [
+          {
+            "node": "Reconcile Current Timer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}

@@ -224,6 +224,9 @@ filtering:
     - domain: opencode.dominiksiejak.pl
       answer: 192.168.89.253
       enabled: true
+    - domain: phase.dominiksiejak.pl
+      answer: 192.168.89.253
+      enabled: true
     - domain: profilarr.dominiksiejak.pl
       answer: 192.168.89.253
       enabled: true

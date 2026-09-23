@@ -2,12 +2,12 @@
 # Nested under the dependency name. Do not edit charts/argo-cd/values.yaml.
 argo-cd:
   global:
-    domain: argocd.vibe.local
+    domain: argocd.k8s.local
     tolerations:
       - key: node-role.kubernetes.io/control-plane
         operator: Exists
         effect: NoSchedule
-    # Single-node KIND: skip anti-affinity / zone pinning.
+    # Single-node kubeadm: skip anti-affinity / zone pinning.
     affinity:
       podAntiAffinity: none
       nodeAffinity:
@@ -19,28 +19,34 @@ argo-cd:
 
   configs:
     params:
+      # ClusterIP only. Port-forward uses HTTP. Turn this off when an ingress terminates TLS.
       server.insecure: true
-    cm:
-      # Nested Application CRs should not keep a parent app Progressing.
-      resource.customizations.health.argoproj.io_Application: |
-        hs = {}
-        hs.status = "Healthy"
-        hs.message = "Application CR"
-        return hs
-      # Traefik hostPort on KIND never fills Ingress loadBalancer status.
-      resource.customizations.health.networking.k8s.io_Ingress: |
-        hs = {}
-        hs.status = "Healthy"
-        hs.message = "Ingress (KIND/Traefik hostPort)"
-        return hs
+
+  controller:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+  repoServer:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
 
   server:
     ingress:
-      enabled: true
-      controller: generic
-      ingressClassName: traefik
-      hostname: argocd.vibe.local
-      tls: false
+      enabled: false
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+  redis:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
 
   dex:
     enabled: false

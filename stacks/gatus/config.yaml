@@ -70,6 +70,10 @@ endpoints:
     url: https://vault.dominiksiejak.pl
     <<: *defaults
 
+  - name: "phase"
+    url: https://phase.dominiksiejak.pl
+    <<: *defaults
+
   - name: "netbox"
     url: https://netbox.dominiksiejak.pl
     <<: *defaults

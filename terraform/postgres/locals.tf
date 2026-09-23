@@ -36,5 +36,9 @@ locals {
       username = "rreading_glasses"
       database = "bookarr_db"
     }
+    phase = {
+      username = "phase_user"
+      database = "phase_db"
+    }
   }
 }

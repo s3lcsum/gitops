@@ -1,0 +1,1812 @@
+{
+  "id": "2x4mVjHEzlwPkvCI",
+  "name": "work-state-controller",
+  "nodes": [
+    {
+      "id": "0b1da71d-0885-5212-9724-ea20c1ebbf9b",
+      "name": "Focus Webhook",
+      "webhookId": "30bee2e0-bcea-442c-ae82-a8a556983f41",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "authentication": "headerAuth",
+        "httpMethod": "POST",
+        "options": {},
+        "path": "focus-work",
+        "responseMode": "responseNode"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "WcOswv3jQQPbP1Uh",
+          "name": "focus-webhook-secret"
+        }
+      }
+    },
+    {
+      "id": "2b672c4e-3543-55f6-bbc7-e2d4d1503b60",
+      "name": "Normalize Focus Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\n// Shortcuts POST only {\"focus\":\"<name>\"}; \"\" = Focus off. No state field.\nconst focus = String(body.focus ?? '').trim();\nconst desired = focus === 'Work' ? 'on' : 'off';\nreturn [{ json: { desired, focus, received_at: new Date().toISOString(), source: 'focus' } }];"
+      }
+    },
+    {
+      "id": "67fb911d-1466-55f1-a341-ae1ca1503dca",
+      "name": "Get Controller (Focus)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        900,
+        -80
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RQF9wB5DfMaXfV6R"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "singleton_key",
+              "condition": "eq",
+              "keyValue": "controller"
+            }
+          ]
+        },
+        "returnAll": true
+      }
+    },
+    {
+      "id": "91e177b4-a7f0-5cf8-a775-5042255aa55e",
+      "name": "Route Focus Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const event = $('Normalize Focus Event').first().json;\nconst row = $input.first().json;\nconst now = Date.now();\nconst suppressUntil = row.suppress_focus_until ? Date.parse(row.suppress_focus_until) : 0;\nif (suppressUntil && now < suppressUntil) {\n  return [{ json: {\n    skip: true,\n    reason: 'suppress_own_focus',\n    desired: event.desired,\n    focus: event.focus,\n    suppress_focus_until: row.suppress_focus_until\n  }}];\n}\n\nconst current = !!row.work_active;\nconst wantOn = event.desired === 'on';\nconst need_focus = wantOn ? !current : current;\n\nreturn [{ json: {\n  skip: false,\n  desired: event.desired,\n  focus: event.focus,\n  need_focus,\n  shortcut: wantOn ? 'Set Work Focus' : 'Clear Work Focus',\n  workspace_id: Number(row.workspace_id || 3825058),\n  inpost_project_id: Number(row.inpost_project_id || 215500877),\n  received_at: event.received_at,\n  focus_pending_desired: '',\n  focus_pending_since: null\n}}];"
+      }
+    },
+    {
+      "id": "87795d62-f753-5934-b81f-9dd1df209735",
+      "name": "Toggl Webhook",
+      "webhookId": "6dee0b82-26b6-49bc-a339-07b41938e9e7",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        420
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "toggl-time-entry",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      }
+    },
+    {
+      "id": "1c9ef151-aa93-52cd-a53a-9fc3f4b17d2b",
+      "name": "Verify Toggl HMAC",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        420
+      ],
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst item = $input.first();\nconst j = item.json;\nconst secret = String(j.toggl_secret || '');\nconst headers = j.headers || {};\nconst sigHeader = String(headers['x-webhook-signature-256'] || headers['X-Webhook-Signature-256'] || '');\nlet raw = '';\nif (item.binary && item.binary.data) {\n  const bin = item.binary.data;\n  raw = Buffer.from(bin.data, (bin.encoding || 'base64')).toString('utf8');\n} else if (typeof j.body === 'string') {\n  raw = j.body;\n} else if (j.body != null) {\n  raw = JSON.stringify(j.body);\n}\nconst expected = 'sha256=' + crypto.createHmac('sha256', secret).update(raw, 'utf8').digest('hex');\nlet ok = false;\ntry {\n  const a = Buffer.from(expected);\n  const b = Buffer.from(sigHeader);\n  ok = !!secret && a.length === b.length && crypto.timingSafeEqual(a, b);\n} catch (e) { ok = false; }\nlet parsed = {};\ntry { parsed = JSON.parse(raw); } catch (e) { parsed = (j.body && typeof j.body === 'object') ? j.body : {}; }\nconst payload = parsed.payload;\nconst validation_code = parsed.validation_code || (payload && typeof payload === 'object' ? payload.validation_code : null) || null;\nreturn [{ json: {\n  hmac_ok_strict: ok,\n  signature: sigHeader,\n  raw_len: raw.length,\n  event: parsed,\n  validation_code,\n  is_ping: payload === 'ping' || parsed.payload === 'ping',\n  expected_callback: j.expected_callback,\n  url_callback: parsed.url_callback || ''\n} }];"
+      }
+    },
+    {
+      "id": "7dc1a907-58f0-562a-9d29-7322a04fd425",
+      "name": "HMAC Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        420
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.hmac_ok_strict }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "34a6c370-bcb4-55a5-a3bb-4c3686593234",
+      "name": "Toggl 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        900,
+        580
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { error: 'invalid_signature' } }}",
+        "options": {
+          "responseCode": 401
+        }
+      }
+    },
+    {
+      "id": "2f78c53a-d671-5a11-b227-c9458841fc5a",
+      "name": "Is Ping?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        900,
+        360
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.is_ping }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c2",
+              "leftValue": "={{ $json.validation_code || '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    },
+    {
+      "id": "faf14ca2-db83-5e06-bdf5-1f2eb37f7b18",
+      "name": "Respond Validation",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1140,
+        280
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.validation_code ? { validation_code: $json.validation_code } : { ok: true } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "ab8973ba-ae7b-5f9c-b8bc-daec6a99f527",
+      "name": "Parse Toggl Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1140,
+        460
+      ],
+      "parameters": {
+        "jsCode": "const event = $input.first().json.event || {};\nconst action = String(event.metadata?.action || event.action || '').toLowerCase();\nlet payload = event.payload;\nif (typeof payload === 'string') {\n  try { payload = JSON.parse(payload); } catch (e) { payload = {}; }\n}\npayload = payload && typeof payload === 'object' ? payload : {};\nconst projectId = Number(payload.project_id || 0);\nconst inpostId = 215500877;\nconst workspaceId = Number(payload.workspace_id || 3825058);\nconst duration = Number(payload.duration);\nconst isRunning = duration < 0 || (!payload.stop && payload.start);\nconst isInPost = projectId === inpostId;\nconst deleted = action.includes('delet') || !!payload.server_deleted_at;\nlet workDesired = null;\nif (isInPost && !deleted && isRunning) workDesired = true;\nif (isInPost && (deleted || (!isRunning && payload.stop))) workDesired = false;\nreturn [{ json: {\n  action, projectId, inpostId, workspaceId, isRunning, isInPost, deleted,\n  workDesired, relevant: workDesired !== null,\n  entryId: String(payload.id || ''),\n  description: payload.description || '',\n  received_at: new Date().toISOString(),\n  source: 'toggl'\n} }];"
+      }
+    },
+    {
+      "id": "d2cfe81c-9799-58c1-a917-6f2ea9462c07",
+      "name": "Toggl 200 Ack",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1360,
+        360
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { accepted: true } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "25816c87-be2e-570e-8cdf-231fd4f17843",
+      "name": "InPost Relevant?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1580,
+        460
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.relevant }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "dd595fdf-3575-514f-b124-b2b7db706bff",
+      "name": "Get Controller (Toggl)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1800,
+        400
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RQF9wB5DfMaXfV6R"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "singleton_key",
+              "condition": "eq",
+              "keyValue": "controller"
+            }
+          ]
+        },
+        "returnAll": true
+      }
+    },
+    {
+      "id": "36e2c9f2-0019-5f3c-a1b3-835d651eb1df",
+      "name": "Decide Toggl Apply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2020,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const evt = $('Parse Toggl Event').first().json;\nconst row = $input.first().json;\nconst now = Date.now();\nconst suppressUntil = row.suppress_toggl_until ? Date.parse(row.suppress_toggl_until) : 0;\nif (suppressUntil && now < suppressUntil) {\n  return [{ json: { skip: true, reason: 'suppress_own_toggl', workDesired: evt.workDesired } }];\n}\nconst desired = !!evt.workDesired;\nconst current = !!row.work_active;\nconst need_focus = desired !== current;\n// Clear leftover pending fields; only SSH Focus when state actually changes\nreturn [{ json: {\n  skip: false,\n  desired,\n  need_focus,\n  shortcut: desired ? 'Set Work Focus' : 'Clear Work Focus',\n  focus_pending_desired: '',\n  focus_pending_since: null,\n  work_active: desired,\n  last_source: 'toggl',\n  last_event_at: evt.received_at,\n  last_inpost_entry_id: evt.entryId || row.last_inpost_entry_id,\n  suppress_focus_until: need_focus ? new Date(now + 120000).toISOString() : (row.suppress_focus_until || null),\n  notes: `toggl set work=${desired} entry=${evt.entryId} need_focus=${need_focus}`\n} }];"
+      }
+    },
+    {
+      "id": "f452e863-dd47-5bb4-a300-694a98527fed",
+      "name": "Apply Toggl?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2240,
+        400
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "f43085a2-33fc-5e8e-8739-76f6363ad1d6",
+      "name": "Save Toggl State",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2460,
+        320
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RQF9wB5DfMaXfV6R"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "singleton_key",
+              "condition": "eq",
+              "keyValue": "controller"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_active": "={{ $json.work_active }}",
+            "focus_pending_desired": "={{ $json.focus_pending_desired }}",
+            "focus_pending_since": "={{ $json.focus_pending_since }}",
+            "last_source": "={{ $json.last_source }}",
+            "last_event_at": "={{ $json.last_event_at }}",
+            "last_inpost_entry_id": "={{ $json.last_inpost_entry_id }}",
+            "suppress_focus_until": "={{ $json.suppress_focus_until }}",
+            "notes": "={{ $json.notes }}"
+          }
+        }
+      }
+    },
+    {
+      "id": "c6a9577b-f6dc-5b87-8bc1-f8cbdc15ced1",
+      "name": "SSH Set Focus",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        2780,
+        280
+      ],
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "={{ `shortcuts run '${$('Decide Toggl Apply').item.json.shortcut}'` }}",
+        "cwd": "/Users/Apple",
+        "operation": "execute",
+        "resource": "command"
+      },
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "Yy9vPF9jQvlHsVtX",
+          "name": "vibe Focus SSH"
+        }
+      }
+    },
+    {
+      "id": "faa9e149-be89-5737-a6d2-868c16f37d2e",
+      "name": "Reconcile Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        820
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        },
+        "skipDurableScheduler": true,
+        "misfirePolicy": "skip"
+      }
+    },
+    {
+      "id": "2b7ef33a-f1ec-5930-a9ae-cf4ed80dbe7d",
+      "name": "Get Controller (Sched)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        220,
+        820
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RQF9wB5DfMaXfV6R"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "singleton_key",
+              "condition": "eq",
+              "keyValue": "controller"
+            }
+          ]
+        },
+        "returnAll": true
+      }
+    },
+    {
+      "id": "04d5260b-173e-50a1-be7b-cd5615091ca7",
+      "name": "Decide Schedule Actions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        820
+      ],
+      "parameters": {
+        "jsCode": "const row = $input.first().json;\nreturn [{ json: {\n  rowId: row.id,\n  work_active: !!row.work_active,\n  workspace_id: Number(row.workspace_id || 3825058),\n  inpost_project_id: Number(row.inpost_project_id || 215500877),\n  last_inpost_entry_id: row.last_inpost_entry_id || '',\n  suppress_focus_until: row.suppress_focus_until,\n  suppress_toggl_until: row.suppress_toggl_until\n} }];"
+      }
+    },
+    {
+      "id": "3f2a9f56-1aba-57ea-8ebe-ffedc459eb1b",
+      "name": "Reconcile Current Timer",
+      "disabled": false,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        920
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.track.toggl.com/api/v9/me/time_entries/current",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "5b12b2e5-82b9-5cee-8569-027cf50d2298",
+      "name": "Reconcile Decide",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        920
+      ],
+      "parameters": {
+        "jsCode": "const plan = $('Decide Schedule Actions').first().json;\nconst cur = $input.first().json;\nconst entry = cur && cur.id ? cur : null;\nconst has = !!(entry && entry.id);\nconst isInPost = has && Number(entry.project_id || 0) === Number(plan.inpost_project_id);\nconst known = !!plan.work_active;\nif (isInPost === known) return [{ json: { skip: true } }];\n// Drift detected (missed webhook)\nconst desired = isInPost;\nreturn [{ json: {\n  skip: false,\n  desired,\n  shortcut: desired ? 'Set Work Focus' : 'Clear Work Focus',\n  work_active: desired,\n  last_inpost_entry_id: desired ? String(entry.id) : '',\n  last_source: 'reconcile',\n  last_event_at: new Date().toISOString(),\n  suppress_focus_until: new Date(Date.now() + 120000).toISOString(),\n  notes: `reconcile drift work=${desired}`\n} }];"
+      }
+    },
+    {
+      "id": "42d63405-08a0-51b1-b8ce-ae3170251843",
+      "name": "Reconcile Needed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        920
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "706577d3-61c8-5a1b-b41e-1cac8190ce2c",
+      "name": "Save Reconcile State",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1540,
+        880
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RQF9wB5DfMaXfV6R"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "singleton_key",
+              "condition": "eq",
+              "keyValue": "controller"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_active": "={{ $json.work_active }}",
+            "last_source": "={{ $json.last_source }}",
+            "last_event_at": "={{ $json.last_event_at }}",
+            "last_inpost_entry_id": "={{ $json.last_inpost_entry_id }}",
+            "suppress_focus_until": "={{ $json.suppress_focus_until }}",
+            "notes": "={{ $json.notes }}"
+          }
+        }
+      }
+    },
+    {
+      "id": "99ad32b1-3f62-5dce-a5b7-5962f156bd99",
+      "name": "SSH Reconcile Focus",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        880
+      ],
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "={{ `shortcuts run '${$('Reconcile Decide').item.json.shortcut}'` }}",
+        "cwd": "/Users/Apple",
+        "operation": "execute",
+        "resource": "command"
+      },
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "Yy9vPF9jQvlHsVtX",
+          "name": "vibe Focus SSH"
+        }
+      }
+    },
+    {
+      "id": "toggl-secret-get",
+      "name": "Get Toggl Secret",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        220,
+        420
+      ],
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "dpZoIRhIm8gMd8KU"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "condition": "eq",
+              "keyName": "key",
+              "keyValue": "TOGGL_WEBHOOK_SECRET"
+            }
+          ]
+        },
+        "matchType": "allConditions",
+        "operation": "get",
+        "resource": "row",
+        "returnAll": true
+      }
+    },
+    {
+      "id": "toggl-merge-secret",
+      "name": "Attach Toggl Secret",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        420
+      ],
+      "parameters": {
+        "jsCode": "const webhook = $('Toggl Webhook').first();\nconst secretRow = $input.first().json;\nconst out = Object.assign({}, webhook.json, { toggl_secret: secretRow.value, expected_callback: 'https://n8n.dominiksiejak.pl/webhook/toggl-time-entry' });\nconst item = { json: out };\nif (webhook.binary) item.binary = webhook.binary;\nreturn [item];"
+      }
+    },
+    {
+      "id": "focus-queue-if",
+      "name": "Focus Queue?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1230,
+        -80
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "fq1",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "focus-200-suppressed",
+      "name": "Focus 200 Suppressed",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1450,
+        40
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { accepted: true, suppressed: true, reason: $json.reason, desired: $json.desired, focus: $json.focus } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "toggl-need-focus-if",
+      "name": "Need Focus SSH?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2570,
+        320
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "nf1",
+              "leftValue": "={{ $('Decide Toggl Apply').item.json.need_focus }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "focus-immediate-if",
+      "name": "Focus Immediate On?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1340,
+        -200
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "fi1",
+              "leftValue": "={{ $json.desired }}",
+              "rightValue": "on",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "focus-on-get-timer",
+      "name": "Get Current Timer (Focus On)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1560,
+        -320
+      ],
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "method": "GET",
+        "nodeCredentialType": "togglApi",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        },
+        "url": "https://api.track.toggl.com/api/v9/me/time_entries/current"
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "focus-on-plan",
+      "name": "Plan Immediate On",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        -320
+      ],
+      "parameters": {
+        "jsCode": "const route = $('Route Focus Event').first().json;\nconst row = $('Get Controller (Focus)').first().json;\nconst cur = $input.first().json;\nconst entry = cur && cur.id ? cur : (cur.data || null);\nconst has = !!(entry && entry.id);\nconst workspace_id = Number(route.workspace_id || 3825058);\nconst inpost_project_id = Number(route.inpost_project_id || 215500877);\nconst projectId = has ? Number(entry.project_id || 0) : 0;\nconst isInPost = has && projectId === inpost_project_id;\nconst need_stop = has && !isInPost;\nconst need_start = !isInPost;\nreturn [{ json: {\n  desired: true,\n  need_stop,\n  need_start,\n  need_focus: !!route.need_focus,\n  shortcut: 'Set Work Focus',\n  stop_id: need_stop ? entry.id : null,\n  stop_wid: need_stop ? (entry.workspace_id || workspace_id) : null,\n  workspace_id,\n  inpost_project_id,\n  focus: route.focus,\n  suppress_until: new Date(Date.now() + 120000).toISOString(),\n  suppress_focus_until: route.need_focus\n    ? new Date(Date.now() + 120000).toISOString()\n    : (row.suppress_focus_until || null),\n  notes: `focus immediate on stop=${need_stop} start=${need_start} need_focus=${!!route.need_focus}`\n}}];"
+      }
+    },
+    {
+      "id": "focus-on-need-stop",
+      "name": "Need Stop Other?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2000,
+        -320
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "ns1",
+              "leftValue": "={{ $json.need_stop }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "focus-on-stop",
+      "name": "Stop Other Timer (Focus On)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2220,
+        -420
+      ],
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "method": "PATCH",
+        "nodeCredentialType": "togglApi",
+        "options": {},
+        "url": "=https://api.track.toggl.com/api/v9/workspaces/{{ $('Plan Immediate On').item.json.stop_wid }}/time_entries/{{ $('Plan Immediate On').item.json.stop_id }}/stop"
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "focus-on-need-start",
+      "name": "Need Start InPost?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2220,
+        -220
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "nst1",
+              "leftValue": "={{ $json.need_start }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "focus-on-start",
+      "name": "Start InPost (Focus On)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2440,
+        -320
+      ],
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "jsonBody": "={{ JSON.stringify({ created_with: 'n8n-work-state-controller', description: 'Work', project_id: Number($('Plan Immediate On').item.json.inpost_project_id), workspace_id: Number($('Plan Immediate On').item.json.workspace_id), start: new Date().toISOString(), duration: -1 }) }}",
+        "method": "POST",
+        "nodeCredentialType": "togglApi",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "=https://api.track.toggl.com/api/v9/workspaces/{{ $('Plan Immediate On').item.json.workspace_id }}/time_entries"
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "focus-on-finalize",
+      "name": "Finalize Immediate On",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2660,
+        -280
+      ],
+      "parameters": {
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "focus_pending_desired": "",
+            "focus_pending_since": "={{ null }}",
+            "last_event_at": "={{ $now.toISO() }}",
+            "last_source": "focus_immediate",
+            "notes": "={{ $('Plan Immediate On').item.json.notes }}",
+            "suppress_toggl_until": "={{ $('Plan Immediate On').item.json.suppress_until }}",
+            "work_active": true,
+            "suppress_focus_until": "={{ $('Plan Immediate On').item.json.suppress_focus_until }}"
+          }
+        },
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RQF9wB5DfMaXfV6R"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "condition": "eq",
+              "keyName": "singleton_key",
+              "keyValue": "controller"
+            }
+          ]
+        },
+        "matchType": "allConditions",
+        "operation": "update",
+        "resource": "row"
+      }
+    },
+    {
+      "id": "focus-on-need-ssh",
+      "name": "Need Focus SSH (On)?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2880,
+        -280
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "nfos1",
+              "leftValue": "={{ $('Plan Immediate On').item.json.need_focus }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "focus-on-ssh",
+      "name": "SSH Set Work Focus (On)",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        3100,
+        -360
+      ],
+      "parameters": {
+        "command": "={{ `shortcuts run '${$('Plan Immediate On').item.json.shortcut}'` }}",
+        "authentication": "privateKey",
+        "cwd": "/Users/Apple",
+        "operation": "execute",
+        "resource": "command"
+      },
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "Yy9vPF9jQvlHsVtX",
+          "name": "vibe Focus SSH"
+        }
+      }
+    },
+    {
+      "id": "focus-200-applied",
+      "name": "Focus 200 Applied",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3320,
+        -280
+      ],
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        },
+        "respondWith": "json",
+        "responseBody": "={{ { accepted: true, applied: 'on', focus: $('Plan Immediate On').item.json.focus, need_start: $('Plan Immediate On').item.json.need_start, need_focus: $('Plan Immediate On').item.json.need_focus } }}"
+      }
+    },
+    {
+      "id": "focus-off-get-timer",
+      "name": "Get Current Timer (Focus Off)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1560,
+        40
+      ],
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "method": "GET",
+        "nodeCredentialType": "togglApi",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        },
+        "url": "https://api.track.toggl.com/api/v9/me/time_entries/current"
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "focus-off-plan",
+      "name": "Plan Immediate Off",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        40
+      ],
+      "parameters": {
+        "jsCode": "const route = $('Route Focus Event').first().json;\nconst row = $('Get Controller (Focus)').first().json;\nconst cur = $input.first().json;\nconst entry = cur && cur.id ? cur : (cur.data || null);\nconst has = !!(entry && entry.id);\nconst workspace_id = Number(route.workspace_id || 3825058);\nconst inpost_project_id = Number(route.inpost_project_id || 215500877);\nconst projectId = has ? Number(entry.project_id || 0) : 0;\nconst isInPost = has && projectId === inpost_project_id;\nconst need_stop = isInPost;\nreturn [{ json: {\n  desired: false,\n  need_stop,\n  need_focus: !!route.need_focus,\n  shortcut: 'Clear Work Focus',\n  stop_id: need_stop ? entry.id : null,\n  stop_wid: need_stop ? (entry.workspace_id || workspace_id) : null,\n  workspace_id,\n  inpost_project_id,\n  focus: route.focus,\n  suppress_until: need_stop\n    ? new Date(Date.now() + 120000).toISOString()\n    : (row.suppress_toggl_until || null),\n  suppress_focus_until: route.need_focus\n    ? new Date(Date.now() + 120000).toISOString()\n    : (row.suppress_focus_until || null),\n  notes: `focus immediate off stop=${need_stop} need_focus=${!!route.need_focus}`\n}}];"
+      }
+    },
+    {
+      "id": "focus-off-need-stop",
+      "name": "Need Stop InPost?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2000,
+        40
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "nsi1",
+              "leftValue": "={{ $json.need_stop }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "focus-off-stop",
+      "name": "Stop InPost (Focus Off)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2220,
+        -40
+      ],
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "method": "PATCH",
+        "nodeCredentialType": "togglApi",
+        "options": {},
+        "url": "=https://api.track.toggl.com/api/v9/workspaces/{{ $('Plan Immediate Off').item.json.stop_wid }}/time_entries/{{ $('Plan Immediate Off').item.json.stop_id }}/stop"
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "focus-off-finalize",
+      "name": "Finalize Immediate Off",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2440,
+        40
+      ],
+      "parameters": {
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "focus_pending_desired": "",
+            "focus_pending_since": "={{ null }}",
+            "last_event_at": "={{ $now.toISO() }}",
+            "last_source": "focus_immediate",
+            "notes": "={{ $('Plan Immediate Off').item.json.notes }}",
+            "suppress_focus_until": "={{ $('Plan Immediate Off').item.json.suppress_focus_until }}",
+            "suppress_toggl_until": "={{ $('Plan Immediate Off').item.json.suppress_until }}",
+            "work_active": false
+          }
+        },
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RQF9wB5DfMaXfV6R"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "condition": "eq",
+              "keyName": "singleton_key",
+              "keyValue": "controller"
+            }
+          ]
+        },
+        "matchType": "allConditions",
+        "operation": "update",
+        "resource": "row"
+      }
+    },
+    {
+      "id": "focus-off-need-ssh",
+      "name": "Need Focus SSH (Off)?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2660,
+        40
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "nfof1",
+              "leftValue": "={{ $('Plan Immediate Off').item.json.need_focus }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "focus-off-ssh",
+      "name": "SSH Clear Work Focus (Off)",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        2880,
+        -40
+      ],
+      "parameters": {
+        "command": "={{ `shortcuts run '${$('Plan Immediate Off').item.json.shortcut}'` }}",
+        "authentication": "privateKey",
+        "cwd": "/Users/Apple",
+        "operation": "execute",
+        "resource": "command"
+      },
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "Yy9vPF9jQvlHsVtX",
+          "name": "vibe Focus SSH"
+        }
+      }
+    },
+    {
+      "id": "focus-200-applied-off",
+      "name": "Focus 200 Applied Off",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3100,
+        40
+      ],
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        },
+        "respondWith": "json",
+        "responseBody": "={{ { accepted: true, applied: 'off', focus: $('Plan Immediate Off').item.json.focus, need_stop: $('Plan Immediate Off').item.json.need_stop, need_focus: $('Plan Immediate Off').item.json.need_focus } }}"
+      }
+    }
+  ],
+  "connections": {
+    "Normalize Focus Event": {
+      "main": [
+        [
+          {
+            "node": "Get Controller (Focus)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Controller (Focus)": {
+      "main": [
+        [
+          {
+            "node": "Route Focus Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Toggl HMAC": {
+      "main": [
+        [
+          {
+            "node": "HMAC Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC Valid?": {
+      "main": [
+        [
+          {
+            "node": "Is Ping?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Toggl 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Ping?": {
+      "main": [
+        [
+          {
+            "node": "Respond Validation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse Toggl Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Toggl Event": {
+      "main": [
+        [
+          {
+            "node": "Toggl 200 Ack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Toggl 200 Ack": {
+      "main": [
+        [
+          {
+            "node": "InPost Relevant?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "InPost Relevant?": {
+      "main": [
+        [
+          {
+            "node": "Get Controller (Toggl)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Controller (Toggl)": {
+      "main": [
+        [
+          {
+            "node": "Decide Toggl Apply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Toggl Apply": {
+      "main": [
+        [
+          {
+            "node": "Apply Toggl?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Toggl?": {
+      "main": [
+        [
+          {
+            "node": "Save Toggl State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reconcile Schedule": {
+      "main": [
+        [
+          {
+            "node": "Get Controller (Sched)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Controller (Sched)": {
+      "main": [
+        [
+          {
+            "node": "Decide Schedule Actions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reconcile Current Timer": {
+      "main": [
+        [
+          {
+            "node": "Reconcile Decide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reconcile Decide": {
+      "main": [
+        [
+          {
+            "node": "Reconcile Needed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reconcile Needed?": {
+      "main": [
+        [
+          {
+            "node": "Save Reconcile State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Reconcile State": {
+      "main": [
+        [
+          {
+            "node": "SSH Reconcile Focus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Focus Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Focus Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Toggl Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Toggl Secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Toggl Secret": {
+      "main": [
+        [
+          {
+            "node": "Attach Toggl Secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Toggl Secret": {
+      "main": [
+        [
+          {
+            "node": "Verify Toggl HMAC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Focus Event": {
+      "main": [
+        [
+          {
+            "node": "Focus Queue?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Focus Queue?": {
+      "main": [
+        [
+          {
+            "node": "Focus Immediate On?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Focus 200 Suppressed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Toggl State": {
+      "main": [
+        [
+          {
+            "node": "Need Focus SSH?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Need Focus SSH?": {
+      "main": [
+        [
+          {
+            "node": "SSH Set Focus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Focus Immediate On?": {
+      "main": [
+        [
+          {
+            "node": "Get Current Timer (Focus On)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Current Timer (Focus Off)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Current Timer (Focus On)": {
+      "main": [
+        [
+          {
+            "node": "Plan Immediate On",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan Immediate On": {
+      "main": [
+        [
+          {
+            "node": "Need Stop Other?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Need Stop Other?": {
+      "main": [
+        [
+          {
+            "node": "Stop Other Timer (Focus On)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Need Start InPost?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop Other Timer (Focus On)": {
+      "main": [
+        [
+          {
+            "node": "Start InPost (Focus On)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Need Start InPost?": {
+      "main": [
+        [
+          {
+            "node": "Start InPost (Focus On)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finalize Immediate On",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start InPost (Focus On)": {
+      "main": [
+        [
+          {
+            "node": "Finalize Immediate On",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize Immediate On": {
+      "main": [
+        [
+          {
+            "node": "Need Focus SSH (On)?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Need Focus SSH (On)?": {
+      "main": [
+        [
+          {
+            "node": "SSH Set Work Focus (On)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Focus 200 Applied",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SSH Set Work Focus (On)": {
+      "main": [
+        [
+          {
+            "node": "Focus 200 Applied",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Current Timer (Focus Off)": {
+      "main": [
+        [
+          {
+            "node": "Plan Immediate Off",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan Immediate Off": {
+      "main": [
+        [
+          {
+            "node": "Need Stop InPost?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Need Stop InPost?": {
+      "main": [
+        [
+          {
+            "node": "Stop InPost (Focus Off)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finalize Immediate Off",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop InPost (Focus Off)": {
+      "main": [
+        [
+          {
+            "node": "Finalize Immediate Off",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize Immediate Off": {
+      "main": [
+        [
+          {
+            "node": "Need Focus SSH (Off)?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Need Focus SSH (Off)?": {
+      "main": [
+        [
+          {
+            "node": "SSH Clear Work Focus (Off)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Focus 200 Applied Off",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SSH Clear Work Focus (Off)": {
+      "main": [
+        [
+          {
+            "node": "Focus 200 Applied Off",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Schedule Actions": {
+      "main": [
+        [
+          {
+            "node": "Reconcile Current Timer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

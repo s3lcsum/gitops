@@ -19,11 +19,9 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
+  # Sync is manual. Automated prune/selfHeal on main would apply a bad push
+  # and overwrite a live fix.
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
-      - RespectIgnoreDifferences=true

@@ -1,5 +1,4 @@
 {
   "name": "gitops homelab",
-  "install": ".cursor/install.sh",
-  "start": "if [ -x /Users/Apple/.local/bin/kind-vibe-ensure.sh ]; then /Users/Apple/.local/bin/kind-vibe-ensure.sh; fi"
+  "install": ".cursor/install.sh"
 }

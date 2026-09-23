@@ -19,8 +19,8 @@ resource "cloudflare_ruleset" "country_allowlist" {
     {
       ref         = "skip-messenger-webhook"
       action      = "skip"
-      expression  = "(http.host eq \"n8n.dominiksiejak.pl\" and (starts_with(http.request.uri.path, \"/webhook/messenger\") or starts_with(http.request.uri.path, \"/webhook/toggl-time-entry\") or starts_with(http.request.uri.path, \"/webhook/focus-work\") or starts_with(http.request.uri.path, \"/webhook/authentik-login\"))) or http.host in {\"dominiksiejak.pl\" \"www.dominiksiejak.pl\" \"miedzysztuka.dominiksiejak.pl\"}"
-      description = "Allow n8n webhook paths + public sites to bypass the country allowlist"
+      expression  = "(http.host eq \"n8n.dominiksiejak.pl\" and (starts_with(http.request.uri.path, \"/webhook/messenger\") or starts_with(http.request.uri.path, \"/webhook/toggl-time-entry\") or starts_with(http.request.uri.path, \"/webhook/focus-work\") or starts_with(http.request.uri.path, \"/webhook/authentik-login\"))) or (http.host eq \"auth.dominiksiejak.pl\" and starts_with(http.request.uri.path, \"/application/o/\")) or http.host in {\"dominiksiejak.pl\" \"www.dominiksiejak.pl\"}"
+      description = "Allow n8n webhooks + Authentik OIDC endpoints + public sites to bypass the country allowlist"
       enabled     = true
 
       action_parameters = {

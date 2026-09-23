@@ -82,6 +82,52 @@ check('trustForwardHeader: false' in ak,
 check('AUTHENTIK_LISTEN__TRUSTED_PROXY_CIDRS' in ak,
       'Authentik must pin TRUSTED_PROXY_CIDRS to private/Docker ranges')
 
+# Phase: compose .env files are rendered from Phase; Vault static roles must not
+# rotate the Phase DB password out from under phase.env (same Infisical footgun).
+phase_compose = REPO / 'stacks/phase/compose.yaml'
+check(phase_compose.is_file(), 'stacks/phase/compose.yaml must exist')
+if phase_compose.is_file():
+    phase = phase_compose.read_text()
+    check('authentik@docker' not in phase, 'Phase UI must use native Authentik OAuth, not Traefik forward-auth')
+    check('Host(`phase.dominiksiejak.pl`)' in phase, 'Phase must be routed at phase.dominiksiejak.pl')
+    check('PathPrefix(`/service`)' in phase, 'Phase backend must be exposed under /service')
+    check('container_name: phase-redis' in phase, 'Phase Redis must not steal the redis alias on database')
+    check('database:' in phase, 'Phase backend must join the database network')
+
+vault_locals = (REPO / 'terraform/vault/locals.tf').read_text()
+check('phase_user' not in vault_locals, 'Phase DB password must not be a Vault static role')
+pg_locals = (REPO / 'terraform/postgres/locals.tf').read_text()
+check('phase_user' in pg_locals, 'Phase DB user must be provisioned in terraform/postgres')
+
+portainer_mk = (REPO / 'terraform/portainer/Makefile').read_text()
+check('render-secrets' in portainer_mk, 'Portainer sync must render Phase secrets')
+check(re.search(r'sync-portainer:[^\n]*render-secrets', portainer_mk) is not None,
+      'sync-portainer must run render-secrets before rsync')
+
+ak_locals = (REPO / 'terraform/authentik/locals.tf').read_text()
+check('api/auth/callback/authentik' in ak_locals, 'Authentik must register the Phase OAuth callback')
+
+auth_class = (REPO / 'scripts/auth_classification.yaml').read_text()
+check(re.search(r'^native-oidc:\n(?:  - .+\n)*  - phase\b', auth_class, re.M) is not None,
+      'phase.dominiksiejak.pl must be classified native-oidc')
+
+map_path = REPO / 'scripts/phase_env_map.yaml'
+check(map_path.is_file(), 'scripts/phase_env_map.yaml must map compose env files to Phase apps')
+if map_path.is_file():
+    import yaml
+    mapping = yaml.safe_load(map_path.read_text()) or {}
+    mapped = {item['path'] for item in mapping.get('apps', [])}
+    bootstrap = set(mapping.get('bootstrap', []))
+    examples = {
+        str(p.relative_to(REPO / 'stacks'))[:-len('.example')]
+        for p in (REPO / 'stacks').rglob('*.env.example')
+    }
+    missing = sorted((examples - bootstrap) - mapped)
+    extra = sorted(mapped - examples)
+    check(not missing, f'phase_env_map.yaml missing apps for {missing}')
+    check(not extra, f'phase_env_map.yaml has unknown paths {extra}')
+    check('phase/phase.env' in bootstrap, 'phase.env is bootstrap and must not be fetched from Phase')
+
 
 if errors:
     print('security invariants failed:')

@@ -53,7 +53,12 @@
     - Vault:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/vault.png
         href: https://vault.dominiksiejak.pl
-        description: Secrets engine
+        description: Secrets engine (retiring)
+
+    - Phase:
+        icon: https://phase.dev/favicon.ico
+        href: https://phase.dominiksiejak.pl
+        description: Compose env secrets
 
     - Vaultwarden:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/vaultwarden.png

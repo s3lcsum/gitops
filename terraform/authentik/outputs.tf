@@ -12,6 +12,7 @@ output "applications" {
       # Standard Authentik OAuth2 endpoints (used by Portainer and other RPs)
       authorization_uri = "https://auth.${local.base_domain}/application/o/authorize/"
       access_token_uri  = "https://auth.${local.base_domain}/application/o/token/"
+      jwks_uri          = "https://auth.${local.base_domain}/application/o/${slug}/jwks/"
       logout_uri        = "https://auth.${local.base_domain}/application/o/${slug}/end-session/"
       resource_uri      = "https://auth.${local.base_domain}/application/o/${slug}/"
     }

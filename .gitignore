@@ -38,6 +38,9 @@ tfplan*.binary
 # Ignore all files ending with .env recursively (e.g., .env, redis.env, postgres.env)
 **/*.env
 
+# Phase service token used by scripts/render_phase_env.py
+.phase-service-token
+
 # Exported Vault GCP SA key (terraform/gcp make export-vault-key)
 terraform/gcp/vault-service-account.json
 

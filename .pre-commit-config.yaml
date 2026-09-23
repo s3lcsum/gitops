@@ -50,4 +50,10 @@ repos:
         entry: python3 scripts/test_security_invariants.py
         language: system
         pass_filenames: false
-        files: ^(stacks/|terraform/)
+        files: ^(stacks/|terraform/|scripts/)
+      - id: gitops-phase-env
+        name: phase env renderer tests
+        entry: python3 scripts/test_phase_env.py
+        language: system
+        pass_filenames: false
+        files: ^(scripts/phase_env_map\.yaml|scripts/render_phase_env\.py|scripts/test_phase_env\.py)

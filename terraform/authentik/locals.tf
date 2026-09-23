@@ -40,6 +40,12 @@ locals {
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/n8n.svg"
       redirect_uris = ["https://n8n.dominiksiejak.pl/rest/oauth2-credential/callback"]
     }
+    phase = {
+      name          = "Phase"
+      launch_url    = "https://phase.dominiksiejak.pl"
+      icon_url      = "https://phase.dev/favicon.ico"
+      redirect_uris = ["https://phase.dominiksiejak.pl/api/auth/callback/authentik"]
+    }
     seerr = {
       name          = "Seerr"
       launch_url    = "https://seerr.dominiksiejak.pl/sso/OID/start/authentik"
@@ -129,6 +135,16 @@ locals {
       redirect_uris = [
         "https://calibre.dominiksiejak.pl/login/generic/authorized",
         "http://calibre.dominiksiejak.pl/login/generic/authorized",
+      ]
+    }
+    # Cloudflare Zero Trust Access — generic OIDC IdP.
+    # Callback team name must match terraform/cloudflare tunnel_team_name.
+    cloudflare = {
+      name       = "Cloudflare"
+      launch_url = "https://one.dash.cloudflare.com/"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/cloudflare.svg"
+      redirect_uris = [
+        "https://dominiksiejak.cloudflareaccess.com/cdn-cgi/access/callback",
       ]
     }
   }

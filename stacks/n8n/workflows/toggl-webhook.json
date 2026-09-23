@@ -1,0 +1,527 @@
+{
+  "name": "toggl-webhook",
+  "nodes": [
+    {
+      "id": "faf14ca2-db83-5e06-bdf5-1f2eb37f7b18",
+      "name": "Respond Validation",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1140,
+        280
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.validation_code ? { validation_code: $json.validation_code } : { ok: true } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "toggl-secret-get",
+      "name": "Get Toggl Secret",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        220,
+        420
+      ],
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "dpZoIRhIm8gMd8KU"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "condition": "eq",
+              "keyName": "key",
+              "keyValue": "TOGGL_WEBHOOK_SECRET"
+            }
+          ]
+        },
+        "matchType": "allConditions",
+        "operation": "get",
+        "resource": "row",
+        "returnAll": true
+      }
+    },
+    {
+      "id": "87795d62-f753-5934-b81f-9dd1df209735",
+      "name": "Toggl Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        420
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "toggl-time-entry",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "webhookId": "cbb16c95-f099-40da-9621-434b8c13e57d"
+    },
+    {
+      "id": "f43085a2-33fc-5e8e-8739-76f6363ad1d6",
+      "name": "Save Toggl State",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2460,
+        320
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RQF9wB5DfMaXfV6R"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "singleton_key",
+              "condition": "eq",
+              "keyValue": "controller"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "work_active": "={{ $json.work_active }}",
+            "focus_pending_desired": "={{ $json.focus_pending_desired }}",
+            "focus_pending_since": "={{ $json.focus_pending_since }}",
+            "last_source": "={{ $json.last_source }}",
+            "last_event_at": "={{ $json.last_event_at }}",
+            "last_inpost_entry_id": "={{ $json.last_inpost_entry_id }}",
+            "suppress_focus_until": "={{ $json.suppress_focus_until }}",
+            "notes": "={{ $json.notes }}"
+          }
+        }
+      }
+    },
+    {
+      "id": "toggl-merge-secret",
+      "name": "Attach Toggl Secret",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        420
+      ],
+      "parameters": {
+        "jsCode": "const webhook = $('Toggl Webhook').first();\nconst secretRow = $input.first().json;\nconst out = Object.assign({}, webhook.json, {\n  toggl_secret: String(secretRow.value || '').trim(),\n  expected_callback: 'https://n8n.dominiksiejak.pl/webhook/toggl-time-entry'\n});\nconst item = { json: out };\nif (webhook.binary) item.binary = webhook.binary;\nreturn [item];"
+      }
+    },
+    {
+      "id": "toggl-verify-hmac",
+      "name": "Verify Toggl HMAC",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        420
+      ],
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst item = $input.first();\nconst j = item.json;\nconst secret = String(j.toggl_secret || '').trim();\nconst headers = j.headers || {};\nconst sigHeader = String(headers['x-webhook-signature-256'] || headers['X-Webhook-Signature-256'] || '').trim();\n\n// Prefer full unparsed raw body bytes from webhook binary (rawBody: true).\n// Do NOT JSON.stringify(parsed body) — key order breaks Toggl HMAC.\n// Docs: https://engineering.toggl.com/docs/track/webhooks_start/validating_received_events/\nlet rawBuf = null;\nlet rawSource = 'none';\nif (item.binary && item.binary.data) {\n  try {\n    rawBuf = await this.helpers.getBinaryDataBuffer(0, 'data');\n    rawSource = 'binary';\n  } catch (e) {\n    const bin = item.binary.data;\n    rawBuf = Buffer.from(bin.data, bin.encoding || 'base64');\n    rawSource = 'binary_fallback';\n  }\n} else if (typeof j.body === 'string') {\n  rawBuf = Buffer.from(j.body, 'utf8');\n  rawSource = 'body_string';\n}\n\nlet ok = false;\nconst raw = rawBuf ? rawBuf.toString('utf8') : '';\nif (rawBuf && secret && sigHeader) {\n  const expected = 'sha256=' + crypto.createHmac('sha256', secret).update(rawBuf).digest('hex');\n  try {\n    const a = Buffer.from(expected);\n    const b = Buffer.from(sigHeader);\n    ok = a.length === b.length && crypto.timingSafeEqual(a, b);\n  } catch (e) {\n    ok = false;\n  }\n}\n\nlet parsed = {};\ntry {\n  parsed = raw ? JSON.parse(raw) : {};\n} catch (e) {\n  parsed = {};\n}\nconst payload = parsed.payload;\nconst validation_code = parsed.validation_code\n  || (payload && typeof payload === 'object' ? payload.validation_code : null)\n  || null;\nconst is_ping = payload === 'ping' || parsed.payload === 'ping' || !!validation_code;\n\nreturn [{ json: {\n  auth_ok: ok,\n  hmac_ok_strict: ok,\n  signature: sigHeader,\n  raw_len: rawBuf ? rawBuf.length : 0,\n  raw_source: rawSource,\n  event: parsed,\n  validation_code,\n  is_ping,\n  expected_callback: j.expected_callback || 'https://n8n.dominiksiejak.pl/webhook/toggl-time-entry',\n  url_callback: parsed.url_callback || ''\n} }];"
+      }
+    },
+    {
+      "id": "f452e863-dd47-5bb4-a300-694a98527fed",
+      "name": "Apply Toggl?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2240,
+        400
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "dd595fdf-3575-514f-b124-b2b7db706bff",
+      "name": "Get Controller (Toggl)",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1800,
+        400
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "RQF9wB5DfMaXfV6R"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "singleton_key",
+              "condition": "eq",
+              "keyValue": "controller"
+            }
+          ]
+        },
+        "returnAll": true
+      }
+    },
+    {
+      "id": "25816c87-be2e-570e-8cdf-231fd4f17843",
+      "name": "InPost Relevant?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1580,
+        460
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.relevant }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          }
+        }
+      }
+    },
+    {
+      "id": "36e2c9f2-0019-5f3c-a1b3-835d651eb1df",
+      "name": "Decide Toggl Apply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2020,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const evt = $('Parse Toggl Event').first().json;\nconst row = $input.first().json;\nconst now = Date.now();\nconst suppressUntil = row.suppress_toggl_until ? Date.parse(row.suppress_toggl_until) : 0;\nif (suppressUntil && now < suppressUntil) {\n  return [{ json: { skip: true, reason: 'suppress_own_toggl', workDesired: evt.workDesired } }];\n}\nconst desired = !!evt.workDesired;\n// Toggl→Focus SSH disabled; only update work_active state\nreturn [{ json: {\n  skip: false,\n  desired,\n  focus_pending_desired: '',\n  focus_pending_since: null,\n  work_active: desired,\n  last_source: 'toggl',\n  last_event_at: evt.received_at,\n  last_inpost_entry_id: evt.entryId || row.last_inpost_entry_id,\n  suppress_focus_until: row.suppress_focus_until || null,\n  notes: `toggl set work=${desired} entry=${evt.entryId}`\n} }];"
+      }
+    },
+    {
+      "id": "34a6c370-bcb4-55a5-a3bb-4c3686593234",
+      "name": "Toggl 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        900,
+        580
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { error: 'invalid_signature' } }}",
+        "options": {
+          "responseCode": 401
+        }
+      }
+    },
+    {
+      "id": "d2cfe81c-9799-58c1-a917-6f2ea9462c07",
+      "name": "Toggl 200 Ack",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1360,
+        360
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { accepted: true } }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "ab8973ba-ae7b-5f9c-b8bc-daec6a99f527",
+      "name": "Parse Toggl Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1140,
+        460
+      ],
+      "parameters": {
+        "jsCode": "const event = $input.first().json.event || {};\nconst action = String(event.metadata?.action || event.action || '').toLowerCase();\nlet payload = event.payload;\nif (typeof payload === 'string') {\n  try { payload = JSON.parse(payload); } catch (e) { payload = {}; }\n}\npayload = payload && typeof payload === 'object' ? payload : {};\nconst projectId = Number(payload.project_id || 0);\nconst inpostId = 215500877;\nconst workspaceId = Number(payload.workspace_id || 3825058);\nconst duration = Number(payload.duration);\nconst isRunning = duration < 0 || (!payload.stop && payload.start);\nconst isInPost = projectId === inpostId;\nconst deleted = action.includes('delet') || !!payload.server_deleted_at;\nlet workDesired = null;\nif (isInPost && !deleted && isRunning) workDesired = true;\nif (isInPost && (deleted || (!isRunning && payload.stop))) workDesired = false;\nreturn [{ json: {\n  action, projectId, inpostId, workspaceId, isRunning, isInPost, deleted,\n  workDesired, relevant: workDesired !== null,\n  entryId: String(payload.id || ''),\n  description: payload.description || '',\n  received_at: new Date().toISOString(),\n  source: 'toggl'\n} }];"
+      }
+    },
+    {
+      "id": "7dc1a907-58f0-562a-9d29-7322a04fd425",
+      "name": "HMAC Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        420
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.hmac_ok_strict }}",
+              "operator": {
+                "operation": "true",
+                "singleValue": true,
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        }
+      }
+    },
+    {
+      "id": "2f78c53a-d671-5a11-b227-c9458841fc5a",
+      "name": "Is Ping?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1000,
+        360
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.is_ping }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c2",
+              "leftValue": "={{ $json.validation_code || '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Is Ping?": {
+      "main": [
+        [
+          {
+            "node": "Respond Validation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse Toggl Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Toggl Event": {
+      "main": [
+        [
+          {
+            "node": "Toggl 200 Ack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Toggl 200 Ack": {
+      "main": [
+        [
+          {
+            "node": "InPost Relevant?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "InPost Relevant?": {
+      "main": [
+        [
+          {
+            "node": "Get Controller (Toggl)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Get Controller (Toggl)": {
+      "main": [
+        [
+          {
+            "node": "Decide Toggl Apply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Toggl Apply": {
+      "main": [
+        [
+          {
+            "node": "Apply Toggl?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Toggl?": {
+      "main": [
+        [
+          {
+            "node": "Save Toggl State",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Toggl Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Toggl Secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Toggl Secret": {
+      "main": [
+        [
+          {
+            "node": "Attach Toggl Secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Toggl Secret": {
+      "main": [
+        [
+          {
+            "node": "Verify Toggl HMAC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Toggl HMAC": {
+      "main": [
+        [
+          {
+            "node": "HMAC Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HMAC Valid?": {
+      "main": [
+        [
+          {
+            "node": "Is Ping?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Toggl 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Toggl State": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  }
+}

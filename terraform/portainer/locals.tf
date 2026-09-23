@@ -21,6 +21,7 @@ locals {
     "monitoring",
     "n8n",
     "netbox",
+    "phase",
     "postgres",
     "traefik",
     "unifi",

@@ -15,7 +15,7 @@
 - Tofu auto-approves. Use `TOFU_ARGS` env var to pass extra flags.
 
 ### Notable module extras
-- `terraform/portainer/Makefile`: `sync-portainer` rsyncs `stacks/` to `portainer:/opt`. `apply` runs sync → untaint-all → apply with `-parallelism=1`. Also `watch-portainer` (fswatch) and `sync-service` (systemd unit).
+- `terraform/portainer/Makefile`: `sync-portainer` rsyncs `stacks/` to `portainer:/opt`. `apply` runs render-secrets (Phase) → sync → untaint-all → apply with `-parallelism=1`. Also `watch-portainer` (fswatch) and `sync-service` (systemd unit). `PHASE_SERVICE_TOKEN` or gitignored `.phase-service-token` is required once Phase is bootstrapped.
 - `terraform/postgres/Makefile`: sets `POSTGRES_SSH_TARGET`, auto-creates SSH `-L` tunnel for remote plan/apply (sets `TF_VAR_postgres_host` / `TF_VAR_postgres_port`).
 - `terraform/gcp/Makefile`: `state-rm-legacy` drops old resources from state. `export-vault-key` writes `vault-service-account.json` from output.
 - `terraform/cloudflare/Makefile`: `show-token` prints tunnel token from output.
@@ -34,8 +34,7 @@
 - `terraform/` — OpenTofu modules. State: **GCS** (`dominiksiejak-gitops-tfstate`), migrated from TFC Apr 2026.
   - GCS state prefix convention: `gitops-<dirname>` (e.g., `gitops-portainer`).
   - `terraform/terraform-cloud/` is dead TFC bootstrap — **DO NOT APPLY**.
-- `kind/` — KIND cluster configs. On the basement Intel MacBook (hostname `vibe`), cluster `vibe` runs via Colima + KIND (`kind-vibe` context). Ensure script: `~/.local/bin/kind-vibe-ensure.sh`. Ingress: Traefik (`kind/traefik-values.yaml`). Smoke: `curl -H 'Host: whoami.vibe.local' http://127.0.0.1/`. Unrelated to Hermes the AI gateway. Do not talk to Portainer Docker (`ssh://portainer`) when managing this cluster.
-- `kubernetes/argocd/` — Self-managed Argo CD on `kind-vibe`. Vendored upstream Helm chart is `kubernetes/argocd/charts/argo-cd` (do not fetch argo-helm at sync time). Overrides: `kubernetes/argocd/values.yaml`. Bootstrap: `make -C kubernetes/argocd bootstrap`. After that Argo CD reconciles itself from `https://github.com/s3lcsum/gitops.git` path `kubernetes/argocd`. UI: `curl -H 'Host: argocd.vibe.local' http://127.0.0.1/`.
+- `kubernetes/argocd/` — Self-managed Argo CD for the kubeadm node (context `k8s`). Vendored upstream Helm chart is `kubernetes/argocd/charts/argo-cd` (do not fetch argo-helm at sync time). Overrides: `kubernetes/argocd/values.yaml`. Bootstrap: `make -C kubernetes/argocd bootstrap`. The Application tracks `https://github.com/s3lcsum/gitops.git` path `kubernetes/argocd` with manual sync. UI: `kubectl --context k8s -n argocd port-forward svc/argocd-server 8080:80`.
 
 ## Networking
 
@@ -81,7 +80,7 @@
 ### Centralized PostgreSQL
 - Single Postgres stack at `stacks/postgres/`. No separate DB instances.
 - **Today:** DB provisioning via Terraform+Vault (static roles), not init scripts.
-- **Retirement:** Vault is being retired (target: TBD — Infisical was dropped because OIDC SSO needs a paid license). Until migration lands, still: add entry to `terraform/postgres/locals.tf` + `terraform/vault/locals.tf` → apply both; password via `vault read database/static-creds/<username>`. DB password story TBD during cutover.
+- **Retirement:** Vault is being retired. Compose `.env` files are sourced from Phase (`https://phase.dominiksiejak.pl`, Authentik OAuth). Until DB-password cutover, still: add entry to `terraform/postgres/locals.tf` + `terraform/vault/locals.tf` → apply both; password via `vault read database/static-creds/<username>`, then `phase secrets import` into the matching app. Do **not** add Phase's own DB user as a Vault static role.
 - Service connects via `env_file` pointing at `/opt/<stack>/<service>.env`
 - Postgres is **localhost-only** on host (`127.0.0.1:5432`)
 - Service needing DB must join `database` network
@@ -124,7 +123,7 @@ has no default for `vault_token` and will prompt otherwise.
 
 - **Never commit `*.env` or `*.tfvars`** — both gitignored
 - `.mcp.json` contains live API tokens (HA, n8n, Cloudflare) — do not leak or commit changes exposing them
-- **Vault being retired** — still manages DB static creds + some OAuth KV today (`stacks/vault`, `terraform/vault`, GCP KMS auto-unseal). Target: TBD (Infisical dropped — OIDC SSO requires a paid Enterprise licence); do not rip out Vault terraform in drive-by PRs.
+- **Vault being retired** — still manages Postgres static creds + some OAuth KV today (`stacks/vault`, `terraform/vault`, GCP KMS auto-unseal). Compose `.env` values live in Phase (`stacks/phase/`, render via `scripts/render_phase_env.py`). Do not rip out Vault terraform in drive-by PRs.
 - Vault access is **Traefik-only** (no host port 8200) while it remains.
 - Terraform variables passed via environment or `defaults.auto.tfvars`
 - OpenTofu state: **GCS** (`dominiksiejak-gitops-tfstate`). `terraform/terraform-cloud/` is dead TFC bootstrap — **DO NOT APPLY**.

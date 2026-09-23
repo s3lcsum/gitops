@@ -18,12 +18,12 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 |-------|------|-------|
 | **Compute** | Proxmox VE hosts running LXC containers | OpenTofu (`terraform/proxmox/`) |
 | **Containers** | Docker stacks managed via Portainer | Compose files in `stacks/` |
-| **Kubernetes** | Talos (Proxmox) for some platform apps; KIND `vibe` on the basement Mac | OpenTofu (`terraform/proxmox/`); `kind/` + `kubernetes/argocd/` |
+| **Kubernetes** | kubeadm single node on lake | `kubernetes/argocd/` |
 | **Networking** | MikroTik RouterOS config | OpenTofu (`terraform/routeros/`) |
 | **Edge** | Traefik + CrowdSec on direct WAN; Cloudflare Tunnel/Access for specific hosts | `stacks/traefik/`, `stacks/cloudflared/`, `terraform/cloudflare/` |
 | **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + OpenTofu (`terraform/authentik/`) |
 | **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + OpenTofu (`terraform/netbox/`) |
-| **Secrets** | HashiCorp Vault (retiring) + Vaultwarden | `stacks/vault/`, `stacks/vaultwarden/` — Vault replacement target TBD |
+| **Secrets** | Phase (compose `.env`) + HashiCorp Vault (retiring) + Vaultwarden | `stacks/phase/`, `stacks/vault/`, `stacks/vaultwarden/` |
 | **Monitoring** | Gatus (status), Grafana + VictoriaMetrics (`stacks/monitoring/`) via CasC dashboards/alerting, Blackbox synthetic probes, Synthetic Agent | `stacks/gatus/`, `stacks/monitoring/`, `terraform/grafana/`, `stacks/grafana-synthetic-agent/` |
 | **Media** | Jellyfin + *arr stack + downloaders | `stacks/mediabox/` |
 
@@ -70,6 +70,7 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | **Monitoring** | [Grafana](https://grafana.com/), [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics), [Blackbox exporter](https://github.com/prometheus/blackbox_exporter) synthetic probes, PVE exporter, [k6](https://k6.io/) smoke — CasC dashboards + alerting (TG + SMTP) |
 | [n8n](https://n8n.io/) | Workflow automation |
 | [NetBox](https://github.com/netbox-community/netbox) | IPAM / DCIM |
+| [Phase](https://phase.dev) | Compose env secrets (Authentik OAuth) |
 | [PostgreSQL](https://www.postgresql.org/) | Shared database host |
 | [Traefik](https://traefik.io/) | Reverse proxy (+ CrowdSec integration in config) |
 | [Vault](https://www.hashicorp.com/products/vault) | Secrets (retiring) |
@@ -188,7 +189,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - **`.env.example` files**: Committed to the repo — contain structure and placeholder values
 - **`.env` files**: Never committed — contain actual secrets (gitignored)
 - **Sensitive Terraform variables**: Stored in `defaults.auto.tfvars` or passed via environment
-- **Vault (retiring):** Vault still used for Postgres static creds + some OAuth KV. Replacement target TBD — Infisical was evaluated and dropped (OIDC SSO is a paid-license feature). Do not tear down Vault until a replacement lands.
+- **Phase:** source of truth for compose `.env` values. `make -C terraform/portainer apply` exports them via `scripts/render_phase_env.py` (needs `PHASE_SERVICE_TOKEN` or `.phase-service-token`). Bootstrap `stacks/phase/phase.env` stays host-local.
+- **Vault (retiring):** still used for Postgres static creds + some OAuth KV. Copy those passwords into Phase before disabling rotation. Do not tear down Vault until that cutover lands.
 
 ---
 
@@ -218,15 +220,14 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── monitoring/
 │   ├── n8n/
 │   ├── netbox/
+│   ├── phase/
 │   ├── postgres/
 │   ├── traefik/
 │   ├── vault/
 │   ├── vaultwarden/
 │   └── watchyourlan/
 │
-├── kind/                           # KIND cluster configs (vibe + local)
-│
-├── kubernetes/                     # In-cluster GitOps (KIND vibe)
+├── kubernetes/                     # In-cluster GitOps (kubeadm node)
 │   └── argocd/                     # Self-managed Argo CD (vendored chart + values)
 │
 ├── terraform/                      # Infrastructure as Code
@@ -257,9 +258,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Migrate backups from Proxmox to NAS
 - [x] Use Authentik LDAP for Synology
 - [ ] Add NUT/UPS integration
-- [x] (retroactively added) KIND cluster on vibe + self-managed Argo CD
-- [ ] k3s single-node cluster
-- [ ] Cut over secrets / DB passwords from HashiCorp Vault → a replacement with free OIDC SSO; then retire Vault
+- [x] (retroactively added) kubeadm node + self-managed Argo CD
+- [x] Cut over compose `.env` files to Phase (`phase.dominiksiejak.pl`, Authentik OAuth). Vault still issues Postgres static-role passwords until those are copied into Phase and rotation is stopped.
 - [ ] Move `terraform/cloudflare` (zone/tunnel/Access/Workers) to a private sibling repo
 - [ ] Self-hosted LLM (Ollama)
 - [ ] Separated subnets (IoT isolation)
@@ -273,6 +273,19 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ### 23.09.2026
 
 Public n8n webhooks that had no extra auth now require header `x-webhook-secret`. Authentik and the Focus shortcut keep their paths (`authentik-login`, `focus-work`). Toggl → calendar moved to `toggl-to-calendar`. The Ghostfolio CSV import webhook is gone. Names: WAN allowlist on login / `wan-allowlist` / `WAN_ALLOWLIST_SECRET`, Focus to Toggl / `focus-toggl` / `FOCUS_TOGGL_SECRET`, Toggl to Google Calendar / `toggl-to-calendar` / `TOGGL_CALENDAR_SECRET`. Authentik login → firewall is IPv4 only again — an IPv6 client IP gets a 400 and never touches RouterOS. Messenger is still Meta's webhook and was left as-is.
+
+**Authentik → Cloudflare Zero Trust login.** New Authentik OAuth2 app `cloudflare` (callback `dominiksiejak.cloudflareaccess.com`) plus `cloudflare_zero_trust_access_identity_provider.authentik` in `terraform/cloudflare`. WAF country allowlist now skips `auth.dominiksiejak.pl/application/o/*` so Cloudflare's OIDC token/JWKS fetches aren't blocked from outside PL/DE/ES. Apply order: `terraform/authentik` then `terraform/cloudflare`. API token needs Access IdP write.
+
+### 15.09.2026
+
+**Phase for compose `.env` files.** Infisical died on paid OIDC; Phase Console is the replacement (`stacks/phase/`, `https://phase.dominiksiejak.pl`) with free Authentik OAuth via env vars. `make -C terraform/portainer apply` runs `render-secrets` (`scripts/render_phase_env.py` + `scripts/phase_env_map.yaml`) before rsync. Vault stays for Postgres static creds until those passwords are copied into Phase. Bootstrap `phase.env` is the one file Phase cannot store for itself — no Vault static role for `phase_user`. Spec: `docs/superpowers/specs/2026-09-15-phase-secrets-design.md`.
+
+### 08.09.2026
+
+**Focus ↔ Toggl InPost ↔ Google Calendar.** n8n now runs a bidirectional Work Focus controller and an authoritative Toggl→GCal sync:
+- Workflows: `work-state-controller` — Focus `/webhook/focus-work` (Header Auth) + Toggl HMAC `/webhook/toggl-time-entry` + 3‑min cancellable debounce + 30s reconcile + SSH Shortcuts on `vibe`; `toggl-calendar-sync` — hourly + `/webhook/toggl-calendar-sync` onto calendar **Toggl**.
+- Compose: n8n SSRF allowlist adds `192.168.89.200/32`, `NODE_FUNCTION_ALLOW_BUILTIN=crypto` for HMAC. Secrets live in `/opt/n8n/n8n.env` (see `n8n.env.example`).
+- Spec: `docs/superpowers/specs/2026-09-08-focus-toggl-calendar-design.md` supersedes the 2026-08-26 Focus→Toggl draft.
 
 ### 07.09.2026
 
@@ -304,7 +317,7 @@ Security follow-up: Portainer tofu talks to `https://portainer.dominiksiejak.pl`
 
 ### 25.08.2026
 
-**Argo CD on KIND `vibe`, managing itself from this repo.** Chart + values are in `kubernetes/argocd/` — the upstream Helm chart is vendored under `charts/argo-cd`, not pulled from argo-helm at sync time. Bootstrap with `make -C kubernetes/argocd bootstrap`; after that the in-cluster Application tracks `main`. UI is `argocd.vibe.local` through the KIND Traefik hostPorts.
+**Argo CD chart vendored in this repo.** Chart + values are in `kubernetes/argocd/` — the upstream Helm chart is vendored under `charts/argo-cd`, not pulled from argo-helm at sync time. Bootstrap with `make -C kubernetes/argocd bootstrap`; the in-cluster Application tracks `main` and syncs manually.
 
 ### 23.08.2026
 

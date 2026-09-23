@@ -14,7 +14,7 @@ output "active_apps" {
   value       = keys(local.active_apps)
 }
 
-output "miedzysztuka_hostname" {
-  description = "Public hostname for the miedzysztuka Pages custom domain"
-  value       = cloudflare_pages_domain.miedzysztuka.name
+output "authentik_identity_provider_id" {
+  description = "Cloudflare Zero Trust Access identity provider ID for Authentik OIDC"
+  value       = cloudflare_zero_trust_access_identity_provider.authentik.id
 }

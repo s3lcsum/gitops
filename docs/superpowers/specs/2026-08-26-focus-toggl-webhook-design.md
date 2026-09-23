@@ -1,7 +1,9 @@
 # Apple Focus → n8n → Toggl Timer
 
+> **Superseded** by [`2026-09-08-focus-toggl-calendar-design.md`](./2026-09-08-focus-toggl-calendar-design.md) — Work Focus ↔ InPost with immediate Focus ON/OFF apply, Toggl HMAC webhooks (`X-Webhook-Signature-256`), vibe SSH Focus relay (Focus→Toggl only), and authoritative Toggl → Google Calendar (`Toggl`) sync.
+
 **Date:** 2026-08-26
-**Status:** Approved design
+**Status:** Superseded (2026-09-08)
 **Author:** opencode
 
 ## Overview

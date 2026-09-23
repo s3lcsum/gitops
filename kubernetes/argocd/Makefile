@@ -1,7 +1,7 @@
 .PHONY: help bootstrap vendor template
 
 CHART_VERSION ?= 10.4.0
-KUBE_CONTEXT ?= kind-vibe
+KUBE_CONTEXT ?= k8s
 NAMESPACE ?= argocd
 RELEASE ?= argocd
 TIMEOUT ?= 10m
