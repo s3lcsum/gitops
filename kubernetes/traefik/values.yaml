@@ -1,0 +1,65 @@
+# ApplicationSet chart pin.
+repoURL: https://traefik.github.io/charts
+chart: traefik
+version: 41.6.0
+
+# Overrides for Traefik Helm 41.6.0 (app v3.7.13).
+# Phase 1: ClusterIP only. hostNetwork comes after Cilium Gateway releases :80/:443.
+deployment:
+  replicas: 1
+hostNetwork: false
+service:
+  enabled: true
+  type: ClusterIP
+ports:
+  web:
+    port: 8000
+    expose:
+      default: true
+    exposedPort: 80
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    port: 8443
+    expose:
+      default: true
+    exposedPort: 443
+    http:
+      tls:
+        enabled: true
+providers:
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: true
+    allowExternalNameServices: true
+  kubernetesIngress:
+    enabled: false
+  kubernetesGateway:
+    enabled: false
+gateway:
+  enabled: false
+ingressRoute:
+  dashboard:
+    enabled: false
+experimental:
+  plugins:
+    crowdsec-bouncer-traefik-plugin:
+      moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+      version: v1.4.4
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+logs:
+  general:
+    level: INFO
+  access:
+    enabled: true
