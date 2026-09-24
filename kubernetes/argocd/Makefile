@@ -10,8 +10,8 @@ CREDS_PLAIN ?= repo-credentials.yaml
 CREDS_ENC ?= repo-credentials.enc.yaml
 
 # SOPS looks up ~/.config/sops/age/keys.txt by default; override with SOPS_AGE_KEY_FILE.
-# OIDC client secret is ExternalSecret → 1Password (Servers/argocd-oidc). Repo PAT still
-# optional via SOPS/plain until 1Password item argocd-github exists (see *.example).
+# OIDC client secret is ExternalSecret → 1Password (Servers/argocd-oidc).
+# GitHub PAT is ExternalSecret → 1Password (Servers/argocd-github-repo-credentials, credential only).
 SOPS ?= sops
 
 help: ## Show this help
@@ -74,7 +74,7 @@ print('keys=',sorted(d.keys()));\
 print('ok' if not missing else 'MISSING '+str(missing));\
 sys.exit(1 if missing else 0)"
 
-creds: ## Apply or rotate the GitHub repo-creds Secret (legacy SOPS/plain; prefer 1Password example)
+creds: ## Legacy: apply a local repo-creds Secret. Live path is the 1Password ExternalSecret.
 	@$(call _materialize_secret,$(CREDS_PLAIN),$(CREDS_ENC),replace-with-github-(pat|username)); \
 	kubectl --context $(KUBE_CONTEXT) apply -f "$$tmpdir/secret.yaml"
 
