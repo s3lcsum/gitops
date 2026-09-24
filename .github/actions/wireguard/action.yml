@@ -20,6 +20,14 @@ inputs:
     description: Persistent keepalive interval in seconds
     required: false
     default: "25"
+  dns:
+    description: LAN resolver (AdGuard). Used only for dns-search.
+    required: false
+    default: 192.168.89.253
+  dns-search:
+    description: Domain routed through the LAN resolver once the tunnel is up
+    required: false
+    default: dominiksiejak.pl
 
 runs:
   using: composite
@@ -33,6 +41,8 @@ runs:
         WG_ADDRESS: ${{ inputs.address }}
         WG_ALLOWED_IPS: ${{ inputs.allowed-ips }}
         WG_KEEPALIVE: ${{ inputs.persistent-keepalive }}
+        WG_DNS: ${{ inputs.dns }}
+        WG_DNS_SEARCH: ${{ inputs.dns-search }}
       run: |
         set -euo pipefail
         sudo apt-get update -y
@@ -60,4 +70,15 @@ runs:
           [ -n "$cidr" ] || continue
           sudo ip route replace "$cidr" dev wg0
         done
+        if [ -n "$WG_DNS" ] && [ -n "$WG_DNS_SEARCH" ]; then
+          sudo resolvectl dns wg0 "$WG_DNS"
+          sudo resolvectl domain wg0 "~${WG_DNS_SEARCH}"
+          sudo resolvectl flush-caches
+          ans="$(getent ahostsv4 "auth.${WG_DNS_SEARCH}" | awk '{print $1; exit}')"
+          echo "auth.${WG_DNS_SEARCH} -> ${ans:-<empty>}"
+          case "$ans" in
+            192.168.89.*) ;;
+            *) echo "auth.${WG_DNS_SEARCH} did not resolve on the LAN" >&2; exit 1 ;;
+          esac
+        fi
         sudo wg show wg0
