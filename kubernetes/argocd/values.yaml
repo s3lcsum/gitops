@@ -78,7 +78,7 @@ configs:
         - BackgroundScanReport
         - ClusterBackgroundScanReport
         - UpdateRequest
-    # Public UI. Cilium Gateway terminates TLS and routes to argocd-server:80.
+    # Public UI. Traefik-k8s terminates TLS and routes to argocd-server:80.
     url: https://argocd.dominiksiejak.pl
     # Port-forward SSO (`kubectl port-forward … 8080:80`). Without these,
     # /auth/login rejects return_url=http://localhost:8080/… with
@@ -101,7 +101,7 @@ configs:
     policy.csv: |
       g, admins, role:admin
   params:
-    # Gateway terminates TLS. Server stays HTTP.
+    # Traefik-k8s terminates TLS. Server stays HTTP.
     server.insecure: true
   # Public URL. PAT from 1Password item argocd-github-repo-credentials (resources/externalsecret-repo-creds.yaml).
   repositories:

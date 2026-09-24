@@ -40,7 +40,6 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
-      traefik.http.routers.zigbee2mqtt-wifi.middlewares: authentik@docker
       traefik.http.services.zigbee2mqtt-wifi.loadbalancer.server.port: "8080"
 
   zigbee2mqtt-usb:
@@ -63,7 +62,6 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
-      traefik.http.routers.zigbee2mqtt-usb.middlewares: authentik@docker
       traefik.http.services.zigbee2mqtt-usb.loadbalancer.server.port: "8080"
 
   mosquitto:
@@ -108,7 +106,6 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: proxy
-      traefik.http.routers.timemachine.middlewares: authentik@docker
 
 networks:
   proxy:

@@ -170,6 +170,9 @@ filtering:
     - domain: adminer.dominiksiejak.pl
       answer: 192.168.89.252
       enabled: true
+    - domain: argocd.dominiksiejak.pl
+      answer: 192.168.89.252
+      enabled: true
     - domain: auth.dominiksiejak.pl
       answer: 192.168.89.252
       enabled: true
@@ -258,6 +261,9 @@ filtering:
       answer: 192.168.89.252
       enabled: true
     - domain: traefik.dominiksiejak.pl
+      answer: 192.168.89.252
+      enabled: true
+    - domain: traefik-k8s.dominiksiejak.pl
       answer: 192.168.89.252
       enabled: true
     - domain: unifi.dominiksiejak.pl

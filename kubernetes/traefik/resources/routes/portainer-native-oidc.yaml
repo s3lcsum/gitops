@@ -1,0 +1,44 @@
+# Allowlist → Portainer Traefik. Auth class: native-oidc (no edge Authentik).
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: portainer-native-oidc
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: >-
+        Host(`bazarr.dominiksiejak.pl`) ||
+        Host(`calibre.dominiksiejak.pl`) ||
+        Host(`git.dominiksiejak.pl`) ||
+        Host(`grafana.dominiksiejak.pl`) ||
+        Host(`hass.dominiksiejak.pl`) ||
+        Host(`hermes.dominiksiejak.pl`) ||
+        Host(`jellyfin.dominiksiejak.pl`) ||
+        Host(`n8n.dominiksiejak.pl`) ||
+        Host(`nas.dominiksiejak.pl`) ||
+        Host(`netbox.dominiksiejak.pl`) ||
+        Host(`portainer.dominiksiejak.pl`) ||
+        Host(`profilarr.dominiksiejak.pl`) ||
+        Host(`prowlarr.dominiksiejak.pl`) ||
+        Host(`proxmox.dominiksiejak.pl`) ||
+        Host(`qbittorrent.dominiksiejak.pl`) ||
+        Host(`radarr.dominiksiejak.pl`) ||
+        Host(`readarr.dominiksiejak.pl`) ||
+        Host(`router.dominiksiejak.pl`) ||
+        Host(`sabnzbd.dominiksiejak.pl`) ||
+        Host(`seerr.dominiksiejak.pl`) ||
+        Host(`sonarr.dominiksiejak.pl`) ||
+        Host(`wealthfolio.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+        - name: secure-headers
+      services:
+        - name: portainer-traefik
+          port: 443
+          scheme: https
+          serversTransport: portainer-insecure
+  tls:
+    secretName: dominiksiejak-pl-tls

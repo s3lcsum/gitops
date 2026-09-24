@@ -1,0 +1,56 @@
+# Every Traefik-routed host must appear under exactly one class.
+# Classes (middleware on Traefik-k8s IngressRoute):
+#   forward-auth — crowdsec + secure-headers + authentik
+#   native-oidc  — crowdsec + secure-headers (app SSO)
+#   public       — crowdsec + secure-headers
+#   lan-only     — crowdsec + secure-headers + lan-only
+#
+# k8s-only hosts (not Portainer hop): argocd, traefik-k8s
+
+forward-auth:
+  - adguard
+  - calibre-gui
+  - dozzle
+  - hass-timemachine
+  - lan
+  - metrics
+  - opencode
+  - traefik
+  - traefik-k8s
+  - zigbee2mqtt-usb
+  - zigbee2mqtt-wifi
+
+native-oidc:
+  - argocd
+  - bazarr
+  - calibre
+  - git
+  - grafana
+  - hass
+  - hermes
+  - jellyfin
+  - n8n
+  - nas
+  - netbox
+  - portainer
+  - profilarr
+  - prowlarr
+  - proxmox
+  - qbittorrent
+  - radarr
+  - readarr
+  - router
+  - sabnzbd
+  - seerr
+  - sonarr
+  - wealthfolio
+
+public:
+  - auth
+  - calibre-api
+  - homepage
+  - status
+  - unifi
+
+lan-only:
+  - adminer

@@ -36,14 +36,6 @@ spec:
         - .data
         - .metadata.annotations
         - .metadata.labels["reconcile.external-secrets.io/managed"]
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      jqPathExpressions:
-        - .status
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      jqPathExpressions:
-        - .status
   # Auto-sync + selfHeal. Prune stays off.
   syncPolicy:
     automated:

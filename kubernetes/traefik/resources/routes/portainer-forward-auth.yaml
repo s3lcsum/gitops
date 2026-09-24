@@ -1,0 +1,33 @@
+# Allowlist → Portainer Traefik. Auth class: forward-auth.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: portainer-forward-auth
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: >-
+        Host(`adguard.dominiksiejak.pl`) ||
+        Host(`calibre-gui.dominiksiejak.pl`) ||
+        Host(`dozzle.dominiksiejak.pl`) ||
+        Host(`hass-timemachine.dominiksiejak.pl`) ||
+        Host(`lan.dominiksiejak.pl`) ||
+        Host(`metrics.dominiksiejak.pl`) ||
+        Host(`opencode.dominiksiejak.pl`) ||
+        Host(`traefik.dominiksiejak.pl`) ||
+        Host(`zigbee2mqtt-usb.dominiksiejak.pl`) ||
+        Host(`zigbee2mqtt-wifi.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+        - name: secure-headers
+        - name: authentik
+      services:
+        - name: portainer-traefik
+          port: 443
+          scheme: https
+          serversTransport: portainer-insecure
+  tls:
+    secretName: dominiksiejak-pl-tls

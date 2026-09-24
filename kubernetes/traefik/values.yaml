@@ -4,26 +4,25 @@ chart: traefik
 version: 41.6.0
 
 # Overrides for Traefik Helm 41.6.0 (app v3.7.13).
-# Phase 1: ClusterIP only. hostNetwork comes after Cilium Gateway releases :80/:443.
+# hostNetwork owns :80/:443 after Cilium Gateway is down.
 deployment:
   replicas: 1
-hostNetwork: false
+hostNetwork: true
+dnsPolicy: ClusterFirstWithHostNet
 service:
   enabled: true
   spec:
     type: ClusterIP
 ports:
-  # ClusterIP only — Cilium HTTPRoute hits this for the dashboard (web redirects → loop).
+  # hostNetwork: container port == host port.
   traefik:
     port: 8080
     expose:
-      default: true
-    exposedPort: 8080
+      default: false
   web:
-    port: 8000
+    port: 80
     expose:
-      default: true
-    exposedPort: 80
+      default: false
     http:
       redirections:
         entryPoint:
@@ -31,10 +30,9 @@ ports:
           scheme: https
           permanent: true
   websecure:
-    port: 8443
+    port: 443
     expose:
-      default: true
-    exposedPort: 443
+      default: false
     http:
       tls:
         enabled: true
@@ -51,12 +49,7 @@ gateway:
   enabled: false
 ingressRoute:
   dashboard:
-    enabled: true
-    matchRule: Host(`traefik-k8s.dominiksiejak.pl`)
-    entryPoints:
-      - traefik
-    middlewares:
-      - name: authentik
+    enabled: false
 experimental:
   plugins:
     crowdsec-bouncer-traefik-plugin:

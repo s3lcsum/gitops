@@ -22,12 +22,12 @@ entryPoints:
         - "172.16.0.0/12"
         - "10.0.0.0/8"
         - "192.168.0.0/16"
+        # Traefik-k8s edge on lake node
+        - "192.168.89.252/32"
     http3: {}
     http:
-      middlewares:
-        - crowdsec-bouncer@file
-        - secure-headers@file
-        # - error-pages-middleware@docker
+      # Edge auth (CrowdSec + Authentik) lives on Traefik-k8s.
+      # This instance is the Docker origin only.
       tls:
         certResolver: letsencrypt
         domains:

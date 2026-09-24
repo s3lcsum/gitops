@@ -1,5 +1,7 @@
 # Traefik-in-k8s Edge Implementation Plan
 
+> **SUPERSEDED** by design `docs/superpowers/specs/2026-09-24-cilium-cni-traefik-ingress-design.md`. Do not execute this plan as written: Portainer Traefik stays as origin (allowlist HTTPS hop), not retired; compose backends go through Portainer Traefik, not direct EndpointSlices to every LAN IP.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace Cilium Gateway L7 and Portainer Traefik with one Traefik Helm edge in Kubernetes on `192.168.89.252` hostNetwork `:80/:443`, with Authentik forward-auth and CrowdSec day-1, routes as GitOps IngressRoutes.

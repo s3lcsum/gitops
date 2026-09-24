@@ -1,20 +1,23 @@
+# Allowlist → Portainer Traefik. Auth class: lan-only.
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: homepage
+  name: portainer-lan-only
   namespace: traefik
 spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`homepage.dominiksiejak.pl`)
+    - match: Host(`adminer.dominiksiejak.pl`)
       kind: Rule
       middlewares:
         - name: crowdsec-bouncer
         - name: secure-headers
-        - name: authentik
+        - name: lan-only
       services:
-        - name: homepage
-          port: 3000
+        - name: portainer-traefik
+          port: 443
+          scheme: https
+          serversTransport: portainer-insecure
   tls:
     secretName: dominiksiejak-pl-tls

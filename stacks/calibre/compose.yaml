@@ -38,7 +38,6 @@ services:
       traefik.enable: true
       traefik.http.routers.calibre-gui.rule: Host(`calibre-gui.dominiksiejak.pl`)
       traefik.http.routers.calibre-gui.service: calibre-gui
-      traefik.http.routers.calibre-gui.middlewares: authentik@docker
       traefik.http.services.calibre-gui.loadbalancer.server.port: 8080
 
   # First-run: default login admin / admin123 — change immediately.

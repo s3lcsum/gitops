@@ -1,0 +1,20 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`traefik-k8s.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+        - name: secure-headers
+        - name: authentik
+      services:
+        - name: api@internal
+          kind: TraefikService
+  tls:
+    secretName: dominiksiejak-pl-tls

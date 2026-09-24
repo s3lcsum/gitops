@@ -1,8 +1,8 @@
 # Traefik-in-k8s edge — design
 
 **Date:** 2026-09-24
-**Status:** approved for planning (pending human review of this file)
-**Scope:** Replace Cilium Gateway API L7 and Portainer Traefik with a single Traefik edge in Kubernetes.
+**Status:** superseded by `docs/superpowers/specs/2026-09-24-cilium-cni-traefik-ingress-design.md`
+**Scope (historical):** Replace Cilium Gateway API L7 and Portainer Traefik with a single Traefik edge in Kubernetes. **No longer accurate:** Portainer Traefik stays as Docker origin; argocd uses IngressRoute (not HTTPRoute-on-Cilium).
 
 ## Context
 

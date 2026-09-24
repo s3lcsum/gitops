@@ -51,7 +51,6 @@ services:
       traefik.enable: true
       traefik.docker.network: proxy
       traefik.http.routers.victoria-metrics.rule: "Host(`metrics.dominiksiejak.pl`)"
-      traefik.http.routers.victoria-metrics.middlewares: authentik@docker
 
   blackbox-exporter:
     image: prom/blackbox-exporter:v0.28.0

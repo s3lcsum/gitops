@@ -115,7 +115,7 @@ http:
       entryPoints:
         - websecure
       middlewares:
-        - authentik@docker
+        # Edge Authentik on Traefik-k8s; inject upstream basic here.
         - opencode-upstream-auth@file
         - rate-limit@file
       service: opencode
@@ -130,8 +130,6 @@ http:
       rule: "Host(`traefik.dominiksiejak.pl`)"
       entryPoints:
         - websecure
-      middlewares:
-        - authentik@docker
       service: api@internal
 
     n8n-webhook:

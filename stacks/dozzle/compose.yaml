@@ -24,7 +24,6 @@ services:
       - proxy
     labels:
       traefik.enable: true
-      traefik.http.routers.dozzle.middlewares: authentik@docker
 
 networks:
   proxy:

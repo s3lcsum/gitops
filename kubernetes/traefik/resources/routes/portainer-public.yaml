@@ -1,0 +1,27 @@
+# Allowlist → Portainer Traefik. Auth class: public.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: portainer-public
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: >-
+        Host(`auth.dominiksiejak.pl`) ||
+        Host(`calibre-api.dominiksiejak.pl`) ||
+        Host(`homepage.dominiksiejak.pl`) ||
+        Host(`status.dominiksiejak.pl`) ||
+        Host(`unifi.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+        - name: secure-headers
+      services:
+        - name: portainer-traefik
+          port: 443
+          scheme: https
+          serversTransport: portainer-insecure
+  tls:
+    secretName: dominiksiejak-pl-tls

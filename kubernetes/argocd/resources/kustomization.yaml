@@ -5,4 +5,3 @@ resources:
   - applicationset.yaml
   - externalsecret-oidc.yaml
   - externalsecret-repo-creds.yaml
-  - httproute.yaml
