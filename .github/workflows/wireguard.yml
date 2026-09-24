@@ -1,0 +1,22 @@
+name: WireGuard
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  connect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connect to home LAN
+        uses: ./.github/actions/wireguard
+        with:
+          private-key: ${{ secrets.WIREGUARD_PRIVATE_KEY }}
+          public-key: ${{ secrets.WIREGUARD_PUBLIC_KEY }}
+
+      - name: Reach the LAN gateway
+        run: ping -c 2 -W 2 192.168.89.1

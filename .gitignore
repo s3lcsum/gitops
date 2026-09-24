@@ -43,6 +43,7 @@ tfplan*.binary
 
 # Exported Vault GCP SA key (terraform/gcp make export-vault-key)
 terraform/gcp/vault-service-account.json
+terraform/gcp/github-actions-tofu.json
 
 stacks/mktxp/mktxp.conf
 

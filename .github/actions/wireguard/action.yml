@@ -1,0 +1,63 @@
+name: WireGuard
+description: Connect this GitHub-hosted runner to the home LAN over the RouterOS WireGuard peer.
+
+inputs:
+  private-key:
+    description: Private key for the github-actions peer (192.168.200.254/32)
+    required: true
+  public-key:
+    description: RouterOS WireGuard server public key
+    required: true
+  address:
+    description: Overlay address assigned to this runner
+    required: false
+    default: 192.168.200.254/32
+  allowed-ips:
+    description: Comma-separated CIDRs to route through the tunnel
+    required: false
+    default: 192.168.89.0/24,192.168.200.0/24
+  persistent-keepalive:
+    description: Persistent keepalive interval in seconds
+    required: false
+    default: "25"
+
+runs:
+  using: composite
+  steps:
+    - name: Connect WireGuard
+      shell: bash
+      env:
+        WG_PRIVATE_KEY: ${{ inputs.private-key }}
+        WG_PUBLIC_KEY: ${{ inputs.public-key }}
+        WG_ENDPOINT: vpn.dominiksiejak.pl:51820
+        WG_ADDRESS: ${{ inputs.address }}
+        WG_ALLOWED_IPS: ${{ inputs.allowed-ips }}
+        WG_KEEPALIVE: ${{ inputs.persistent-keepalive }}
+      run: |
+        set -euo pipefail
+        sudo apt-get update -y
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y wireguard
+        keyfile="$(mktemp)"
+        chmod 600 "$keyfile"
+        printf '%s\n' "$WG_PRIVATE_KEY" > "$keyfile"
+        if ip link show wg0 >/dev/null 2>&1; then
+          sudo ip link delete dev wg0
+        fi
+        sudo ip link add dev wg0 type wireguard
+        sudo ip address add "$WG_ADDRESS" dev wg0
+        sudo wg set wg0 \
+          private-key "$keyfile" \
+          peer "$WG_PUBLIC_KEY" \
+          allowed-ips "$WG_ALLOWED_IPS" \
+          endpoint "$WG_ENDPOINT" \
+          persistent-keepalive "$WG_KEEPALIVE"
+        shred -u "$keyfile"
+        sudo ip link set up dev wg0
+        IFS=',' read -ra cidrs <<< "$WG_ALLOWED_IPS"
+        for cidr in "${cidrs[@]}"; do
+          cidr="${cidr#"${cidr%%[![:space:]]*}"}"
+          cidr="${cidr%"${cidr##*[![:space:]]}"}"
+          [ -n "$cidr" ] || continue
+          sudo ip route replace "$cidr" dev wg0
+        done
+        sudo wg show wg0

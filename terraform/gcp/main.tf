@@ -90,3 +90,23 @@ resource "google_storage_bucket_iam_member" "terraform_state_sa" {
   role   = "roles/storage.objectAdmin"
   member = "serviceAccount:${google_service_account.terraform_state.email}"
 }
+
+########################################################
+# GitHub Actions OpenTofu CI (JSON key → GH secret GCP_SA_KEY)
+########################################################
+resource "google_service_account" "github_actions_tofu" {
+  account_id   = "github-actions-tofu"
+  display_name = "GitHub Actions OpenTofu CI"
+  description  = "CI runner for plan/apply against GCS tfstate (key exported to GitHub Actions secret)"
+  project      = var.gcp_project_id
+}
+
+resource "google_service_account_key" "github_actions_tofu" {
+  service_account_id = google_service_account.github_actions_tofu.name
+}
+
+resource "google_storage_bucket_iam_member" "github_actions_tofu_state" {
+  bucket = google_storage_bucket.terraform_state.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.github_actions_tofu.email}"
+}

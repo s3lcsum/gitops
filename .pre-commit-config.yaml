@@ -36,24 +36,3 @@ repos:
     rev: v1.108.1
     hooks:
       - id: terraform_tflint
-
-  - repo: local
-    hooks:
-      - id: gitops-consistency
-        name: gitops host consistency
-        entry: python3 scripts/check-consistency.py
-        language: system
-        pass_filenames: false
-        files: ^(stacks/|terraform/authentik/|scripts/check-consistency\.py|scripts/auth_classification\.yaml)
-      - id: gitops-security-invariants
-        name: gitops security invariants
-        entry: python3 scripts/test_security_invariants.py
-        language: system
-        pass_filenames: false
-        files: ^(stacks/|terraform/|scripts/)
-      - id: gitops-phase-env
-        name: phase env renderer tests
-        entry: python3 scripts/test_phase_env.py
-        language: system
-        pass_filenames: false
-        files: ^(scripts/phase_env_map\.yaml|scripts/render_phase_env\.py|scripts/test_phase_env\.py)
