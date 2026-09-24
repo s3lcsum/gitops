@@ -90,7 +90,7 @@ http:
           logLevel: "INFO"
 
 
-  # Routers for non-Docker services (nas/proxmox/router/hermes: native OIDC — no authentik@docker)
+  # Routers for non-Docker services (nas/proxmox/router/hermes/hass: native OIDC — no authentik@docker)
   routers:
     synology:
       rule: "Host(`nas.dominiksiejak.pl`)"
@@ -125,6 +125,17 @@ http:
       entryPoints:
         - websecure
       service: hermes
+
+    # hass uses network_mode: host, so it is not on the proxy network and the
+    # Docker provider skips its labels. Route it here instead.
+    hass:
+      rule: "Host(`hass.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      middlewares:
+        - remote@file
+      service: hass
 
     traefik-dashboard:
       rule: "Host(`traefik.dominiksiejak.pl`)"
@@ -174,6 +185,12 @@ http:
       loadBalancer:
         servers:
           - url: "http://192.168.89.200:8788/"
+        passHostHeader: true
+
+    hass:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:8123"
         passHostHeader: true
 
   serversTransports:

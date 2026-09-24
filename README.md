@@ -270,6 +270,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ### 24.09.2026
 
+**Home Assistant was 404 on the public host.** `hass` is `network_mode: host`, so Portainer Traefik's Docker provider never sees it (it only watches the `proxy` network) and the compose labels were doing nothing. `https://hass.dominiksiejak.pl/` and `/manifest.json` came back 404 while `n8n` on the same tunnel origin was fine. File router in `stacks/traefik/dynamic.yaml` now sends that host to `host.docker.internal:8123` with the `remote` middleware. Needs a stacks sync and a `traefik` restart before the live 404 goes away.
+
 **HashiCorp Vault is gone.** `stacks/vault/` and `terraform/vault/` left. Authentik OAuth app `vault`, Traefik `vaultpki` resolver, homepage/gatus/blackbox/AdGuard/Cilium `vault.dominiksiejak.pl`, and the GCP KMS auto-unseal resources left with it. Compose secrets stay in Phase. Terraform secrets come from gitignored tfvars or a data source in another repo. Before the next `terraform/gcp` apply, run `make -C terraform/gcp state-rm-legacy` so OpenTofu drops the KMS key and unseal service account from state (`prevent_destroy` would otherwise block the plan). Delete those GCP objects in the console if you want them gone for real. GCS prefix `gitops-vault` can be deleted from the state bucket. Portainer drops the stack on the next `make apply` in `terraform/portainer`. Authentik drops the `vault` app on the next authentik apply.
 
 **KIND and miedzysztuka are gone.** `kind/` left the public repo (no more `vibe` cluster, no `argocd.vibe.local`). Kubernetes is the kubeadm node on lake, context `k8s@lake`. Cloudflare Pages project `miedzysztuka` left with it (`terraform/cloudflare/miedzysztuka.tf`).
