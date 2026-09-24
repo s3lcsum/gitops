@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: external-secrets
+    app.kubernetes.io/part-of: external-secrets
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/s3lcsum/gitops.git
+    targetRevision: main
+    path: kubernetes/external-secrets
+    helm:
+      releaseName: external-secrets
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-secrets
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
