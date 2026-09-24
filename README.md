@@ -265,10 +265,15 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Separated subnets (IoT isolation)
 - [ ] Use Terraform for RouterOS management (or via NetBox)?
 - [x] (retroactively added) Static `x-webhook-secret` on public n8n webhooks; Authentik login firewall is IPv4-only
+- [x] (retroactively added) Toggl → Google Calendar sync finishes when a run only creates events, and each event links to that entry in the Toggl calendar UI
 
 ---
 
 ## Changelog
+
+### 24.09.2026
+
+**Toggl calendar sync was stuck.** Hourly `Toggl to Google Calendar` hung on the merge that waits for both an upsert and a delete, then skipped every later hour (`misfirePolicy: skip`). Last event written was 15.09. Entries since 16.09 never landed. Sync now finishes after either branch, empty Toggl/calendar/mapping reads still continue, and each event description links to that entry's day in the Toggl calendar UI.
 
 ### 23.09.2026
 

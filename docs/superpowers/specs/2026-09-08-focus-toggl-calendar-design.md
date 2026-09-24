@@ -78,7 +78,8 @@ Repo exports: `stacks/n8n/workflows/focus-webhook.json`, `toggl-webhook.json`, `
 
 - Google calendar **`Toggl`** (Europe/Warsaw).
 - Titles: `Project — Description`.
-- Private marker `[toggl:<id>]` in description + `extendedProperties.private.toggl_entry_id` when API allows.
+- Description includes a Toggl Calendar link for that entry's Warsaw day (`https://track.toggl.com/<workspace>/calendar/<year>/<month>/<day>`), then the private marker `[toggl:<id>]`. `extendedProperties.private.toggl_entry_id` is set when the API allows.
+- Hourly sync no longer waits on a 2-input merge after create/update and delete. A run that only creates events used to sit on `Finish Merge` forever, and `misfirePolicy: skip` then dropped every later hour (last write 2026-09-15 21:00 UTC). Both branches now go straight to `Mark Sync Done`, empty source branches still emit one item, and a missed hour fires instead of being skipped.
 - **Toggl is authoritative:** create/update/delete on hourly sync (`toggl-calendar-sync`). Deleting a time entry in Toggl queues `op:delete` on the next sync — removes the mapped Google event (via Calendar API DELETE) and drops the row from `toggl_calendar_map`. Detection uses both live calendar events and persisted mappings (so deletes still work when GCal list misses an event).
 - Initial 30-day backfill: **17 entries** loaded 2026-09-08.
 - Force sync: `POST https://n8n.dominiksiejak.pl/webhook/toggl-calendar-sync`
