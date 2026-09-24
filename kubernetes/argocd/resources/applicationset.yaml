@@ -9,7 +9,7 @@ metadata:
 spec:
   goTemplate: true
   # Drop child Applications when their values.yaml leaves the repo.
-  # Each child auto-syncs and self-heals. Prune stays off.
+  # Each child auto-syncs, self-heals, and prunes.
   syncPolicy:
     applicationsSync: sync
   generators:
@@ -51,6 +51,7 @@ spec:
         namespace: "{{index .path.segments 1}}"
       syncPolicy:
         automated:
+          prune: true
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
