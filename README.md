@@ -263,12 +263,15 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Separated subnets (IoT isolation)
 - [ ] Use Terraform for RouterOS management (or via NetBox)?
 - [x] (retroactively added) Static `x-webhook-secret` on public n8n webhooks; Authentik login firewall is IPv4-only
+- [x] (retroactively added) File-provider Traefik routes for host-network hass, unifi, adguard, and watchyourlan
 
 ---
 
 ## Changelog
 
 ### 24.09.2026
+
+**Host-network apps 404'd at Traefik.** Docker provider only watches the `proxy` network, so `hass`, `unifi`, `adguard`, and `watchyourlan` never grew routers. `hass.dominiksiejak.pl` on the tunnel is a 404. File-provider routers in `stacks/traefik/dynamic.yaml` now send those hosts to the host ports (`8123`, `8443`, `3000`, `8840`). Needs a Portainer sync and a `traefik` restart before it does anything live.
 
 **HashiCorp Vault is gone.** `stacks/vault/` and `terraform/vault/` left. Authentik OAuth app `vault`, Traefik `vaultpki` resolver, homepage/gatus/blackbox/AdGuard/Cilium `vault.dominiksiejak.pl`, and the GCP KMS auto-unseal resources left with it. Compose secrets stay in Phase. Terraform secrets come from gitignored tfvars or a data source in another repo. Before the next `terraform/gcp` apply, run `make -C terraform/gcp state-rm-legacy` so OpenTofu drops the KMS key and unseal service account from state (`prevent_destroy` would otherwise block the plan). Delete those GCP objects in the console if you want them gone for real. GCS prefix `gitops-vault` can be deleted from the state bucket. Portainer drops the stack on the next `make apply` in `terraform/portainer`. Authentik drops the `vault` app on the next authentik apply.
 
