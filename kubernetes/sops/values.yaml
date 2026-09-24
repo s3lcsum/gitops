@@ -1,0 +1,17 @@
+# Overrides for charts/sops-secrets-operator 0.28.1. Do not edit the vendored values.yaml.
+sops-secrets-operator:
+  image:
+    pullPolicy: IfNotPresent
+  initImage:
+    pullPolicy: IfNotPresent
+  extraEnv:
+    - name: SOPS_AGE_KEY_FILE
+      value: /etc/sops-age-key-file/keys.txt
+  secretsAsFiles:
+    - name: age
+      mountPath: /etc/sops-age-key-file
+      secretName: sops-age-key-file
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
