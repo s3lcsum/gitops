@@ -41,6 +41,7 @@ services:
       - crowdsec-config:/etc/crowdsec
       - crowdsec-data:/var/lib/crowdsec/data
       - /opt/traefik/crowdsec-acquis.yaml:/etc/crowdsec/acquis.yaml:ro
+      - /opt/traefik/crowdsec-whitelist.yaml:/etc/crowdsec/parsers/s02-enrich/local-whitelist.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     healthcheck:
       # crowdsec 1.8.x dropped curl from the image; cscli probes the LAPI directly

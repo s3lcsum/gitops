@@ -147,13 +147,14 @@ locals {
         "https://dominiksiejak.cloudflareaccess.com/cdn-cgi/access/callback",
       ]
     }
-    # Argo CD is ClusterIP. Browser login is `kubectl port-forward` to 8080.
-    # 8085 is the `argocd login --sso` CLI callback.
+    # UI is https://argocd.dominiksiejak.pl (Cilium Gateway).
+    # 8080/8085 stay for port-forward and `argocd login --sso`.
     argocd = {
       name       = "Argo CD"
-      launch_url = "http://localhost:8080"
+      launch_url = "https://argocd.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/argocd.svg"
       redirect_uris = [
+        "https://argocd.dominiksiejak.pl/auth/callback",
         "http://localhost:8080/auth/callback",
         "http://localhost:8085/auth/callback",
       ]

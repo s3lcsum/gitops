@@ -1,0 +1,6 @@
+name: local/wan-allow
+description: "Home WAN address. CrowdSec must not score or ban it."
+whitelist:
+  reason: "home WAN"
+  ip:
+    - "109.173.196.40"

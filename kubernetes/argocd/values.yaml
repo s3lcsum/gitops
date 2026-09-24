@@ -17,8 +17,8 @@ crds:
 
 configs:
   cm:
-    # Must match the port-forward. Authentik redirects the browser here.
-    url: http://localhost:8080
+    # Public UI. Cilium Gateway terminates TLS and routes to argocd-server:80.
+    url: https://argocd.dominiksiejak.pl
     admin.enabled: false
     oidc.config: |
       name: Authentik
@@ -34,7 +34,7 @@ configs:
     policy.csv: |
       g, admins, role:admin
   params:
-    # ClusterIP only. Port-forward uses HTTP. Turn this off when an ingress terminates TLS.
+    # Gateway terminates TLS. Server stays HTTP.
     server.insecure: true
   # Public URL. PAT from 1Password item argocd-github-repo-credentials (resources/externalsecret-repo-creds.yaml).
   repositories:
