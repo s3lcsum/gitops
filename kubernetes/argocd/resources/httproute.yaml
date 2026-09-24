@@ -5,8 +5,9 @@ metadata:
   namespace: argocd
 spec:
   parentRefs:
-    - name: argocd
-      sectionName: https
+    - name: cilium
+      namespace: cilium
+      sectionName: https-argocd
   hostnames:
     - argocd.dominiksiejak.pl
   rules:

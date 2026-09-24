@@ -382,6 +382,20 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    - name: https-argocd
+      protocol: HTTPS
+      port: 443
+      hostname: "argocd.dominiksiejak.pl"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: dominiksiejak-pl-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: argocd
 
 
 ---
