@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: origin-router
+  namespace: cilium
+spec:
+  ports:
+    - name: origin
+      port: 80
+      targetPort: 80
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: origin-router
+  namespace: cilium
+  labels:
+    kubernetes.io/service-name: origin-router
+addressType: IPv4
+ports:
+  - name: origin
+    port: 80
+    protocol: TCP
+endpoints:
+  - addresses:
+      - 192.168.89.1
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: origin-router
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: https
+  hostnames:
+    - router.dominiksiejak.pl
+  rules:
+    - backendRefs:
+        - name: origin-router
+          port: 80
