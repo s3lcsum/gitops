@@ -1,0 +1,83 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: https-redirect
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: http
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: origin-nas
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: https
+  hostnames:
+    - "nas.dominiksiejak.pl"
+  rules:
+    - backendRefs:
+        - name: origin-nas
+          port: 5001
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: "192.168.89.240"
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: origin-proxmox
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: https
+  hostnames:
+    - "proxmox.dominiksiejak.pl"
+  rules:
+    - backendRefs:
+        - name: origin-proxmox
+          port: 8006
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: origin-router
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: https
+  hostnames:
+    - "router.dominiksiejak.pl"
+  rules:
+    - backendRefs:
+        - name: origin-router
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: origin-hermes
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: https
+  hostnames:
+    - "hermes.dominiksiejak.pl"
+  rules:
+    - backendRefs:
+        - name: origin-hermes
+          port: 8788
