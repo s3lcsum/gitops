@@ -2,8 +2,3 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - resources/edge.yaml
-  - resources/proxies/hermes.yaml
-  - resources/proxies/nas.yaml
-  - resources/proxies/proxmox.yaml
-  - resources/proxies/router.yaml
-  - resources/proxies/traefik.yaml
