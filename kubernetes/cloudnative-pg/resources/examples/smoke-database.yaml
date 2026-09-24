@@ -1,0 +1,29 @@
+# Example only — NOT listed in kustomization.yaml.
+# Copy into an app dir (e.g. kubernetes/authentik/resources/) and set
+# metadata.namespace: cloudnative-pg. Provide password Secret via ESO
+# (type kubernetes.io/basic-auth, keys username/password).
+# Host for apps: postgres-rw.cloudnative-pg.svc:5432
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: smoke
+  namespace: cloudnative-pg
+spec:
+  cluster:
+    name: postgres
+  name: smoke
+  login: true
+  databaseRoleReclaimPolicy: delete
+  passwordSecret:
+    name: smoke-role-password
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: smoke
+  namespace: cloudnative-pg
+spec:
+  name: smoke
+  owner: smoke
+  cluster:
+    name: postgres

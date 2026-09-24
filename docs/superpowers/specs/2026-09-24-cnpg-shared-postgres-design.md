@@ -23,7 +23,7 @@ Goal: k8s apps (e.g. future Authentik-in-k8s) declare `Database` / `DatabaseRole
 | Extra storage | NAS-backed NFS StorageClass for special PVCs only |
 | Continuous backup | Barman → **existing NAS S3 API** (`endpointURL` + bucket) |
 | HA | `instances: 1` (single-node kubeadm `k8s@lake`) |
-| Role passwords | CNPG-generated Secrets; copy into app ns when needed |
+| Role passwords | Cluster bootstrap Secrets are CNPG-generated; additional `DatabaseRole` passwords are `kubernetes.io/basic-auth` Secrets (ESO ← 1Password for real apps) |
 | Barman / admin secrets | ExternalSecret ← 1Password |
 
 ## Goals
@@ -115,9 +115,9 @@ Argo CD Application destination remains the app namespace; cross-namespace resou
 
 Password flow:
 
-1. `DatabaseRole` uses CNPG-generated password Secret in `cloudnative-pg`.
-2. When an app needs the URI: Reflector or ExternalSecret copies/mirrors into the app namespace (choose concrete tool in implementation plan; prefer whatever already fits the repo — ESO is present; Reflector is not).
-3. Connection host: `postgres-rw.cloudnative-pg.svc`.
+1. Cluster bootstrap: CNPG generates `postgres-superuser` / `postgres-app` (or equivalent) Secrets.
+2. Additional `DatabaseRole`: provide a `kubernetes.io/basic-auth` Secret (`username` / `password`) in `cloudnative-pg` — for real apps via ExternalSecret ← 1Password; reference it from `spec.passwordSecret`.
+3. When an app needs the URI in its own namespace: ESO (preferred; already in-cluster) or a future mirror copies the Secret; host `postgres-rw.cloudnative-pg.svc`.
 
 Example (illustrative):
 
