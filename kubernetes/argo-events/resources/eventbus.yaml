@@ -1,0 +1,12 @@
+# Default bus — EventSources/Sensors need this. replicas:1 for single-node lake.
+apiVersion: argoproj.io/v1alpha1
+kind: EventBus
+metadata:
+  name: default
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  jetstream:
+    # Pin to a version listed in configs.jetstream.versions (chart values).
+    version: "2.10.29"
+    replicas: 1

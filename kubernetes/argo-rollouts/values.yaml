@@ -1,0 +1,25 @@
+# ApplicationSet chart pin.
+repoURL: https://argoproj.github.io/argo-helm
+chart: argo-rollouts
+version: 2.43.2
+
+# Overrides for argo/argo-rollouts 2.43.2 (appVersion v1.10.0).
+# Single-node kubeadm (lake): one controller replica + control-plane toleration.
+installCRDs: true
+keepCRDs: true
+crdAnnotations:
+  argocd.argoproj.io/sync-options: ServerSideApply=true
+
+controller:
+  replicas: 1
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+dashboard:
+  enabled: false

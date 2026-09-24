@@ -1,0 +1,27 @@
+# ApplicationSet chart pin.
+repoURL: https://argoproj.github.io/argo-helm
+chart: argo-events
+version: 2.4.27
+
+# Overrides for argo-events 2.4.27 (app v1.9.11).
+# Single-node kubeadm: JetStream stream replicas=1 (HA needs 3).
+crds:
+  install: true
+  keep: true
+  annotations:
+    argocd.argoproj.io/sync-options: ServerSideApply=true
+
+configs:
+  jetstream:
+    streamConfig:
+      replicas: 1
+
+controller:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule

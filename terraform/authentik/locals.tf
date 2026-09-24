@@ -137,6 +137,15 @@ locals {
         "http://localhost:8085/auth/callback",
       ]
     }
+    # UI is https://workflows.dominiksiejak.pl (Cilium Gateway).
+    workflows = {
+      name       = "Argo Workflows"
+      launch_url = "https://workflows.dominiksiejak.pl"
+      icon_url   = "https://raw.githubusercontent.com/argoproj/argo-workflows/main/docs/assets/logo.png"
+      redirect_uris = [
+        "https://workflows.dominiksiejak.pl/oauth2/callback",
+      ]
+    }
   }
 
   #───────────────────────────────────────────────────────────────────────────────

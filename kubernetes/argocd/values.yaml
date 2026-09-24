@@ -1,6 +1,7 @@
 # Overrides for argo-cd 10.4.0 (app v3.5.1).
 global:
-  domain: argocd.k8s.local
+  # Must match browser origin used for SSO (return_url host check).
+  domain: argocd.dominiksiejak.pl
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
@@ -17,8 +18,17 @@ crds:
 
 configs:
   cm:
+    # Annotation tracking: copied resources (Cilium secretsync) whose
+    # tracking-id does not self-reference must not drive prune/Diff.
+    application.resourceTrackingMethod: annotation
     # Public UI. Cilium Gateway terminates TLS and routes to argocd-server:80.
     url: https://argocd.dominiksiejak.pl
+    # Port-forward SSO (`kubectl port-forward … 8080:80`). Without these,
+    # /auth/login rejects return_url=http://localhost:8080/… with
+    # "Invalid redirect URL: the protocol and host … must match".
+    additionalUrls: |
+      - http://localhost:8080
+      - http://localhost:8085
     admin.enabled: false
     oidc.config: |
       name: Authentik

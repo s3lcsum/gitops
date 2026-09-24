@@ -274,7 +274,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 **KIND and miedzysztuka are gone.** `kind/` left the public repo (no more `vibe` cluster, no `argocd.vibe.local`). Kubernetes is the kubeadm node on lake, context `k8s@lake`. Cloudflare Pages project `miedzysztuka` left with it (`terraform/cloudflare/miedzysztuka.tf`).
 
-**Argo CD logs in through Authentik.** App slug `argocd`, local admin disabled, group `admins` is `role:admin`. Browser path is `kubectl --context k8s@lake -n argocd port-forward svc/argocd-server 8080:80` (OIDC redirect is that port; CLI SSO uses `8085`). Client secret and the GitHub PAT come from 1Password (Servers items `argocd-oidc` and `argocd-github-repo-credentials`) through External Secrets. The self Application moved to `templates/application.yaml`. Also dropped the dead `v-maintenance` row from `scripts/phase_env_map.yaml`.
+**Argo CD is on `https://argocd.dominiksiejak.pl`.** Cilium Gateway terminates TLS; OIDC via Authentik (`argocd` slug, local admin off, `admins` → `role:admin`). Port-forward `8080` / CLI SSO `8085` still work as callback fallbacks. Client secret and the GitHub PAT come from 1Password (Servers items `argocd-oidc` and `argocd-github-repo-credentials`) through External Secrets. The self Application moved to `templates/application.yaml`. Also dropped the dead `v-maintenance` row from `scripts/phase_env_map.yaml`.
 
 ### 23.09.2026
 

@@ -1,0 +1,63 @@
+# ApplicationSet chart pin.
+repoURL: https://argoproj.github.io/argo-helm
+chart: argo-workflows
+version: 2.0.8
+
+# Overrides for argo/argo-workflows 2.0.8 (appVersion v4.1.4).
+# Single-node kubeadm (lake): control-plane toleration + SSO via Authentik.
+crds:
+  install: true
+  keep: true
+
+singleNamespace: false
+
+workflow:
+  serviceAccount:
+    create: true
+    name: argo-workflow
+  rbac:
+    create: true
+
+controller:
+  workflowNamespaces:
+    - argo-workflows
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+server:
+  secure: false
+  authModes:
+    - sso
+  sso:
+    enabled: true
+    issuer: https://auth.dominiksiejak.pl/application/o/workflows/
+    redirectUrl: https://workflows.dominiksiejak.pl/oauth2/callback
+    clientId:
+      name: argo-workflows-sso
+      key: client-id
+    clientSecret:
+      name: argo-workflows-sso
+      key: client-secret
+    scopes:
+      - groups
+    rbac:
+      enabled: true
+      secretWhitelist:
+        - argo-workflows-admin.service-account-token
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+
+  ingress:
+    enabled: false

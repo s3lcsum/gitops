@@ -32,11 +32,20 @@ metadata:
   namespace: cilium
 spec:
   parentRefs:
-    - name: cilium
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: cilium
       sectionName: https
   hostnames:
     - hermes.dominiksiejak.pl
   rules:
-    - backendRefs:
-        - name: origin-hermes
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: origin-hermes
           port: 8788
+          weight: 1

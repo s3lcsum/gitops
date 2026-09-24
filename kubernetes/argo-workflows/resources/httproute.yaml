@@ -1,8 +1,8 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: argocd
-  namespace: argocd
+  name: workflows
+  namespace: argo-workflows
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io
@@ -11,7 +11,7 @@ spec:
       namespace: cilium
       sectionName: https
   hostnames:
-    - argocd.dominiksiejak.pl
+    - workflows.dominiksiejak.pl
   rules:
     - matches:
         - path:
@@ -20,6 +20,6 @@ spec:
       backendRefs:
         - group: ""
           kind: Service
-          name: argocd-server
-          port: 80
+          name: argo-workflows-server
+          port: 2746
           weight: 1
