@@ -64,19 +64,32 @@ jobs:
       - name: Authenticate to GCS state
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_JSON }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Write module tfvars
         env:
-          TFVARS: ${{ secrets.TOFU_AUTO_TFVARS }}
+          MODULE: ${{ inputs.module }}
+          TFVARS_AUTHENTIK: ${{ secrets.TFVARS_AUTHENTIK }}
+          TFVARS_BACKBLAZE: ${{ secrets.TFVARS_BACKBLAZE }}
+          TFVARS_CLOUDFLARE: ${{ secrets.TFVARS_CLOUDFLARE }}
+          TFVARS_GCP: ${{ secrets.TFVARS_GCP }}
+          TFVARS_GITEA: ${{ secrets.TFVARS_GITEA }}
+          TFVARS_GRAFANA: ${{ secrets.TFVARS_GRAFANA }}
+          TFVARS_NETBOX: ${{ secrets.TFVARS_NETBOX }}
+          TFVARS_PORTAINER: ${{ secrets.TFVARS_PORTAINER }}
+          TFVARS_POSTGRES: ${{ secrets.TFVARS_POSTGRES }}
+          TFVARS_ROUTEROS: ${{ secrets.TFVARS_ROUTEROS }}
+          TFVARS_VAULT: ${{ secrets.TFVARS_VAULT }}
         run: |
           set -euo pipefail
-          if [ -z "${TFVARS}" ]; then
-            echo "TOFU_AUTO_TFVARS is empty; providers that need secrets will fail at plan."
-            exit 0
+          key="TFVARS_$(printf '%s' "$MODULE" | tr '[:lower:]' '[:upper:]')"
+          val="${!key}"
+          if [ -z "$val" ]; then
+            echo "Secret $key is empty."
+            exit 1
           fi
           umask 077
-          printf '%s\n' "$TFVARS" > defaults.auto.tfvars
+          printf '%s\n' "$val" > defaults.auto.tfvars
 
       - name: tofu init
         run: tofu init -input=false

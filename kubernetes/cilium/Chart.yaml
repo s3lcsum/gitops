@@ -1,4 +1,0 @@
-repoURL: https://helm.cilium.io/
-chart: cilium
-version: 1.20.2
-directory: cilium

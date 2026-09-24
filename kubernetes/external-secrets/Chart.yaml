@@ -1,4 +1,0 @@
-repoURL: https://charts.external-secrets.io
-chart: external-secrets
-version: 2.11.0
-directory: external-secrets
