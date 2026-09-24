@@ -22,7 +22,7 @@ repos:
       - id: mixed-line-ending
         exclude: ^kubernetes/.*/charts/
       - id: pretty-format-json
-        exclude: ^(stacks/n8n/workflows/|stacks/monitoring/grafana/provisioning/dashboards/)
+        exclude: ^(stacks/n8n/workflows/|stacks/monitoring/grafana/provisioning/dashboards/|kubernetes/.*/charts/)
 
   # OpenTofu-specific hooks: formatting and validation
   - repo: https://github.com/tofuutils/pre-commit-opentofu

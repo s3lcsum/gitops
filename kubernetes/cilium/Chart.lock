@@ -1,0 +1,6 @@
+dependencies:
+- name: cilium
+  repository: file://charts/cilium
+  version: 1.20.2
+digest: sha256:ddd71e26a574100c81e8725749dcf971b342ce3e237b1b83b8b60b4d767a60bc
+generated: "2026-09-24T03:07:22.965567+02:00"
