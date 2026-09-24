@@ -13,6 +13,12 @@ service:
   spec:
     type: ClusterIP
 ports:
+  # ClusterIP only — Cilium HTTPRoute hits this for the dashboard (web redirects → loop).
+  traefik:
+    port: 8080
+    expose:
+      default: true
+    exposedPort: 8080
   web:
     port: 8000
     expose:
@@ -45,7 +51,12 @@ gateway:
   enabled: false
 ingressRoute:
   dashboard:
-    enabled: false
+    enabled: true
+    matchRule: Host(`traefik-k8s.dominiksiejak.pl`)
+    entryPoints:
+      - traefik
+    middlewares:
+      - name: authentik
 experimental:
   plugins:
     crowdsec-bouncer-traefik-plugin:

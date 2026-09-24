@@ -17,6 +17,9 @@ services:
       - /opt/homepage/config/widgets.yaml:/app/config/widgets.yaml:ro
     networks:
       - proxy
+    # Published for Traefik-in-k8s on .252 (Docker proxy net not reachable from lake).
+    ports:
+      - "192.168.89.253:3000:3000"
     labels:
       traefik.enable: true
       traefik.docker.network: proxy

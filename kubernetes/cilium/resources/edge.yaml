@@ -31,6 +31,8 @@ spec:
                 values:
                   - cilium
                   - argocd
+                  - traefik
+                  - argo-workflows
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
