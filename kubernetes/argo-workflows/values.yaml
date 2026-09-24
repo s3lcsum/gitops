@@ -38,16 +38,18 @@ server:
     enabled: true
     issuer: https://auth.dominiksiejak.pl/application/o/workflows/
     redirectUrl: https://workflows.dominiksiejak.pl/oauth2/callback
+    # Chart ClusterRole hardcodes resourceNames: [sso] for the OIDC secret.
     clientId:
-      name: argo-workflows-sso
+      name: sso
       key: client-id
     clientSecret:
-      name: argo-workflows-sso
+      name: sso
       key: client-secret
     scopes:
       - groups
     rbac:
       enabled: true
+      # Restricts server get-secrets to these names (+ hardcoded `sso`).
       secretWhitelist:
         - argo-workflows-admin.service-account-token
   tolerations:
