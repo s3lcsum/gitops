@@ -28,23 +28,11 @@ locals {
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/netbox.svg"
       redirect_uris = ["https://netbox.dominiksiejak.pl/oauth/complete/oidc/"]
     }
-    vaultwarden = {
-      name          = "Vaultwarden"
-      launch_url    = "https://vaultwarden.dominiksiejak.pl"
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/vaultwarden.svg"
-      redirect_uris = ["https://vaultwarden.dominiksiejak.pl/oidc-signin"]
-    }
     n8n = {
       name          = "N8n"
       launch_url    = "https://n8n.dominiksiejak.pl"
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/n8n.svg"
       redirect_uris = ["https://n8n.dominiksiejak.pl/rest/oauth2-credential/callback"]
-    }
-    phase = {
-      name          = "Phase"
-      launch_url    = "https://phase.dominiksiejak.pl"
-      icon_url      = "https://phase.dev/favicon.ico"
-      redirect_uris = ["https://phase.dominiksiejak.pl/api/auth/callback/authentik"]
     }
     seerr = {
       name          = "Seerr"
@@ -269,7 +257,6 @@ locals {
     "n8n",
     "netbox",
     "synology",
-    "vaultwarden",
     "victoriametrics",
     "watchyourlan",
     "zigbee2mqtt-wifi",

@@ -8,10 +8,6 @@ locals {
       username = "watchyourlan_user"
       database = "watchyourlan_db"
     }
-    vaultwarden = {
-      username = "vaultwarden_user"
-      database = "vaultwarden_db"
-    }
     gitea = {
       username = "gitea_user"
       database = "gitea_db"
@@ -35,10 +31,6 @@ locals {
     bookarr = {
       username = "rreading_glasses"
       database = "bookarr_db"
-    }
-    phase = {
-      username = "phase_user"
-      database = "phase_db"
     }
   }
 }

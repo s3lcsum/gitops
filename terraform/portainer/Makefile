@@ -7,14 +7,7 @@ include $(GIT_ROOT)/terraform/base.Makefile
 # Inherit apply recipe from base.Makefile; just add portainer-specific prerequisites.
 apply: sync-portainer untaint-all
 
-.PHONY: sync-portainer pull watch-portainer sync-service untaint-all render-secrets
-
-PHASE_HOST ?= https://phase.dominiksiejak.pl
-PHASE_TOKEN_FILE ?= $(GIT_ROOT)/.phase-service-token
-
-render-secrets: ## Export Phase apps into stacks/*/*.env (no-op without PHASE_SERVICE_TOKEN)
-	PHASE_HOST="$(PHASE_HOST)" PHASE_TOKEN_FILE="$(PHASE_TOKEN_FILE)" \
-		python3 "$(GIT_ROOT)/scripts/render_phase_env.py" --dest "$(GIT_ROOT)/stacks"
+.PHONY: sync-portainer pull watch-portainer sync-service untaint-all
 
 untaint-all: ## Untaint all tainted resources
 	@tofu state pull | python3 -c "\
@@ -26,11 +19,11 @@ state = json.load(sys.stdin); \
  if inst.get('status') == 'tainted' and 'index_key' in inst]" | \
 	while read addr; do tofu untaint "$$addr"; done
 
-sync-portainer: render-secrets ## Rsync stacks/ -> portainer:/opt (full mirror)
+sync-portainer: ## Rsync stacks/ -> portainer:/opt (full mirror)
 	rsync -av --delete \
 		"$(GIT_ROOT)/stacks/" portainer:/opt/
 
-pull: ## Rsync portainer:/opt -> stacks/ (compose only — secrets live in Phase)
+pull: ## Rsync portainer:/opt -> stacks/ (exclude secrets)
 	rsync -av --delete --exclude '*.env' \
 		portainer:/opt/ "$(GIT_ROOT)/stacks/"
 
