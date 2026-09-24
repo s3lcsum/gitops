@@ -172,8 +172,8 @@ Gotchas baked in:
 - Instance: `https://n8n.dominiksiejak.pl`, API at `/api/v1` (disabled by default; `N8N_API_ENABLED=false`)
 - Authentik has one n8n app (OAuth2, for credentials / the dashboard tile). There is no Traefik forward-auth proxy for it. `/webhook*` is a higher-priority Traefik router (Authentik/Meta call these).
 - Login → WAN allowlist: Authentik notification webhook → `stacks/n8n/workflows/authentik-login-firewall.json`. After `tofu apply` in `terraform/authentik`, copy `tofu output -raw webhook_secret` into `/opt/n8n/n8n.env` as `WAN_ALLOWLIST_SECRET` and into the n8n headerAuth credential `wan-allowlist` (header `x-webhook-secret`). The workflow does not read `$env`. IPv4 only — IPv6 clients are rejected before RouterOS.
-- Do not put RouterOS passwords in Code nodes (`N8N_BLOCK_ENV_ACCESS_IN_NODE=true`); Set node copies `$env` then Code hashes locally.
-- `ROUTEROS_API_URL` must be `http://192.168.89.1/rest` (LAN). Do not hairpin through `https://router.dominiksiejak.pl`. With SSRF protection on, allowlist that IP (`N8N_SSRF_ALLOWED_IP_RANGES=192.168.89.1/32`).
+- Do not put RouterOS passwords in Code nodes (`N8N_BLOCK_ENV_ACCESS_IN_NODE=true`). Auth uses the `httpBasicAuth` credential `RouterOS n8n-admin`; non-secret config uses n8n Variables (`$vars`), not `$env`.
+- Firewall workflow config lives in n8n Variables (Settings → Variables), keyed in `stacks/n8n/variables.json`: `ROUTEROS_API_URL` (`http://192.168.89.1/rest`, LAN — do not hairpin through `https://router.dominiksiejak.pl`), `ROUTEROS_ADDRESS_LIST` (`allowed-wan`), `WAN_ALLOWLIST_TTL_MS` (ms since last refresh; currently 8h). With SSRF protection on, allowlist that IP (`N8N_SSRF_ALLOWED_IP_RANGES=192.168.89.1/32`).
 - MCP servers configured in `.mcp.json`: `n8n-mcp` (HTTP), `n8n-mcp-tools` (stdio/validation)
 
 ## Gotchas
