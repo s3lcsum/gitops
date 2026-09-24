@@ -7,7 +7,7 @@ spec:
   parentRefs:
     - name: cilium
       namespace: cilium
-      sectionName: https-argocd
+      sectionName: https
   hostnames:
     - argocd.dominiksiejak.pl
   rules:
