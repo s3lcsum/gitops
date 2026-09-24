@@ -19,6 +19,16 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: {{ .Release.Namespace }}
+  # ESO merges oidc.authentik.clientSecret into this Helm-owned Secret.
+  # Ignore data + ESO reconcile metadata so Argo does not thrash or wipe keys.
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: argocd-secret
+      jsonPointers:
+        - /data
+        - /metadata/annotations/reconcile.external-secrets.io~1data-hash
+        - /metadata/labels/reconcile.external-secrets.io~1managed
   # Sync is manual. Automated prune/selfHeal on main would apply a bad push
   # and overwrite a live fix.
   syncPolicy:
