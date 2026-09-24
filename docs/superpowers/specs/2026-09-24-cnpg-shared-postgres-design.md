@@ -174,16 +174,25 @@ Phase 1 does **not** deploy Authentik to k8s; only establishes Cluster + operato
 
 ## Success criteria (phase 1)
 
-1. `local-path` and NAS StorageClasses exist; `local-path` is default.
-2. CNPG operator healthy; `Cluster/postgres` Ready with 1 instance.
-3. At least one successful Barman backup visible in NAS S3 bucket.
-4. Creating a test `Database` + `DatabaseRole` in `cloudnative-pg` (or example path) provisions objects; connect via `postgres-rw` Service.
-5. Compose Postgres still up; Docker apps unchanged.
+1. `local-path` default StorageClass exists. *(done — `kubernetes/local-path-provisioner`.)* NAS StorageClass **deferred** (implementation skipped).
+2. CNPG operator healthy; `Cluster/postgres` Ready with 1 instance. *(manifests in `kubernetes/cloudnative-pg`; verify in cluster.)*
+3. At least one successful Barman backup visible in NAS S3 bucket. **Deferred** — no `barmanObjectStore` / `ScheduledBackup` / Barman ExternalSecret in gitops yet.
+4. Creating a test `Database` + `DatabaseRole` in `cloudnative-pg` (or example path) provisions objects; connect via `postgres-rw` Service. *(pattern documented in `resources/examples/smoke-database.yaml`; smoke not wired in kustomize.)*
+5. Compose Postgres still up; Docker apps unchanged. *(unchanged by design.)*
 
-## Open items for implementation plan
+## Implementation status (gitops, 2026-09-24)
 
-- Exact Helm chart repos/versions for local-path-provisioner, NFS CSI/driver, and CNPG.
-- NAS S3 `endpointURL`, bucket name, and 1Password item shape (user supplies; not committed).
-- NFS server IP/export path for the NAS StorageClass.
-- Secret-mirroring mechanism for app namespaces (ESO vs add Reflector).
-- Whether `DatabaseRole` is available in the pinned CNPG version or fallback to `spec.managed.roles` on the Cluster for v1.
+| Item | Status |
+|------|--------|
+| `local-path-provisioner` (default SC) | Committed |
+| CNPG operator + `Cluster/postgres` | Committed (no backup block on Cluster) |
+| NAS NFS StorageClass | **Skipped** — not in repo |
+| Barman → NAS S3 + `ScheduledBackup` + ESO | **Skipped** — not in repo |
+| App `Database` / `DatabaseRole` pattern | Example only (`resources/examples/`) |
+
+## Open items
+
+- NAS NFS StorageClass (server/export) — deferred until Task 2 resumed.
+- Barman: NAS S3 `endpointURL`, bucket/`destinationPath`, 1Password item → ExternalSecret + `ScheduledBackup` — deferred until backup task resumed.
+- Secret-mirroring mechanism for app namespaces (ESO vs Reflector) when first real k8s app needs DB creds outside `cloudnative-pg`.
+- Cluster smoke: apply example CRs or app-owned CRs and verify connect via `postgres-rw` (manual/ops).
