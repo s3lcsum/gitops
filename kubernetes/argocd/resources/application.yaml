@@ -27,9 +27,10 @@ spec:
     namespace: argocd
   # ESO merges oidc.authentik.clientSecret into this Helm-owned Secret.
   # Live also carries Helm release annotations + ESO reconcile metadata.
+  # Omit group. Core/v1 Secret is the default, and an explicit
+  # empty group is dropped by the API, so selfHeal never converges.
   ignoreDifferences:
-    - group: ""
-      kind: Secret
+    - kind: Secret
       name: argocd-secret
       jqPathExpressions:
         - .data
@@ -42,4 +43,5 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      - ServerSideDiff=true
       - RespectIgnoreDifferences=true

@@ -35,6 +35,9 @@ spec:
           targetRevision: "{{.version}}"
           helm:
             releaseName: "{{index .path.segments 1}}"
+            # values.yaml carries repoURL/chart/version for this generator.
+            # cert-manager's schema rejects those keys.
+            skipSchemaValidation: true
             valueFiles:
               - "$values/kubernetes/{{index .path.segments 1}}/values.yaml"
         - repoURL: https://github.com/s3lcsum/gitops.git
@@ -52,3 +55,6 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+          # Gateway API defaulting (group/kind/weight) never matches a
+          # client-side diff, so selfHeal reapplies the same objects forever.
+          - ServerSideDiff=true
