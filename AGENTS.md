@@ -34,7 +34,7 @@
 - `terraform/` — OpenTofu modules. State: **GCS** (`dominiksiejak-gitops-tfstate`), migrated from TFC Apr 2026.
   - GCS state prefix convention: `gitops-<dirname>` (e.g., `gitops-portainer`).
   - `terraform/terraform-cloud/` is dead TFC bootstrap — **DO NOT APPLY**.
-- `kubernetes/argocd/` — Self-managed Argo CD for the kubeadm node (context `k8s@lake`). Vendored upstream Helm chart is `kubernetes/argocd/charts/argo-cd` (do not fetch argo-helm at sync time). Overrides: `kubernetes/argocd/values.yaml`. Bootstrap: `make -C kubernetes/argocd bootstrap` (repo creds from committed `repo-credentials.enc.yaml` via SOPS, or gitignored plaintext; chart sync does not touch the Secret). The Application is `templates/application.yaml` and tracks this repo path `kubernetes/argocd` with manual sync. UI: `kubectl --context k8s@lake -n argocd port-forward svc/argocd-server 8080:80` (that port is the Authentik OIDC redirect). Local admin is disabled. Authentik app slug `argocd`; OIDC client secret is SOPS-encrypted `oidc-client.enc.yaml` (`make oidc` decrypts with local age key at `~/.config/sops/age/keys.txt`). Group `admins` is Argo CD `role:admin`. Secrets under `kubernetes/argocd/*.enc.yaml` are age+SOPS (root `.sops.yaml`); never commit the age private key.
+- `kubernetes/argocd/` — Self-managed Argo CD for the kubeadm node (context `k8s@lake`). Vendored upstream Helm chart is `kubernetes/argocd/charts/argo-cd` (do not fetch argo-helm at sync time). Overrides: `kubernetes/argocd/values.yaml`. Bootstrap: `make -C kubernetes/argocd bootstrap` (repo creds from committed `repo-credentials.enc.yaml` via SOPS, or gitignored plaintext; chart sync does not touch the Secret). Self Application is `templates/application.yaml` (path `kubernetes/argocd`, manual sync). Sibling charts under `kubernetes/*` (except `argocd`) are parented by ApplicationSet `templates/applicationset.yaml` — drop a chart directory with `Chart.yaml` + `values.yaml` on `main` and Argo creates the Application; child sync stays manual. UI: `kubectl --context k8s@lake -n argocd port-forward svc/argocd-server 8080:80` (that port is the Authentik OIDC redirect). Local admin is disabled. Authentik app slug `argocd`; OIDC client secret is SOPS-encrypted `oidc-client.enc.yaml` (`make oidc` decrypts with local age key at `~/.config/sops/age/keys.txt`). Group `admins` is Argo CD `role:admin`. Secrets under `kubernetes/argocd/*.enc.yaml` are age+SOPS (root `.sops.yaml`); never commit the age private key.
 
 ## Networking
 
@@ -159,6 +159,7 @@ Usage:
 - Auth classification: every Traefik host must be in `scripts/auth_classification.yaml`.
 
 Gotchas baked in:
+- `BLACKBOX_SKIP` = `{"hermes"}` — Traefik host, no Grafana blackbox job. `--fix` must not re-add it.
 - `EXTERNAL_ROUTED` = `{"portainer"}` (routed but configured outside this repo).
 - `HOMEPAGE_LAN_IP` = `{nas, proxmox, router, adguard}` (homepage shows them via LAN IP, not the
   proxied host) — excluded from homepage-missing checks.
