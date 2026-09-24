@@ -1,0 +1,22 @@
+# ApplicationSet chart pin.
+repoURL: https://charts.containeroo.ch
+chart: local-path-provisioner
+version: 0.0.38
+
+# Overrides for containeroo/local-path-provisioner 0.0.38 (app v0.0.37).
+replicaCount: 1
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+storageClass:
+  create: true
+  defaultClass: true
+  name: local-path
+  reclaimPolicy: Delete
+  volumeBindingMode: WaitForFirstConsumer
+  defaultVolumeType: hostPath
+nodePathMap:
+  - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
+    paths:
+      - /opt/local-path-provisioner
