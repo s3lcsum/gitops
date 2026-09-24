@@ -1,4 +1,4 @@
-.PHONY: help bootstrap vendor template creds oidc encrypt encrypt-creds encrypt-oidc decrypt-check
+.PHONY: help bootstrap vendor template creds oidc encrypt encrypt-creds decrypt-check
 
 CHART_VERSION ?= 10.4.0
 KUBE_CONTEXT ?= k8s@lake
@@ -8,10 +8,10 @@ TIMEOUT ?= 10m
 
 CREDS_PLAIN ?= repo-credentials.yaml
 CREDS_ENC ?= repo-credentials.enc.yaml
-OIDC_PLAIN ?= oidc-client.yaml
-OIDC_ENC ?= oidc-client.enc.yaml
 
 # SOPS looks up ~/.config/sops/age/keys.txt by default; override with SOPS_AGE_KEY_FILE.
+# OIDC client secret is ExternalSecret → 1Password (Servers/argocd-oidc). Repo PAT still
+# optional via SOPS/plain until 1Password item argocd-github exists (see *.example).
 SOPS ?= sops
 
 help: ## Show this help
@@ -62,16 +62,23 @@ bootstrap: ## Install or upgrade Argo CD, then apply GitHub repo creds once
 	$(call _materialize_secret,$(CREDS_PLAIN),$(CREDS_ENC),replace-with-github-(pat|username)); \
 	kubectl --context $(KUBE_CONTEXT) apply -f "$$tmpdir/secret.yaml"
 
-oidc: ## Patch the Authentik client secret into argocd-secret and restart the server
-	@$(call _materialize_secret,$(OIDC_PLAIN),$(OIDC_ENC),replace-with-tofu-output); \
-	kubectl --context $(KUBE_CONTEXT) -n $(NAMESPACE) patch secret argocd-secret --type merge --patch-file "$$tmpdir/secret.yaml"; \
-	kubectl --context $(KUBE_CONTEXT) -n $(NAMESPACE) rollout restart deploy/argocd-server
+oidc: ## Verify ExternalSecret argocd-oidc merged into argocd-secret (1Password)
+	@kubectl --context $(KUBE_CONTEXT) -n $(NAMESPACE) get externalsecret argocd-oidc \
+		-o jsonpath='Ready={.status.conditions[?(@.type=="Ready")].status} reason={.status.conditions[?(@.type=="Ready")].reason}{"\n"}'
+	@kubectl --context $(KUBE_CONTEXT) -n $(NAMESPACE) get secret argocd-secret -o json | python3 -c "\
+import sys,json;\
+d=json.load(sys.stdin).get('data') or {};\
+need=['server.secretkey','oidc.authentik.clientSecret'];\
+missing=[k for k in need if k not in d];\
+print('keys=',sorted(d.keys()));\
+print('ok' if not missing else 'MISSING '+str(missing));\
+sys.exit(1 if missing else 0)"
 
-creds: ## Apply or rotate the GitHub repo-creds Secret
+creds: ## Apply or rotate the GitHub repo-creds Secret (legacy SOPS/plain; prefer 1Password example)
 	@$(call _materialize_secret,$(CREDS_PLAIN),$(CREDS_ENC),replace-with-github-(pat|username)); \
 	kubectl --context $(KUBE_CONTEXT) apply -f "$$tmpdir/secret.yaml"
 
-encrypt: encrypt-creds encrypt-oidc ## Encrypt plaintext → committed *.enc.yaml
+encrypt: encrypt-creds ## Encrypt plaintext repo creds → committed *.enc.yaml
 
 encrypt-creds: ## Encrypt repo-credentials.yaml → repo-credentials.enc.yaml
 	@test -f $(CREDS_PLAIN) || { echo "missing $(CREDS_PLAIN): copy repo-credentials.yaml.example and set the GitHub PAT"; exit 1; }
@@ -80,21 +87,14 @@ encrypt-creds: ## Encrypt repo-credentials.yaml → repo-credentials.enc.yaml
 	@mv $(CREDS_ENC).tmp $(CREDS_ENC)
 	@echo "wrote $(CREDS_ENC) (safe to commit)"
 
-encrypt-oidc: ## Encrypt oidc-client.yaml → oidc-client.enc.yaml
-	@test -f $(OIDC_PLAIN) || { echo "missing $(OIDC_PLAIN): copy oidc-client.yaml.example. Secret is tofu output applications.argocd.client_secret"; exit 1; }
-	@grep -q 'replace-with-tofu-output' $(OIDC_PLAIN) && { echo "$(OIDC_PLAIN) still has the placeholder secret"; exit 1; } || true
-	$(SOPS) encrypt --filename-override $(OIDC_ENC) $(OIDC_PLAIN) > $(OIDC_ENC).tmp
-	@mv $(OIDC_ENC).tmp $(OIDC_ENC)
-	@echo "wrote $(OIDC_ENC) (safe to commit)"
-
-decrypt-check: ## Dry-decrypt *.enc.yaml; print keys only (no secret values)
+decrypt-check: ## Dry-decrypt repo-credentials.enc.yaml; print keys only (no secret values)
 	@found=0; \
-	for f in $(CREDS_ENC) $(OIDC_ENC); do \
+	for f in $(CREDS_ENC); do \
 		[ -f $$f ] || { echo "skip $$f (missing)"; continue; }; \
 		found=1; \
 		$(SOPS) -d $$f | python3 -c "import yaml,sys; d=yaml.safe_load(sys.stdin); sd=d.get('stringData') or d.get('data') or {}; print('$$f: decrypt_ok keys=' + str(list(sd.keys())))"; \
 	done; \
-	[ $$found -eq 1 ] || { echo "no *.enc.yaml to check"; exit 1; }
+	[ $$found -eq 1 ] || { echo "no *.enc.yaml to check (OIDC is 1Password/ExternalSecret)"; exit 0; }
 
 template: ## Render manifests from the vendored chart + values
 	helm template $(RELEASE) . --namespace $(NAMESPACE)

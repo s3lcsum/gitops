@@ -38,7 +38,7 @@ argo-cd:
     params:
       # ClusterIP only. Port-forward uses HTTP. Turn this off when an ingress terminates TLS.
       server.insecure: true
-    # Public URL. PAT is the one-time repo-credentials.yaml Secret. Anonymous GitHub is 60 req/h.
+    # Public URL. Optional PAT via 1Password ExternalSecret (see externalsecret-repo-creds.yaml.example). Anonymous GitHub is 60 req/h.
     repositories:
       gitops:
         type: git
