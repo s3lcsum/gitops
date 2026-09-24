@@ -35,9 +35,10 @@ spec:
         - .data
         - .metadata.annotations
         - .metadata.labels["reconcile.external-secrets.io/managed"]
-  # Sync is manual. Automated prune/selfHeal on main would apply a bad push
-  # and overwrite a live fix.
+  # Auto-sync + selfHeal. Prune stays off.
   syncPolicy:
+    automated:
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true

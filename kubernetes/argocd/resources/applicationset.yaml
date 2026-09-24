@@ -9,7 +9,7 @@ metadata:
 spec:
   goTemplate: true
   # Drop child Applications when their values.yaml leaves the repo.
-  # Sync of each child stays manual (no automated prune/selfHeal on the Apps).
+  # Each child auto-syncs and self-heals. Prune stays off.
   syncPolicy:
     applicationsSync: sync
   generators:
@@ -47,6 +47,8 @@ spec:
         server: https://kubernetes.default.svc
         namespace: "{{index .path.segments 1}}"
       syncPolicy:
+        automated:
+          selfHeal: true
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
