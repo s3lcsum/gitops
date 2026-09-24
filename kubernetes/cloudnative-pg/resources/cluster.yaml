@@ -1,0 +1,24 @@
+# kubernetes/cloudnative-pg/resources/cluster.yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  instances: 1
+  enableSuperuserAccess: true
+  storage:
+    size: 8Gi
+    storageClass: local-path
+  affinity:
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+  # Empty shared cluster: keep default app DB as unused canary; apps add Database CRs.
+  bootstrap:
+    initdb:
+      database: app
+      owner: app
