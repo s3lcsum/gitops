@@ -1,0 +1,909 @@
+---
+# Source: cilium/templates/gateway.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: cilium
+  namespace: cilium
+spec:
+  gatewayClassName: cilium
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-adguard-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "adguard.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-adminer-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "adminer.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-auth-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "auth.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-bazarr-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "bazarr.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-calibre-api-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "calibre-api.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-calibre-gui-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "calibre-gui.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-calibre-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "calibre.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-dozzle-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "dozzle.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-git-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "git.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-grafana-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "grafana.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-hass-timemachine-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "hass-timemachine.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-hass-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "hass.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-homepage-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "homepage.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-jellyfin-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "jellyfin.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-lan-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "lan.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-metrics-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "metrics.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-n8n-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "n8n.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-netbox-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "netbox.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-opencode-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "opencode.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-portainer-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "portainer.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-profilarr-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "profilarr.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-prowlarr-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "prowlarr.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-qbittorrent-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "qbittorrent.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-radarr-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "radarr.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-readarr-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "readarr.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-sabnzbd-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "sabnzbd.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-seerr-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "seerr.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-sonarr-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "sonarr.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-status-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "status.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-traefik-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "traefik.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-unifi-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "unifi.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-vault-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "vault.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-vaultwarden-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "vaultwarden.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-wealthfolio-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "wealthfolio.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-zigbee2mqtt-usb-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "zigbee2mqtt-usb.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: tls-zigbee2mqtt-wifi-dominiksiejak-pl
+      protocol: TLS
+      port: 443
+      hostname: "zigbee2mqtt-wifi.dominiksiejak.pl"
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: https-nas
+      protocol: HTTPS
+      port: 443
+      hostname: "nas.dominiksiejak.pl"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: dominiksiejak-pl-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: https-proxmox
+      protocol: HTTPS
+      port: 443
+      hostname: "proxmox.dominiksiejak.pl"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: dominiksiejak-pl-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: https-router
+      protocol: HTTPS
+      port: 443
+      hostname: "router.dominiksiejak.pl"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: dominiksiejak-pl-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: https-hermes
+      protocol: HTTPS
+      port: 443
+      hostname: "hermes.dominiksiejak.pl"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: dominiksiejak-pl-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: origin-nas-ca
+  namespace: cilium
+data:
+  ca.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIID8jCCAtqgAwIBAgIHF4I5eXYtMjANBgkqhkiG9w0BAQsFADBRMQswCQYDVQQG
+    EwJUVzEPMA0GA1UEBwwGVGFpcGVsMRYwFAYDVQQKDA1TeW5vbG9neSBJbmMuMRkw
+    FwYDVQQDDBBTeW5vbG9neSBJbmMuIENBMB4XDTI2MDYyNTE0MzI1NloXDTI3MDYy
+    NjE0MzI1NlowSTELMAkGA1UEBhMCVFcxDzANBgNVBAcMBlRhaXBlbDEWMBQGA1UE
+    CgwNU3lub2xvZ3kgSW5jLjERMA8GA1UEAwwIc3lub2xvZ3kwggEiMA0GCSqGSIb3
+    DQEBAQUAA4IBDwAwggEKAoIBAQC7jxQOVO5cT6onbQamR2koOe5Ot0E+r4Xo0+IT
+    0lzZvHk3cb2WSPOgNNXdZjz6hXfMCqv4F8ECQ4UurGLuPv4/lwJi51om8LOuKxf1
+    vHGONlgQpwU6hN2gHpqnrEr5RA2QMNTA/qTCvVWnZTfTah5QLx0prTQ5byH7Rdbs
+    Tj6OzwNAU2KPZ7cv28RZdfRqMacglDo9j4O3XAnOhqnaI/p++328IpKWgdKMD9se
+    veWFok1Y10s4sU0Fa4RnDGggvy0dTmYr0O/OuWZA07JLCqPe2XT0gwJYhOiSxLOj
+    anwGpiIyxuxMQdVOhgGidBbwKJCGZh1izqCkN+1eS/xSE1W3AgMBAAGjgdYwgdMw
+    OgYJYIZIAYb4QgENBC0WK21vZF9zc2wgZ2VuZXJhdGVkIGN1c3RvbSBzZXJ2ZXIg
+    Y2VydGlmaWNhdGUwEQYJYIZIAYb4QgEBBAQDAgZAMA4GA1UdDwEB/wQEAwIFoDAd
+    BgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwEwYDVR0RBAwwCoIIc3lub2xv
+    Z3kwHQYDVR0OBBYEFHZ5DcqW/sY1NJHhffMWVTiCEmeYMB8GA1UdIwQYMBaAFDDV
+    2UTADoi3GdBfPo/WbUzNmYhdMA0GCSqGSIb3DQEBCwUAA4IBAQAy94FL7vOI6Vso
+    ykihcYRtjZhjMJhgPA3nyXLmsb1WsNs7KgNiGLOZ4ZycUWpn7oZv3gcmXsxQMz7W
+    RT52+k+9MueG15w3EL6KKBMgqU8Yr7Wfv74xLwtsiRyI0rc/XoqB61vyR9xSh8eY
+    vpUWB8VRJpGTUiDG+YUM+PV5T+4b2TEvKEMVihry9V2WfpCqlPRLk8NjLhyyA27D
+    v6dUi+CNDucDFocZ77akGBu/5lHmPezNkGndd89rff7sCWULANUajKEyO41/qgR7
+    4Kwe8TR3JhfmepaTsxQVpsaBlimTh5amIzwLa0x4WQZYth04x01ygrdMITgfkrv/
+    QZ9wR0a1
+    -----END CERTIFICATE-----
+
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: origin-proxmox-ca
+  namespace: cilium
+data:
+  ca.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIE7zCCAtegAwIBAgIBATANBgkqhkiG9w0BAQsFADB2MSQwIgYDVQQDDBtQcm94
+    bW94IFZpcnR1YWwgRW52aXJvbm1lbnQxLTArBgNVBAsMJDg3NzcwNjMzLTk3MmMt
+    NDM0MS04N2E2LWU0NzgzOTc3YTMwYjEfMB0GA1UECgwWUFZFIENsdXN0ZXIgTWFu
+    YWdlciBDQTAeFw0yNTA4MTgxNjAzMjFaFw0yNzA4MTgxNjAzMjFaMFUxGTAXBgNV
+    BAsTEFBWRSBDbHVzdGVyIE5vZGUxJDAiBgNVBAoTG1Byb3htb3ggVmlydHVhbCBF
+    bnZpcm9ubWVudDESMBAGA1UEAxMJbGFrZS5ob21lMIIBIjANBgkqhkiG9w0BAQEF
+    AAOCAQ8AMIIBCgKCAQEA83UPXMSfS8Wn/0WIt+E8Dx4ShENnkNryeSN+ghCD+ME7
+    /X/pxRbGQm0C2LzUsEEgwJ+Ie8rYX5aIBwMYLdq+9KAlqehMSf5ISogKsuCyFWHj
+    fpirA4pdiP89ww4Fp0Peqlau8qHktoto2ve6jzZgL1gXb5cVlIxLf6pUYGSpJmbe
+    vXNILCdK22zceB+rw3elYk7HcmIC8c6RUuQLO+ApRUJHfXcBGZu3dIub45f5BshR
+    D5SMT7uU8HGN0nZWCV892WOEBEDPNdoEPNYNNLa3v95H1USN1pLXX46q6ZAE6Hqo
+    bdFtn4TCeoG7GnD5Z+8v56ylJ6OfrGaNgX/Oy41ojQIDAQABo4GoMIGlMAkGA1Ud
+    EwQCMAAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwQwYDVR0RBDwwOocEfwAAAYcQAAAA
+    AAAAAAAAAAAAAAAAAYIJbG9jYWxob3N0hwTAqFncggRsYWtlgglsYWtlLmhvbWUw
+    HQYDVR0OBBYEFDmyH2tssrA3My5D7ixJYpFQsJUCMB8GA1UdIwQYMBaAFMHt/lRu
+    rPXieXHNsWCuCf5ZYqTcMA0GCSqGSIb3DQEBCwUAA4ICAQBMQQH7hKLOJcLxM4CB
+    f/8dr2pbYZHi0Dvs1RggNpu3nhi+Lhv0GwYQcMz8Vhuzb0Q5+C38GsQxgVhPFRzm
+    +XfuRmXbGkw75kxp6zSfjv5Q7soqAsebF5rqxqH6tpKHw8fjLpwxgn/96JCbcE2f
+    1I0zaAQN53bKe3LD8BifkCorbrUYz6eBZKX8tVHOhodRUa22VdF+cm7joz8X0RNt
+    yCXqYLqL/p/WbYM0EdAL9vpn7HirL4SoSkFZw3EN93XXMryVIpJSv7RXVRbR0Yn0
+    eW3s3E1k12CgLDRjEySC4uR09qq8s/4WO8/12gfY9KAcZjVy0j/2iwOJ3LXfHteC
+    gk+MfdBZP0t0JD3Uh61lxgTQfAU+WMmUBc/lYcWmkyBZlpyzOuIuYH+GUooU5giL
+    N0N1BtEuUf3/5KmC4t2H6QV7URf1WU1y8C1Wfu7qolOQc1DNyMgf1tcltHw2h06F
+    4HeZaPndbhi971m4sQeCDk24b+4MOZU4ZRHKv4LaXbh64dwtyAYsD11l5CDwmw3w
+    RvwZmza5al1lskHTTBafZHaZdnKeD6ICX9Vd0n1epVwYh0l0aCozEJYOmbj6A4Dh
+    tHQerBmtvX1xS3J3kSEsjv9RBo2++Iff7YgMHZbFIgQNziuY+O3dybdJhSjj/wWl
+    YjrwAs4ughRHr+lK/M0p/zzFKA==
+    -----END CERTIFICATE-----
+
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik
+  namespace: cilium
+spec:
+  ports:
+    - name: https
+      port: 443
+      targetPort: 443
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: origin-nas
+  namespace: cilium
+spec:
+  ports:
+    - name: origin
+      port: 5001
+      targetPort: 5001
+      appProtocol: https
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: origin-proxmox
+  namespace: cilium
+spec:
+  ports:
+    - name: origin
+      port: 8006
+      targetPort: 8006
+      appProtocol: https
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: origin-router
+  namespace: cilium
+spec:
+  ports:
+    - name: origin
+      port: 80
+      targetPort: 80
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: origin-hermes
+  namespace: cilium
+spec:
+  ports:
+    - name: origin
+      port: 8788
+      targetPort: 8788
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: origin-nas
+  namespace: cilium
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: origin-nas
+  validation:
+    hostname: "synology"
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: origin-nas-ca
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: origin-proxmox
+  namespace: cilium
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: origin-proxmox
+  validation:
+    hostname: "lake.home"
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: origin-proxmox-ca
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: traefik
+  namespace: cilium
+  labels:
+    kubernetes.io/service-name: traefik
+addressType: IPv4
+ports:
+  - name: https
+    port: 443
+    protocol: TCP
+endpoints:
+  - addresses:
+      - "192.168.89.253"
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: origin-nas
+  namespace: cilium
+  labels:
+    kubernetes.io/service-name: origin-nas
+addressType: IPv4
+ports:
+  - name: origin
+    port: 5001
+    protocol: TCP
+    appProtocol: https
+endpoints:
+  - addresses:
+      - "192.168.89.240"
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: origin-proxmox
+  namespace: cilium
+  labels:
+    kubernetes.io/service-name: origin-proxmox
+addressType: IPv4
+ports:
+  - name: origin
+    port: 8006
+    protocol: TCP
+    appProtocol: https
+endpoints:
+  - addresses:
+      - "192.168.89.254"
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: origin-router
+  namespace: cilium
+  labels:
+    kubernetes.io/service-name: origin-router
+addressType: IPv4
+ports:
+  - name: origin
+    port: 80
+    protocol: TCP
+endpoints:
+  - addresses:
+      - "192.168.89.1"
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: origin-hermes
+  namespace: cilium
+  labels:
+    kubernetes.io/service-name: origin-hermes
+addressType: IPv4
+ports:
+  - name: origin
+    port: 8788
+    protocol: TCP
+endpoints:
+  - addresses:
+      - "192.168.89.200"
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: https-redirect
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: http
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: origin-nas
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: https-nas
+  hostnames:
+    - "nas.dominiksiejak.pl"
+  rules:
+    - backendRefs:
+        - name: origin-nas
+          port: 5001
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: "192.168.89.240"
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: origin-proxmox
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: https-proxmox
+  hostnames:
+    - "proxmox.dominiksiejak.pl"
+  rules:
+    - backendRefs:
+        - name: origin-proxmox
+          port: 8006
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: origin-router
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: https-router
+  hostnames:
+    - "router.dominiksiejak.pl"
+  rules:
+    - backendRefs:
+        - name: origin-router
+          port: 80
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: origin-hermes
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: https-hermes
+  hostnames:
+    - "hermes.dominiksiejak.pl"
+  rules:
+    - backendRefs:
+        - name: origin-hermes
+          port: 8788
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: TLSRoute
+metadata:
+  name: traefik-0
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: tls-adguard-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-adminer-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-auth-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-bazarr-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-calibre-api-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-calibre-gui-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-calibre-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-dozzle-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-git-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-grafana-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-hass-timemachine-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-hass-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-homepage-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-jellyfin-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-lan-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-metrics-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-n8n-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-netbox-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-opencode-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-portainer-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-profilarr-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-prowlarr-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-qbittorrent-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-radarr-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-readarr-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-sabnzbd-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-seerr-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-sonarr-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-status-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-traefik-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-unifi-dominiksiejak-pl
+  hostnames:
+    - "adguard.dominiksiejak.pl"
+    - "adminer.dominiksiejak.pl"
+    - "auth.dominiksiejak.pl"
+    - "bazarr.dominiksiejak.pl"
+    - "calibre-api.dominiksiejak.pl"
+    - "calibre-gui.dominiksiejak.pl"
+    - "calibre.dominiksiejak.pl"
+    - "dozzle.dominiksiejak.pl"
+    - "git.dominiksiejak.pl"
+    - "grafana.dominiksiejak.pl"
+    - "hass-timemachine.dominiksiejak.pl"
+    - "hass.dominiksiejak.pl"
+    - "homepage.dominiksiejak.pl"
+    - "jellyfin.dominiksiejak.pl"
+    - "lan.dominiksiejak.pl"
+    - "metrics.dominiksiejak.pl"
+    - "n8n.dominiksiejak.pl"
+    - "netbox.dominiksiejak.pl"
+    - "opencode.dominiksiejak.pl"
+    - "portainer.dominiksiejak.pl"
+    - "profilarr.dominiksiejak.pl"
+    - "prowlarr.dominiksiejak.pl"
+    - "qbittorrent.dominiksiejak.pl"
+    - "radarr.dominiksiejak.pl"
+    - "readarr.dominiksiejak.pl"
+    - "sabnzbd.dominiksiejak.pl"
+    - "seerr.dominiksiejak.pl"
+    - "sonarr.dominiksiejak.pl"
+    - "status.dominiksiejak.pl"
+    - "traefik.dominiksiejak.pl"
+    - "unifi.dominiksiejak.pl"
+  rules:
+    - backendRefs:
+        - name: traefik
+          port: 443
+
+
+---
+# Source: cilium/templates/routes.yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: TLSRoute
+metadata:
+  name: traefik-1
+  namespace: cilium
+spec:
+  parentRefs:
+    - name: cilium
+      sectionName: tls-vault-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-vaultwarden-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-wealthfolio-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-zigbee2mqtt-usb-dominiksiejak-pl
+    - name: cilium
+      sectionName: tls-zigbee2mqtt-wifi-dominiksiejak-pl
+  hostnames:
+    - "vault.dominiksiejak.pl"
+    - "vaultwarden.dominiksiejak.pl"
+    - "wealthfolio.dominiksiejak.pl"
+    - "zigbee2mqtt-usb.dominiksiejak.pl"
+    - "zigbee2mqtt-wifi.dominiksiejak.pl"
+  rules:
+    - backendRefs:
+        - name: traefik
+          port: 443

@@ -165,115 +165,115 @@ filtering:
   safebrowsing_block_host: standard-block.dns.adguard.com
   rewrites:
     - domain: adguard.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: adminer.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: auth.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: calibre.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: calibre-api.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: calibre-gui.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: dozzle.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: git.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: grafana.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: hass.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: hass-timemachine.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: hermes.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: homepage.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: jellyfin.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: lan.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: metrics.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: n8n.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: nas.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: netbox.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: opencode.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: phase.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: profilarr.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: prowlarr.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: proxmox.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: qbittorrent.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: radarr.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: router.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: sabnzbd.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: seerr.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: sonarr.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: status.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: traefik.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: unifi.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: vault.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: vaultwarden.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: zigbee2mqtt-usb.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
     - domain: zigbee2mqtt-wifi.dominiksiejak.pl
-      answer: 192.168.89.253
+      answer: 192.168.89.252
       enabled: true
   safe_fs_patterns:
     - /opt/adguardhome/work/userfilters/*

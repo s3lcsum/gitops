@@ -1,0 +1,17 @@
+# Overrides for jetstack/cert-manager v1.21.2.
+# DNS-01 for *.dominiksiejak.pl lives in resources/. Traefik no longer runs an ACME client
+# for that name.
+crds:
+  enabled: true
+  keep: true
+replicaCount: 1
+dns01RecursiveNameservers: "1.1.1.1:53,8.8.8.8:53"
+dns01RecursiveNameserversOnly: true
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule

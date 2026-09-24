@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: kubernetes
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kubernetes
+    app.kubernetes.io/part-of: argocd
+spec:
+  goTemplate: true
+  # Drop child Applications when their chart.yaml leaves the repo.
+  # Sync of each child stays manual (no automated prune/selfHeal on the Apps).
+  syncPolicy:
+    applicationsSync: sync
+  generators:
+    - git:
+        repoURL: https://github.com/s3lcsum/gitops.git
+        revision: main
+        files:
+          - path: kubernetes/*/chart.yaml
+          - path: kubernetes/argocd/chart.yaml
+            exclude: true
+  template:
+    metadata:
+      name: "{{.directory}}"
+      namespace: argocd
+      labels:
+        app.kubernetes.io/name: "{{.directory}}"
+        app.kubernetes.io/part-of: kubernetes
+    spec:
+      project: default
+      sources:
+        - repoURL: "{{.repoURL}}"
+          chart: "{{.chart}}"
+          targetRevision: "{{.version}}"
+          helm:
+            releaseName: "{{.directory}}"
+            valueFiles:
+              - "$values/kubernetes/{{.directory}}/values.yaml"
+        - repoURL: https://github.com/s3lcsum/gitops.git
+          targetRevision: main
+          ref: values
+        - repoURL: https://github.com/s3lcsum/gitops.git
+          targetRevision: main
+          path: "kubernetes/{{.directory}}/resources"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{.directory}}"
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

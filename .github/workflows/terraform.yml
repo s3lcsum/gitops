@@ -1,0 +1,90 @@
+name: OpenTofu
+
+on:
+  workflow_dispatch:
+    inputs:
+      module:
+        description: terraform/<module> (terraform-cloud is excluded)
+        required: true
+        type: choice
+        options:
+          - authentik
+          - backblaze
+          - cloudflare
+          - gcp
+          - gitea
+          - grafana
+          - netbox
+          - portainer
+          - postgres
+          - routeros
+          - vault
+      command:
+        description: tofu command
+        required: true
+        type: choice
+        default: plan
+        options:
+          - plan
+          - apply
+
+# Same overlay IP as .github/workflows/wireguard.yml — one runner at a time.
+concurrency:
+  group: wireguard-peer-github-actions
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  tofu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: terraform
+    defaults:
+      run:
+        working-directory: terraform/${{ inputs.module }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connect to home LAN
+        uses: ./.github/actions/wireguard
+        with:
+          private-key: ${{ secrets.WIREGUARD_PRIVATE_KEY }}
+          public-key: ${{ secrets.WIREGUARD_PUBLIC_KEY }}
+
+      - name: Reach the LAN gateway
+        run: ping -c 2 -W 2 192.168.89.1
+
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.12.5
+
+      - name: Authenticate to GCS state
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_JSON }}
+
+      - name: Write module tfvars
+        env:
+          TFVARS: ${{ secrets.TOFU_AUTO_TFVARS }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TFVARS}" ]; then
+            echo "TOFU_AUTO_TFVARS is empty; providers that need secrets will fail at plan."
+            exit 0
+          fi
+          umask 077
+          printf '%s\n' "$TFVARS" > defaults.auto.tfvars
+
+      - name: tofu init
+        run: tofu init -input=false
+
+      - name: tofu plan
+        if: inputs.command == 'plan'
+        run: tofu plan -input=false -no-color
+
+      - name: tofu apply
+        if: inputs.command == 'apply'
+        run: tofu apply -input=false -auto-approve -no-color

@@ -228,7 +228,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   └── watchyourlan/
 │
 ├── kubernetes/                     # In-cluster GitOps (kubeadm node)
-│   └── argocd/                     # Self-managed Argo CD (vendored chart + values)
+│   └── argocd/                     # Self-managed Argo CD (remote chart + values + Kustomize)
 │
 ├── terraform/                      # Infrastructure as Code
 │   ├── authentik/
@@ -324,7 +324,7 @@ Security follow-up: Portainer tofu talks to `https://portainer.dominiksiejak.pl`
 
 ### 25.08.2026
 
-**Argo CD chart vendored in this repo.** Chart + values are in `kubernetes/argocd/` — the upstream Helm chart is vendored under `charts/argo-cd`, not pulled from argo-helm at sync time. Bootstrap with `make -C kubernetes/argocd bootstrap`; the in-cluster Application tracks `main` and syncs manually.
+**Argo CD installs the remote chart.** `kubernetes/argocd/chart.yaml` pins `argo-cd`, `values.yaml` overrides it, and `resources/` is Kustomize (Application, ApplicationSet, ExternalSecrets). Bootstrap with `make -C kubernetes/argocd bootstrap`; the in-cluster Application tracks `main` and syncs manually.
 
 ### 23.08.2026
 
