@@ -10,7 +10,8 @@ deployment:
 hostNetwork: false
 service:
   enabled: true
-  type: ClusterIP
+  spec:
+    type: ClusterIP
 ports:
   web:
     port: 8000
@@ -58,8 +59,7 @@ resources:
   requests:
     cpu: 50m
     memory: 128Mi
-logs:
-  general:
-    level: INFO
-  access:
-    enabled: true
+log:
+  level: INFO
+accessLog:
+  enabled: true
