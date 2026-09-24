@@ -275,6 +275,9 @@ filtering:
     - domain: vaultwarden.dominiksiejak.pl
       answer: 192.168.89.252
       enabled: true
+    - domain: workflows.dominiksiejak.pl
+      answer: 192.168.89.252
+      enabled: true
     - domain: zigbee2mqtt-usb.dominiksiejak.pl
       answer: 192.168.89.252
       enabled: true

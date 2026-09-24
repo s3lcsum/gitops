@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - resources/certificate.yaml
+  - resources/tlsstore.yaml
   - resources/externalsecret-crowdsec.yaml
   - resources/servers-transports.yaml
   - resources/backends/authentik.yaml
@@ -11,7 +12,6 @@ resources:
   - resources/middlewares/secure-headers.yaml
   - resources/middlewares/lan-only.yaml
   - resources/middlewares/crowdsec.yaml
-  - resources/routes/argocd.yaml
   - resources/routes/dashboard.yaml
   - resources/routes/portainer-forward-auth.yaml
   - resources/routes/portainer-native-oidc.yaml

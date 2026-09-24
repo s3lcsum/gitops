@@ -11,6 +11,8 @@ image:
   tag: v3.7.13
 deployment:
   replicas: 1
+  # Required with hostNetwork so *.svc resolves via CoreDNS (not AdGuard).
+  dnsPolicy: ClusterFirstWithHostNet
   initContainers:
     - name: copy-binary
       image: docker.io/traefik:v3.7.13
@@ -37,7 +39,6 @@ additionalVolumeMounts:
   - name: traefik-bin
     mountPath: /usr/local/bin
 hostNetwork: true
-dnsPolicy: ClusterFirstWithHostNet
 service:
   enabled: false
 podSecurityContext:

@@ -1,0 +1,9 @@
+# Default store so IngressRoutes without an explicit secret still get the wildcard.
+apiVersion: traefik.io/v1alpha1
+kind: TLSStore
+metadata:
+  name: default
+  namespace: traefik
+spec:
+  defaultCertificate:
+    secretName: dominiksiejak-pl-tls

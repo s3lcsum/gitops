@@ -44,6 +44,7 @@ native-oidc:
   - seerr
   - sonarr
   - wealthfolio
+  - workflows
 
 public:
   - auth

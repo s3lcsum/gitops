@@ -1,0 +1,26 @@
+# CoreDNS ConfigMap only (kubeadm Deployment stays). No values.yaml → not in ApplicationSet.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: coredns
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: coredns
+    app.kubernetes.io/part-of: kubernetes
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/s3lcsum/gitops.git
+    targetRevision: main
+    path: kubernetes/coredns
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      # Keep kubeadm-managed Deployment/Service; only reconcile Corefile.
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      - ServerSideDiff=true
