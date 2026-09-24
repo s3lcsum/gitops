@@ -15,3 +15,8 @@ tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists
     effect: NoSchedule
+
+# ApplicationSet chart pin.
+repoURL: https://charts.jetstack.io
+chart: cert-manager
+version: v1.21.2

@@ -152,7 +152,7 @@ locals {
     argocd = {
       name       = "Argo CD"
       launch_url = "https://argocd.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/argocd.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/argo-cd.svg"
       redirect_uris = [
         "https://argocd.dominiksiejak.pl/auth/callback",
         "http://localhost:8080/auth/callback",

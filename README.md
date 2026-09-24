@@ -243,8 +243,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── proxmox/
 │   ├── routeros/
 │   ├── synology-nas/
-│   ├── vault/
-│   └── terraform-cloud/            # DEAD — TFC bootstrap; DO NOT APPLY (GCS is SoT)
+│   └── vault/
 │
 ├── mkdocs.yml                      # MkDocs configuration
 └── README.md
@@ -324,7 +323,7 @@ Security follow-up: Portainer tofu talks to `https://portainer.dominiksiejak.pl`
 
 ### 25.08.2026
 
-**Argo CD installs the remote chart.** `kubernetes/argocd/chart.yaml` pins `argo-cd`, `values.yaml` overrides it, and `resources/` is Kustomize (Application, ApplicationSet, ExternalSecrets). Bootstrap with `make -C kubernetes/argocd bootstrap`; the in-cluster Application tracks `main` and syncs manually.
+**Argo CD installs the remote chart.** `kubernetes/argocd/resources/application.yaml` pins `argo-cd`, `values.yaml` overrides it, and `resources/` is Kustomize (Application, ApplicationSet, ExternalSecrets). Bootstrap with `make -C kubernetes/argocd bootstrap`; the in-cluster Application tracks `main` and syncs manually.
 
 ### 23.08.2026
 

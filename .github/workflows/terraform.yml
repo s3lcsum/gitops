@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       module:
-        description: terraform/<module> (terraform-cloud is excluded)
+        description: terraform/<module>
         required: true
         type: choice
         options:

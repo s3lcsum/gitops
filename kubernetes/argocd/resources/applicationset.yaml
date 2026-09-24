@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/part-of: argocd
 spec:
   goTemplate: true
-  # Drop child Applications when their chart.yaml leaves the repo.
+  # Drop child Applications when their values.yaml leaves the repo.
   # Sync of each child stays manual (no automated prune/selfHeal on the Apps).
   syncPolicy:
     applicationsSync: sync
@@ -17,15 +17,15 @@ spec:
         repoURL: https://github.com/s3lcsum/gitops.git
         revision: main
         files:
-          - path: kubernetes/*/chart.yaml
-          - path: kubernetes/argocd/chart.yaml
+          - path: kubernetes/*/values.yaml
+          - path: kubernetes/argocd/values.yaml
             exclude: true
   template:
     metadata:
-      name: "{{.directory}}"
+      name: "{{index .path.segments 1}}"
       namespace: argocd
       labels:
-        app.kubernetes.io/name: "{{.directory}}"
+        app.kubernetes.io/name: "{{index .path.segments 1}}"
         app.kubernetes.io/part-of: kubernetes
     spec:
       project: default
@@ -34,18 +34,18 @@ spec:
           chart: "{{.chart}}"
           targetRevision: "{{.version}}"
           helm:
-            releaseName: "{{.directory}}"
+            releaseName: "{{index .path.segments 1}}"
             valueFiles:
-              - "$values/kubernetes/{{.directory}}/values.yaml"
+              - "$values/kubernetes/{{index .path.segments 1}}/values.yaml"
         - repoURL: https://github.com/s3lcsum/gitops.git
           targetRevision: main
           ref: values
         - repoURL: https://github.com/s3lcsum/gitops.git
           targetRevision: main
-          path: "kubernetes/{{.directory}}/resources"
+          path: "kubernetes/{{index .path.segments 1}}"
       destination:
         server: https://kubernetes.default.svc
-        namespace: "{{.directory}}"
+        namespace: "{{index .path.segments 1}}"
       syncPolicy:
         syncOptions:
           - CreateNamespace=true

@@ -39,3 +39,8 @@ gatewayAPI:
     enabled: true
   gatewayClass:
     create: true
+
+# ApplicationSet chart pin.
+repoURL: https://helm.cilium.io/
+chart: cilium
+version: 1.20.2

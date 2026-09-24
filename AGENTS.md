@@ -21,11 +21,6 @@
 - `terraform/cloudflare/Makefile`: `show-token` prints tunnel token from output.
 - `terraform/Makefile`: `migrate-all-tfc` batch-migrates all modules from TFC to GCS. `apply-all` opens each module in a tmux window.
 
-### Pre-commit
-- Run `pre-commit run --all-files` locally.
-- Hooks: `tofu_fmt`, `tofu_validate`, `terraform_tflint`, plus trailing-whitespace, end-of-file-fixer, check-yaml/JSON, detect-private-key, double-quote-string-fixer.
-- `check-yaml` excludes `kubernetes/**/templates/`.
-
 ## Architecture
 
 - `stacks/` — Docker Compose stacks synced to Portainer host at `/opt/<stack>/`. Each:
@@ -33,8 +28,7 @@
   - Traefik labels handle routing. Always `traefik.enable: true`. Only add custom hostname rule if different from `{service}.dominiksiejak.pl`.
 - `terraform/` — OpenTofu modules. State: **GCS** (`dominiksiejak-gitops-tfstate`), migrated from TFC Apr 2026.
   - GCS state prefix convention: `gitops-<dirname>` (e.g., `gitops-portainer`).
-  - `terraform/terraform-cloud/` is dead TFC bootstrap — **DO NOT APPLY**.
-- `kubernetes/argocd/` — Self-managed Argo CD for the kubeadm node (context `k8s@lake`). Helm installs the remote chart (`chart.yaml`: repo, chart, version). Overrides: `values.yaml` (flat, not nested under a dependency name). Extra objects live in `resources/` and are applied with Kustomize (`resources/kustomization.yaml`), not a wrapper chart `templates/`. Bootstrap: `make -C kubernetes/argocd bootstrap`. Self Application is `resources/application.yaml` (remote `argo-cd` chart + `kubernetes/argocd/resources`, manual sync). Sibling apps under `kubernetes/*` (except `argocd`) are parented by ApplicationSet `resources/applicationset.yaml` — drop a directory with `chart.yaml` + `values.yaml` + `resources/` on `main` and Argo creates a multi-source Application; child sync stays manual. UI: `kubectl --context k8s@lake -n argocd port-forward svc/argocd-server 8080:80` (that port is the Authentik OIDC redirect). Local admin is disabled. Authentik app slug `argocd`. OIDC client secret and the GitHub PAT come from 1Password via ExternalSecrets (`resources/externalsecret-oidc.yaml`, `resources/externalsecret-repo-creds.yaml`); tag those items `ArgoCD External Secrets Operator`. Group `admins` is Argo CD `role:admin`.
+- `kubernetes/argocd/` — Self-managed Argo CD for the kubeadm node (context `k8s@lake`). Helm installs the remote chart (`resources/application.yaml` pins repo, chart, version). Overrides: `values.yaml` (flat, not nested under a dependency name). Extra objects live in `resources/` and are applied with Kustomize (`resources/kustomization.yaml`), not a wrapper chart `templates/`. Bootstrap: `make -C kubernetes/argocd bootstrap`. Self Application is `resources/application.yaml` (remote `argo-cd` chart + `kubernetes/argocd/resources`, manual sync). Sibling apps under `kubernetes/*` (except `argocd`) are parented by ApplicationSet `resources/applicationset.yaml` — drop a directory with `values.yaml` (chart pin `repoURL` / `chart` / `version` at the bottom) + `kustomization.yaml` beside it (`resources/` holds extra manifests) on `main` and Argo creates a multi-source Application; child sync stays manual. UI: `kubectl --context k8s@lake -n argocd port-forward svc/argocd-server 8080:80` (that port is the Authentik OIDC redirect). Local admin is disabled. Authentik app slug `argocd`. OIDC client secret and the GitHub PAT come from 1Password via ExternalSecrets (`resources/externalsecret-oidc.yaml`, `resources/externalsecret-repo-creds.yaml`); tag those items `ArgoCD External Secrets Operator`. Group `admins` is Argo CD `role:admin`.
 
 ## Networking
 
@@ -126,13 +120,12 @@ has no default for `vault_token` and will prompt otherwise.
 - **Vault being retired** — still manages Postgres static creds + some OAuth KV today (`stacks/vault`, `terraform/vault`, GCP KMS auto-unseal). Compose `.env` values live in Phase (`stacks/phase/`, render via `scripts/render_phase_env.py`). Do not rip out Vault terraform in drive-by PRs.
 - Vault access is **Traefik-only** (no host port 8200) while it remains.
 - Terraform variables passed via environment or `defaults.auto.tfvars`
-- OpenTofu state: **GCS** (`dominiksiejak-gitops-tfstate`). `terraform/terraform-cloud/` is dead TFC bootstrap — **DO NOT APPLY**.
+- OpenTofu state: **GCS** (`dominiksiejak-gitops-tfstate`).
 
 ## Verification order before big changes
 
-1. `pre-commit run --all-files`
-2. For each affected terraform module: `make check` (validate + fmt)
-3. `make plan` before `make apply`
+1. For each affected terraform module: `make check` (validate + fmt)
+2. `make plan` before `make apply`
 
 ## Consistency checks
 
@@ -153,7 +146,7 @@ against it:
 - Tertiary, report-only: `gatus/config.yaml` and README host mentions.
 
 Usage:
-- `make consistency` — dry-run report; exits non-zero on blocking drift (good for CI/pre-commit).
+- `make consistency` — dry-run report; exits non-zero on blocking drift.
 - `make consistency-fix` — repairs the auto-fixable YAML (blackbox + homepage), exits non-zero
   if any terraform/README/auth-classification issue remains for manual review.
 - Auth classification: every Traefik host must be in `scripts/auth_classification.yaml`.
