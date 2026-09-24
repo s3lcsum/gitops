@@ -94,6 +94,7 @@ stacks/hass/mosquitto.passwd
 # Argo CD plaintext secrets (encrypt → *.enc.yaml with make -C kubernetes/argocd encrypt)
 kubernetes/argocd/repo-credentials.yaml
 kubernetes/argocd/oidc-client.yaml
+kubernetes/external-secrets/onepassword.yaml
 
 # age private keys — never commit
 **/age/keys.txt

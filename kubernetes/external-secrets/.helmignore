@@ -1,4 +1,6 @@
 application.yaml
+onepassword.yaml
+onepassword.yaml.example
 .git
 .gitignore
 *.md
