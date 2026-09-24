@@ -1,0 +1,19 @@
+# kubernetes/cloudnative-pg/values.yaml
+# ApplicationSet chart pin.
+repoURL: https://cloudnative-pg.github.io/charts
+chart: cloudnative-pg
+version: 0.29.1
+
+# Overrides for cloudnative-pg 0.29.1 (app 1.30.1).
+crds:
+  create: true
+monitoring:
+  podMonitorEnabled: false
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
