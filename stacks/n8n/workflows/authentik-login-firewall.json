@@ -1,6 +1,6 @@
 {
   "id": "w72dTPBXqHZKN1ip",
-  "name": "WAN allowlist on login",
+  "name": "Add IP to Firewall on Authentik login",
   "active": true,
   "nodes": [
     {
@@ -124,7 +124,14 @@
         "genericAuthType": "httpBasicAuth",
         "jsonBody": "={ \"address\": \"{{ $json.ip }}\", \"list\": \"allowed-wan\", \"comment\": \"ttl:{{ $json.expires_ms }}\", \"disabled\": false }",
         "method": "POST",
-        "options": {},
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        },
         "sendBody": true,
         "specifyBody": "json",
         "url": "={{ $json.api_url }}"
@@ -132,6 +139,183 @@
       "position": [
         1740,
         120
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "eTkZPZyTIeqFEZyR",
+          "name": "RouterOS n8n-admin"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "classify-add",
+      "name": "Classify Add Result",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const body = $input.first().json || {};\nconst detail = String(body.detail || '');\nconst duplicate = detail.includes('already have such entry');\nconst created = Boolean(body.ret);\nconst src = $('Compute Expiry').first().json;\nconst route = duplicate ? 'duplicate' : (created ? 'created' : 'error');\nreturn [{ json: { route, ip: src.ip, user: src.user, expires_ms: src.expires_ms, expires_iso: src.expires_iso } }];"
+      },
+      "position": [
+        1960,
+        40
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "is-duplicate",
+      "name": "Is Duplicate",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.route }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "duplicate"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [
+        2180,
+        40
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2
+    },
+    {
+      "id": "add-ok",
+      "name": "Add Created",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.route }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "created"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [
+        2400,
+        220
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2
+    },
+    {
+      "id": "get-address-list",
+      "name": "GET Address List",
+      "onError": "continueErrorOutput",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "method": "GET",
+        "options": {},
+        "url": "http://192.168.89.1/rest/ip/firewall/address-list"
+      },
+      "position": [
+        2400,
+        -80
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "eTkZPZyTIeqFEZyR",
+          "name": "RouterOS n8n-admin"
+        }
+      }
+    },
+    {
+      "id": "find-entry",
+      "name": "Find Existing Entry",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const src = $('Compute Expiry').first().json;\nconst ip = String(src.ip);\nconst entries = $input.all().map(i => i.json);\nconst hit = entries.find(e => {\n  if (!e || e.list !== 'allowed-wan' || !e['.id']) return false;\n  const address = String(e.address || '');\n  return address === ip || address === ip + '/32';\n});\nif (!hit) return [{ json: { found: 'no', ip } }];\nreturn [{ json: { found: 'yes', id: hit['.id'], comment: 'ttl:' + String(src.expires_ms), ip } }];"
+      },
+      "position": [
+        2620,
+        -80
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "entry-found",
+      "name": "Entry Found",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.found }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [
+        2840,
+        -80
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2
+    },
+    {
+      "id": "update-ttl",
+      "name": "Update TTL",
+      "onError": "continueErrorOutput",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "jsonBody": "={ \".id\": \"{{ $json.id }}\", \"comment\": \"{{ $json.comment }}\" }",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "json"
+            }
+          }
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "url": "http://192.168.89.1/rest/ip/firewall/address-list/set"
+      },
+      "position": [
+        3060,
+        -160
       ],
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -153,8 +337,8 @@
         "responseBody": "={ \"ok\": true, \"ip\": \"{{ $node[\"Compute Expiry\"].json.ip }}\", \"user\": \"{{ $node[\"Compute Expiry\"].json.user }}\", \"expires\": \"{{ $node[\"Compute Expiry\"].json.expires_iso }}\" }"
       },
       "position": [
-        1960,
-        120
+        3280,
+        40
       ],
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1
@@ -204,8 +388,8 @@
         "responseBody": "={ \"ok\": false, \"detail\": \"router error\" }"
       },
       "position": [
-        1960,
-        360
+        3280,
+        280
       ],
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1
@@ -271,6 +455,118 @@
       ]
     },
     "PUT to RouterOS": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Classify Add Result",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Respond Error",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Classify Add Result": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Is Duplicate",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Is Duplicate": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "GET Address List",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Add Created",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Add Created": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond Success",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Respond Error",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "GET Address List": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Find Existing Entry",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Respond Error",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Find Existing Entry": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Entry Found",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Entry Found": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Update TTL",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Respond Error",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Update TTL": {
       "main": [
         [
           {
