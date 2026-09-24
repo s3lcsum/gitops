@@ -50,20 +50,21 @@ server:
     enabled: true
     issuer: https://auth.dominiksiejak.pl/application/o/workflows/
     redirectUrl: https://workflows.dominiksiejak.pl/oauth2/callback
-    # Chart ClusterRole hardcodes resourceNames: [sso] for the OIDC secret.
+    # OIDC client creds. Secret name `sso` is reserved for Argo's JWE key.
     clientId:
-      name: sso
+      name: argo-workflows-sso
       key: client-id
     clientSecret:
-      name: sso
+      name: argo-workflows-sso
       key: client-secret
     scopes:
       - groups
     rbac:
       enabled: true
-      # Restricts server get-secrets to these names (+ hardcoded `sso`).
+      # Chart also hardcodes get on Secret `sso` (JWE encryption key).
       secretWhitelist:
         - argo-workflows-admin.service-account-token
+        - argo-workflows-sso
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
