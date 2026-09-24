@@ -126,6 +126,17 @@ http:
         - websecure
       service: hermes
 
+    # hass uses network_mode: host, so providers.docker.network=proxy drops it
+    # and the compose labels never become a router (tunnel then returns 404).
+    hass:
+      rule: "Host(`hass.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      middlewares:
+        - remote
+      service: hass
+
     traefik-dashboard:
       rule: "Host(`traefik.dominiksiejak.pl`)"
       entryPoints:
@@ -174,6 +185,12 @@ http:
       loadBalancer:
         servers:
           - url: "http://192.168.89.200:8788/"
+        passHostHeader: true
+
+    hass:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:8123"
         passHostHeader: true
 
   serversTransports:

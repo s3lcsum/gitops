@@ -16,6 +16,8 @@ services:
       - /var/lib/hass/media:/media
       - /var/run/docker.sock:/var/run/docker.sock:ro
     network_mode: host # Otherwise autodiscovery won't work
+    # Router is stacks/traefik/dynamic.yaml. This container is not on the
+    # proxy network, so the Docker provider ignores these labels.
     labels:
       traefik.enable: true
       traefik.http.routers.hass.middlewares: remote@file
