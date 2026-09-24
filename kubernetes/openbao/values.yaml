@@ -1,0 +1,24 @@
+# Overrides for the vendored OpenBao chart (charts/openbao, 0.29.6 / app v2.6.3).
+# Nested under the dependency name. Do not edit charts/openbao/values.yaml.
+openbao:
+  injector:
+    enabled: false
+  csi:
+    enabled: false
+  server:
+    standalone:
+      enabled: true
+    ha:
+      enabled: false
+    dataStorage:
+      enabled: true
+      size: 2Gi
+      storageClass: openbao
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule

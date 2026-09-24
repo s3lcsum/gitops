@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openbao
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: openbao
+    app.kubernetes.io/part-of: openbao
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/s3lcsum/gitops.git
+    targetRevision: main
+    path: kubernetes/openbao
+    helm:
+      releaseName: openbao
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openbao
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
