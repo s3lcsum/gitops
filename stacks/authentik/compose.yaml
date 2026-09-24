@@ -28,6 +28,9 @@ services:
     <<: *default
     container_name: authentik-server
     command: server
+    # Forward-auth for Traefik-in-k8s on .252 (Docker network not reachable from lake).
+    ports:
+      - "192.168.89.253:9000:9000"
     healthcheck:
       test: ["CMD", "ak", "healthcheck"]
       interval: 30s

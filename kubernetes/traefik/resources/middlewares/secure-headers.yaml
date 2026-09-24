@@ -1,0 +1,19 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: secure-headers
+  namespace: traefik
+spec:
+  headers:
+    browserXssFilter: true
+    contentTypeNosniff: true
+    customFrameOptionsValue: SAMEORIGIN
+    customResponseHeaders:
+      server: ""
+      x-powered-by: ""
+    forceSTSHeader: true
+    permissionsPolicy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
+    referrerPolicy: strict-origin-when-cross-origin
+    stsIncludeSubdomains: true
+    stsPreload: true
+    stsSeconds: 63072000

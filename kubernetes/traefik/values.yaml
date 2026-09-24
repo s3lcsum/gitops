@@ -51,6 +51,17 @@ experimental:
     crowdsec-bouncer-traefik-plugin:
       moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
       version: v1.4.4
+# LAPI key Secret (ESO) — plugin reads file path from Middleware CR.
+volumes:
+  - name: crowdsec-lapi
+    mountPath: /etc/crowdsec-bouncer
+    type: secret
+env:
+  - name: CROWDSEC_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: crowdsec-lapi
+        key: CROWDSEC_API_KEY
 tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists
