@@ -83,6 +83,47 @@ spec:
         kind: ConfigMap
         name: letsencrypt-isrg-root-x1
 ---
+# Gateway API caps HTTPRoute hostnames at 16 — split across routes.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: traefik
+  namespace: cilium
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: cilium
+      sectionName: https
+  hostnames:
+    - adguard.dominiksiejak.pl
+    - adminer.dominiksiejak.pl
+    - auth.dominiksiejak.pl
+    - bazarr.dominiksiejak.pl
+    - calibre-api.dominiksiejak.pl
+    - calibre-gui.dominiksiejak.pl
+    - calibre.dominiksiejak.pl
+    - dozzle.dominiksiejak.pl
+    - git.dominiksiejak.pl
+    - grafana.dominiksiejak.pl
+    - hass-timemachine.dominiksiejak.pl
+    - hass.dominiksiejak.pl
+    - homepage.dominiksiejak.pl
+    - jellyfin.dominiksiejak.pl
+    - lan.dominiksiejak.pl
+    - metrics.dominiksiejak.pl
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: traefik
+          port: 443
+          weight: 1
+---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -90,7 +131,9 @@ metadata:
   namespace: cilium
 spec:
   parentRefs:
-    - name: cilium
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: cilium
       sectionName: https
   hostnames:
     - n8n.dominiksiejak.pl
@@ -109,26 +152,41 @@ spec:
     - traefik.dominiksiejak.pl
     - unifi.dominiksiejak.pl
     - vaultwarden.dominiksiejak.pl
-    - adguard.dominiksiejak.pl
-    - adminer.dominiksiejak.pl
-    - auth.dominiksiejak.pl
-    - bazarr.dominiksiejak.pl
-    - calibre-api.dominiksiejak.pl
-    - calibre-gui.dominiksiejak.pl
-    - calibre.dominiksiejak.pl
-    - dozzle.dominiksiejak.pl
-    - git.dominiksiejak.pl
-    - grafana.dominiksiejak.pl
-    - hass-timemachine.dominiksiejak.pl
-    - hass.dominiksiejak.pl
-    - homepage.dominiksiejak.pl
-    - jellyfin.dominiksiejak.pl
-    - lan.dominiksiejak.pl
-    - metrics.dominiksiejak.pl
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: traefik
+          port: 443
+          weight: 1
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: traefik-2
+  namespace: cilium
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: cilium
+      sectionName: https
+  hostnames:
     - wealthfolio.dominiksiejak.pl
     - zigbee2mqtt-usb.dominiksiejak.pl
     - zigbee2mqtt-wifi.dominiksiejak.pl
   rules:
-    - backendRefs:
-        - name: traefik
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: traefik
           port: 443
+          weight: 1

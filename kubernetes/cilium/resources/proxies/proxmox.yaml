@@ -88,11 +88,20 @@ metadata:
   namespace: cilium
 spec:
   parentRefs:
-    - name: cilium
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: cilium
       sectionName: https
   hostnames:
     - proxmox.dominiksiejak.pl
   rules:
-    - backendRefs:
-        - name: origin-proxmox
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: origin-proxmox
           port: 8006
+          weight: 1

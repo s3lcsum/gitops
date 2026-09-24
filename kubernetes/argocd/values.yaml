@@ -18,9 +18,11 @@ crds:
 
 configs:
   cm:
-    # Annotation tracking: copied resources (Cilium secretsync) whose
-    # tracking-id does not self-reference must not drive prune/Diff.
-    application.resourceTrackingMethod: annotation
+    # Label tracking (custom key). Cilium secretsync copies ConfigMap
+    # annotations into cilium-secrets; annotation tracking-id caused Argo
+    # Diff to want those Secrets deleted. Labels are not copied.
+    application.resourceTrackingMethod: label
+    application.instanceLabelKey: argocd.argoproj.io/instance
     # Public UI. Cilium Gateway terminates TLS and routes to argocd-server:80.
     url: https://argocd.dominiksiejak.pl
     # Port-forward SSO (`kubectl port-forward … 8080:80`). Without these,

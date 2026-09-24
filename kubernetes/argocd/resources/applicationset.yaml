@@ -58,3 +58,18 @@ spec:
           # Gateway API defaulting (group/kind/weight) never matches a
           # client-side diff, so selfHeal reapplies the same objects forever.
           - ServerSideDiff=true
+          - RespectIgnoreDifferences=true
+      # Belt-and-suspenders with baked-in defaults in HTTPRoute/Gateway manifests.
+      ignoreDifferences:
+        - group: gateway.networking.k8s.io
+          kind: HTTPRoute
+          jqPathExpressions:
+            - .status
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          jqPathExpressions:
+            - .status
+        - group: gateway.networking.k8s.io
+          kind: BackendTLSPolicy
+          jqPathExpressions:
+            - .status

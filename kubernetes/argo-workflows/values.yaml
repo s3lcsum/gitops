@@ -4,10 +4,15 @@ chart: argo-workflows
 version: 2.0.8
 
 # Overrides for argo/argo-workflows 2.0.8 (appVersion v4.1.4).
-# Single-node kubeadm (lake): control-plane toleration + SSO via Authentik.
+# Single-node kubeadm (lake = control-plane): every pod must tolerate NoSchedule.
 crds:
   install: true
   keep: true
+  upgradeJob:
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
 
 singleNamespace: false
 
@@ -21,6 +26,13 @@ workflow:
 controller:
   workflowNamespaces:
     - argo-workflows
+  # Workflow pods inherit these defaults (otherwise Pending on control-plane taint).
+  workflowDefaults:
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
