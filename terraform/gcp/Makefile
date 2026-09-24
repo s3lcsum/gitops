@@ -6,7 +6,7 @@ include $(GIT_ROOT)/terraform/base.Makefile
 TF_DIR := $(abspath $(CURDIR))
 TOFU   ?= tofu
 
-.PHONY: show-vault-unseal export-vault-key state-rm-legacy show-github-actions-tofu export-github-actions-tofu-key push-github-actions-tofu-secret
+.PHONY: state-rm-legacy show-github-actions-tofu export-github-actions-tofu-key push-github-actions-tofu-secret
 
 # One-time after slimming this module: drop old resources from remote state so Terraform stops managing them (no GCP API calls).
 # Deletes nothing in GCP by itself—orphans old resources; delete those in Console if you want zero spend on them (e.g. empty GCS bucket).
@@ -15,6 +15,13 @@ state-rm-legacy: ## Remove pre-slim resources from state (n8n, IAP, OAuth client
 		for r in \
 			google_service_account.n8n \
 			google_service_account_key.n8n \
+			google_service_account.vault \
+			google_service_account_key.vault \
+			google_kms_key_ring.vault \
+			google_kms_crypto_key.vault \
+			google_kms_crypto_key_iam_binding.vault_encrypter_decrypter \
+			google_kms_crypto_key_iam_binding.vault_viewer \
+			'google_project_service.apis["cloudkms.googleapis.com"]' \
 			google_iap_brand.homelab \
 			'google_iap_brand.homelab[0]' \
 			google_iap_client.authentik \
@@ -28,15 +35,6 @@ state-rm-legacy: ## Remove pre-slim resources from state (n8n, IAP, OAuth client
 			$(TOFU) state rm "$$r" 2>/dev/null || true; \
 		done; \
 		echo "Done (errors ignored if address was not in state)."
-
-# After apply: use outputs to configure Vault seal (or decode the SA key JSON for import elsewhere).
-show-vault-unseal: ## Print vault_auto_unseal as JSON (sensitive; redact if sharing)
-	@cd "$(TF_DIR)" && $(TOFU) output -json vault_auto_unseal | jq .
-
-export-vault-key: ## Write Vault SA JSON key to vault-service-account.json (from Terraform output)
-	@cd "$(TF_DIR)" && \
-		$(TOFU) output -json vault_auto_unseal | jq -r '.service_account_key_b64 // .value.service_account_key_b64' | base64 -d > vault-service-account.json && \
-		echo "Wrote vault-service-account.json"
 
 show-github-actions-tofu: ## Print github_actions_tofu output as JSON (sensitive)
 	@cd "$(TF_DIR)" && $(TOFU) output -json github_actions_tofu | jq .

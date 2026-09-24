@@ -293,15 +293,6 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
-    - name: tls-vault-dominiksiejak-pl
-      protocol: TLS
-      port: 443
-      hostname: "vault.dominiksiejak.pl"
-      tls:
-        mode: Passthrough
-      allowedRoutes:
-        namespaces:
-          from: Same
     - name: tls-vaultwarden-dominiksiejak-pl
       protocol: TLS
       port: 443
@@ -902,8 +893,6 @@ metadata:
 spec:
   parentRefs:
     - name: cilium
-      sectionName: tls-vault-dominiksiejak-pl
-    - name: cilium
       sectionName: tls-vaultwarden-dominiksiejak-pl
     - name: cilium
       sectionName: tls-wealthfolio-dominiksiejak-pl
@@ -912,7 +901,6 @@ spec:
     - name: cilium
       sectionName: tls-zigbee2mqtt-wifi-dominiksiejak-pl
   hostnames:
-    - "vault.dominiksiejak.pl"
     - "vaultwarden.dominiksiejak.pl"
     - "wealthfolio.dominiksiejak.pl"
     - "zigbee2mqtt-usb.dominiksiejak.pl"

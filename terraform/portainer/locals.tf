@@ -25,7 +25,6 @@ locals {
     "postgres",
     "traefik",
     "unifi",
-    "vault",
     "vaultwarden",
     "wealthfolio",
     "watchyourlan",

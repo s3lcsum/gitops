@@ -50,11 +50,6 @@
           key: "{{HOMEPAGE_VAR_AUTHENTIK_KEY}}"
           version: 2
 
-    - Vault:
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/vault.png
-        href: https://vault.dominiksiejak.pl
-        description: Secrets engine (retiring)
-
     - Phase:
         icon: https://phase.dev/favicon.ico
         href: https://phase.dominiksiejak.pl

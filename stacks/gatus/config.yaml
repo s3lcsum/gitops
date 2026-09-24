@@ -66,10 +66,6 @@ endpoints:
         - "[STATUS] < 400"
         - "[CERTIFICATE_EXPIRATION] > 48h"
 
-  - name: "vault"
-    url: https://vault.dominiksiejak.pl
-    <<: *defaults
-
   - name: "phase"
     url: https://phase.dominiksiejak.pl
     <<: *defaults

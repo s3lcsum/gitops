@@ -69,13 +69,6 @@ certificatesResolvers:
           - "1.1.1.1:53"
           - "8.8.8.8:53"
         disablePropagationCheck: false
-  vaultpki:
-    acme:
-      email: admin@dominiksiejak.pl
-      storage: /letsencrypt/vault-acme.json
-      caServer: "http://vault:8200/v1/pki_int/acme/directory"
-      httpChallenge:
-        entryPoint: web
 
 metrics:
   prometheus:

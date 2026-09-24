@@ -16,7 +16,7 @@ Authentik OAuth (community env-var SSO, not the Enterprise OIDC SKU). Compose
 keeps `env_file:`. `make -C terraform/portainer apply` renders dotenv files from
 Phase before rsync.
 
-Vault stays until a later cutover. Phase's own `phase.env` is bootstrap and is
+Vault was removed after this spec. Phase's own `phase.env` is bootstrap and is
 never fetched from Phase. Phase DB is **not** a Vault static role (rotation
 would invalidate `phase.env`, same as Infisical).
 
@@ -45,10 +45,10 @@ would invalidate `phase.env`, same as Infisical).
 6. Sign in with password, then Authentik. Create one Phase app per `scripts/phase_env_map.yaml` entry, env `prod`.
 7. From a host that can read live `/opt/*/*.env`: `phase secrets import` each file (`PHASE_HOST=https://phase.dominiksiejak.pl`).
 8. Put a service token in `.phase-service-token` (gitignored) or `PHASE_SERVICE_TOKEN`. Later applies render and fail closed if Phase is down.
-9. Leave Vault running. Copy `vault read database/static-creds/<user>` into the matching Phase app before disabling rotation.
+9. Postgres passwords live in the matching Phase app. Vault static roles are gone.
 
 ## Out of scope
 
-- Tearing down Vault / PKI / static-cred rotation for other apps
+- Vault teardown landed later (stack, module, GCP KMS auto-unseal). This spec does not describe that removal.
 - `phase run` as container PID 1
 - Docker Swarm `secrets:`

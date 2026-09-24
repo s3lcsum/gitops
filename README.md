@@ -23,11 +23,11 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 | **Edge** | Traefik + CrowdSec on direct WAN; Cloudflare Tunnel/Access for specific hosts | `stacks/traefik/`, `stacks/cloudflared/`, `terraform/cloudflare/` |
 | **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + OpenTofu (`terraform/authentik/`) |
 | **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + OpenTofu (`terraform/netbox/`) |
-| **Secrets** | Phase (compose `.env`) + HashiCorp Vault (retiring) + Vaultwarden | `stacks/phase/`, `stacks/vault/`, `stacks/vaultwarden/` |
+| **Secrets** | Phase (compose `.env`) + Vaultwarden | `stacks/phase/`, `stacks/vaultwarden/` |
 | **Monitoring** | Gatus (status), Grafana + VictoriaMetrics (`stacks/monitoring/`) via CasC dashboards/alerting, Blackbox synthetic probes, Synthetic Agent | `stacks/gatus/`, `stacks/monitoring/`, `terraform/grafana/`, `stacks/grafana-synthetic-agent/` |
 | **Media** | Jellyfin + *arr stack + downloaders | `stacks/mediabox/` |
 
-📖 **[Documentation site](docs/index.md)** — MkDocs (networking notes, ADRs, golden paths, Vault runbook).
+📖 **[Documentation site](docs/index.md)** — MkDocs (networking notes, ADRs, golden paths).
 
 ---
 
@@ -73,7 +73,6 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | [Phase](https://phase.dev) | Compose env secrets (Authentik OAuth) |
 | [PostgreSQL](https://www.postgresql.org/) | Shared database host |
 | [Traefik](https://traefik.io/) | Reverse proxy (+ CrowdSec integration in config) |
-| [Vault](https://www.hashicorp.com/products/vault) | Secrets (retiring) |
 | [Vaultwarden](https://github.com/dani-garcia/vaultwarden) | Bitwarden-compatible passwords |
 | [WatchYourLAN](https://github.com/aceberg/watchyourlan) | LAN host visibility |
 
@@ -190,7 +189,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - **`.env` files**: Never committed — contain actual secrets (gitignored)
 - **Sensitive Terraform variables**: Stored in `defaults.auto.tfvars` or passed via environment
 - **Phase:** source of truth for compose `.env` values. `make -C terraform/portainer apply` exports them via `scripts/render_phase_env.py` (needs `PHASE_SERVICE_TOKEN` or `.phase-service-token`). Bootstrap `stacks/phase/phase.env` stays host-local.
-- **Vault (retiring):** still used for Postgres static creds + some OAuth KV. Copy those passwords into Phase before disabling rotation. Do not tear down Vault until that cutover lands.
+- **Terraform secrets:** gitignored `defaults.auto.tfvars`, `TF_VAR_*`, or a data source / remote state from another repo.
 
 ---
 
@@ -223,7 +222,6 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── phase/
 │   ├── postgres/
 │   ├── traefik/
-│   ├── vault/
 │   ├── vaultwarden/
 │   └── watchyourlan/
 │
@@ -242,8 +240,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── postgres/
 │   ├── proxmox/
 │   ├── routeros/
-│   ├── synology-nas/
-│   └── vault/
+│   └── synology-nas/
 │
 ├── mkdocs.yml                      # MkDocs configuration
 └── README.md
@@ -259,7 +256,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Add NUT/UPS integration
 - [x] (retroactively added) kubeadm node + self-managed Argo CD
 - [x] (retroactively added) Argo CD login via Authentik OIDC (local admin off); client secret + GitHub PAT come from 1Password via External Secrets
-- [x] Cut over compose `.env` files to Phase (`phase.dominiksiejak.pl`, Authentik OAuth). Vault still issues Postgres static-role passwords until those are copied into Phase and rotation is stopped.
+- [x] Cut over compose `.env` files to Phase (`phase.dominiksiejak.pl`, Authentik OAuth).
+- [x] (retroactively added) Remove HashiCorp Vault. Postgres passwords and other app secrets live in Phase or tfvars.
 - [ ] Move `terraform/cloudflare` (zone/tunnel/Access/Workers) to a private sibling repo
 - [ ] Self-hosted LLM (Ollama)
 - [ ] Separated subnets (IoT isolation)
@@ -271,6 +269,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ## Changelog
 
 ### 24.09.2026
+
+**HashiCorp Vault is gone.** `stacks/vault/` and `terraform/vault/` left. Authentik OAuth app `vault`, Traefik `vaultpki` resolver, homepage/gatus/blackbox/AdGuard/Cilium `vault.dominiksiejak.pl`, and the GCP KMS auto-unseal resources left with it. Compose secrets stay in Phase. Terraform secrets come from gitignored tfvars or a data source in another repo. Before the next `terraform/gcp` apply, run `make -C terraform/gcp state-rm-legacy` so OpenTofu drops the KMS key and unseal service account from state (`prevent_destroy` would otherwise block the plan). Delete those GCP objects in the console if you want them gone for real. GCS prefix `gitops-vault` can be deleted from the state bucket. Portainer drops the stack on the next `make apply` in `terraform/portainer`. Authentik drops the `vault` app on the next authentik apply.
 
 **KIND and miedzysztuka are gone.** `kind/` left the public repo (no more `vibe` cluster, no `argocd.vibe.local`). Kubernetes is the kubeadm node on lake, context `k8s@lake`. Cloudflare Pages project `miedzysztuka` left with it (`terraform/cloudflare/miedzysztuka.tf`).
 

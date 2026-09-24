@@ -86,16 +86,6 @@ locals {
         "https://192.168.89.240:5001",
       ]
     }
-    vault = {
-      name       = "Vault"
-      launch_url = "https://vault.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/vault.svg"
-      redirect_uris = [
-        "https://vault.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
-        "https://vault.dominiksiejak.pl/oidc/callback",
-        "http://localhost:8250/oidc/callback",
-      ]
-    }
     gitea = {
       name       = "Gitea"
       launch_url = "https://git.dominiksiejak.pl"

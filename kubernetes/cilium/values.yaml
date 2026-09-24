@@ -1,3 +1,8 @@
+# ApplicationSet chart pin.
+repoURL: https://helm.cilium.io/
+chart: cilium
+version: 1.20.2
+
 # Overrides for cilium 1.20.2.
 # Release namespace is `cilium` (ApplicationSet destination = directory name).
 # kube-proxy is not installed. API server is the node IP because nothing
@@ -39,8 +44,3 @@ gatewayAPI:
     enabled: true
   gatewayClass:
     create: true
-
-# ApplicationSet chart pin.
-repoURL: https://helm.cilium.io/
-chart: cilium
-version: 1.20.2

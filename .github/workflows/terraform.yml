@@ -18,7 +18,6 @@ on:
           - portainer
           - postgres
           - routeros
-          - vault
       command:
         description: tofu command
         required: true

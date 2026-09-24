@@ -17,7 +17,7 @@
 ### Notable module extras
 - `terraform/portainer/Makefile`: `sync-portainer` rsyncs `stacks/` to `portainer:/opt`. `apply` runs render-secrets (Phase) → sync → untaint-all → apply with `-parallelism=1`. Also `watch-portainer` (fswatch) and `sync-service` (systemd unit). `PHASE_SERVICE_TOKEN` or gitignored `.phase-service-token` is required once Phase is bootstrapped.
 - `terraform/postgres/Makefile`: sets `POSTGRES_SSH_TARGET`, auto-creates SSH `-L` tunnel for remote plan/apply (sets `TF_VAR_postgres_host` / `TF_VAR_postgres_port`).
-- `terraform/gcp/Makefile`: `state-rm-legacy` drops old resources from state. `export-vault-key` writes `vault-service-account.json` from output.
+- `terraform/gcp/Makefile`: `state-rm-legacy` drops old resources from state (includes the retired Vault KMS auto-unseal).
 - `terraform/cloudflare/Makefile`: `show-token` prints tunnel token from output.
 - `terraform/Makefile`: `migrate-all-tfc` batch-migrates all modules from TFC to GCS. `apply-all` opens each module in a tmux window.
 
@@ -28,7 +28,7 @@
   - Traefik labels handle routing. Always `traefik.enable: true`. Only add custom hostname rule if different from `{service}.dominiksiejak.pl`.
 - `terraform/` — OpenTofu modules. State: **GCS** (`dominiksiejak-gitops-tfstate`), migrated from TFC Apr 2026.
   - GCS state prefix convention: `gitops-<dirname>` (e.g., `gitops-portainer`).
-- `kubernetes/argocd/` — Self-managed Argo CD for the kubeadm node (context `k8s@lake`). Helm installs the remote chart (`resources/application.yaml` pins repo, chart, version). Overrides: `values.yaml` (flat, not nested under a dependency name). Extra objects live in `resources/` and are applied with Kustomize (`resources/kustomization.yaml`), not a wrapper chart `templates/`. Bootstrap: `make -C kubernetes/argocd bootstrap`. Self Application is `resources/application.yaml` (remote `argo-cd` chart + `kubernetes/argocd/resources`, manual sync). Sibling apps under `kubernetes/*` (except `argocd`) are parented by ApplicationSet `resources/applicationset.yaml` — drop a directory with `values.yaml` (chart pin `repoURL` / `chart` / `version` at the bottom) + `kustomization.yaml` beside it (`resources/` holds extra manifests) on `main` and Argo creates a multi-source Application; child sync stays manual. UI: `kubectl --context k8s@lake -n argocd port-forward svc/argocd-server 8080:80` (that port is the Authentik OIDC redirect). Local admin is disabled. Authentik app slug `argocd`. OIDC client secret and the GitHub PAT come from 1Password via ExternalSecrets (`resources/externalsecret-oidc.yaml`, `resources/externalsecret-repo-creds.yaml`); tag those items `ArgoCD External Secrets Operator`. Group `admins` is Argo CD `role:admin`.
+- `kubernetes/argocd/` — Self-managed Argo CD for the kubeadm node (context `k8s@lake`). Helm installs the remote chart (`resources/application.yaml` pins repo, chart, version). Overrides: `values.yaml` (flat, not nested under a dependency name). Extra objects live in `resources/` and are applied with Kustomize (`resources/kustomization.yaml`), not a wrapper chart `templates/`. Bootstrap: `make -C kubernetes/argocd bootstrap`. Self Application is `resources/application.yaml` (remote `argo-cd` chart + `kubernetes/argocd/resources`, manual sync). Sibling apps under `kubernetes/*` (except `argocd`) are parented by ApplicationSet `resources/applicationset.yaml` — drop a directory with `values.yaml` (chart pin `repoURL` / `chart` / `version` at the top) + `kustomization.yaml` beside it (`resources/` holds extra manifests) on `main` and Argo creates a multi-source Application; child sync stays manual. UI: `kubectl --context k8s@lake -n argocd port-forward svc/argocd-server 8080:80` (that port is the Authentik OIDC redirect). Local admin is disabled. Authentik app slug `argocd`. OIDC client secret and the GitHub PAT come from 1Password via ExternalSecrets (`resources/externalsecret-oidc.yaml`, `resources/externalsecret-repo-creds.yaml`); tag those items `ArgoCD External Secrets Operator`. Group `admins` is Argo CD `role:admin`.
 
 ## Networking
 
@@ -73,25 +73,10 @@
 
 ### Centralized PostgreSQL
 - Single Postgres stack at `stacks/postgres/`. No separate DB instances.
-- **Today:** DB provisioning via Terraform+Vault (static roles), not init scripts.
-- **Retirement:** Vault is being retired. Compose `.env` files are sourced from Phase (`https://phase.dominiksiejak.pl`, Authentik OAuth). Until DB-password cutover, still: add entry to `terraform/postgres/locals.tf` + `terraform/vault/locals.tf` → apply both; password via `vault read database/static-creds/<username>`, then `phase secrets import` into the matching app. Do **not** add Phase's own DB user as a Vault static role.
+- DB users and databases come from `terraform/postgres/locals.tf`. Passwords live in Phase (compose `.env`) or in gitignored `defaults.auto.tfvars` / `TF_VAR_*`. Phase's own DB user is bootstrap-only (`phase.env` on the host).
 - Service connects via `env_file` pointing at `/opt/<stack>/<service>.env`
 - Postgres is **localhost-only** on host (`127.0.0.1:5432`)
 - Service needing DB must join `database` network
-
-### Vault OIDC login from a remote machine (SSH tunnel trick)
-**Legacy while Vault still runs.** `terraform/vault` `make auth` (and any `vault login -method=oidc`) opens a browser on the
-**Mac** and listens on `localhost:8250` for the OIDC callback. If you're SSHed in from a
-laptop, the browser redirect to `localhost:8250` goes nowhere on your machine. Fix:
-1. On the Mac: `cd terraform/vault && make auth` — it prints an auth URL and waits.
-2. On your **laptop**, open a second terminal: `ssh -L 8250:localhost:8250 vibe`
-   (username + the Mac's LAN IP, e.g. `ssh -L 8250:localhost:8250 <user>@192.168.89.200`).
-3. Open the printed `https://auth.dominiksiejak.pl/...` URL in your laptop browser
-   (where you're already SSO-logged-in). The redirect to `localhost:8250` tunnels back
-   to the Vault CLI on the Mac, which saves the token to `~/.vault-token`.
-
-Also: `vault` CLI and `tofu` here need `VAULT_TOKEN` / `~/.vault-token` — the Vault module
-has no default for `vault_token` and will prompt otherwise.
 
 ## Terraform Conventions
 
@@ -117,8 +102,7 @@ has no default for `vault_token` and will prompt otherwise.
 
 - **Never commit `*.env` or `*.tfvars`** — both gitignored
 - `.mcp.json` contains live API tokens (HA, n8n, Cloudflare) — do not leak or commit changes exposing them
-- **Vault being retired** — still manages Postgres static creds + some OAuth KV today (`stacks/vault`, `terraform/vault`, GCP KMS auto-unseal). Compose `.env` values live in Phase (`stacks/phase/`, render via `scripts/render_phase_env.py`). Do not rip out Vault terraform in drive-by PRs.
-- Vault access is **Traefik-only** (no host port 8200) while it remains.
+- Compose `.env` values live in Phase (`stacks/phase/`, render via `scripts/render_phase_env.py`). Terraform secrets come from gitignored `defaults.auto.tfvars`, `TF_VAR_*`, or a `terraform_remote_state` / data source in another repo.
 - Terraform variables passed via environment or `defaults.auto.tfvars`
 - OpenTofu state: **GCS** (`dominiksiejak-gitops-tfstate`).
 
@@ -175,7 +159,7 @@ Gotchas baked in:
 - Gitea: bind-mounts `/data` to NAS; needs `traefik.docker.network: proxy`
 - Home Assistant stack: mosquitto has split listeners (anonymous `127.0.0.1` for HA/healthcheck; password on `192.168.89.253` for LAN and `172.17.0.1` for Docker host-gateway). Do not bind `0.0.0.0:1883` together with localhost. Create `/opt/hass/mosquitto.passwd` (uid 1883, mode 640) and `/opt/hass/mqtt.env` before sync. HA + zigbee2mqtt `depends_on` with `condition: service_healthy`; HA Time Machine behind `profile: timemachine`
 - Authentik compose: Docker socket `:ro`; `AUTHENTIK_LOG_LEVEL=info`
-- `stacks/postgres/init.sh` no longer exists — DB provisioning is Terraform+Vault only, not manual
+- `stacks/postgres/init.sh` no longer exists — DB users/databases come from `terraform/postgres` only, not manual init scripts
 
 ## README changelog conventions
 
