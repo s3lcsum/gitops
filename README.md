@@ -228,7 +228,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   └── watchyourlan/
 │
 ├── kubernetes/                     # In-cluster GitOps (kubeadm node)
-│   └── argocd/                     # Self-managed Argo CD (vendored chart + values)
+│   ├── argocd/                     # Remote argo-cd chart + Kustomize (app-of-apps)
+│   └── external-secrets/          # Remote chart + Kustomize (ClusterSecretStore)
 │
 ├── terraform/                      # Infrastructure as Code
 │   ├── authentik/
@@ -254,6 +255,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Roadmap
 
+- [x] (retroactively added) Kubernetes GitOps: remote Helm chart + `values.yaml`, Kustomize for custom resources (no wrapper chart / vendored `charts/`)
 - [ ] Migrate cloud drives to NAS
 - [ ] Migrate backups from Proxmox to NAS
 - [x] Use Authentik LDAP for Synology
@@ -269,6 +271,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 24.09.2026
+
+Kubernetes GitOps dropped the local Helm wrapper. Each app dir is a remote chart pin (`source.yaml`) plus flat `values.yaml`, and every custom resource is Kustomize instead of `templates/`. Vendored `charts/argo-cd` and `charts/external-secrets` are gone. Argo installs the chart from the upstream repo and applies the directory as a second source. `make -C kubernetes/argocd bootstrap` does the same from the laptop.
 
 ### 23.09.2026
 

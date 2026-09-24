@@ -1,8 +1,0 @@
-Makefile
-.git
-.gitignore
-*.md
-repo-credentials.yaml
-repo-credentials.yaml.example
-oidc-client.yaml
-oidc-client.yaml.example

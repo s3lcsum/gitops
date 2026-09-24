@@ -1,0 +1,4 @@
+# Remote chart only. values.yaml overrides it. Custom resources live in kustomization.yaml.
+helmRepo: https://charts.external-secrets.io
+helmChart: external-secrets
+helmVersion: 2.11.0

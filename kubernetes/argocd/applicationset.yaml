@@ -1,0 +1,53 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: kubernetes
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kubernetes
+    app.kubernetes.io/part-of: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  # Drop child Applications when their directory leaves the repo.
+  # Sync of each child stays manual (no automated prune/selfHeal on the Apps).
+  syncPolicy:
+    applicationsSync: sync
+  generators:
+    - git:
+        repoURL: https://github.com/s3lcsum/gitops.git
+        revision: main
+        files:
+          - path: kubernetes/*/source.yaml
+          - path: kubernetes/argocd/source.yaml
+            exclude: true
+  template:
+    metadata:
+      name: "{{.path.basename}}"
+      namespace: argocd
+      labels:
+        app.kubernetes.io/name: "{{.path.basename}}"
+        app.kubernetes.io/part-of: kubernetes
+    spec:
+      project: default
+      sources:
+        - repoURL: "{{.helmRepo}}"
+          chart: "{{.helmChart}}"
+          targetRevision: "{{.helmVersion}}"
+          helm:
+            releaseName: "{{.path.basename}}"
+            valueFiles:
+              - "$values/{{.path.path}}/values.yaml"
+        - repoURL: https://github.com/s3lcsum/gitops.git
+          targetRevision: main
+          ref: values
+        - repoURL: https://github.com/s3lcsum/gitops.git
+          targetRevision: main
+          path: "{{.path.path}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{.path.basename}}"
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

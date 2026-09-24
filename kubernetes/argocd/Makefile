@@ -1,6 +1,9 @@
-.PHONY: help bootstrap vendor template creds oidc encrypt encrypt-creds decrypt-check
+.PHONY: help bootstrap template creds oidc encrypt encrypt-creds decrypt-check
 
-CHART_VERSION ?= 10.4.0
+# Remote chart pin lives in source.yaml (same fields the Application uses).
+HELM_REPO ?= $(shell python3 -c "import yaml; print(yaml.safe_load(open('source.yaml'))['helmRepo'])")
+HELM_CHART ?= $(shell python3 -c "import yaml; print(yaml.safe_load(open('source.yaml'))['helmChart'])")
+CHART_VERSION ?= $(shell python3 -c "import yaml; print(yaml.safe_load(open('source.yaml'))['helmVersion'])")
 KUBE_CONTEXT ?= k8s@lake
 NAMESPACE ?= argocd
 RELEASE ?= argocd
@@ -35,11 +38,13 @@ define _materialize_secret
 	fi
 endef
 
-bootstrap: ## Install or upgrade Argo CD, then apply GitHub repo creds once
-	helm template $(RELEASE) . --namespace $(NAMESPACE) \
-		-s charts/argo-cd/templates/crds/crd-application.yaml \
-		-s charts/argo-cd/templates/crds/crd-appproject.yaml \
-		-s charts/argo-cd/templates/crds/crd-applicationset.yaml \
+bootstrap: ## Install or upgrade Argo CD from the remote chart, then apply GitHub repo creds once
+	helm repo add argo $(HELM_REPO) >/dev/null 2>&1 || true
+	helm repo update argo
+	helm template $(RELEASE) argo/$(HELM_CHART) --version $(CHART_VERSION) --namespace $(NAMESPACE) \
+		-s templates/crds/crd-application.yaml \
+		-s templates/crds/crd-appproject.yaml \
+		-s templates/crds/crd-applicationset.yaml \
 		| kubectl --context $(KUBE_CONTEXT) apply --server-side --force-conflicts -f -
 	kubectl --context $(KUBE_CONTEXT) label crd \
 		applications.argoproj.io appprojects.argoproj.io applicationsets.argoproj.io \
@@ -51,11 +56,14 @@ bootstrap: ## Install or upgrade Argo CD, then apply GitHub repo creds once
 	kubectl --context $(KUBE_CONTEXT) wait --for=condition=Established \
 		crd/applications.argoproj.io crd/appprojects.argoproj.io crd/applicationsets.argoproj.io \
 		--timeout=60s
-	helm upgrade --install $(RELEASE) . \
+	helm upgrade --install $(RELEASE) argo/$(HELM_CHART) \
+		--version $(CHART_VERSION) \
 		--namespace $(NAMESPACE) \
 		--create-namespace \
 		--kube-context $(KUBE_CONTEXT) \
+		--values values.yaml \
 		--wait --timeout $(TIMEOUT)
+	kubectl --context $(KUBE_CONTEXT) apply -k .
 	@if kubectl --context $(KUBE_CONTEXT) -n $(NAMESPACE) get secret argocd-repo-creds-github >/dev/null 2>&1; then \
 		exit 0; \
 	fi; \
@@ -96,11 +104,9 @@ decrypt-check: ## Dry-decrypt repo-credentials.enc.yaml; print keys only (no sec
 	done; \
 	[ $$found -eq 1 ] || { echo "no *.enc.yaml to check (OIDC is 1Password/ExternalSecret)"; exit 0; }
 
-template: ## Render manifests from the vendored chart + values
-	helm template $(RELEASE) . --namespace $(NAMESPACE)
-
-vendor: ## Re-pull the upstream argo-cd chart into charts/argo-cd (pin CHART_VERSION)
-	rm -rf charts/argo-cd
-	helm repo add argo https://argoproj.github.io/argo-helm >/dev/null 2>&1 || true
+template: ## Render the remote chart with values.yaml, then the Kustomize overlay
+	helm repo add argo $(HELM_REPO) >/dev/null 2>&1 || true
 	helm repo update argo
-	helm pull argo/argo-cd --version $(CHART_VERSION) --untar --untardir charts
+	helm template $(RELEASE) argo/$(HELM_CHART) --version $(CHART_VERSION) --namespace $(NAMESPACE) --values values.yaml
+	@echo "---"
+	kubectl kustomize .

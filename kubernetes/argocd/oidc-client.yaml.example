@@ -1,6 +1,6 @@
 # Legacy SOPS path (kept for decrypt-check / emergency). Live source is 1Password:
 #   vault Servers / item argocd-oidc / field credential
-# ExternalSecret templates/externalsecret-oidc.yaml merges into argocd-secret
+# ExternalSecret externalsecret-oidc.yaml merges into argocd-secret
 # (creationPolicy: Merge — never kubectl-apply a Secret named argocd-secret).
 # Value originally from: tofu output -raw 'applications.argocd.client_secret'
 # in terraform/authentik.

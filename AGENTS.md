@@ -24,7 +24,7 @@
 ### Pre-commit
 - Run `pre-commit run --all-files` locally.
 - Hooks: `tofu_fmt`, `tofu_validate`, `terraform_tflint`, plus trailing-whitespace, end-of-file-fixer, check-yaml/JSON, detect-private-key, double-quote-string-fixer.
-- `check-yaml` excludes `kubernetes/**/templates/`.
+- `check-yaml` excludes vendored `kubernetes/**/charts/` if a chart is ever committed again.
 
 ## Architecture
 
@@ -34,7 +34,7 @@
 - `terraform/` — OpenTofu modules. State: **GCS** (`dominiksiejak-gitops-tfstate`), migrated from TFC Apr 2026.
   - GCS state prefix convention: `gitops-<dirname>` (e.g., `gitops-portainer`).
   - `terraform/terraform-cloud/` is dead TFC bootstrap — **DO NOT APPLY**.
-- `kubernetes/argocd/` — Self-managed Argo CD for the kubeadm node (context `k8s@lake`). Vendored upstream Helm chart is `kubernetes/argocd/charts/argo-cd` (do not fetch argo-helm at sync time). Overrides: `kubernetes/argocd/values.yaml`. Bootstrap: `make -C kubernetes/argocd bootstrap` (repo creds from committed `repo-credentials.enc.yaml` via SOPS, or gitignored plaintext; chart sync does not touch the Secret). Self Application is `templates/application.yaml` (path `kubernetes/argocd`, manual sync). Sibling charts under `kubernetes/*` (except `argocd`) are parented by ApplicationSet `templates/applicationset.yaml` — drop a chart directory with `Chart.yaml` + `values.yaml` on `main` and Argo creates the Application; child sync stays manual. UI: `kubectl --context k8s@lake -n argocd port-forward svc/argocd-server 8080:80` (that port is the Authentik OIDC redirect). Local admin is disabled. Authentik app slug `argocd`; OIDC client secret is SOPS-encrypted `oidc-client.enc.yaml` (`make oidc` decrypts with local age key at `~/.config/sops/age/keys.txt`). Group `admins` is Argo CD `role:admin`. Secrets under `kubernetes/argocd/*.enc.yaml` are age+SOPS (root `.sops.yaml`); never commit the age private key.
+- `kubernetes/<app>/` — GitOps for the kubeadm node. Helm installs the **remote** chart only (`source.yaml`: `helmRepo`, `helmChart`, `helmVersion`); `values.yaml` is passed straight to that chart (no wrapper `Chart.yaml`, no vendored `charts/`). Custom resources are Kustomize (`kustomization.yaml`), not Helm `templates/`. Argo CD Application `kubernetes/argocd/application.yaml` is multi-source (remote chart + `$values` ref + this directory). ApplicationSet `kubernetes/argocd/applicationset.yaml` picks up every other `kubernetes/*/source.yaml` on `main`; child sync stays manual. Bootstrap: `make -C kubernetes/argocd bootstrap` (repo creds from committed `repo-credentials.enc.yaml` via SOPS, or gitignored plaintext; chart sync does not touch the Secret). UI: `kubectl --context k8s@lake -n argocd port-forward svc/argocd-server 8080:80` (that port is the Authentik OIDC redirect). Local admin is disabled. Authentik app slug `argocd`; OIDC client secret is SOPS-encrypted `oidc-client.enc.yaml` (`make oidc` decrypts with local age key at `~/.config/sops/age/keys.txt`). Group `admins` is Argo CD `role:admin`. Secrets under `kubernetes/argocd/*.enc.yaml` are age+SOPS (root `.sops.yaml`); never commit the age private key.
 
 ## Networking
 

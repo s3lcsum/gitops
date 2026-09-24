@@ -1,0 +1,4 @@
+# Remote chart only. values.yaml overrides it. Custom resources live in kustomization.yaml.
+helmRepo: https://argoproj.github.io/argo-helm
+helmChart: argo-cd
+helmVersion: 10.4.0

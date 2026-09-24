@@ -1,14 +1,13 @@
-# Overrides for charts/external-secrets 2.11.0. Do not edit the vendored values.yaml.
-external-secrets:
-  global:
-    tolerations:
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
-        effect: NoSchedule
-  resources:
-    requests:
-      cpu: 10m
-      memory: 64Mi
-  crds:
-    annotations:
-      argocd.argoproj.io/sync-options: ServerSideApply=true
+# Overrides for external-secrets 2.11.0 from https://charts.external-secrets.io.
+global:
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+crds:
+  annotations:
+    argocd.argoproj.io/sync-options: ServerSideApply=true
