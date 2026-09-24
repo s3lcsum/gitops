@@ -1,3 +1,76 @@
+# Hosts that stay on Traefik (Docker provider + file routers that depend on
+# Traefik middlewares). Cilium TLS-passthroughs these to 192.168.89.253:443.
+# A wildcard HTTPS listener cannot share :443 with these passthrough hostnames.
+# Add an exact HTTPS listener when an in-cluster host should terminate here.
+edge:
+  tlsSecret: dominiksiejak-pl-tls
+  traefik:
+    address: 192.168.89.253
+    port: 443
+  traefikHosts:
+    - adguard.dominiksiejak.pl
+    - adminer.dominiksiejak.pl
+    - auth.dominiksiejak.pl
+    - bazarr.dominiksiejak.pl
+    - calibre-api.dominiksiejak.pl
+    - calibre-gui.dominiksiejak.pl
+    - calibre.dominiksiejak.pl
+    - dozzle.dominiksiejak.pl
+    - git.dominiksiejak.pl
+    - grafana.dominiksiejak.pl
+    - hass-timemachine.dominiksiejak.pl
+    - hass.dominiksiejak.pl
+    - homepage.dominiksiejak.pl
+    - jellyfin.dominiksiejak.pl
+    - lan.dominiksiejak.pl
+    - metrics.dominiksiejak.pl
+    - n8n.dominiksiejak.pl
+    - netbox.dominiksiejak.pl
+    - opencode.dominiksiejak.pl
+    - portainer.dominiksiejak.pl
+    - profilarr.dominiksiejak.pl
+    - prowlarr.dominiksiejak.pl
+    - qbittorrent.dominiksiejak.pl
+    - radarr.dominiksiejak.pl
+    - readarr.dominiksiejak.pl
+    - sabnzbd.dominiksiejak.pl
+    - seerr.dominiksiejak.pl
+    - sonarr.dominiksiejak.pl
+    - status.dominiksiejak.pl
+    - traefik.dominiksiejak.pl
+    - unifi.dominiksiejak.pl
+    - vault.dominiksiejak.pl
+    - vaultwarden.dominiksiejak.pl
+    - wealthfolio.dominiksiejak.pl
+    - zigbee2mqtt-usb.dominiksiejak.pl
+    - zigbee2mqtt-wifi.dominiksiejak.pl
+  # File-provider origins from stacks/traefik/dynamic.yaml.
+  # opencode and traefik.dominiksiejak.pl are in traefikHosts (Authentik).
+  origins:
+    - name: nas
+      host: nas.dominiksiejak.pl
+      address: 192.168.89.240
+      port: 5001
+      rewriteHostname: 192.168.89.240
+      tls:
+        hostname: synology
+        caFile: files/nas.crt
+    - name: proxmox
+      host: proxmox.dominiksiejak.pl
+      address: 192.168.89.254
+      port: 8006
+      tls:
+        hostname: lake.home
+        caFile: files/proxmox.crt
+    - name: router
+      host: router.dominiksiejak.pl
+      address: 192.168.89.1
+      port: 80
+    - name: hermes
+      host: hermes.dominiksiejak.pl
+      address: 192.168.89.200
+      port: 8788
+
 # Overrides for charts/cilium 1.20.2. Do not edit the vendored values.yaml.
 # Release namespace is `cilium` (ApplicationSet destination = chart directory name).
 # Replaces kube-flannel and kube-proxy. API server is the node IP because
@@ -16,8 +89,12 @@ cilium:
   ipv4NativeRoutingCIDR: 10.244.0.0/16
   bpf:
     masquerade: true
-    # eBPF TPROXY so Gateway traffic reaches Envoy without extra netfilter modules.
-    tproxy: true
+    # Leave TPROXY on iptables. eBPF TPROXY steals the host :443 handshake
+    # (connections sit in SYN_RECV) when Envoy is on the host network.
+    tproxy: false
+    # Envoy runs on the host and dials LAN origins. Route that traffic through
+    # the host stack so replies come back to the node IP.
+    hostLegacyRouting: true
   operator:
     replicas: 1
   envoy:
@@ -31,6 +108,7 @@ cilium:
           - NET_BIND_SERVICE
   gatewayAPI:
     enabled: true
+    enableAppProtocol: true
     hostNetwork:
       enabled: true
     gatewayClass:

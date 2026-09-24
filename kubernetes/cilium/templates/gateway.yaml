@@ -11,4 +11,28 @@ spec:
       port: 80
       allowedRoutes:
         namespaces:
-          from: All
+          from: Same
+    {{- range .Values.edge.traefikHosts }}
+    - name: {{ include "cilium-edge.tlsListener" . }}
+      protocol: TLS
+      port: 443
+      hostname: {{ . | quote }}
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- end }}
+    {{- range .Values.edge.origins }}
+    - name: https-{{ .name }}
+      protocol: HTTPS
+      port: 443
+      hostname: {{ .host | quote }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ $.Values.edge.tlsSecret }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- end }}
