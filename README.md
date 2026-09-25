@@ -263,10 +263,15 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Separated subnets (IoT isolation)
 - [ ] Use Terraform for RouterOS management (or via NetBox)?
 - [x] (retroactively added) Static `x-webhook-secret` on public n8n webhooks; Authentik login firewall is IPv4-only
+- [x] (retroactively added) File-provider routers for host-network stacks (hass, unifi, adguard, lan)
 
 ---
 
 ## Changelog
+
+### 25.09.2026
+
+**hass.dominiksiejak.pl was a 404.** Cloudflare tunnel sends it at Portainer Traefik, and that Traefik never loaded the router: `network_mode: host` containers are not on the `proxy` network, and the Docker provider only watches `proxy`. Same hole for unifi, adguard, and lan (`watchyourlan`). Routers now live in `stacks/traefik/dynamic.yaml` (hass → `http://host.docker.internal:8123` with `remote@file`, unifi → `https://host.docker.internal:8443`, adguard → `:3000`, lan → `http://192.168.89.253:8840`). Copy that file to `/opt/traefik/dynamic.yaml` on the Portainer host. The file provider reloads it by itself. The static `traefik.yaml` comment does not need a restart. `status.dominiksiejak.pl` and the other direct-WAN names still 504 from this agent because the RouterOS allowlist drops the connection. That is not Gatus being down.
 
 ### 24.09.2026
 
