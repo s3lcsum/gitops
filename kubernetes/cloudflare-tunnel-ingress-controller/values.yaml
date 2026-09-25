@@ -1,0 +1,61 @@
+# ApplicationSet chart pin.
+# https://github.com/STRRL/cloudflare-tunnel-ingress-controller
+repoURL: https://helm.strrl.dev
+chart: cloudflare-tunnel-ingress-controller
+version: 0.1.0
+
+# Argo CD Application sync (ApplicationSet reads these; not chart values).
+argoSync:
+  prune: true
+  selfHeal: true
+
+# Overrides for strrl/cloudflare-tunnel-ingress-controller 0.1.0.
+# Credentials via ExternalSecret (resources/externalsecret.yaml) — not Helm values.
+# Separate tunnel from compose/terraform `homelab` (stacks/cloudflared + terraform/cloudflare).
+cloudflare:
+  secretRef:
+    name: cloudflare-api
+    accountIDKey: cloudflare-account-id
+    tunnelNameKey: cloudflare-tunnel-name
+    apiTokenKey: api-token
+
+ingressClass:
+  name: cloudflare
+  controllerValue: strrl.dev/cloudflare-tunnel-ingress-controller
+  isDefaultClass: false
+
+replicaCount: 1
+
+# Single-node kubeadm (lake = control-plane).
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+# Pin cloudflared to stacks/cloudflared (compose image cloudflare/cloudflared:2026.9.1).
+cloudflared:
+  image:
+    repository: cloudflare/cloudflared
+    pullPolicy: IfNotPresent
+    tag: "2026.9.1"
+  replicaCount: 1
+  protocol: auto
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
