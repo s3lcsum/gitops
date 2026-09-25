@@ -1,0 +1,55 @@
+# ApplicationSet chart pin.
+repoURL: https://kyverno.github.io/policy-reporter
+chart: policy-reporter
+version: 3.10.0
+
+# Overrides for policy-reporter 3.10.0.
+# Single-node kubeadm (lake): UI + Kyverno plugin; Traefik IngressRoute owns edge.
+fullnameOverride: policy-reporter
+
+replicaCount: 1
+
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+ingress:
+  enabled: false
+
+httproute:
+  enabled: false
+
+ui:
+  enabled: true
+  replicaCount: 1
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  ingress:
+    enabled: false
+  httproute:
+    enabled: false
+
+plugin:
+  kyverno:
+    enabled: true
+    replicaCount: 1
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi

@@ -1,0 +1,52 @@
+# ApplicationSet chart pin.
+repoURL: https://kyverno.github.io/kyverno/
+chart: kyverno
+version: 3.9.1
+
+# Overrides for kyverno/kyverno 3.9.1 (appVersion v1.19.1).
+# Single-node kubeadm (lake): one replica per controller + control-plane toleration.
+crds:
+  install: true
+
+# Global — applied to all chart workloads; per-controller empty tolerations inherit this.
+global:
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+
+admissionController:
+  replicas: 1
+  podDisruptionBudget:
+    enabled: false
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+backgroundController:
+  replicas: 1
+  podDisruptionBudget:
+    enabled: false
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+cleanupController:
+  replicas: 1
+  podDisruptionBudget:
+    enabled: false
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+reportsController:
+  replicas: 1
+  podDisruptionBudget:
+    enabled: false
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi

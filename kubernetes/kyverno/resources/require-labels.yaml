@@ -1,0 +1,41 @@
+# Audit-only: require recommended app.kubernetes.io labels on Pods.
+# Cluster-wide (incl. kube-system) — reports show debt; no Enforce.
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-labels
+  annotations:
+    policies.kyverno.io/title: Require Labels
+    policies.kyverno.io/category: Best Practices
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Pods must have non-empty app.kubernetes.io name, instance, part-of, and
+      managed-by labels for consistent tooling and querying.
+spec:
+  evaluation:
+    background:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - pods
+  validationActions:
+    - Audit
+  validations:
+    - expression: >-
+        ['app.kubernetes.io/name', 'app.kubernetes.io/instance',
+        'app.kubernetes.io/part-of', 'app.kubernetes.io/managed-by']
+        .all(label, has(object.metadata.labels) && label in object.metadata.labels
+        && object.metadata.labels[label] != '')
+      messageExpression: >-
+        'Pod ' + object.metadata.name + ' must have non-empty labels
+        app.kubernetes.io/name, instance, part-of, and managed-by. Found: ' +
+        (has(object.metadata.labels) ? string(object.metadata.labels) : 'none')

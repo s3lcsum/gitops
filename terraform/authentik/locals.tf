@@ -239,6 +239,16 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/opencode.png"
       skip_path_regex = ""
     }
+    # Policy Reporter UI (k8s Traefik IngressRoute + authentik middleware).
+    # forward_single: outpost only auths; Traefik proxies to ClusterIP.
+    kyverno = {
+      name            = "Kyverno"
+      external_host   = "https://kyverno.dominiksiejak.pl"
+      internal_host   = "http://policy-reporter-ui.policy-reporter.svc:8080"
+      launch_url      = "https://kyverno.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kyverno.svg"
+      skip_path_regex = ""
+    }
   }
 
   #───────────────────────────────────────────────────────────────────────────────
