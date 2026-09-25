@@ -5,17 +5,17 @@
 #   public       — crowdsec + secure-headers
 #   lan-only     — crowdsec + secure-headers + lan-only
 #
-# k8s-only hosts (not Portainer hop): argocd, kyverno, traefik-k8s, workflows
+# k8s-only hosts (not Portainer hop): argocd, policy-reporter, traefik-k8s, workflows
 
 forward-auth:
   - adguard
   - calibre-gui
   - dozzle
   - hass-timemachine
-  - kyverno
   - lan
   - metrics
   - opencode
+  - policy-reporter
   - traefik
   - traefik-k8s
   - zigbee2mqtt-usb

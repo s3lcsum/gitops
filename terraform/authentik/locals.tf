@@ -241,11 +241,11 @@ locals {
     }
     # Policy Reporter UI (k8s Traefik IngressRoute + authentik middleware).
     # forward_single: outpost only auths; Traefik proxies to ClusterIP.
-    kyverno = {
-      name            = "Kyverno"
-      external_host   = "https://kyverno.dominiksiejak.pl"
+    policy-reporter = {
+      name            = "Policy Reporter"
+      external_host   = "https://policy-reporter.dominiksiejak.pl"
       internal_host   = "http://policy-reporter-ui.policy-reporter.svc:8080"
-      launch_url      = "https://kyverno.dominiksiejak.pl"
+      launch_url      = "https://policy-reporter.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kyverno.svg"
       skip_path_regex = ""
     }

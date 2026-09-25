@@ -3,7 +3,7 @@
 **Date:** 2026-09-26
 **Status:** implementing
 
-**Scope:** Install Kyverno on lake via ApplicationSet; Audit-mode CEL ValidatingPolicy requiring recommended `app.kubernetes.io/*` labels on Pods; Policy Reporter UI at `kyverno.dominiksiejak.pl` behind Authentik forward-auth.
+**Scope:** Install Kyverno on lake via ApplicationSet; Audit-mode CEL ValidatingPolicy requiring recommended `app.kubernetes.io/*` labels on Pods; Policy Reporter UI at `policy-reporter.dominiksiejak.pl` behind Authentik forward-auth.
 
 ## Decisions (locked)
 
@@ -14,7 +14,7 @@
 | Match | Pods CREATE/UPDATE + background scan; cluster-wide, no policy ns exclusions |
 | Policy API | `policies.kyverno.io/v1` ValidatingPolicy (legacy `ClusterPolicy` deprecated in v1.19) |
 | Label existing / kube-system | Out of scope — reports show debt later |
-| Policy Reporter | UI + Kyverno plugin; Traefik `Host(kyverno.dominiksiejak.pl)` + forward-auth |
+| Policy Reporter | UI + Kyverno plugin; Traefik `Host(policy-reporter.dominiksiejak.pl)` + forward-auth |
 
 ## Goals
 
@@ -35,7 +35,7 @@
 ApplicationSet
   ├─ kubernetes/kyverno/          → Helm kyverno 3.9.1 (app v1.19.1) + ValidatingPolicy
   └─ kubernetes/policy-reporter/ → Helm policy-reporter 3.10.0 (UI + kyverno plugin)
-         └─ IngressRoute Host(kyverno.dominiksiejak.pl)
+         └─ IngressRoute Host(policy-reporter.dominiksiejak.pl)
               → crowdsec + secure-headers + authentik → policy-reporter-ui:8080
 ```
 
@@ -55,7 +55,7 @@ kubernetes/policy-reporter/
   resources/ingressroute.yaml
 
 scripts/auth_classification.yaml   # kyverno → forward-auth
-terraform/authentik/locals.tf      # proxy_applications.kyverno
+terraform/authentik/locals.tf      # proxy_applications.policy-reporter
 ```
 
 Argo CD already excludes `kyverno.io` / `reports.kyverno.io` / `wgpolicyk8s.io` report kinds from watch — no change.
@@ -64,4 +64,4 @@ Argo CD already excludes `kyverno.io` / `reports.kyverno.io` / `wgpolicyk8s.io` 
 
 1. Merge to `main` → ApplicationSet creates `kyverno` + `policy-reporter` Applications.
 2. `make apply` in `terraform/authentik` so Embedded Outpost gets the new proxy provider.
-3. Smoke: controllers Ready; `kubectl get validatingpolicy`; UI at `https://kyverno.dominiksiejak.pl`.
+3. Smoke: controllers Ready; `kubectl get validatingpolicy`; UI at `https://policy-reporter.dominiksiejak.pl`.

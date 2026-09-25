@@ -2,13 +2,13 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: kyverno
+  name: policy-reporter
   namespace: policy-reporter
 spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`kyverno.dominiksiejak.pl`)
+    - match: Host(`policy-reporter.dominiksiejak.pl`)
       kind: Rule
       middlewares:
         - name: crowdsec-bouncer
