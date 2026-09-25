@@ -263,10 +263,15 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Separated subnets (IoT isolation)
 - [ ] Use Terraform for RouterOS management (or via NetBox)?
 - [x] (retroactively added) Static `x-webhook-secret` on public n8n webhooks; Authentik login firewall is IPv4-only
+- [x] (retroactively added) File routers for host-network origins (hass, unifi, adguard, lan)
 
 ---
 
 ## Changelog
+
+### 25.09.2026
+
+**Host-network apps 404 at Portainer Traefik.** Docker provider only watches the `proxy` network, so labels on `hass`, `unifi`, `adguard`, and `watchyourlan` never become routers. Tunnel check: `https://hass.dominiksiejak.pl/manifest.json` is 404, while `homeassistant-atom` still serves the Home Assistant manifest. File routers in `stacks/traefik/dynamic.yaml` use the same upstreams as those compose labels (`host.docker.internal:8123` / `:8443` / `:3000`, and `192.168.89.253:8840` for `lan`). Traefik's file provider watches `/opt/traefik/dynamic.yaml`, so a sync of that file is enough. No container restart.
 
 ### 24.09.2026
 
