@@ -118,7 +118,7 @@
             }
           }
         },
-        "url": "http://192.168.89.1/rest/ip/firewall/address-list"
+        "url": "={{ $vars.ROUTEROS_API_URL.replace(/\\/$/, '') + '/ip/firewall/address-list' }}"
       },
       "position": [
         200,
@@ -137,7 +137,7 @@
       "id": "filter-expired",
       "name": "Filter Expired",
       "parameters": {
-        "jsCode": "const listName = 'allowed-wan';\nconst now = Date.now();\nconst entries = $input.all().map(i => i.json);\n\nconst expired = entries\n  .filter(e => {\n    if (e.list !== listName) return false;\n    const m = (e.comment || '').match(/^ttl:(\\d+)$/);\n    return m && Number(m[1]) < now;\n  })\n  .map(e => ({\n    json: {\n      id: e['.id'],\n      address: e.address,\n      comment: e.comment\n    }\n  }));\n\nreturn expired;",
+        "jsCode": "const listName = String($vars.ROUTEROS_ADDRESS_LIST);\nconst now = Date.now();\nconst entries = $input.all().map(i => i.json);\n\nconst expired = entries\n  .filter(e => {\n    if (e.list !== listName) return false;\n    const m = (e.comment || '').match(/^ttl:(\\d+)$/);\n    return m && Number(m[1]) < now;\n  })\n  .map(e => ({\n    json: {\n      id: e['.id'],\n      address: e.address,\n      comment: e.comment\n    }\n  }));\n\nreturn expired;",
         "mode": "runOnceForAllItems"
       },
       "position": [
@@ -169,7 +169,7 @@
         "genericAuthType": "httpBasicAuth",
         "method": "DELETE",
         "options": {},
-        "url": "={{ 'http://192.168.89.1/rest/ip/firewall/address-list/' + $json.id }}"
+        "url": "={{ $vars.ROUTEROS_API_URL.replace(/\\/$/, '') + '/ip/firewall/address-list/' + $json.id }}"
       },
       "position": [
         1100,

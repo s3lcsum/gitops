@@ -1,0 +1,5 @@
+{
+  "ROUTEROS_ADDRESS_LIST": "allowed-wan",
+  "ROUTEROS_API_URL": "http://192.168.89.1/rest",
+  "WAN_ALLOWLIST_TTL_MS": "28800000"
+}
