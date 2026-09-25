@@ -126,6 +126,38 @@ http:
         - websecure
       service: hermes
 
+    # Host-network containers are invisible to the Docker provider (network: proxy).
+    # Compose labels never become routers, so these hosts 404 at the origin.
+    hass-host:
+      rule: "Host(`hass.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      middlewares:
+        - remote@file
+      service: hass-host
+
+    unifi-host:
+      rule: "Host(`unifi.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      service: unifi-host
+
+    adguard-host:
+      rule: "Host(`adguard.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      service: adguard-host
+
+    lan-host:
+      rule: "Host(`lan.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      service: lan-host
+
     traefik-dashboard:
       rule: "Host(`traefik.dominiksiejak.pl`)"
       entryPoints:
@@ -174,6 +206,31 @@ http:
       loadBalancer:
         servers:
           - url: "http://192.168.89.200:8788/"
+        passHostHeader: true
+
+    hass-host:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:8123"
+        passHostHeader: true
+
+    unifi-host:
+      loadBalancer:
+        servers:
+          - url: "https://host.docker.internal:8443"
+        passHostHeader: true
+        serversTransport: insecure
+
+    adguard-host:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3000"
+        passHostHeader: true
+
+    lan-host:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.89.253:8840"
         passHostHeader: true
 
   serversTransports:

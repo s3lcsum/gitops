@@ -250,6 +250,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Roadmap
 
+- [x] (retroactively added) File-provider routes for host-network containers (hass, unifi, adguard, watchyourlan) so Portainer Traefik stops 404ing them
 - [ ] Migrate cloud drives to NAS
 - [ ] Migrate backups from Proxmox to NAS
 - [x] Use Authentik LDAP for Synology
@@ -267,6 +268,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 25.09.2026
+
+**Host-network apps 404 at the Docker origin.** Traefik's Docker provider only watches the `proxy` network, so `hass`, `unifi`, `adguard`, and `watchyourlan` (`network_mode: host`) never get routers. `hass.dominiksiejak.pl` on the tunnel returns 404. File-provider routers in `stacks/traefik/dynamic.yaml` now point those hosts at the host ports (same targets as the compose labels). Takes effect once that file is on the Portainer host at `/opt/traefik/dynamic.yaml` — Traefik watches it.
 
 ### 24.09.2026
 
