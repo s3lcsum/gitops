@@ -1,0 +1,19 @@
+# ApplicationSet chart pin.
+repoURL: https://flannel-io.github.io/flannel/
+chart: flannel
+version: v0.28.9
+
+# Argo CD Application sync (ApplicationSet reads these; not chart values).
+argoSync:
+  prune: true
+  selfHeal: true
+
+# Overrides for flannel-io/flannel v0.28.9.
+# Single-node lake: host-gw (no VXLAN). Pod CIDR matches kubeadm.
+podCidr: "10.244.0.0/16"
+flannel:
+  backend: host-gw
+  args:
+    - "--ip-masq"
+    - "--kube-subnet-mgr"
+  # Chart already tolerates NoSchedule/NoExecute Exists (control-plane OK).

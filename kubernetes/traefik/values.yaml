@@ -3,6 +3,11 @@ repoURL: https://traefik.github.io/charts
 chart: traefik
 version: 41.6.0
 
+# Argo CD Application sync (ApplicationSet reads these; not chart values).
+argoSync:
+  prune: true
+  selfHeal: true
+
 # Overrides for Traefik Helm 41.6.0 (app v3.7.13).
 # hostNetwork owns :80/:443 after Cilium Gateway is down.
 # setcap on a copied binary so non-root can bind privileged ports
@@ -13,6 +18,9 @@ deployment:
   replicas: 1
   # Required with hostNetwork so *.svc resolves via CoreDNS (not AdGuard).
   dnsPolicy: ClusterFirstWithHostNet
+  # RollingUpdate deadlocks on hostNetwork :80/:443 (new pod can't bind).
+  strategy:
+    type: Recreate
   initContainers:
     - name: copy-binary
       image: docker.io/traefik:v3.7.13
