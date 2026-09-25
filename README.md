@@ -263,6 +263,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Separated subnets (IoT isolation)
 - [ ] Use Terraform for RouterOS management (or via NetBox)?
 - [x] (retroactively added) Static `x-webhook-secret` on public n8n webhooks; Authentik login firewall is IPv4-only
+- [x] (retroactively added) Refresh `allowed-wan` TTL when the Authentik login IP is already listed
 
 ---
 
@@ -279,6 +280,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ### 23.09.2026
 
 Public n8n webhooks that had no extra auth now require header `x-webhook-secret`. Authentik and the Focus shortcut keep their paths (`authentik-login`, `focus-work`). Toggl → calendar moved to `toggl-to-calendar`. The Ghostfolio CSV import webhook is gone. Names: WAN allowlist on login / `wan-allowlist` / `WAN_ALLOWLIST_SECRET`, Focus to Toggl / `focus-toggl` / `FOCUS_TOGGL_SECRET`, Toggl to Google Calendar / `toggl-to-calendar` / `TOGGL_CALENDAR_SECRET`. Authentik login → firewall is IPv4 only again — an IPv6 client IP gets a 400 and never touches RouterOS. Messenger is still Meta's webhook and was left as-is.
+
+**Login firewall duplicate IP.** Workflow is now **Add IP to Firewall on Authentik login**. A second login for an IP already on `allowed-wan` updates the `ttl:` comment (7 days) instead of dying on RouterOS `already have such entry`. Still POST `/add` for new entries; the refresh is POST `/set` with `.id` and `comment`.
 
 **Authentik → Cloudflare Zero Trust login.** New Authentik OAuth2 app `cloudflare` (callback `dominiksiejak.cloudflareaccess.com`) plus `cloudflare_zero_trust_access_identity_provider.authentik` in `terraform/cloudflare`. WAF country allowlist now skips `auth.dominiksiejak.pl/application/o/*` so Cloudflare's OIDC token/JWKS fetches aren't blocked from outside PL/DE/ES. Apply order: `terraform/authentik` then `terraform/cloudflare`. API token needs Access IdP write.
 
