@@ -126,6 +126,38 @@ http:
         - websecure
       service: hermes
 
+    # network_mode: host, so the Docker provider (network: proxy) ignores
+    # their labels. Same backends the compose labels already declare.
+    hass:
+      rule: "Host(`hass.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      middlewares:
+        - remote@file
+      service: hass
+
+    adguard:
+      rule: "Host(`adguard.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      service: adguard
+
+    unifi:
+      rule: "Host(`unifi.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      service: unifi
+
+    lan:
+      rule: "Host(`lan.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      service: lan
+
     traefik-dashboard:
       rule: "Host(`traefik.dominiksiejak.pl`)"
       entryPoints:
@@ -174,6 +206,31 @@ http:
       loadBalancer:
         servers:
           - url: "http://192.168.89.200:8788/"
+        passHostHeader: true
+
+    hass:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:8123"
+        passHostHeader: true
+
+    adguard:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3000"
+        passHostHeader: true
+
+    unifi:
+      loadBalancer:
+        servers:
+          - url: "https://host.docker.internal:8443"
+        passHostHeader: true
+        serversTransport: insecure
+
+    lan:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.89.253:8840"
         passHostHeader: true
 
   serversTransports:

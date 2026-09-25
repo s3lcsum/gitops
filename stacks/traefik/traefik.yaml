@@ -52,6 +52,8 @@ ping: {}
 providers:
   docker:
     exposedByDefault: false
+    # Host-network containers are not on this network, so their labels never
+    # load. hass, adguard, unifi, and watchyourlan are routed from dynamic.yaml.
     network: proxy
     defaultRule: "Host(`{{ .ContainerName }}.dominiksiejak.pl`)"
   file:

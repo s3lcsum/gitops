@@ -268,6 +268,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Changelog
 
+### 25.09.2026
+
+**Host-network apps were 404 on the Docker Traefik.** Provider is locked to the `proxy` network, so labels on `hass`, `adguard`, `unifi`, and `watchyourlan` (`network_mode: host`) never loaded. Tunnel `hass.dominiksiejak.pl` was a plain 404. Those four hosts now have file routers in `stacks/traefik/dynamic.yaml` (same backends the compose labels already named). Traefik watches that file, so the next stacks sync is enough — no container restart. Direct WAN checks from this agent still die in the TLS handshake; that is the RouterOS allowlist, not Gatus.
+
 ### 24.09.2026
 
 **HashiCorp Vault is gone.** `stacks/vault/` and `terraform/vault/` left. Authentik OAuth app `vault`, Traefik `vaultpki` resolver, homepage/gatus/blackbox/AdGuard/Cilium `vault.dominiksiejak.pl`, and the GCP KMS auto-unseal resources left with it. Compose secrets stay in Phase. Terraform secrets come from gitignored tfvars or a data source in another repo. Before the next `terraform/gcp` apply, run `make -C terraform/gcp state-rm-legacy` so OpenTofu drops the KMS key and unseal service account from state (`prevent_destroy` would otherwise block the plan). Delete those GCP objects in the console if you want them gone for real. GCS prefix `gitops-vault` can be deleted from the state bucket. Portainer drops the stack on the next `make apply` in `terraform/portainer`. Authentik drops the `vault` app on the next authentik apply.
