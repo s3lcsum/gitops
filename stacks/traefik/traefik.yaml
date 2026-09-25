@@ -52,6 +52,8 @@ ping: {}
 providers:
   docker:
     exposedByDefault: false
+    # Host-network containers are not attached to this network, so their
+    # labels never become routers. Those hosts are declared in dynamic.yaml.
     network: proxy
     defaultRule: "Host(`{{ .ContainerName }}.dominiksiejak.pl`)"
   file:
