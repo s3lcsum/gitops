@@ -90,7 +90,11 @@ http:
           logLevel: "INFO"
 
 
-  # Routers for non-Docker services (nas/proxmox/router/hermes: native OIDC — no authentik@docker)
+  # Routers for services the Docker provider cannot attach:
+  # - metal hosts (nas/proxmox/router/hermes)
+  # - network_mode: host containers (hass/adguard/unifi/watchyourlan). Provider
+  #   network is `proxy`, so those containers never join it and their labels
+  #   are ignored. priority beats the error-pages catch-all (priority 10).
   routers:
     synology:
       rule: "Host(`nas.dominiksiejak.pl`)"
@@ -125,6 +129,36 @@ http:
       entryPoints:
         - websecure
       service: hermes
+
+    hass:
+      rule: "Host(`hass.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      middlewares:
+        - remote@file
+      service: hass
+
+    adguard:
+      rule: "Host(`adguard.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      service: adguard
+
+    unifi:
+      rule: "Host(`unifi.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      service: unifi
+
+    lan:
+      rule: "Host(`lan.dominiksiejak.pl`)"
+      entryPoints:
+        - websecure
+      priority: 100
+      service: lan
 
     traefik-dashboard:
       rule: "Host(`traefik.dominiksiejak.pl`)"
@@ -174,6 +208,31 @@ http:
       loadBalancer:
         servers:
           - url: "http://192.168.89.200:8788/"
+        passHostHeader: true
+
+    hass:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:8123"
+        passHostHeader: true
+
+    adguard:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3000"
+        passHostHeader: true
+
+    unifi:
+      loadBalancer:
+        servers:
+          - url: "https://host.docker.internal:8443"
+        passHostHeader: true
+        serversTransport: insecure
+
+    lan:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:8840"
         passHostHeader: true
 
   serversTransports:

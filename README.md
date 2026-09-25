@@ -258,6 +258,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [x] (retroactively added) Argo CD login via Authentik OIDC (local admin off); client secret + GitHub PAT come from 1Password via External Secrets
 - [x] Cut over compose `.env` files to Phase (`phase.dominiksiejak.pl`, Authentik OAuth).
 - [x] (retroactively added) Remove HashiCorp Vault. Postgres passwords and other app secrets live in Phase or tfvars.
+- [x] (retroactively added) File-provider routers for host-network stacks (hass, adguard, unifi, watchyourlan)
 - [ ] Move `terraform/cloudflare` (zone/tunnel/Access/Workers) to a private sibling repo
 - [ ] Self-hosted LLM (Ollama)
 - [ ] Separated subnets (IoT isolation)
@@ -267,6 +268,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ---
 
 ## Changelog
+
+### 25.09.2026
+
+**Host-network apps were invisible to Portainer Traefik.** `hass`, `adguard`, `unifi`, and `watchyourlan` use `network_mode: host`, and the Docker provider only watches the `proxy` network, so those labels never became routers. `hass.dominiksiejak.pl` answered 404 (tunnel path). Same shape for adguard, unifi, and `lan`. Routers now live in `stacks/traefik/dynamic.yaml` and point at `host.docker.internal`. Traefik watches that file, so copying it to `/opt/traefik/dynamic.yaml` is enough — no need to recreate the container. This VM cannot reach the host, so the live 404 stays until that file is synced.
 
 ### 24.09.2026
 

@@ -23,6 +23,8 @@ services:
       - config:/config
     depends_on:
       - unifi-db
+    # Host network: Docker provider (network: proxy) ignores these labels.
+    # The router is unifi@file in stacks/traefik/dynamic.yaml.
     labels:
       traefik.enable: true
       traefik.http.services.unifi.loadbalancer.server.port: 8443

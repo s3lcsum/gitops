@@ -9,6 +9,8 @@ services:
     volumes:
       - work:/opt/adguardhome/work
       - /opt/adguard/conf:/opt/adguardhome/conf
+    # Host network: Docker provider (network: proxy) ignores these labels.
+    # The router is adguard@file in stacks/traefik/dynamic.yaml.
     labels:
       traefik.enable: true
       # Edge Authentik on Traefik-k8s; this Traefik is origin only.

@@ -17,6 +17,8 @@ services:
     cap_add:
       - NET_RAW
       - NET_ADMIN
+    # Host network: Docker provider (network: proxy) ignores these labels.
+    # The router is lan@file in stacks/traefik/dynamic.yaml.
     labels:
       traefik.enable: true
       traefik.http.routers.wyl.rule: Host(`lan.dominiksiejak.pl`)
