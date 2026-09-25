@@ -69,7 +69,7 @@
       "id": "compute-expiry",
       "name": "Compute Expiry",
       "parameters": {
-        "jsCode": "const body = $input.first().json.body || {};\nconst event = body.event && typeof body.event === 'object' ? body.event : body;\nconst ip = String(event.client_ip || body.client_ip || '').trim();\nconst user = event.user?.username || event.user?.name || body.user?.username || 'unknown';\nconst ttlMs = 7 * 24 * 60 * 60 * 1000;\nconst now = Date.now();\nconst expiresMs = now + ttlMs;\nconst apiUrl = 'http://192.168.89.1/rest/ip/firewall/address-list/add';\nreturn [{ json: { ip, user, expires_ms: expiresMs, expires_iso: new Date(expiresMs).toISOString(), api_url: apiUrl } }];"
+        "jsCode": "const body = $input.first().json.body || {};\nconst event = body.event && typeof body.event === 'object' ? body.event : body;\nconst ip = String(event.client_ip || body.client_ip || '').trim();\nconst user = event.user?.username || event.user?.name || body.user?.username || 'unknown';\nconst ttlMs = 8 * 60 * 60 * 1000;\nconst now = Date.now();\nconst expiresMs = now + ttlMs;\nconst apiUrl = 'http://192.168.89.1/rest/ip/firewall/address-list/add';\nreturn [{ json: { ip, user, expires_ms: expiresMs, expires_iso: new Date(expiresMs).toISOString(), api_url: apiUrl } }];"
       },
       "position": [
         860,
