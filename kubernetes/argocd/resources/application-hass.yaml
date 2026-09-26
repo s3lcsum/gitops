@@ -1,0 +1,26 @@
+# Kustomize only. No values.yaml → not in the Helm ApplicationSet.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hass
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: hass
+    app.kubernetes.io/part-of: kubernetes
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/s3lcsum/gitops.git
+    targetRevision: main
+    path: kubernetes/hass
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hass
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - ServerSideDiff=true

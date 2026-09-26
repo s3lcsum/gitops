@@ -30,9 +30,10 @@
   - GCS state prefix convention: `gitops-<dirname>` (e.g., `gitops-portainer`).
 - `kubernetes/argocd/` — Self-managed Argo CD for the kubeadm node (context `k8s@lake`). Helm installs the remote chart (`resources/application.yaml` pins repo, chart, version). Overrides: `values.yaml` (flat, not nested under a dependency name). Extra objects live in `resources/` and are applied with Kustomize (`resources/kustomization.yaml`), not a wrapper chart `templates/`. Bootstrap: `make -C kubernetes/argocd bootstrap`. Self Application is `resources/application.yaml` (remote `argo-cd` chart + `kubernetes/argocd/resources`, auto-sync + selfHeal, prune off). Sibling apps under `kubernetes/*` (except `argocd`) are parented by ApplicationSet `resources/applicationset.yaml` — drop a directory with `values.yaml` (chart pin `repoURL` / `chart` / `version` at the top) + `kustomization.yaml` beside it (`resources/` holds extra manifests) on `main` and Argo creates a multi-source Application; each child auto-syncs, self-heals, and prunes. UI: `https://argocd.dominiksiejak.pl` (Traefik-k8s IngressRoute). Port-forward `8080:80` / CLI SSO `8085` stay as Authentik + Argo `additionalUrls` fallbacks. Local admin is disabled. Authentik app slug `argocd`. OIDC client secret and the GitHub PAT come from 1Password via ExternalSecrets (`resources/externalsecret-oidc.yaml`, `resources/externalsecret-repo-creds.yaml`); tag those items `ArgoCD External Secrets Operator`. Group `admins` is Argo CD `role:admin`.
 - `kubernetes/coredns/` — CoreDNS Corefile only (Argo Application `coredns`, prune off). Upstream: AdGuard `192.168.89.253` then Cloudflare `1.1.1.1` (`forward` + `policy sequential`). kubeadm owns the Deployment.
+- `kubernetes/hass/` — Home Assistant, Mosquitto, Zigbee2MQTT Wi-Fi, Zigbee2MQTT USB, HA Time Machine. Kustomize Application `hass` (no `values.yaml`, so not in the Helm ApplicationSet). HA and Mosquitto are `hostNetwork` on `192.168.89.252` (`dnsPolicy: ClusterFirstWithHostNet` on HA). Mosquitto: anonymous `127.0.0.1:1883`, password `192.168.89.252:1883`. Config hostPath `/var/lib/hass` (`Directory`). USB stick `/dev/ttyUSB0` on the lake node. Recorder database `homeassistant` on CloudNativePG (`postgres-rw.cloudnative-pg.svc`). Secrets from 1Password via ExternalSecrets.
 - `kubernetes/flannel/` — CNI (host-gw, pod CIDR `10.244.0.0/16`) + kube-proxy DaemonSet (replaces retired Cilium).
 - `kubernetes/traefik/` — L7 edge on lake node (`hostNetwork` `:80/:443`). TLS + CrowdSec + Authentik middlewares + Portainer allowlist hops + `traefik-k8s` dashboard. Per-app IngressRoutes live under `kubernetes/<app>/resources/` in that app’s namespace; middleware refs use `namespace: traefik`; TLS from Traefik default `TLSStore`.
-- `kubernetes/cloudnative-pg/` — CloudNativePG operator + shared `Cluster/postgres` (`local-path`, 8Gi, `instances: 1`). K8s apps add `Database` / `DatabaseRole` with `metadata.namespace: cloudnative-pg` (same ns as Cluster; example `resources/examples/smoke-database.yaml`); RW host `postgres-rw.cloudnative-pg.svc`. Portainer compose Postgres remains SoT for Docker stacks (`terraform/postgres`). **Not in gitops yet:** NAS NFS StorageClass and Barman/`ScheduledBackup` to NAS S3 — cluster has no continuous backup wired; do not assume NFS SC or bucket backups exist.
+- `kubernetes/cloudnative-pg/` — CloudNativePG operator + shared `Cluster/postgres` (`local-path`, 8Gi, `instances: 1`). K8s apps add `Database` / `DatabaseRole` with `metadata.namespace: cloudnative-pg` (same ns as Cluster; example `kubernetes/hass/resources/database.yaml`); RW host `postgres-rw.cloudnative-pg.svc`. Portainer compose Postgres remains SoT for Docker stacks (`terraform/postgres`). **Not in gitops yet:** NAS NFS StorageClass and Barman/`ScheduledBackup` to NAS S3 — cluster has no continuous backup wired; do not assume NFS SC or bucket backups exist.
 - Portainer Traefik (`stacks/traefik/`) — Docker-label origin only. No edge CrowdSec/Authentik (those run on Traefik-k8s).
 
 ## Networking
@@ -74,7 +75,7 @@
 - Traefik file routers and compose labels use a single `Host()` of `{name}.dominiksiejak.pl` (no hello/lake aliases)
 - Forward-auth: `authentik@docker` on the UI. Webhooks and native-OIDC apps (HA, Seerr, Calibre-Web) stay off Authentik at the edge.
 - Use object syntax for labels
-- Traefik has `host.docker.internal:host-gateway` to reach host-networked Home Assistant
+- Traefik has `host.docker.internal:host-gateway` to reach host-networked services on the Portainer LXC
 
 ### Centralized PostgreSQL
 - Single Postgres stack at `stacks/postgres/`. No separate DB instances.
@@ -162,7 +163,7 @@ Gotchas baked in:
 
 - `terraform/portainer/locals.tf` is the source of truth for deployed stacks — README tables should match it
 - Gitea: bind-mounts `/data` to NAS; needs `traefik.docker.network: proxy`
-- Home Assistant stack: mosquitto has split listeners (anonymous `127.0.0.1` for HA/healthcheck; password on `192.168.89.253` for LAN and `172.17.0.1` for Docker host-gateway). Do not bind `0.0.0.0:1883` together with localhost. Create `/opt/hass/mosquitto.passwd` (uid 1883, mode 640) and `/opt/hass/mqtt.env` before sync. HA + zigbee2mqtt `depends_on` with `condition: service_healthy`; HA Time Machine behind `profile: timemachine`
+- Home Assistant runs on the lake node (`kubernetes/hass/`), not in `stacks/`. Mosquitto listens anonymous on `127.0.0.1:1883` and with a password on `192.168.89.252:1883`. Do not bind `0.0.0.0:1883` together with localhost. Passwd, MQTT password, Time Machine token, and `hass_user` come from 1Password. `/var/lib/hass` must already exist on the node (`hostPath` type `Directory`).
 - Authentik compose: Docker socket `:ro`; `AUTHENTIK_LOG_LEVEL=info`
 - `stacks/postgres/init.sh` no longer exists — DB users/databases come from `terraform/postgres` only, not manual init scripts
 

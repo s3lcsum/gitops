@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hass-timemachine
+  namespace: hass
+  labels:
+    app.kubernetes.io/name: hass-timemachine
+    app.kubernetes.io/instance: hass-timemachine
+    app.kubernetes.io/part-of: hass
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hass-timemachine
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hass-timemachine
+        app.kubernetes.io/instance: hass-timemachine
+        app.kubernetes.io/part-of: hass
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: timemachine
+          image: ghcr.io/saihgupr/homeassistanttimemachine:2.3.2
+          env:
+            - name: TZ
+              value: Europe/Warsaw
+            - name: HOME_ASSISTANT_URL
+              value: http://192.168.89.252:8123
+            - name: ESPHOME_CONFIG_PATH
+              value: /esphome
+            - name: DEBUG_LOGS
+              value: "false"
+            - name: THEME
+              value: dark
+            - name: LONG_LIVED_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hass-timemachine
+                  key: LONG_LIVED_ACCESS_TOKEN
+          ports:
+            - name: http
+              containerPort: 3000
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: exports
+              mountPath: /media/timemachine
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+      volumes:
+        - name: config
+          hostPath:
+            path: /var/lib/hass
+            type: Directory
+        - name: exports
+          hostPath:
+            path: /var/lib/hass/media/timemachine
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hass-timemachine
+  namespace: hass
+  labels:
+    app.kubernetes.io/name: hass-timemachine
+    app.kubernetes.io/instance: hass-timemachine
+    app.kubernetes.io/part-of: hass
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: hass-timemachine
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http

@@ -12,13 +12,10 @@ spec:
         Host(`adguard.dominiksiejak.pl`) ||
         Host(`calibre-gui.dominiksiejak.pl`) ||
         Host(`dozzle.dominiksiejak.pl`) ||
-        Host(`hass-timemachine.dominiksiejak.pl`) ||
         Host(`lan.dominiksiejak.pl`) ||
         Host(`metrics.dominiksiejak.pl`) ||
         Host(`opencode.dominiksiejak.pl`) ||
-        Host(`traefik.dominiksiejak.pl`) ||
-        Host(`zigbee2mqtt-usb.dominiksiejak.pl`) ||
-        Host(`zigbee2mqtt-wifi.dominiksiejak.pl`)
+        Host(`traefik.dominiksiejak.pl`)
       kind: Rule
       middlewares:
         - name: crowdsec-bouncer

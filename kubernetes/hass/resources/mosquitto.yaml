@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto
+  namespace: hass
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/instance: mosquitto
+    app.kubernetes.io/part-of: hass
+    app.kubernetes.io/managed-by: argocd
+data:
+  mosquitto.conf: |
+    persistence true
+    persistence_location /mosquitto/data/
+    listener 1883 127.0.0.1
+    listener_allow_anonymous true
+    listener 1883 192.168.89.252
+    listener_allow_anonymous false
+    password_file /mosquitto/config/passwd
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+  namespace: hass
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/instance: mosquitto
+    app.kubernetes.io/part-of: hass
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mosquitto
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mosquitto
+        app.kubernetes.io/instance: mosquitto
+        app.kubernetes.io/part-of: hass
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      securityContext:
+        runAsUser: 1883
+        runAsGroup: 1883
+        fsGroup: 1883
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: mosquitto
+          image: eclipse-mosquitto:2.1.2-alpine
+          ports:
+            - name: mqtt
+              containerPort: 1883
+          volumeMounts:
+            - name: config
+              mountPath: /mosquitto/config
+              readOnly: true
+            - name: data
+              mountPath: /mosquitto/data
+          readinessProbe:
+            exec:
+              command:
+                - mosquitto_sub
+                - -h
+                - 127.0.0.1
+                - -p
+                - "1883"
+                - -t
+                - $SYS/broker/uptime
+                - -C
+                - "1"
+                - -W
+                - "3"
+            periodSeconds: 10
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+      volumes:
+        # Projected dir: subPath mounts ignore fsGroup, so uid 1883 could not read the passwd file.
+        - name: config
+          projected:
+            sources:
+              - configMap:
+                  name: mosquitto
+                  items:
+                    - key: mosquitto.conf
+                      path: mosquitto.conf
+                      mode: 292
+              - secret:
+                  name: hass-mosquitto
+                  items:
+                    - key: passwd
+                      path: passwd
+                      mode: 292
+        - name: data
+          hostPath:
+            path: /var/lib/hass/mosquitto-data
+            type: DirectoryOrCreate

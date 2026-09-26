@@ -13,7 +13,6 @@ spec:
         Host(`calibre.dominiksiejak.pl`) ||
         Host(`git.dominiksiejak.pl`) ||
         Host(`grafana.dominiksiejak.pl`) ||
-        Host(`hass.dominiksiejak.pl`) ||
         Host(`hermes.dominiksiejak.pl`) ||
         Host(`jellyfin.dominiksiejak.pl`) ||
         Host(`n8n.dominiksiejak.pl`) ||

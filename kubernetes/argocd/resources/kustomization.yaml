@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - application.yaml
   - application-coredns.yaml
+  - application-hass.yaml
   - applicationset.yaml
   - externalsecret-oidc.yaml
   - externalsecret-repo-creds.yaml

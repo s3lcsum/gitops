@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zigbee2mqtt-usb
+  namespace: hass
+  labels:
+    app.kubernetes.io/name: zigbee2mqtt-usb
+    app.kubernetes.io/instance: zigbee2mqtt-usb
+    app.kubernetes.io/part-of: hass
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zigbee2mqtt-usb
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zigbee2mqtt-usb
+        app.kubernetes.io/instance: zigbee2mqtt-usb
+        app.kubernetes.io/part-of: hass
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      initContainers:
+        - name: wait-mqtt
+          image: eclipse-mosquitto:2.1.2-alpine
+          env:
+            - name: MQTT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: hass-mqtt
+                  key: username
+            - name: MQTT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hass-mqtt
+                  key: password
+          command:
+            - sh
+            - -c
+            - until mosquitto_sub -h 192.168.89.252 -p 1883 -u "$MQTT_USER" -P "$MQTT_PASSWORD" -t '$SYS/broker/uptime' -C 1 -W 3; do sleep 2; done
+      containers:
+        - name: zigbee2mqtt
+          image: ghcr.io/koenkk/zigbee2mqtt:2.14.1
+          securityContext:
+            privileged: true
+          env:
+            - name: TZ
+              value: Europe/Warsaw
+            - name: ZIGBEE2MQTT_CONFIG_MQTT_SERVER
+              value: mqtt://192.168.89.252:1883
+            - name: ZIGBEE2MQTT_CONFIG_MQTT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: hass-mqtt
+                  key: username
+            - name: ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hass-mqtt
+                  key: password
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: usb
+              mountPath: /dev/ttyUSB0
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+      volumes:
+        - name: data
+          hostPath:
+            path: /var/lib/hass/zigbee2mqtt-usb
+            type: Directory
+        - name: usb
+          hostPath:
+            path: /dev/ttyUSB0
+            type: CharDevice
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zigbee2mqtt-usb
+  namespace: hass
+  labels:
+    app.kubernetes.io/name: zigbee2mqtt-usb
+    app.kubernetes.io/instance: zigbee2mqtt-usb
+    app.kubernetes.io/part-of: hass
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: zigbee2mqtt-usb
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

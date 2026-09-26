@@ -1,0 +1,28 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: hass-user
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  cluster:
+    name: postgres
+  name: hass_user
+  login: true
+  databaseRoleReclaimPolicy: delete
+  passwordSecret:
+    name: hass-user
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: homeassistant
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  name: homeassistant
+  owner: hass_user
+  cluster:
+    name: postgres
