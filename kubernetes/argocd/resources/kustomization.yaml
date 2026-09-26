@@ -2,9 +2,14 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - application.yaml
+  - application-calibre.yaml
   - application-coredns.yaml
+  - application-dozzle.yaml
+  - application-grafana-synthetic-agent.yaml
   - application-hass.yaml
+  - application-homepage.yaml
   - application-paperclip.yaml
+  - application-wealthfolio.yaml
   - applicationset.yaml
   - externalsecret-oidc.yaml
   - externalsecret-repo-creds.yaml

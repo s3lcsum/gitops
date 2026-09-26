@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wealthfolio
+  labels:
+    app.kubernetes.io/name: wealthfolio
+    app.kubernetes.io/part-of: wealthfolio

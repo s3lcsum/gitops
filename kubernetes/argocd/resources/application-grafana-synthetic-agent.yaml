@@ -1,0 +1,26 @@
+# Kustomize only. No values.yaml → not in the Helm ApplicationSet.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-synthetic-agent
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: grafana-synthetic-agent
+    app.kubernetes.io/part-of: kubernetes
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/s3lcsum/gitops.git
+    targetRevision: main
+    path: kubernetes/grafana-synthetic-agent
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: grafana-synthetic-agent
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - ServerSideDiff=true

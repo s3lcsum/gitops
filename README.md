@@ -16,14 +16,14 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 
 | Layer | What | Tools |
 |-------|------|-------|
-| **Compute** | Proxmox VE hosts running LXC containers | OpenTofu (`terraform/proxmox/`) |
+| **Compute** | Proxmox VE hosts running LXC containers | lake / edge hosts (not TF-managed in this repo) |
 | **Containers** | Docker stacks managed via Portainer | Compose files in `stacks/` |
-| **Kubernetes** | kubeadm single node on lake | `kubernetes/argocd/` |
-| **Networking** | MikroTik RouterOS config | OpenTofu (`terraform/routeros/`) |
-| **Edge** | Traefik + CrowdSec on direct WAN; Cloudflare Tunnel/Access for specific hosts | `stacks/traefik/`, `stacks/cloudflared/`, `terraform/cloudflare/` |
+| **Kubernetes** | kubeadm single node on lake (Flannel host-gw, Traefik-k8s edge) | `kubernetes/` (Argo CD ApplicationSet) |
+| **Networking** | MikroTik RouterOS + UniFi Wi-Fi | OpenTofu (`terraform/routeros/`, `terraform/unifi/`) |
+| **Edge** | Traefik-k8s + CrowdSec on direct WAN; Portainer Traefik for compose hops; Cloudflare Tunnel/Access for specific hosts | `kubernetes/traefik/`, `stacks/traefik/`, `stacks/cloudflared/`, `terraform/cloudflare/` |
 | **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + OpenTofu (`terraform/authentik/`) |
 | **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + OpenTofu (`terraform/netbox/`) |
-| **Secrets** | Phase (compose `.env`) + Vaultwarden | `stacks/phase/`, `stacks/vaultwarden/` |
+| **Secrets** | Host-local compose `.env` + gitignored tfvars; k8s via 1Password ExternalSecrets | `*.env` / `defaults.auto.tfvars`, `kubernetes/*/resources/externalsecret-*.yaml` |
 | **Monitoring** | Gatus (status), Grafana + VictoriaMetrics (`stacks/monitoring/`) via CasC dashboards/alerting, Blackbox synthetic probes, Synthetic Agent | `stacks/gatus/`, `stacks/monitoring/`, `terraform/grafana/`, `stacks/grafana-synthetic-agent/` |
 | **Media** | Jellyfin + *arr stack + downloaders | `stacks/mediabox/` |
 
@@ -63,18 +63,17 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | [Dozzle](https://github.com/amir20/dozzle) | Container logs UI |
 | [Gatus](https://github.com/TwiN/gatus) | Uptime / status page |
 | [Gitea](https://github.com/go-gitea/gitea) | Git hosting |
-| [Homepage](https://gethomepage.dev/) | Dashboard (Docker label auto-discovery) |
+| [Homepage](https://gethomepage.dev/) | Dashboard (`stacks/homepage/config/services.yaml`) |
 | [Grafana Synthetic Monitoring Agent](https://github.com/grafana/synthetic-monitoring-agent) | Synthetic checks (Grafana Cloud–oriented agent) |
-| [Home Assistant stack](https://www.home-assistant.io/) | HA, Zigbee2MQTT, Mosquitto, optional [HA Time Machine](https://github.com/saihgupr/homeassistanttimemachine) (compose profile) |
 | **Mediabox** (see below) | Media + *arr + VPN-routed downloaders |
 | **Monitoring** | [Grafana](https://grafana.com/), [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics), [Blackbox exporter](https://github.com/prometheus/blackbox_exporter) synthetic probes, PVE exporter, [k6](https://k6.io/) smoke — CasC dashboards + alerting (TG + SMTP) |
 | [n8n](https://n8n.io/) | Workflow automation |
 | [NetBox](https://github.com/netbox-community/netbox) | IPAM / DCIM |
-| [Phase](https://phase.dev) | Compose env secrets (Authentik OAuth) |
 | [PostgreSQL](https://www.postgresql.org/) | Shared database host |
-| [Traefik](https://traefik.io/) | Reverse proxy (+ CrowdSec integration in config) |
-| [Vaultwarden](https://github.com/dani-garcia/vaultwarden) | Bitwarden-compatible passwords |
+| [Traefik](https://traefik.io/) | Reverse proxy (Portainer / Docker-label origin; edge CrowdSec+Authentik lives on Traefik-k8s) |
+| [UniFi Network Application](https://ui.com/software) | UniFi controller (+ `mongo:7.0.40` — do not bump to 8.x on this host kernel) |
 | [WatchYourLAN](https://github.com/aceberg/watchyourlan) | LAN host visibility |
+| [Wealthfolio](https://wealthfolio.app/) | Personal finance |
 
 ### Mediabox (`stacks/mediabox/`)
 
@@ -82,7 +81,7 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 
 ### Not in `stacks/` (still in the environment)
 
-- **Talos / Kubernetes** — several services that used to be Compose here (see changelog around **6.04.2026**) now run on the cluster; this README does not enumerate them.
+- **Kubernetes on lake** (`kubernetes/`) — platform apps via Argo CD (Traefik-k8s, Flannel, cert-manager, External Secrets, CloudNativePG, Home Assistant stack, Kyverno / Policy Reporter, Cloudflare Tunnel ingress controller, Argo Workflows / Events / Rollouts, …). This README does not enumerate every chart.
 
 ---
 
@@ -92,17 +91,17 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 
 - **ISP**: INEA (Poland) — 300Mb/s synchronous FTTH
 - **Router**: MikroTik hAP ac3
-- **Wireless**: TP-Link Deco M4R x3 (mesh)
+- **Wireless**: UniFi U7 Lite AP (controller in `stacks/unifi/`, WLAN/AP as code in `terraform/unifi/`)
 - **Remote Access**: Public IP with WireGuard / ngrok (backup)
 
 **Dual WAN edge (both intentional — do not "pick one"):**
 
 | Path | What sits on it |
 |------|-----------------|
-| **Direct WAN :80/:443** | Traefik + CrowdSec + Authentik forward-auth / native OIDC. **RouterOS firewall allowlist** is the IP gate. Cloudflare Access is *not* required on this path. |
+| **Direct WAN :80/:443** | Traefik-k8s + CrowdSec + Authentik forward-auth / native OIDC. **RouterOS firewall allowlist** is the IP gate. Cloudflare Access is *not* required on this path. Compose hosts on the allowlist hop to Portainer Traefik. |
 | **Cloudflare Tunnel + Access** | Separate ingress for specific hosts/services (JWT / Access where configured). Extra layer for those apps — complements RouterOS, does not replace it. |
 
-Auth class for every Traefik host lives in `scripts/auth_classification.yaml` (`make consistency` fails if a host is unclassified).
+Auth class for every Traefik host lives in `scripts/auth_classification.yaml`.
 
 **IP Allocation:**
 
@@ -186,10 +185,9 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 ### Secrets Handling
 
 - **`.env.example` files**: Committed to the repo — contain structure and placeholder values
-- **`.env` files**: Never committed — contain actual secrets (gitignored)
-- **Sensitive Terraform variables**: Stored in `defaults.auto.tfvars` or passed via environment
-- **Phase:** source of truth for compose `.env` values. `make -C terraform/portainer apply` exports them via `scripts/render_phase_env.py` (needs `PHASE_SERVICE_TOKEN` or `.phase-service-token`). Bootstrap `stacks/phase/phase.env` stays host-local.
-- **Terraform secrets:** gitignored `defaults.auto.tfvars`, `TF_VAR_*`, or a data source / remote state from another repo.
+- **`.env` files**: Never committed — contain actual secrets (gitignored). Fill on the Portainer host under `/opt/<stack>/` (rsync from `make -C terraform/portainer apply` syncs compose, not secrets).
+- **Terraform secrets:** gitignored `defaults.auto.tfvars`, `TF_VAR_*`, or a data source / remote state from another repo (e.g. UniFi admin + WLAN passphrases from 1Password into `terraform/unifi/defaults.auto.tfvars`).
+- **Kubernetes secrets:** 1Password via External Secrets Operator (`kubernetes/*/resources/externalsecret-*.yaml`).
 
 ---
 
@@ -213,22 +211,33 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── gatus/
 │   ├── gitea/
 │   ├── grafana-synthetic-agent/
-│   ├── hass/
 │   ├── homepage/
 │   ├── mediabox/
 │   ├── monitoring/
 │   ├── n8n/
 │   ├── netbox/
-│   ├── phase/
 │   ├── postgres/
 │   ├── traefik/
-│   ├── vaultwarden/
-│   └── watchyourlan/
+│   ├── unifi/
+│   ├── watchyourlan/
+│   └── wealthfolio/
 │
-├── kubernetes/                     # In-cluster GitOps (kubeadm node)
-│   └── argocd/                     # Self-managed Argo CD (remote chart + values + Kustomize)
+├── kubernetes/                     # In-cluster GitOps (kubeadm node on lake)
+│   ├── argocd/                     # Self-managed Argo CD (remote chart + values + Kustomize)
+│   ├── traefik/                    # Edge L7 (hostNetwork :80/:443, CrowdSec, Authentik)
+│   ├── flannel/                    # CNI (host-gw) + kube-proxy
+│   ├── cert-manager/
+│   ├── external-secrets/
+│   ├── cloudnative-pg/
+│   ├── kyverno/                    # + policy-reporter UI
+│   ├── cloudflare-tunnel-ingress-controller/
+│   ├── argo-workflows/
+│   ├── argo-events/
+│   ├── argo-rollouts/
+│   ├── coredns/
+│   └── local-path-provisioner/
 │
-├── terraform/                      # Infrastructure as Code
+├── terraform/                      # Infrastructure as Code (GCS state)
 │   ├── authentik/
 │   ├── backblaze/
 │   ├── cloudflare/
@@ -238,9 +247,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── netbox/
 │   ├── portainer/
 │   ├── postgres/
-│   ├── proxmox/
 │   ├── routeros/
-│   └── synology-nas/
+│   └── unifi/                      # U7 Lite + WLANs (Hass / Raval)
 │
 ├── mkdocs.yml                      # MkDocs configuration
 └── README.md
@@ -256,13 +264,15 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Add NUT/UPS integration
 - [x] (retroactively added) kubeadm node + self-managed Argo CD
 - [x] (retroactively added) Argo CD login via Authentik OIDC (local admin off); client secret + GitHub PAT come from 1Password via External Secrets
-- [x] Cut over compose `.env` files to Phase (`phase.dominiksiejak.pl`, Authentik OAuth).
-- [x] (retroactively added) Remove HashiCorp Vault. Postgres passwords and other app secrets live in Phase or tfvars.
+- [x] (retroactively added) Dropped Phase + Vaultwarden from the public repo; compose secrets are host-local `.env` again
+- [x] (retroactively added) Remove HashiCorp Vault. Postgres passwords and other app secrets live in host `.env` or tfvars
+- [x] (retroactively added) UniFi controller + U7 Lite / WLANs as code (`stacks/unifi/`, `terraform/unifi/`)
 - [ ] Move `terraform/cloudflare` (zone/tunnel/Access/Workers) to a private sibling repo
 - [ ] Self-hosted LLM (Ollama)
 - [ ] Separated subnets (IoT isolation)
 - [ ] Use Terraform for RouterOS management (or via NetBox)?
 - [x] (retroactively added) Static `x-webhook-secret` on public n8n webhooks; Authentik login firewall is IPv4-only
+- [x] (retroactively added) Home Assistant stack on the lake node (`kubernetes/hass/`) instead of Portainer
 
 ---
 
@@ -270,15 +280,27 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ### 26.09.2026
 
+**Wave 1 off Portainer, onto the lake node.** Homepage, Wealthfolio, Dozzle, the Grafana synthetic agent, and Calibre are Kustomize Argo apps. Edge hosts for those moved off the Portainer hop. Dozzle watches the Kubernetes API (`DOZZLE_MODE=k8s`), not the Docker socket. The NAS export `/volume1/media` allows `192.168.89.252` and `192.168.89.254`. The Proxmox host also bind-mounts it into the k8s LXC at `/mnt/nas-media` (`mp0`). New data is `/volume1/media/k8s/<namespace>/<name>`. Calibre books stay `/volume1/media/books`. StorageClass `nfs` provisions that tree. Those five stacks left `terraform/portainer/locals.tf`. Compose containers are stopped with `--restart=no`, and their volumes were copied onto the NAS before the sync.
+
 **Paperclip on the lake node.** `kubernetes/paperclip/` (Argo Application `paperclip`, not the Helm ApplicationSet — upstream chart is still an open PR). Image `ghcr.io/paperclipai/paperclip:2026.916.1`, embedded Postgres on a 10Gi `local-path` volume. Deployment exposure stays `private` because `public` refuses embedded Postgres. Traefik-k8s serves `https://paperclip.dominiksiejak.pl` with CrowdSec only; Paperclip's own login is the gate, and open signup is off. Session secret is 1Password item `paperclip` (Servers vault, tag `ArgoCD External Secrets Operator`) via External Secrets. First account is a one-time bootstrap invite.
+
+**Home Assistant left Portainer.** The stack now lives in `kubernetes/hass/` (Argo Application `hass`, not the Helm ApplicationSet). Home Assistant and Mosquitto are `hostNetwork` on the lake node `192.168.89.252`. Zigbee2MQTT (Wi-Fi and USB) and HA Time Machine are normal pods. Recorder database `homeassistant` is on CloudNativePG. Traefik-k8s IngressRoutes own `hass`, `zigbee2mqtt-wifi`, `zigbee2mqtt-usb`, and `hass-timemachine` — those hosts no longer hop to Portainer. USB stick and `/var/lib/hass` have to be on the lake node before sync. Cutover steps are in `docs/superpowers/specs/2026-09-26-hass-kubernetes-design.md`.
+
+**UniFi as code.** New `terraform/unifi/` module (GCS prefix `gitops-unifi`, provider `ubiquiti-community/unifi`) manages the U7 Lite AP plus WLANs `Hass` (hidden 2.4 GHz, Zigbee-only) and `Raval` (5 GHz). Secrets from 1Password into gitignored `defaults.auto.tfvars` (see `defaults.auto.tfvars.example`). Authentik gets a dashboard-only tile for `unifi.dominiksiejak.pl` — UniFi has no free OIDC/LDAP, Traefik class stays `public`, local admin still required after launch. Also: `unifi-db` comment tightened so nobody "helpfully" bumps Mongo past 7.0.x on this Proxmox kernel.
+
+**Cilium out, Flannel in.** CNI is Flannel host-gw (`kubernetes/flannel/`, pod CIDR `10.244.0.0/16`) plus kube-proxy. Edge TLS is Traefik-k8s on lake (`hostNetwork` :80/:443), not Cilium Gateway. Kyverno Audit + Policy Reporter UI, and the Cloudflare Tunnel ingress controller, landed under `kubernetes/` the same stretch.
+
+**README catch-up.** Services table matches `terraform/portainer/locals.tf` again (added UniFi + Wealthfolio; Phase / Vaultwarden left the public repo on 24.09). Wireless line is the U7 Lite, not the old Deco mesh. Repo tree drops dead `terraform/proxmox` / `synology-nas` and lists the real k8s apps.
 
 ### 24.09.2026
 
-**HashiCorp Vault is gone.** `stacks/vault/` and `terraform/vault/` left. Authentik OAuth app `vault`, Traefik `vaultpki` resolver, homepage/gatus/blackbox/AdGuard/Cilium `vault.dominiksiejak.pl`, and the GCP KMS auto-unseal resources left with it. Compose secrets stay in Phase. Terraform secrets come from gitignored tfvars or a data source in another repo. Before the next `terraform/gcp` apply, run `make -C terraform/gcp state-rm-legacy` so OpenTofu drops the KMS key and unseal service account from state (`prevent_destroy` would otherwise block the plan). Delete those GCP objects in the console if you want them gone for real. GCS prefix `gitops-vault` can be deleted from the state bucket. Portainer drops the stack on the next `make apply` in `terraform/portainer`. Authentik drops the `vault` app on the next authentik apply.
+**HashiCorp Vault is gone.** `stacks/vault/` and `terraform/vault/` left. Authentik OAuth app `vault`, Traefik `vaultpki` resolver, homepage/gatus/blackbox/AdGuard `vault.dominiksiejak.pl`, and the GCP KMS auto-unseal resources left with it. Compose secrets stay host-local `.env`. Terraform secrets come from gitignored tfvars or a data source in another repo. Before the next `terraform/gcp` apply, run `make -C terraform/gcp state-rm-legacy` so OpenTofu drops the KMS key and unseal service account from state (`prevent_destroy` would otherwise block the plan). Delete those GCP objects in the console if you want them gone for real. GCS prefix `gitops-vault` can be deleted from the state bucket. Portainer drops the stack on the next `make apply` in `terraform/portainer`. Authentik drops the `vault` app on the next authentik apply.
+
+**Phase and Vaultwarden left the public repo too.** `stacks/phase/`, `stacks/vaultwarden/`, and the Phase render / consistency scripts went with them. Compose `.env` files are filled on the host again; k8s secrets stay on 1Password → External Secrets.
 
 **KIND and miedzysztuka are gone.** `kind/` left the public repo (no more `vibe` cluster, no `argocd.vibe.local`). Kubernetes is the kubeadm node on lake, context `k8s@lake`. Cloudflare Pages project `miedzysztuka` left with it (`terraform/cloudflare/miedzysztuka.tf`).
 
-**Argo CD is on `https://argocd.dominiksiejak.pl`.** Cilium Gateway terminates TLS; OIDC via Authentik (`argocd` slug, local admin off, `admins` → `role:admin`). Port-forward `8080` / CLI SSO `8085` still work as callback fallbacks. Client secret and the GitHub PAT come from 1Password (Servers items `argocd-oidc` and `argocd-github-repo-credentials`) through External Secrets. The self Application moved to `templates/application.yaml`. Also dropped the dead `v-maintenance` row from `scripts/phase_env_map.yaml`.
+**Argo CD is on `https://argocd.dominiksiejak.pl`.** Traefik-k8s terminates TLS; OIDC via Authentik (`argocd` slug, local admin off, `admins` → `role:admin`). Port-forward `8080` / CLI SSO `8085` still work as callback fallbacks. Client secret and the GitHub PAT come from 1Password (Servers items `argocd-oidc` and `argocd-github-repo-credentials`) through External Secrets.
 
 ### 23.09.2026
 

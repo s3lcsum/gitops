@@ -1,0 +1,34 @@
+# ApplicationSet chart pin.
+repoURL: https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+chart: nfs-subdir-external-provisioner
+version: 4.0.18
+
+# Overrides for nfs-subdir-external-provisioner 4.0.18.
+# New claims land at /volume1/media/k8s/<namespace>/<pvc>.
+# Export clients: 192.168.89.252 and 192.168.89.254.
+# Existing trees (/volume1/media/books and the rest) stay put.
+# Not the default StorageClass — local-path stays default.
+#
+# The kubelet 192.168.89.252 is on the NFS allow list (with 192.168.89.254).
+# Wave 1 pods still use the host bind /mnt/nas-media (Proxmox mp0).
+replicaCount: 1
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+nfs:
+  server: 192.168.89.240
+  path: /volume1/media/k8s
+  reclaimPolicy: Retain
+  mountOptions:
+    - nfsvers=4.1
+storageClass:
+  create: true
+  defaultClass: false
+  name: nfs
+  reclaimPolicy: Delete
+  archiveOnDelete: true
+  allowVolumeExpansion: true
+  accessModes: ReadWriteMany
+  volumeBindingMode: Immediate
+  pathPattern: "${.PVC.namespace}/${.PVC.name}"

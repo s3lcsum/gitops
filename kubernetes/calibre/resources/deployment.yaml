@@ -1,0 +1,197 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calibre
+  namespace: calibre
+  labels:
+    app.kubernetes.io/name: calibre
+    app.kubernetes.io/instance: calibre
+    app.kubernetes.io/part-of: calibre
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: calibre
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: calibre
+        app.kubernetes.io/instance: calibre
+        app.kubernetes.io/part-of: calibre
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: Exists
+      containers:
+        - name: calibre
+          image: ghcr.io/linuxserver/calibre:9.15.0
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: books
+              mountPath: /mnt/NAS_Shared_Media/books
+          resources:
+            requests:
+              cpu: 200m
+              memory: 1Gi
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/nas-media/k8s/calibre/calibre-config
+            type: DirectoryOrCreate
+        - name: books
+          hostPath:
+            path: /mnt/nas-media/books
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: calibre
+  namespace: calibre
+  labels:
+    app.kubernetes.io/name: calibre
+    app.kubernetes.io/instance: calibre
+    app.kubernetes.io/part-of: calibre
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: calibre
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calibre-web-automated
+  namespace: calibre
+  labels:
+    app.kubernetes.io/name: calibre-web-automated
+    app.kubernetes.io/instance: calibre-web-automated
+    app.kubernetes.io/part-of: calibre
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: calibre-web-automated
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: calibre-web-automated
+        app.kubernetes.io/instance: calibre-web-automated
+        app.kubernetes.io/part-of: calibre
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: Exists
+      containers:
+        - name: calibre-web-automated
+          image: crocodilestick/calibre-web-automated:v4.0.6
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+            - name: NETWORK_SHARE_MODE
+              value: "true"
+            - name: TRUSTED_PROXY_COUNT
+              value: "1"
+          ports:
+            - name: http
+              containerPort: 8083
+          readinessProbe:
+            httpGet:
+              path: /login
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: books
+              mountPath: /cwa-book-ingest
+              subPath: inbox
+            - name: books
+              mountPath: /calibre-library
+              subPath: library
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/nas-media/k8s/calibre/cwa-config
+            type: DirectoryOrCreate
+        - name: books
+          hostPath:
+            path: /mnt/nas-media/books
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: calibre-web-automated
+  namespace: calibre
+  labels:
+    app.kubernetes.io/name: calibre-web-automated
+    app.kubernetes.io/instance: calibre-web-automated
+    app.kubernetes.io/part-of: calibre
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: calibre-web-automated
+  ports:
+    - name: http
+      port: 8083
+      targetPort: http

@@ -10,8 +10,6 @@ spec:
   routes:
     - match: >-
         Host(`adguard.dominiksiejak.pl`) ||
-        Host(`calibre-gui.dominiksiejak.pl`) ||
-        Host(`dozzle.dominiksiejak.pl`) ||
         Host(`lan.dominiksiejak.pl`) ||
         Host(`metrics.dominiksiejak.pl`) ||
         Host(`opencode.dominiksiejak.pl`) ||

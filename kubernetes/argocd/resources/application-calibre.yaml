@@ -1,0 +1,28 @@
+# Kustomize only. No values.yaml → not in the Helm ApplicationSet.
+# Stop the Portainer calibre stack before this syncs. Both would write
+# /volume1/media/books/library/metadata.db.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: calibre
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: calibre
+    app.kubernetes.io/part-of: kubernetes
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/s3lcsum/gitops.git
+    targetRevision: main
+    path: kubernetes/calibre
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: calibre
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - ServerSideDiff=true

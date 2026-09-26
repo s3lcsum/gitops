@@ -1,0 +1,22 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dozzle
+  namespace: dozzle
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`dozzle.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+        - name: authentik
+          namespace: traefik
+      services:
+        - name: dozzle
+          port: 8080
+  tls: {}

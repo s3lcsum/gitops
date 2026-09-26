@@ -10,7 +10,6 @@ spec:
   routes:
     - match: >-
         Host(`bazarr.dominiksiejak.pl`) ||
-        Host(`calibre.dominiksiejak.pl`) ||
         Host(`git.dominiksiejak.pl`) ||
         Host(`grafana.dominiksiejak.pl`) ||
         Host(`hermes.dominiksiejak.pl`) ||
@@ -28,8 +27,7 @@ spec:
         Host(`router.dominiksiejak.pl`) ||
         Host(`sabnzbd.dominiksiejak.pl`) ||
         Host(`seerr.dominiksiejak.pl`) ||
-        Host(`sonarr.dominiksiejak.pl`) ||
-        Host(`wealthfolio.dominiksiejak.pl`)
+        Host(`sonarr.dominiksiejak.pl`)
       kind: Rule
       middlewares:
         - name: crowdsec-bouncer

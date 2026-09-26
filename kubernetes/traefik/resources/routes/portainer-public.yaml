@@ -10,8 +10,6 @@ spec:
   routes:
     - match: >-
         Host(`auth.dominiksiejak.pl`) ||
-        Host(`calibre-api.dominiksiejak.pl`) ||
-        Host(`homepage.dominiksiejak.pl`) ||
         Host(`status.dominiksiejak.pl`) ||
         Host(`unifi.dominiksiejak.pl`)
       kind: Rule

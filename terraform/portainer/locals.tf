@@ -9,13 +9,9 @@ locals {
   stacks = [
     "authentik",
     "adguard",
-    "calibre",
     "cloudflared",
-    "dozzle",
     "gatus",
     "gitea",
-    "grafana-synthetic-agent",
-    "homepage",
     "mediabox",
     "monitoring",
     "n8n",
@@ -23,7 +19,6 @@ locals {
     "postgres",
     "traefik",
     "unifi",
-    "wealthfolio",
     "watchyourlan",
   ]
 }
