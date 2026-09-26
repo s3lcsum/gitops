@@ -74,6 +74,7 @@ agents/
 
 # Generated Talos / kubeconfig (terraform/proxmox)
 terraform/proxmox/generated/
+terraform/routeros/generated/
 
 # MCP config with live API tokens
 .mcp.json

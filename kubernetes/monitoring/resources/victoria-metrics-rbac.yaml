@@ -1,0 +1,55 @@
+# Lets VictoriaMetrics discover nodes/pods and proxy kubelet cAdvisor.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: victoria-metrics
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: victoria-metrics
+    app.kubernetes.io/instance: monitoring
+    app.kubernetes.io/part-of: monitoring
+    app.kubernetes.io/managed-by: argocd
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: victoria-metrics-scrape
+  labels:
+    app.kubernetes.io/name: victoria-metrics
+    app.kubernetes.io/instance: monitoring
+    app.kubernetes.io/part-of: monitoring
+    app.kubernetes.io/managed-by: argocd
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/metrics
+      - nodes/proxy
+      - nodes/stats
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["get", "list", "watch"]
+  - nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: victoria-metrics-scrape
+  labels:
+    app.kubernetes.io/name: victoria-metrics
+    app.kubernetes.io/instance: monitoring
+    app.kubernetes.io/part-of: monitoring
+    app.kubernetes.io/managed-by: argocd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: victoria-metrics-scrape
+subjects:
+  - kind: ServiceAccount
+    name: victoria-metrics
+    namespace: monitoring

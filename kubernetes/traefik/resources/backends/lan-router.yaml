@@ -1,0 +1,27 @@
+# MikroTik RouterOS WebFig (HTTP only — TLS ends at Traefik-k8s).
+apiVersion: v1
+kind: Service
+metadata:
+  name: lan-router
+  namespace: traefik
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: lan-router
+  namespace: traefik
+  labels:
+    kubernetes.io/service-name: lan-router
+addressType: IPv4
+ports:
+  - name: http
+    port: 80
+    protocol: TCP
+endpoints:
+  - addresses:
+      - 192.168.89.1

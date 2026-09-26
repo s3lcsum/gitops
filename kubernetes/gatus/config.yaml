@@ -1,0 +1,224 @@
+# Gatus Configuration
+# Migrated from terraform/uptime-kuma monitors; keep in sync with stacks/ + traefik/dynamic.yaml
+
+metrics: true
+
+storage:
+  type: postgres
+  path: "postgres://${GATUS_DB_USER}:${GATUS_DB_PASSWORD}@${GATUS_DB_HOST}:5432/${GATUS_DB_NAME}?sslmode=disable"
+
+alerting:
+  telegram:
+    token: ${TELEGRAM_BOT_TOKEN}
+    id: ${TELEGRAM_CHAT_ID}
+
+  custom:
+    url: "http://192.168.89.130:8645/"
+    method: "POST"
+    body: |
+      {
+        "endpoint_name": "[ENDPOINT_NAME]",
+        "alert_type": "[ALERT_TRIGGERED_OR_RESOLVED]",
+        "alert_description": "[ALERT_DESCRIPTION]",
+        "endpoint_group": "[ENDPOINT_GROUP]",
+        "endpoint_url": "[ENDPOINT_URL]",
+        "result_errors": "[RESULT_ERRORS]"
+      }
+    default-alert:
+      enabled: true
+      failure-threshold: 4
+      success-threshold: 2
+      send-on-resolved: true
+      description: "health check failed"
+
+  # email:
+  #   host: ${SMTP_HOST}
+  #   port: ${SMTP_PORT}
+  #   username: ${SMTP_USERNAME}
+  #   password: ${SMTP_PASSWORD}
+  #   from: ${SMTP_FROM}
+  #   to: ${SMTP_TO}
+  #   default-alert:
+  #     enabled: true
+  #     failure-threshold: 5
+  #     success-threshold: 2
+  #     send-on-resolved: true
+
+ui:
+  title: Homelab Status
+  header: Service Status Dashboard
+
+endpoints:
+  # --- Core / ops
+  - name: "portainer"
+    url: https://portainer.dominiksiejak.pl
+    <<: &defaults
+      interval: 15m
+      client:
+        timeout: 15s
+      alerts:
+        - type: telegram
+          failure-threshold: 4
+          success-threshold: 2
+          send-on-resolved: true
+        - type: custom
+      conditions:
+        - "[STATUS] < 400"
+        - "[CERTIFICATE_EXPIRATION] > 48h"
+
+  - name: "netbox"
+    url: https://netbox.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "dozzle"
+    url: https://dozzle.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "auth"
+    url: https://auth.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "unifi"
+    url: https://unifi.dominiksiejak.pl
+    <<: *defaults
+
+  # --- Network / metal (traefik/dynamic.yaml file provider)
+  - name: "proxmox"
+    url: https://proxmox.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "router"
+    url: https://router.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "nas"
+    url: https://nas.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "zigbee-bridge"
+    url: https://zigbee-bridge.dominiksiejak.pl
+    <<: *defaults
+
+  # --- Mediabox
+  - name: "jellyfin"
+    url: https://jellyfin.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "seerr"
+    url: https://seerr.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "radarr"
+    url: https://radarr.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "sonarr"
+    url: https://sonarr.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "prowlarr"
+    url: https://prowlarr.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "qbittorrent"
+    url: https://qbittorrent.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "sabnzbd"
+    url: https://sabnzbd.dominiksiejak.pl
+    <<: *defaults
+
+  # --- Apps
+  - name: "n8n"
+    url: https://n8n.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "git"
+    url: https://git.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "calibre"
+    url: https://calibre.dominiksiejak.pl
+    <<: *defaults
+
+  # --- Home Assistant stack
+  - name: "hass"
+    url: https://hass.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "zigbee2mqtt-wifi"
+    url: https://zigbee2mqtt-wifi.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "zigbee2mqtt-usb"
+    url: https://zigbee2mqtt-usb.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "hass-timemachine"
+    url: https://hass-timemachine.dominiksiejak.pl
+    <<: *defaults
+    client:
+      timeout: 10s
+
+  # --- Observability
+  - name: "grafana"
+    url: https://grafana.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "metrics"
+    url: https://metrics.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "lan"
+    url: https://lan.dominiksiejak.pl
+    <<: *defaults
+
+  # --- Remaining Traefik-routed hosts (check-consistency requires a probe per host)
+  - name: "adguard"
+    url: https://adguard.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "adminer"
+    url: https://adminer.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "bazarr"
+    url: https://bazarr.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "calibre-api"
+    url: https://calibre-api.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "calibre-gui"
+    url: https://calibre-gui.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "homepage"
+    url: https://homepage.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "profilarr"
+    url: https://profilarr.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "readarr"
+    url: https://readarr.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "status"
+    url: https://status.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "traefik"
+    url: https://traefik.dominiksiejak.pl
+    <<: *defaults
+
+  - name: "wealthfolio"
+    url: https://wealthfolio.dominiksiejak.pl
+    <<: *defaults
+
+  # --- External sanity check
+  - name: "google"
+    url: https://google.com
+    <<: *defaults

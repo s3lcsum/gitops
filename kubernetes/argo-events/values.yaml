@@ -21,7 +21,20 @@ controller:
     requests:
       cpu: 10m
       memory: 64Mi
+  # Run on the AI node (vibe). Required, so a down vibe leaves the pod Pending.
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: homelab.dominiksiejak.pl/ai
+                operator: In
+                values:
+                  - "true"
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
       effect: NoSchedule
+    - key: homelab.dominiksiejak.pl/worker
+      operator: Exists
+      effect: PreferNoSchedule

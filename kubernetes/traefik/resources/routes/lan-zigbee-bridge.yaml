@@ -1,0 +1,22 @@
+# Zigbee bridge web UI — Traefik-k8s → 192.168.89.20. Auth class: forward-auth.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: lan-zigbee-bridge
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`zigbee-bridge.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+        - name: secure-headers
+        - name: authentik
+      services:
+        - name: lan-zigbee-bridge
+          port: 80
+          scheme: http
+          passHostHeader: true
+  tls: {}

@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  namespace: cloudflared
+  labels:
+    app.kubernetes.io/name: cloudflared
+    app.kubernetes.io/instance: cloudflared
+    app.kubernetes.io/part-of: cloudflared
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cloudflared
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cloudflared
+        app.kubernetes.io/instance: cloudflared
+        app.kubernetes.io/part-of: cloudflared
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      hostAliases:
+        - ip: "192.168.89.252"
+          hostnames:
+            - traefik
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:2026.9.1
+          args: ["tunnel", "run"]
+          envFrom:
+            - secretRef:
+                name: cloudflared
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi

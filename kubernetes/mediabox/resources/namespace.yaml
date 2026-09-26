@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mediabox
+  labels:
+    app.kubernetes.io/name: mediabox
+    app.kubernetes.io/part-of: mediabox

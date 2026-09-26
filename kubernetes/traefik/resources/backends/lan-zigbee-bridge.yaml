@@ -1,0 +1,27 @@
+# Zigbee coordinator web UI (SLZB / similar) on the LAN.
+apiVersion: v1
+kind: Service
+metadata:
+  name: lan-zigbee-bridge
+  namespace: traefik
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: lan-zigbee-bridge
+  namespace: traefik
+  labels:
+    kubernetes.io/service-name: lan-zigbee-bridge
+addressType: IPv4
+ports:
+  - name: http
+    port: 80
+    protocol: TCP
+endpoints:
+  - addresses:
+      - 192.168.89.20

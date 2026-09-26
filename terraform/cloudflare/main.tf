@@ -135,6 +135,16 @@ moved {
   to   = cloudflare_zero_trust_tunnel_cloudflared_config.Lake
 }
 
+# Firebird. Grey-cloud A so :3050 reaches the router, not the Cloudflare proxy.
+resource "cloudflare_dns_record" "xero" {
+  zone_id = cloudflare_zone.main.id
+  name    = "xero.dominiksiejak.pl"
+  type    = "A"
+  content = "109.173.240.144"
+  proxied = false
+  ttl     = 1
+}
+
 # Create CNAMEs on the zone so traffic reaches the tunnel edge.
 resource "cloudflare_dns_record" "tunnel" {
   for_each = local.active_apps

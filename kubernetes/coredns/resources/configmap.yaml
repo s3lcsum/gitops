@@ -21,7 +21,7 @@ data:
         }
         prometheus :9153
         # Prefer AdGuard (LAN rewrites); fall back to Cloudflare if AdGuard is down.
-        forward . 192.168.89.253 1.1.1.1 {
+        forward . 192.168.89.252 1.1.1.1 {
            policy sequential
            health_check 5s
            max_concurrent 1000

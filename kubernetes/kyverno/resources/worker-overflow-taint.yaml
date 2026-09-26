@@ -1,0 +1,37 @@
+# Non-control-plane nodes are overflow capacity.
+# PreferNoSchedule is a score penalty, not a filter: pods still land here
+# when the control-plane node cannot fit their requests.
+# AI pods tolerate this taint and prefer label homelab.dominiksiejak.pl/ai=true.
+# New AI nodes: add that label. Do not add it to every worker.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: worker-overflow-taint
+  annotations:
+    policies.kyverno.io/title: Worker overflow taint
+    policies.kyverno.io/category: Scheduling
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Node
+spec:
+  background: true
+  rules:
+    - name: taint-non-control-plane
+      match:
+        any:
+          - resources:
+              kinds:
+                - Node
+      exclude:
+        any:
+          - resources:
+              selector:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: Exists
+      mutate:
+        patchStrategicMerge:
+          spec:
+            taints:
+              - key: homelab.dominiksiejak.pl/worker
+                value: "true"
+                effect: PreferNoSchedule

@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: watchyourlan
+  namespace: watchyourlan
+  labels:
+    app.kubernetes.io/name: watchyourlan
+    app.kubernetes.io/instance: watchyourlan
+    app.kubernetes.io/part-of: watchyourlan
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: watchyourlan
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: watchyourlan
+        app.kubernetes.io/instance: watchyourlan
+        app.kubernetes.io/part-of: watchyourlan
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: watchyourlan
+          image: aceberg/watchyourlan:2.1.4
+          envFrom:
+            - secretRef:
+                name: watchyourlan
+          env:
+            - name: PROMETHEUS_ENABLE
+              value: "true"
+            - name: PORT
+              value: "8840"
+            - name: USE_DB
+              value: postgres
+            # IoT VLAN is not on eth0 of the lake node; empty arp-scan lines panic the parser.
+            - name: ARP_STRS_JOINED
+              value: "-gNx 192.168.89.0/24 -I eth0"
+          securityContext:
+            capabilities:
+              add:
+                - NET_RAW
+                - NET_ADMIN
+          ports:
+            - name: http
+              containerPort: 8840
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          volumeMounts:
+            - name: data
+              mountPath: /data/WatchYourLAN
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+      volumes:
+        - name: data
+          hostPath:
+            path: /mnt/nas-media/k8s/watchyourlan/data
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: watchyourlan
+  namespace: watchyourlan
+  labels:
+    app.kubernetes.io/name: watchyourlan
+    app.kubernetes.io/instance: watchyourlan
+    app.kubernetes.io/part-of: watchyourlan
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: watchyourlan
+  ports:
+    - name: http
+      port: 8840
+      targetPort: http

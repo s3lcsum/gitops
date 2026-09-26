@@ -1,0 +1,142 @@
+# qBittorrent and SABnzbd share this pod network, so their traffic leaves through the VPN.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gluetun
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: gluetun
+    app.kubernetes.io/instance: gluetun
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gluetun
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gluetun
+        app.kubernetes.io/instance: gluetun
+        app.kubernetes.io/part-of: mediabox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: gluetun
+          image: ghcr.io/qdm12/gluetun:v3.41.3
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          envFrom:
+            - secretRef:
+                name: gluetun
+          env:
+            - name: FIREWALL_INPUT_PORTS
+              value: "8080,8085"
+          readinessProbe:
+            exec:
+              command: ["nc", "-z", "localhost", "8000"]
+            periodSeconds: 15
+          startupProbe:
+            exec:
+              command: ["nc", "-z", "localhost", "8000"]
+            periodSeconds: 5
+            failureThreshold: 30
+          volumeMounts:
+            - name: tun
+              mountPath: /dev/net/tun
+            - name: shm
+              mountPath: /dev/shm
+        - name: qbittorrent
+          image: ghcr.io/linuxserver/qbittorrent:5.2.3
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+          volumeMounts:
+            - name: qbittorrent
+              mountPath: /config
+            - name: local-media
+              mountPath: /mnt/LOCAL_MEDIA
+            - name: nas
+              mountPath: /mnt/NAS_Shared_Media
+        - name: sabnzbd
+          image: ghcr.io/linuxserver/sabnzbd:5.1.3
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+          volumeMounts:
+            - name: sabnzbd
+              mountPath: /config
+            - name: local-media
+              mountPath: /mnt/LOCAL_MEDIA
+            - name: nas
+              mountPath: /mnt/NAS_Shared_Media
+      volumes:
+        - name: tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        - name: qbittorrent
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/qbittorrent
+            type: Directory
+        - name: sabnzbd
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/sabnzbd
+            type: Directory
+        - name: local-media
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/local-media
+            type: Directory
+        - name: nas
+          hostPath:
+            path: /mnt/nas-media
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gluetun
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: gluetun
+    app.kubernetes.io/instance: gluetun
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: gluetun
+  ports:
+    - name: qbittorrent
+      port: 8080
+      targetPort: 8080
+    - name: sabnzbd
+      port: 8085
+      targetPort: 8085

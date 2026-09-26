@@ -54,14 +54,6 @@ http:
           X-Authentik-Entitlements: ""
           X-Authentik-Jwt: ""
 
-    # opencode serve runs with OPENCODE_SERVER_PASSWORD; Traefik injects the
-    # upstream credential so the browser never gets an auth prompt (edge auth
-    # is Authentik forward-auth on the router).
-    opencode-upstream-auth:
-      headers:
-        customRequestHeaders:
-          Authorization: 'Basic {{ env "OPENCODE_UPSTREAM_BASIC" }}'
-
     crowdsec-bouncer:
       plugin:
         crowdsec-bouncer-traefik-plugin:
@@ -90,48 +82,9 @@ http:
           logLevel: "INFO"
 
 
-  # Routers for non-Docker services (nas/proxmox/router/hermes: native OIDC — no authentik@docker)
+  # Routers left on Portainer Traefik (compose-only / webhook path).
+  # nas / proxmox / router / zigbee-bridge live on Traefik-k8s now.
   routers:
-    synology:
-      rule: "Host(`nas.dominiksiejak.pl`)"
-      entryPoints:
-        - websecure
-      service: synology
-
-    proxmox:
-      rule: "Host(`proxmox.dominiksiejak.pl`)"
-      entryPoints:
-        - websecure
-      service: proxmox
-
-    mikrotik:
-      rule: "Host(`router.dominiksiejak.pl`)"
-      entryPoints:
-        - websecure
-      service: mikrotik
-
-    opencode:
-      rule: "Host(`opencode.dominiksiejak.pl`)"
-      entryPoints:
-        - websecure
-      middlewares:
-        # Edge Authentik on Traefik-k8s; inject upstream basic here.
-        - opencode-upstream-auth@file
-        - rate-limit@file
-      service: opencode
-
-    hermes:
-      rule: "Host(`hermes.dominiksiejak.pl`)"
-      entryPoints:
-        - websecure
-      service: hermes
-
-    traefik-dashboard:
-      rule: "Host(`traefik.dominiksiejak.pl`)"
-      entryPoints:
-        - websecure
-      service: api@internal
-
     n8n-webhook:
       rule: "Host(`n8n.dominiksiejak.pl`) && PathPrefix(`/webhook`)"
       entryPoints:
@@ -141,41 +94,3 @@ http:
         - strip-authentik
         - webhook-rate-limit
       service: n8n@docker
-
-  # Services
-  services:
-    mikrotik:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.89.1/"
-        passHostHeader: true
-
-    proxmox:
-      loadBalancer:
-        servers:
-          - url: "https://192.168.89.254:8006/"
-        passHostHeader: true
-        serversTransport: insecure
-
-    synology:
-      loadBalancer:
-        servers:
-          - url: "https://192.168.89.240:5001/"
-        passHostHeader: false
-        serversTransport: insecure
-
-    opencode:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.89.200:4096/"
-        passHostHeader: true
-
-    hermes:
-      loadBalancer:
-        servers:
-          - url: "http://192.168.89.200:8788/"
-        passHostHeader: true
-
-  serversTransports:
-    insecure:
-      insecureSkipVerify: true

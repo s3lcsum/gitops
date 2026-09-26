@@ -1,0 +1,211 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: qbittorrent
+  namespace: mediabox
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`qbittorrent.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+        - name: authentik
+          namespace: traefik
+      services:
+        - name: gluetun
+          port: 8080
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sabnzbd
+  namespace: mediabox
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`sabnzbd.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: gluetun
+          port: 8085
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: prowlarr
+  namespace: mediabox
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`prowlarr.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: prowlarr
+          port: 9696
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: radarr
+  namespace: mediabox
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`radarr.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: radarr
+          port: 7878
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: sonarr
+  namespace: mediabox
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`sonarr.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: sonarr
+          port: 8989
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: bazarr
+  namespace: mediabox
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`bazarr.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: bazarr
+          port: 6767
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: jellyfin
+  namespace: mediabox
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`jellyfin.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: jellyfin
+          port: 8096
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: seerr
+  namespace: mediabox
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`seerr.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: seerr
+          port: 5055
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: profilarr
+  namespace: mediabox
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`profilarr.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: profilarr
+          port: 6868
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: readarr
+  namespace: mediabox
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`readarr.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: readarr
+          port: 8787
+  tls: {}

@@ -3,6 +3,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: EventBus
 metadata:
   name: default
+  namespace: argo-events
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
@@ -17,3 +18,19 @@ spec:
         app.kubernetes.io/part-of: argo-events
         app.kubernetes.io/managed-by: argocd
     replicas: 1
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: homelab.dominiksiejak.pl/ai
+                  operator: In
+                  values:
+                    - "true"
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: homelab.dominiksiejak.pl/worker
+        operator: Exists
+        effect: PreferNoSchedule

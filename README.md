@@ -6,7 +6,8 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 
 **What's here:**
 
-- `stacks/` — Docker Compose stacks deployed via Portainer
+- `stacks/` — Remaining Portainer compose only (`dozzle`, `postgres`, `traefik`)
+- `kubernetes/` — Argo CD apps (most workloads)
 - `terraform/` — Infrastructure as Code modules for various providers (OpenTofu state in **GCS**, not Terraform Cloud)
 - `docs/` — MkDocs: ADRs, golden paths, runbooks, networking notes
 
@@ -17,15 +18,15 @@ A reference repository showcasing how I like to manage my home lab infrastructur
 | Layer | What | Tools |
 |-------|------|-------|
 | **Compute** | Proxmox VE hosts running LXC containers | lake / edge hosts (not TF-managed in this repo) |
-| **Containers** | Docker stacks managed via Portainer | Compose files in `stacks/` |
-| **Kubernetes** | kubeadm single node on lake (Flannel host-gw, Traefik-k8s edge) | `kubernetes/` (Argo CD ApplicationSet) |
-| **Networking** | MikroTik RouterOS + UniFi Wi-Fi | OpenTofu (`terraform/routeros/`, `terraform/unifi/`) |
-| **Edge** | Traefik-k8s + CrowdSec on direct WAN; Portainer Traefik for compose hops; Cloudflare Tunnel/Access for specific hosts | `kubernetes/traefik/`, `stacks/traefik/`, `stacks/cloudflared/`, `terraform/cloudflare/` |
-| **Identity** | Authentik (OAuth, SAML, LDAP) | `stacks/authentik/` + OpenTofu (`terraform/authentik/`) |
-| **Inventory** | NetBox for IPAM/DCIM | `stacks/netbox/` + OpenTofu (`terraform/netbox/`) |
+| **Containers** | Leftover Docker on Portainer (Dozzle, Postgres, Traefik hop origin) | Compose in `stacks/{dozzle,postgres,traefik}/` |
+| **Kubernetes** | kubeadm on lake (+ vibe worker when Ready); Flannel host-gw; Traefik-k8s edge | `kubernetes/` (Argo CD) |
+| **Networking** | MikroTik RouterOS + UniFi Wi-Fi | OpenTofu (`terraform/routeros/`, `terraform/unifi/`); UniFi controller in `kubernetes/unifi/` |
+| **Edge** | Traefik-k8s + CrowdSec on direct WAN; Portainer Traefik for remaining hops; Cloudflare Tunnel/Access for specific hosts | `kubernetes/traefik/`, `stacks/traefik/`, `kubernetes/cloudflared/`, `terraform/cloudflare/` |
+| **Identity** | Authentik (OAuth, SAML, LDAP) | `kubernetes/authentik/` + OpenTofu (`terraform/authentik/`) |
+| **Inventory** | NetBox for IPAM/DCIM | `kubernetes/netbox/` + OpenTofu (`terraform/netbox/`) |
 | **Secrets** | Host-local compose `.env` + gitignored tfvars; k8s via 1Password ExternalSecrets | `*.env` / `defaults.auto.tfvars`, `kubernetes/*/resources/externalsecret-*.yaml` |
-| **Monitoring** | Gatus (status), Grafana + VictoriaMetrics (`stacks/monitoring/`) via CasC dashboards/alerting, Blackbox synthetic probes, Synthetic Agent | `stacks/gatus/`, `stacks/monitoring/`, `terraform/grafana/`, `stacks/grafana-synthetic-agent/` |
-| **Media** | Jellyfin + *arr stack + downloaders | `stacks/mediabox/` |
+| **Monitoring** | Gatus, Grafana + VictoriaMetrics + Blackbox | `kubernetes/gatus/`, `kubernetes/monitoring/` (promscrape + CasC under `config/`), `terraform/grafana/` |
+| **Media** | Jellyfin + *arr + downloaders (Gluetun VPN) | `kubernetes/mediabox/` |
 
 📖 **[Documentation site](docs/index.md)** — MkDocs (networking notes, ADRs, golden paths).
 
@@ -52,7 +53,7 @@ The OpenTofu module (`terraform/netbox/`) defines:
 
 What follows matches **Docker Compose stacks deployed from this repo** (see `terraform/portainer/locals.tf`) plus a couple of things that live **outside** `stacks/` but are still part of the lab.
 
-### Portainer stacks (`stacks/`)
+### Apps
 
 | Stack | Role |
 |-------|------|
@@ -63,8 +64,7 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | [Dozzle](https://github.com/amir20/dozzle) | Container logs UI |
 | [Gatus](https://github.com/TwiN/gatus) | Uptime / status page |
 | [Gitea](https://github.com/go-gitea/gitea) | Git hosting |
-| [Homepage](https://gethomepage.dev/) | Dashboard (`stacks/homepage/config/services.yaml`) |
-| [Grafana Synthetic Monitoring Agent](https://github.com/grafana/synthetic-monitoring-agent) | Synthetic checks (Grafana Cloud–oriented agent) |
+| [Homepage](https://gethomepage.dev/) | Dashboard (`kubernetes/homepage/config/services.yaml`) |
 | **Mediabox** (see below) | Media + *arr + VPN-routed downloaders |
 | **Monitoring** | [Grafana](https://grafana.com/), [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics), [Blackbox exporter](https://github.com/prometheus/blackbox_exporter) synthetic probes, PVE exporter, [k6](https://k6.io/) smoke — CasC dashboards + alerting (TG + SMTP) |
 | [n8n](https://n8n.io/) | Workflow automation |
@@ -75,13 +75,13 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 | [WatchYourLAN](https://github.com/aceberg/watchyourlan) | LAN host visibility |
 | [Wealthfolio](https://wealthfolio.app/) | Personal finance |
 
-### Mediabox (`stacks/mediabox/`)
+### Mediabox (`kubernetes/mediabox/`)
 
 [Jellyfin](https://jellyfin.org/), [Seerr](https://github.com/seerr-team/seerr) (image `fallenbagel/jellyseerr`), Sonarr, Radarr, Prowlarr, FlareSolverr, [Gluetun](https://github.com/qdm12/gluetun), qBittorrent, SABnzbd, plus a `scraparr` metrics exporter for the arr stack — wired the usual way behind Traefik and the VPN gateway where applicable.
 
-### Not in `stacks/` (still in the environment)
+### Still on Portainer (`stacks/`)
 
-- **Kubernetes on lake** (`kubernetes/`) — platform apps via Argo CD (Traefik-k8s, Flannel, cert-manager, External Secrets, CloudNativePG, Home Assistant stack, Kyverno / Policy Reporter, Cloudflare Tunnel ingress controller, Argo Workflows / Events / Rollouts, …). This README does not enumerate every chart.
+- **Dozzle**, **compose Postgres**, **compose Traefik** (hop origin for a few hosts). Everything else is under `kubernetes/`.
 
 ---
 
@@ -91,7 +91,7 @@ What follows matches **Docker Compose stacks deployed from this repo** (see `ter
 
 - **ISP**: INEA (Poland) — 300Mb/s synchronous FTTH
 - **Router**: MikroTik hAP ac3
-- **Wireless**: UniFi U7 Lite AP (controller in `stacks/unifi/`, WLAN/AP as code in `terraform/unifi/`)
+- **Wireless**: UniFi U7 Lite AP (controller in `kubernetes/unifi/`, WLAN/AP as code in `terraform/unifi/`)
 - **Remote Access**: Public IP with WireGuard / ngrok (backup)
 
 **Dual WAN edge (both intentional — do not "pick one"):**
@@ -210,7 +210,6 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── dozzle/
 │   ├── gatus/
 │   ├── gitea/
-│   ├── grafana-synthetic-agent/
 │   ├── homepage/
 │   ├── mediabox/
 │   ├── monitoring/
@@ -229,6 +228,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── cert-manager/
 │   ├── external-secrets/
 │   ├── cloudnative-pg/
+│   ├── headlamp/                   # Kubernetes UI (Authentik forward-auth)
 │   ├── kyverno/                    # + policy-reporter UI
 │   ├── cloudflare-tunnel-ingress-controller/
 │   ├── argo-workflows/
@@ -273,6 +273,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 - [ ] Use Terraform for RouterOS management (or via NetBox)?
 - [x] (retroactively added) Static `x-webhook-secret` on public n8n webhooks; Authentik login firewall is IPv4-only
 - [x] (retroactively added) Home Assistant stack on the lake node (`kubernetes/hass/`) instead of Portainer
+- [x] (retroactively added) Drop empty `kustomization.yaml` on Helm-only ApplicationSet apps
 
 ---
 
@@ -280,9 +281,15 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ### 26.09.2026
 
+**Helm-only apps skip empty Kustomize.** `nfs`, `local-path-provisioner`, and `argo-rollouts` no longer carry `kustomization.yaml` with `resources: []`. ApplicationSet keeps the directory source only when `kubernetes/<app>/kustomization.yaml` exists.
+
 **Kyverno label reports.** Pods that failed `require-labels` now get `app.kubernetes.io` name, instance, part-of, and managed-by. Helm values cover the charts that have a pod-label hook. Flannel and the Cloudflare tunnel controller do not, so Kyverno mutates those templates. CoreDNS gets a server-side label patch (kubeadm still owns the rest). Static control-plane pods and the leftover `dnscheck` pod are mutated too. Label changes roll the affected pods, including the single CloudNativePG instance.
 
-**Wave 1 off Portainer, onto the lake node.** Homepage, Wealthfolio, Dozzle, the Grafana synthetic agent, and Calibre are Kustomize Argo apps. Edge hosts for those moved off the Portainer hop. Dozzle watches the Kubernetes API (`DOZZLE_MODE=k8s`), not the Docker socket. The NAS export `/volume1/media` allows `192.168.89.252` and `192.168.89.254`. The Proxmox host also bind-mounts it into the k8s LXC at `/mnt/nas-media` (`mp0`). New data is `/volume1/media/k8s/<namespace>/<name>`. Calibre books stay `/volume1/media/books`. StorageClass `nfs` provisions that tree. Those five stacks left `terraform/portainer/locals.tf`. Compose containers are stopped with `--restart=no`, and their volumes were copied onto the NAS before the sync.
+**Firebird via the public IP.** `xero.dominiksiejak.pl` is a DNS-only A record to `109.173.240.144`. RouterOS dst-nats TCP `3050` to micrus `192.168.200.40:3050` over WireGuard. WAN sources still have to be on `allowed-wan`. The client string is `xero.dominiksiejak.pl:3050/BAZA_CPC.fdb`. The Cloudflare tunnel route to `yasmin476.mikrus.xyz:20476` is gone. The `micrus` WireGuard peer config has to be installed on the VPS, and Firebird there has to listen on `3050`.
+
+**Headlamp on the lake node.** Helm chart `0.45.0` via the Kubernetes ApplicationSet (`kubernetes/headlamp/`). UI is `https://headlamp.dominiksiejak.pl`, CrowdSec + Authentik forward-auth, admins group only. Headlamp skips its own token page and uses the pod service account, which is `cluster-admin`. Authentik proxy app lands on the next `terraform/authentik` apply; Argo creates the app once this is on `main`.
+
+**Wave 1 off Portainer, onto the lake node.** Homepage, Wealthfolio, and Calibre are Kustomize Argo apps. Edge hosts for those moved off the Portainer hop. Dozzle and Portainer stay on the Portainer host. The NAS export `/volume1/media` allows `192.168.89.252` and `192.168.89.254`. The Proxmox host also bind-mounts it into the k8s LXC at `/mnt/nas-media` (`mp0`). New data is `/volume1/media/k8s/<namespace>/<name>`. Calibre books stay `/volume1/media/books`. StorageClass `nfs` provisions that tree. Those five stacks left `terraform/portainer/locals.tf`. Compose containers are stopped with `--restart=no`, and their volumes were copied onto the NAS before the sync.
 
 **Paperclip on the lake node.** `kubernetes/paperclip/` (Argo Application `paperclip`, not the Helm ApplicationSet — upstream chart is still an open PR). Image `ghcr.io/paperclipai/paperclip:2026.916.1`, embedded Postgres on a 10Gi `local-path` volume. Deployment exposure stays `private` because `public` refuses embedded Postgres. Traefik-k8s serves `https://paperclip.dominiksiejak.pl` with CrowdSec only; Paperclip's own login is the gate, and open signup is off. Session secret is 1Password item `paperclip` (Servers vault, tag `ArgoCD External Secrets Operator`) via External Secrets. First account is a one-time bootstrap invite.
 
@@ -293,6 +300,8 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 **Cilium out, Flannel in.** CNI is Flannel host-gw (`kubernetes/flannel/`, pod CIDR `10.244.0.0/16`) plus kube-proxy. Edge TLS is Traefik-k8s on lake (`hostNetwork` :80/:443), not Cilium Gateway. Kyverno Audit + Policy Reporter UI, and the Cloudflare Tunnel ingress controller, landed under `kubernetes/` the same stretch.
 
 **README catch-up.** Services table matches `terraform/portainer/locals.tf` again (added UniFi + Wealthfolio; Phase / Vaultwarden left the public repo on 24.09). Wireless line is the U7 Lite, not the old Deco mesh. Repo tree drops dead `terraform/proxmox` / `synology-nas` and lists the real k8s apps.
+
+Wave of compose apps moved onto the lake node (AdGuard, Authentik, mediabox, UniFi, WatchYourLAN, monitoring, …). `stacks/` kept only dozzle/postgres/traefik. Traefik API entrypoint moved to `:9080` so UniFi can own inform `:8080`.
 
 ### 24.09.2026
 

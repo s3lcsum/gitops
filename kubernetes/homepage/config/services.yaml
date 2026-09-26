@@ -61,6 +61,11 @@
         description: Password manager
 
 - Infrastructure:
+    - Headlamp:
+        icon: https://raw.githubusercontent.com/kubernetes-sigs/headlamp/v0.45.0/docs/headlamp_light.svg
+        href: https://headlamp.dominiksiejak.pl
+        description: Kubernetes UI
+
     - Portainer:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/portainer.png
         href: https://portainer.dominiksiejak.pl
@@ -162,16 +167,6 @@
         href: https://wealthfolio.dominiksiejak.pl
         description: Personal finance
 
-- Dev:
-    - Hermes:
-        href: https://hermes.dominiksiejak.pl
-        description: AI agent gateway
-
-    - OpenCode:
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/opencode.png
-        href: https://opencode.dominiksiejak.pl
-        description: Coding agent
-
 - Automation:
     - Home Assistant:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant.png
@@ -181,6 +176,11 @@
           type: homeassistant
           url: https://hass.dominiksiejak.pl
           key: "{{HOMEPAGE_VAR_HASS_TOKEN}}"
+
+    - Zigbee Bridge:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/zigbee2mqtt.png
+        href: https://zigbee-bridge.dominiksiejak.pl
+        description: Zigbee coordinator
 
     - Zigbee2MQTT (WiFi):
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/zigbee2mqtt.png

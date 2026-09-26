@@ -5,3 +5,4 @@ resources:
   - resources/add-recommended-labels.yaml
   - resources/add-recommended-labels-rbac.yaml
   - resources/add-recommended-labels-existing.yaml
+  - resources/worker-overflow-taint.yaml

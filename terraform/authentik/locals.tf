@@ -48,14 +48,6 @@ locals {
         "https://hass.dominiksiejak.pl/auth/openid/callback",
       ]
     }
-    hermes = {
-      name       = "Hermes"
-      launch_url = "https://hermes.dominiksiejak.pl"
-      icon_url   = "https://raw.githubusercontent.com/nesquena/hermes-webui/master/static/favicon.svg"
-      redirect_uris = [
-        "https://hermes.dominiksiejak.pl/api/auth/oidc/callback",
-      ]
-    }
     wealthfolio = {
       name       = "Wealthfolio"
       launch_url = "https://wealthfolio.dominiksiejak.pl"
@@ -229,14 +221,23 @@ locals {
       # DoH only — /control is the admin API and must stay Authentik-gated.
       skip_path_regex = "^/dns-query.*"
     }
-    # Traefik does forward-auth (authentik@docker) and injects the upstream
-    # basic credential, so the browser never sees an auth prompt.
-    opencode = {
-      name            = "OpenCode"
-      external_host   = "https://opencode.dominiksiejak.pl"
-      internal_host   = "http://192.168.89.200:4096"
-      launch_url      = "https://opencode.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/opencode.png"
+    zigbee-bridge = {
+      name            = "Zigbee Bridge"
+      external_host   = "https://zigbee-bridge.dominiksiejak.pl"
+      internal_host   = "http://192.168.89.20:80"
+      launch_url      = "https://zigbee-bridge.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zigbee2mqtt.svg"
+      skip_path_regex = ""
+    }
+    # Headlamp UI (k8s Traefik IngressRoute + authentik middleware).
+    # forward_single: outpost only auths; Traefik proxies to ClusterIP.
+    # Admins only — the pod service account is cluster-admin.
+    headlamp = {
+      name            = "Headlamp"
+      external_host   = "https://headlamp.dominiksiejak.pl"
+      internal_host   = "http://headlamp.headlamp.svc:80"
+      launch_url      = "https://headlamp.dominiksiejak.pl"
+      icon_url        = "https://raw.githubusercontent.com/kubernetes-sigs/headlamp/v0.45.0/docs/headlamp_light.svg"
       skip_path_regex = ""
     }
     # Policy Reporter UI (k8s Traefik IngressRoute + authentik middleware).
@@ -247,6 +248,16 @@ locals {
       internal_host   = "http://policy-reporter-ui.policy-reporter.svc:8080"
       launch_url      = "https://policy-reporter.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kyverno.svg"
+      skip_path_regex = ""
+    }
+    # qBittorrent WebUI auth is off (subnet whitelist). Traefik forward-auth is the gate.
+    # forward_single: outpost only auths; Traefik proxies to the gluetun pod.
+    qbittorrent = {
+      name            = "qBittorrent"
+      external_host   = "https://qbittorrent.dominiksiejak.pl"
+      internal_host   = "http://gluetun.mediabox.svc:8080"
+      launch_url      = "https://qbittorrent.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/qbittorrent.png"
       skip_path_regex = ""
     }
   }
@@ -260,6 +271,13 @@ locals {
       name       = "Gatus"
       launch_url = "https://status.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/gatus.svg"
+    }
+    # Tile only — UniFi has no free OIDC/LDAP; local admin still required after launch.
+    # Traefik class = public (no Authentik forward-auth).
+    unifi = {
+      name       = "UniFi"
+      launch_url = "https://unifi.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/unifi.svg"
     }
   }
 

@@ -29,14 +29,38 @@ controller:
   # Workflow pods inherit these defaults (otherwise Pending on control-plane taint).
   workflowDefaults:
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: homelab.dominiksiejak.pl/ai
+                    operator: In
+                    values:
+                      - "true"
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+        - key: homelab.dominiksiejak.pl/worker
+          operator: Exists
+          effect: PreferNoSchedule
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: homelab.dominiksiejak.pl/ai
+                operator: In
+                values:
+                  - "true"
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
       effect: NoSchedule
+    - key: homelab.dominiksiejak.pl/worker
+      operator: Exists
+      effect: PreferNoSchedule
   resources:
     requests:
       cpu: 50m
@@ -57,7 +81,12 @@ server:
     clientSecret:
       name: argo-workflows-sso
       key: client-secret
+    # Match Argo CD / Authentik: without openid, groups claim never lands → SSO RBAC
+    # eval fails with "unknown name groups" → UI "not allowed" on version/info.
     scopes:
+      - openid
+      - profile
+      - email
       - groups
     rbac:
       enabled: true
@@ -65,10 +94,22 @@ server:
       secretWhitelist:
         - argo-workflows-admin.service-account-token
         - argo-workflows-sso
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: homelab.dominiksiejak.pl/ai
+                operator: In
+                values:
+                  - "true"
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
       effect: NoSchedule
+    - key: homelab.dominiksiejak.pl/worker
+      operator: Exists
+      effect: PreferNoSchedule
   resources:
     requests:
       cpu: 25m

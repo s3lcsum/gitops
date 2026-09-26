@@ -1,0 +1,981 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaresolverr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: flaresolverr
+    app.kubernetes.io/instance: flaresolverr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: flaresolverr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: flaresolverr
+        app.kubernetes.io/instance: flaresolverr
+        app.kubernetes.io/part-of: mediabox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: flaresolverr
+          image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
+          env:
+            - name: TZ
+              value: Europe/Warsaw
+          ports:
+            - name: http
+              containerPort: 8191
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          volumeMounts:
+            - name: config
+              mountPath: /app/data
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/flaresolverr
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flaresolverr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: flaresolverr
+    app.kubernetes.io/instance: flaresolverr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: flaresolverr
+  ports:
+    - name: http
+      port: 8191
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prowlarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: prowlarr
+    app.kubernetes.io/instance: prowlarr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prowlarr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: prowlarr
+        app.kubernetes.io/instance: prowlarr
+        app.kubernetes.io/part-of: mediabox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: prowlarr
+          image: lscr.io/linuxserver/prowlarr:2.6.5
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+          ports:
+            - name: http
+              containerPort: 9696
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/prowlarr
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prowlarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: prowlarr
+    app.kubernetes.io/instance: prowlarr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: prowlarr
+  ports:
+    - name: http
+      port: 9696
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: radarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: radarr
+    app.kubernetes.io/instance: radarr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: radarr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: radarr
+        app.kubernetes.io/instance: radarr
+        app.kubernetes.io/part-of: mediabox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: radarr
+          image: lscr.io/linuxserver/radarr:6.4.4
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+          ports:
+            - name: http
+              containerPort: 7878
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: local-media
+              mountPath: /mnt/LOCAL_MEDIA
+            - name: nas
+              mountPath: /mnt/NAS_Shared_Media
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/radarr
+            type: Directory
+        - name: local-media
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/local-media
+            type: Directory
+        - name: nas
+          hostPath:
+            path: /mnt/nas-media
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: radarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: radarr
+    app.kubernetes.io/instance: radarr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: radarr
+  ports:
+    - name: http
+      port: 7878
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: sonarr
+    app.kubernetes.io/instance: sonarr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sonarr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sonarr
+        app.kubernetes.io/instance: sonarr
+        app.kubernetes.io/part-of: mediabox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: sonarr
+          image: ghcr.io/linuxserver/sonarr:4.0.20
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+          ports:
+            - name: http
+              containerPort: 8989
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: local-media
+              mountPath: /mnt/LOCAL_MEDIA
+            - name: nas
+              mountPath: /mnt/NAS_Shared_Media
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/sonarr
+            type: Directory
+        - name: local-media
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/local-media
+            type: Directory
+        - name: nas
+          hostPath:
+            path: /mnt/nas-media
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: sonarr
+    app.kubernetes.io/instance: sonarr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: sonarr
+  ports:
+    - name: http
+      port: 8989
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bazarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: bazarr
+    app.kubernetes.io/instance: bazarr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bazarr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: bazarr
+        app.kubernetes.io/instance: bazarr
+        app.kubernetes.io/part-of: mediabox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: bazarr
+          image: lscr.io/linuxserver/bazarr:1.6.1
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+          ports:
+            - name: http
+              containerPort: 6767
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: local-media
+              mountPath: /mnt/LOCAL_MEDIA
+            - name: nas
+              mountPath: /mnt/NAS_Shared_Media
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/bazarr
+            type: Directory
+        - name: local-media
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/local-media
+            type: Directory
+        - name: nas
+          hostPath:
+            path: /mnt/nas-media
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bazarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: bazarr
+    app.kubernetes.io/instance: bazarr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: bazarr
+  ports:
+    - name: http
+      port: 6767
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: readarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: readarr
+    app.kubernetes.io/instance: readarr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: readarr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: readarr
+        app.kubernetes.io/instance: readarr
+        app.kubernetes.io/part-of: mediabox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: readarr
+          image: ghcr.io/faustvii/readarr:0.10.0
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+          ports:
+            - name: http
+              containerPort: 8787
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: local-media
+              mountPath: /mnt/LOCAL_MEDIA
+            - name: nas
+              mountPath: /mnt/NAS_Shared_Media
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/readarr
+            type: Directory
+        - name: local-media
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/local-media
+            type: Directory
+        - name: nas
+          hostPath:
+            path: /mnt/nas-media
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: readarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: readarr
+    app.kubernetes.io/instance: readarr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: readarr
+  ports:
+    - name: http
+      port: 8787
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: jellyfin
+    app.kubernetes.io/instance: jellyfin
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: jellyfin
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: jellyfin
+        app.kubernetes.io/instance: jellyfin
+        app.kubernetes.io/part-of: mediabox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: jellyfin
+          image: ghcr.io/linuxserver/jellyfin:10.11.11
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+          ports:
+            - name: http
+              containerPort: 8096
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: local-media
+              mountPath: /mnt/LOCAL_MEDIA
+            - name: nas
+              mountPath: /mnt/NAS_Shared_Media
+          resources:
+            requests:
+              cpu: 200m
+              memory: 1Gi
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/jellyfin
+            type: Directory
+        - name: local-media
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/local-media
+            type: Directory
+        - name: nas
+          hostPath:
+            path: /mnt/nas-media
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyfin
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: jellyfin
+    app.kubernetes.io/instance: jellyfin
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: jellyfin
+  ports:
+    - name: http
+      port: 8096
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seerr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: seerr
+    app.kubernetes.io/instance: seerr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: seerr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: seerr
+        app.kubernetes.io/instance: seerr
+        app.kubernetes.io/part-of: mediabox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: seerr
+          image: ghcr.io/seerr-team/seerr:v3.4.1
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+            - name: PORT
+              value: "5055"
+          ports:
+            - name: http
+              containerPort: 5055
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/seerr
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: seerr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: seerr
+    app.kubernetes.io/instance: seerr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: seerr
+  ports:
+    - name: http
+      port: 5055
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profilarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: profilarr
+    app.kubernetes.io/instance: profilarr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: profilarr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: profilarr
+        app.kubernetes.io/instance: profilarr
+        app.kubernetes.io/part-of: mediabox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: profilarr
+          image: ghcr.io/dictionarry-hub/profilarr:2.2.0
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+            - name: ORIGIN
+              value: https://profilarr.dominiksiejak.pl
+          ports:
+            - name: http
+              containerPort: 6868
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/profilarr
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: profilarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: profilarr
+    app.kubernetes.io/instance: profilarr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: profilarr
+  ports:
+    - name: http
+      port: 6868
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scraparr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: scraparr
+    app.kubernetes.io/instance: scraparr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: scraparr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: scraparr
+        app.kubernetes.io/instance: scraparr
+        app.kubernetes.io/part-of: mediabox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: scraparr
+          image: ghcr.io/thecfu/scraparr:3.2.0
+          envFrom:
+            - secretRef:
+                name: scraparr
+          ports:
+            - name: http
+              containerPort: 7100
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          volumeMounts:
+            - name: config
+              mountPath: /app/src/scraparr/config/config.yaml
+              readOnly: true
+      volumes:
+        - name: config
+          hostPath:
+            path: /mnt/nas-media/k8s/mediabox/scraparr/config.yaml
+            type: File
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scraparr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: scraparr
+    app.kubernetes.io/instance: scraparr
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: scraparr
+  ports:
+    - name: http
+      port: 7100
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rreading-glasses
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: rreading-glasses
+    app.kubernetes.io/instance: rreading-glasses
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rreading-glasses
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: rreading-glasses
+        app.kubernetes.io/instance: rreading-glasses
+        app.kubernetes.io/part-of: mediabox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: ["k8s"]
+      containers:
+        - name: rreading-glasses
+          image: blampe/rreading-glasses:latest
+          command: ["/main", "serve"]
+          args: ["--upstream=www.goodreads.com", "--verbose"]
+          envFrom:
+            - secretRef:
+                name: rreading-glasses
+          env:
+            - name: POSTGRES_HOST
+              value: postgres-rw.cloudnative-pg.svc
+          ports:
+            - name: http
+              containerPort: 8788
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 15
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rreading-glasses
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: rreading-glasses
+    app.kubernetes.io/instance: rreading-glasses
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: rreading-glasses
+  ports:
+    - name: http
+      port: 8788
+      targetPort: http

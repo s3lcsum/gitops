@@ -7,7 +7,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`traefik-k8s.dominiksiejak.pl`)
+    - match: Host(`traefik.dominiksiejak.pl`)
       kind: Rule
       middlewares:
         - name: crowdsec-bouncer

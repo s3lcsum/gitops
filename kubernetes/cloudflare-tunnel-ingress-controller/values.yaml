@@ -4,11 +4,6 @@ repoURL: https://helm.strrl.dev
 chart: cloudflare-tunnel-ingress-controller
 version: 0.1.0
 
-# Argo CD Application sync (ApplicationSet reads these; not chart values).
-argoSync:
-  prune: true
-  selfHeal: true
-
 # Overrides for strrl/cloudflare-tunnel-ingress-controller 0.1.0.
 # Credentials via ExternalSecret (resources/externalsecret.yaml) — not Helm values.
 # Separate tunnel from compose/terraform `homelab` (stacks/cloudflared + terraform/cloudflare).

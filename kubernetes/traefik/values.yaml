@@ -3,72 +3,49 @@ repoURL: https://traefik.github.io/charts
 chart: traefik
 version: 41.6.0
 
-# Argo CD Application sync (ApplicationSet reads these; not chart values).
-argoSync:
-  prune: true
-  selfHeal: true
-
 # Overrides for Traefik Helm 41.6.0 (app v3.7.13).
 # hostNetwork owns :80/:443 after Cilium Gateway is down.
-# setcap on a copied binary so non-root can bind privileged ports
-# (chart EXAMPLES: "Privileged Ports with Host Network").
+# The lake LXC has no CAP_SETFCAP, so setcap cannot stamp the binary and a
+# non-root process cannot bind :443 there. Root + NET_BIND_SERVICE can.
+# WAN dst-nat and AdGuard both target 192.168.89.252.
 image:
   tag: v3.7.13
 # Chart already sets name, instance, and managed-by. Not part of the selector.
 commonLabels:
   app.kubernetes.io/part-of: traefik
 deployment:
-  replicas: 1
+  # One pod per node. hostNetwork :80/:443 then cannot collide.
+  # Public WAN still arrives only at 192.168.89.252.
+  kind: DaemonSet
+# hostNetwork cannot surge a second pod onto the same port.
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+    maxSurge: 0
   # Required with hostNetwork so *.svc resolves via CoreDNS (not AdGuard).
   dnsPolicy: ClusterFirstWithHostNet
-  # RollingUpdate deadlocks on hostNetwork :80/:443 (new pod can't bind).
-  strategy:
-    type: Recreate
-  initContainers:
-    - name: copy-binary
-      image: docker.io/traefik:v3.7.13
-      command: ["cp", "/usr/local/bin/traefik", "/shared/traefik"]
-      volumeMounts:
-        - name: traefik-bin
-          mountPath: /shared
-    - name: setcap
-      image: docker.io/library/alpine:3.21
-      command:
-        - sh
-        - -c
-        - apk add --no-cache libcap && setcap cap_net_bind_service=+ep /shared/traefik
-      securityContext:
-        runAsUser: 0
-        runAsNonRoot: false
-      volumeMounts:
-        - name: traefik-bin
-          mountPath: /shared
-  additionalVolumes:
-    - name: traefik-bin
-      emptyDir: {}
-additionalVolumeMounts:
-  - name: traefik-bin
-    mountPath: /usr/local/bin
 hostNetwork: true
 service:
   enabled: false
 podSecurityContext:
-  runAsGroup: 65532
+  runAsGroup: 0
   runAsNonRoot: false
-  runAsUser: 65532
+  runAsUser: 0
   seccompProfile:
     type: RuntimeDefault
 securityContext:
-  runAsNonRoot: true
-  runAsUser: 65532
-  allowPrivilegeEscalation: true
+  runAsNonRoot: false
+  runAsUser: 0
+  allowPrivilegeEscalation: false
   capabilities:
     drop: [ALL]
     add: [NET_BIND_SERVICE]
 ports:
   # hostNetwork: container port == host port.
+  # Keep :8080 free for UniFi inform on the lake node.
   traefik:
-    port: 8080
+    port: 9080
     expose:
       default: false
   web:
@@ -122,6 +99,9 @@ tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists
     effect: NoSchedule
+  - key: homelab.dominiksiejak.pl/worker
+    operator: Exists
+    effect: PreferNoSchedule
 resources:
   requests:
     cpu: 50m

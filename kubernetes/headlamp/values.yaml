@@ -1,0 +1,51 @@
+# ApplicationSet chart pin.
+repoURL: https://kubernetes-sigs.github.io/headlamp
+chart: headlamp
+version: 0.45.0
+
+# Overrides for headlamp 0.45.0.
+# Traefik IngressRoute owns the edge. Authentik forward-auth is the login.
+# unsafeUseServiceAccountToken skips Headlamp's token paste: every user who
+# passes Authentik acts as this pod's service account (cluster-admin).
+# Do not expose the Service except through that middleware.
+fullnameOverride: headlamp
+
+# Chart sets name and instance only.
+podLabels:
+  app.kubernetes.io/part-of: headlamp
+  app.kubernetes.io/managed-by: Helm
+
+replicaCount: 1
+
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+
+resources:
+  requests:
+    cpu: 20m
+    memory: 128Mi
+
+config:
+  inCluster: true
+  inClusterContextName: lake
+  unsafeUseServiceAccountToken: true
+  oidc:
+    secret:
+      create: false
+  extraArgs:
+    - "-proxy-auth=true"
+    - "-proxy-auth-username-header=X-authentik-username"
+    - "-proxy-auth-group-header=X-authentik-groups"
+    - "-proxy-auth-email-header=X-authentik-email"
+
+clusterRoleBinding:
+  create: true
+  clusterRoleName: cluster-admin
+
+ingress:
+  enabled: false
+
+httpRoute:
+  enabled: false

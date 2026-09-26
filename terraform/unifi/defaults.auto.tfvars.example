@@ -1,0 +1,16 @@
+# Copy to defaults.auto.tfvars (gitignored) and fill from 1Password:
+#   UniFi | localadmin, WiFi | Hass, WiFi | Raval, UniFi | device-ssh
+#
+#   op item get "UniFi | localadmin" --reveal --fields username,password
+#   op item get "WiFi | Hass" --reveal --fields password
+#   op item get "WiFi | Raval" --reveal --fields password
+#   op item get "UniFi | device-ssh" --reveal --fields username,password
+
+unifi_username = "localadmin"
+unifi_password = "CHANGE-ME"
+
+wlan_passphrase_hass = "CHANGE-ME"
+wlan_passphrase_raval   = "CHANGE-ME"
+
+device_ssh_username = "s3lcsum"
+device_ssh_password = "CHANGE-ME"

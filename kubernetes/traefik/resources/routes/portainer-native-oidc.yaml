@@ -8,26 +8,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: >-
-        Host(`bazarr.dominiksiejak.pl`) ||
-        Host(`git.dominiksiejak.pl`) ||
-        Host(`grafana.dominiksiejak.pl`) ||
-        Host(`hermes.dominiksiejak.pl`) ||
-        Host(`jellyfin.dominiksiejak.pl`) ||
-        Host(`n8n.dominiksiejak.pl`) ||
-        Host(`nas.dominiksiejak.pl`) ||
-        Host(`netbox.dominiksiejak.pl`) ||
-        Host(`portainer.dominiksiejak.pl`) ||
-        Host(`profilarr.dominiksiejak.pl`) ||
-        Host(`prowlarr.dominiksiejak.pl`) ||
-        Host(`proxmox.dominiksiejak.pl`) ||
-        Host(`qbittorrent.dominiksiejak.pl`) ||
-        Host(`radarr.dominiksiejak.pl`) ||
-        Host(`readarr.dominiksiejak.pl`) ||
-        Host(`router.dominiksiejak.pl`) ||
-        Host(`sabnzbd.dominiksiejak.pl`) ||
-        Host(`seerr.dominiksiejak.pl`) ||
-        Host(`sonarr.dominiksiejak.pl`)
+    - match: Host(`portainer.dominiksiejak.pl`)
       kind: Rule
       middlewares:
         - name: crowdsec-bouncer

@@ -7,18 +7,8 @@ locals {
   ]
 
   stacks = [
-    "authentik",
-    "adguard",
-    "cloudflared",
-    "gatus",
-    "gitea",
-    "mediabox",
-    "monitoring",
-    "n8n",
-    "netbox",
+    "dozzle",
     "postgres",
     "traefik",
-    "unifi",
-    "watchyourlan",
   ]
 }

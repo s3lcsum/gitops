@@ -8,12 +8,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: >-
-        Host(`adguard.dominiksiejak.pl`) ||
-        Host(`lan.dominiksiejak.pl`) ||
-        Host(`metrics.dominiksiejak.pl`) ||
-        Host(`opencode.dominiksiejak.pl`) ||
-        Host(`traefik.dominiksiejak.pl`)
+    - match: Host(`dozzle.dominiksiejak.pl`)
       kind: Rule
       middlewares:
         - name: crowdsec-bouncer

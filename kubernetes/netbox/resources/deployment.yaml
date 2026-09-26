@@ -1,0 +1,232 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netbox-redis
+  namespace: netbox
+  labels:
+    app.kubernetes.io/name: netbox-redis
+    app.kubernetes.io/instance: netbox
+    app.kubernetes.io/part-of: netbox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: netbox-redis
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: netbox-redis
+        app.kubernetes.io/instance: netbox
+        app.kubernetes.io/part-of: netbox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: valkey
+          image: docker.io/valkey/valkey:9.1.2
+          ports:
+            - name: redis
+              containerPort: 6379
+          readinessProbe:
+            tcpSocket:
+              port: redis
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: netbox-redis
+  namespace: netbox
+  labels:
+    app.kubernetes.io/name: netbox-redis
+    app.kubernetes.io/instance: netbox
+    app.kubernetes.io/part-of: netbox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: netbox-redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netbox
+  namespace: netbox
+  labels:
+    app.kubernetes.io/name: netbox
+    app.kubernetes.io/instance: netbox
+    app.kubernetes.io/part-of: netbox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: netbox
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: netbox
+        app.kubernetes.io/instance: netbox
+        app.kubernetes.io/part-of: netbox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: netbox
+          image: netboxcommunity/netbox:v4.7.1
+          envFrom:
+            - secretRef:
+                name: netbox
+          env:
+            - name: DB_HOST
+              value: postgres-rw.cloudnative-pg.svc
+            - name: REDIS_HOST
+              value: netbox-redis
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /login/
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 10
+          volumeMounts:
+            - name: media
+              mountPath: /opt/netbox/netbox/media
+            - name: reports
+              mountPath: /opt/netbox/netbox/reports
+            - name: scripts
+              mountPath: /opt/netbox/netbox/scripts
+            - name: extra
+              mountPath: /etc/netbox/config/extra.py
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+      volumes:
+        - name: media
+          hostPath:
+            path: /mnt/nas-media/k8s/netbox/media
+            type: Directory
+        - name: reports
+          hostPath:
+            path: /mnt/nas-media/k8s/netbox/reports
+            type: Directory
+        - name: scripts
+          hostPath:
+            path: /mnt/nas-media/k8s/netbox/scripts
+            type: Directory
+        - name: extra
+          hostPath:
+            path: /mnt/nas-media/k8s/netbox/extra.py
+            type: File
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: netbox
+  namespace: netbox
+  labels:
+    app.kubernetes.io/name: netbox
+    app.kubernetes.io/instance: netbox
+    app.kubernetes.io/part-of: netbox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: netbox
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netbox-worker
+  namespace: netbox
+  labels:
+    app.kubernetes.io/name: netbox-worker
+    app.kubernetes.io/instance: netbox
+    app.kubernetes.io/part-of: netbox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: netbox-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: netbox-worker
+        app.kubernetes.io/instance: netbox
+        app.kubernetes.io/part-of: netbox
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: netbox-worker
+          image: netboxcommunity/netbox:v4.7.1
+          command:
+            - /opt/netbox/venv/bin/python
+            - /opt/netbox/netbox/manage.py
+            - rqworker
+          envFrom:
+            - secretRef:
+                name: netbox
+          env:
+            - name: DB_HOST
+              value: postgres-rw.cloudnative-pg.svc
+            - name: REDIS_HOST
+              value: netbox-redis
+          volumeMounts:
+            - name: media
+              mountPath: /opt/netbox/netbox/media
+            - name: reports
+              mountPath: /opt/netbox/netbox/reports
+            - name: scripts
+              mountPath: /opt/netbox/netbox/scripts
+            - name: extra
+              mountPath: /etc/netbox/config/extra.py
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+      volumes:
+        - name: media
+          hostPath:
+            path: /mnt/nas-media/k8s/netbox/media
+            type: Directory
+        - name: reports
+          hostPath:
+            path: /mnt/nas-media/k8s/netbox/reports
+            type: Directory
+        - name: scripts
+          hostPath:
+            path: /mnt/nas-media/k8s/netbox/scripts
+            type: Directory
+        - name: extra
+          hostPath:
+            path: /mnt/nas-media/k8s/netbox/extra.py
+            type: File

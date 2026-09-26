@@ -5,12 +5,12 @@ variable "grafana_url" {
 }
 
 variable "grafana_admin_user" {
-  description = "Grafana admin username (from stacks/monitoring/grafana.env GF_SECURITY_ADMIN_USER)"
+  description = "Grafana admin username (from kubernetes monitoring grafana secret GF_SECURITY_ADMIN_USER)"
   type        = string
 }
 
 variable "grafana_admin_password" {
-  description = "Grafana admin password (from stacks/monitoring/grafana.env GF_SECURITY_ADMIN_PASSWORD)"
+  description = "Grafana admin password (from kubernetes monitoring grafana secret GF_SECURITY_ADMIN_PASSWORD)"
   type        = string
   sensitive   = true
 }

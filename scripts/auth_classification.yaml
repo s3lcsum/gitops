@@ -5,19 +5,21 @@
 #   public       — crowdsec + secure-headers
 #   lan-only     — crowdsec + secure-headers + lan-only
 #
-# k8s-only hosts (not Portainer hop): argocd, paperclip, policy-reporter, traefik-k8s, workflows
+# k8s-only hosts (not Portainer hop): argocd, headlamp, paperclip, policy-reporter, traefik, workflows
+# LAN metal (Traefik-k8s → host): nas, proxmox, router, zigbee-bridge
 
 forward-auth:
   - adguard
   - calibre-gui
   - dozzle
   - hass-timemachine
+  - headlamp
   - lan
   - metrics
-  - opencode
   - policy-reporter
+  - qbittorrent
   - traefik
-  - traefik-k8s
+  - zigbee-bridge
   - zigbee2mqtt-usb
   - zigbee2mqtt-wifi
 
@@ -28,7 +30,6 @@ native-oidc:
   - git
   - grafana
   - hass
-  - hermes
   - jellyfin
   - n8n
   - nas
@@ -38,7 +39,6 @@ native-oidc:
   - profilarr
   - prowlarr
   - proxmox
-  - qbittorrent
   - radarr
   - readarr
   - router

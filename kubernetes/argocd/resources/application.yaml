@@ -36,9 +36,11 @@ spec:
         - .data
         - .metadata.annotations
         - .metadata.labels["reconcile.external-secrets.io/managed"]
-  # Auto-sync + selfHeal. Prune stays off.
+  # Auto-sync + selfHeal + prune. ESO-managed Secret keys stay via ignoreDifferences /
+  # ExternalSecret template Prune=false (not by disabling Application prune).
   syncPolicy:
     automated:
+      prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true

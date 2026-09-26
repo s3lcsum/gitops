@@ -9,17 +9,31 @@ metadata:
 spec:
   goTemplate: true
   # Drop child Applications when their values.yaml leaves the repo.
-  # Each child auto-syncs, self-heals, and prunes.
   syncPolicy:
     applicationsSync: sync
   generators:
-    - git:
-        repoURL: https://github.com/s3lcsum/gitops.git
-        revision: main
-        files:
-          - path: kubernetes/*/values.yaml
-          - path: kubernetes/argocd/values.yaml
-            exclude: true
+    # values.yaml is every Helm app. kustomization.yaml joins on values.appName.
+    # kind: Kustomization in the merged params means the directory source stays.
+    - merge:
+        mergeKeys:
+          - values
+        generators:
+          - git:
+              repoURL: https://github.com/s3lcsum/gitops.git
+              revision: main
+              files:
+                - path: kubernetes/*/values.yaml
+                - path: kubernetes/argocd/values.yaml
+                  exclude: true
+              values:
+                appName: '{{index .path.segments 1}}'
+          - git:
+              repoURL: https://github.com/s3lcsum/gitops.git
+              revision: main
+              files:
+                - path: kubernetes/*/kustomization.yaml
+              values:
+                appName: '{{index .path.segments 1}}'
   template:
     metadata:
       name: "{{index .path.segments 1}}"
@@ -77,3 +91,23 @@ spec:
           - ServerSideApply=true
           - ServerSideDiff=true
           - RespectIgnoreDifferences=true
+  # No kustomization.yaml → directory source would apply values.yaml as a manifest.
+  # Drop that source. Apps that have the file keep the template's third source.
+  templatePatch: |
+    {{- if ne (printf "%v" (index . "kind")) "Kustomization" }}
+    spec:
+      sources:
+        - repoURL: {{ .repoURL | quote }}
+          chart: {{ .chart | quote }}
+          targetRevision: {{ .version | quote }}
+          helm:
+            releaseName: {{ index .path.segments 1 | quote }}
+            skipSchemaValidation: true
+            valueFiles:
+              - {{ printf "$values/kubernetes/%s/values.yaml" (index .path.segments 1) | quote }}
+        - repoURL: https://github.com/s3lcsum/gitops.git
+          targetRevision: main
+          ref: values
+    {{- else }}
+    {}
+    {{- end }}

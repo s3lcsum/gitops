@@ -24,4 +24,11 @@ locals {
       "tempus2.gum.gov.pl",
     ]
   }
+
+  # Mikrus VPS on wg0. Firebird listens on the default port there.
+  # Peer entry lives in gitignored defaults.auto.tfvars (micrus = this /32).
+  micrus = {
+    wireguard_ip  = "192.168.200.40"
+    firebird_port = "3050"
+  }
 }

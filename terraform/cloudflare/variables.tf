@@ -44,5 +44,8 @@ variable "tunnel_apps" {
     "n8n.dominiksiejak.pl"                = "https://traefik"
     "auth.dominiksiejak.pl"               = "https://traefik"
     "hass.dominiksiejak.pl"               = "https://traefik"
+    # xero.dominiksiejak.pl is a DNS-only A record (see main.tf). TCP 3050
+    # goes to the public WAN IP, then RouterOS dst-nat over WireGuard to micrus.
+    # Cloudflare's free proxy cannot carry port 3050.
   }
 }
