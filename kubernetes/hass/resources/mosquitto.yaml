@@ -55,6 +55,24 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+      initContainers:
+        - name: config
+          image: eclipse-mosquitto:2.1.2-alpine
+          securityContext:
+            runAsUser: 0
+          command:
+            - sh
+            - -c
+            - cp /src/mosquitto.conf /dst/mosquitto.conf && cp /src-pw/passwd /dst/passwd && chown 1883:1883 /dst/mosquitto.conf /dst/passwd && chmod 644 /dst/mosquitto.conf && chmod 640 /dst/passwd
+          volumeMounts:
+            - name: src-config
+              mountPath: /src
+              readOnly: true
+            - name: src-pw
+              mountPath: /src-pw
+              readOnly: true
+            - name: config
+              mountPath: /dst
       containers:
         - name: mosquitto
           image: eclipse-mosquitto:2.1.2-alpine
@@ -88,22 +106,15 @@ spec:
               cpu: 10m
               memory: 32Mi
       volumes:
-        # Projected dir: subPath mounts ignore fsGroup, so uid 1883 could not read the passwd file.
+        # Real files. Mosquitto refuses the projected-volume symlinks for the passwd file.
+        - name: src-config
+          configMap:
+            name: mosquitto
+        - name: src-pw
+          secret:
+            secretName: hass-mosquitto
         - name: config
-          projected:
-            sources:
-              - configMap:
-                  name: mosquitto
-                  items:
-                    - key: mosquitto.conf
-                      path: mosquitto.conf
-                      mode: 292
-              - secret:
-                  name: hass-mosquitto
-                  items:
-                    - key: passwd
-                      path: passwd
-                      mode: 292
+          emptyDir: {}
         - name: data
           hostPath:
             path: /var/lib/hass/mosquitto-data

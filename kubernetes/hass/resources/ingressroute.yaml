@@ -52,5 +52,5 @@ spec:
           namespace: traefik
       services:
         - name: hass-timemachine
-          port: 3000
+          port: 54000
   tls: {}

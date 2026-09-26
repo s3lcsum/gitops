@@ -4,6 +4,7 @@ resources:
   - resources/namespace.yaml
   - resources/externalsecret.yaml
   - resources/database.yaml
+  - resources/postgres-headless.yaml
   - resources/mosquitto.yaml
   - resources/hass.yaml
   - resources/zigbee2mqtt-wifi.yaml

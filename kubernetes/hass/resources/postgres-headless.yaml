@@ -1,0 +1,21 @@
+# Headless so hostNetwork Home Assistant connects to the pod IP.
+# ClusterIP DNAT on this node returns EHOSTUNREACH for postgres-rw.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-pods
+  namespace: cloudnative-pg
+  labels:
+    app.kubernetes.io/name: postgres-pods
+    app.kubernetes.io/instance: postgres
+    app.kubernetes.io/part-of: hass
+    app.kubernetes.io/managed-by: argocd
+spec:
+  clusterIP: None
+  selector:
+    cnpg.io/cluster: postgres
+    cnpg.io/instanceRole: primary
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432

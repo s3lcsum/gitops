@@ -50,7 +50,7 @@ spec:
                   key: LONG_LIVED_ACCESS_TOKEN
           ports:
             - name: http
-              containerPort: 3000
+              containerPort: 54000
           volumeMounts:
             - name: config
               mountPath: /config
@@ -90,5 +90,5 @@ spec:
     app.kubernetes.io/name: hass-timemachine
   ports:
     - name: http
-      port: 3000
+      port: 54000
       targetPort: http
