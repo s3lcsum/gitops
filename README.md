@@ -206,7 +206,6 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── adguard/
 │   ├── authentik/
 │   ├── calibre/
-│   ├── cloudflared/
 │   ├── dozzle/
 │   ├── gatus/
 │   ├── gitea/
@@ -230,7 +229,7 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 │   ├── cloudnative-pg/
 │   ├── headlamp/                   # Kubernetes UI (Authentik forward-auth)
 │   ├── kyverno/                    # + policy-reporter UI
-│   ├── cloudflare-tunnel-ingress-controller/
+│   ├── cloudflared/                # Cloudflare Tunnel connector → Traefik-k8s
 │   ├── argo-workflows/
 │   ├── argo-events/
 │   ├── argo-rollouts/
