@@ -65,6 +65,10 @@ site/
 # Local Claude Code worktrees / cache (not part of this repo)
 .claude/
 
+# Local git worktrees and agent session scratch
+.worktrees/
+.superpowers/
+
 # Local agent orchestration (memory, paths, spend notes — not for git)
 agents/
 
