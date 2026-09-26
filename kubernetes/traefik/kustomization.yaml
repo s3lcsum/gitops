@@ -11,6 +11,7 @@ resources:
   - resources/backends/lan-nas.yaml
   - resources/backends/lan-router.yaml
   - resources/backends/lan-proxmox.yaml
+  - resources/backends/kube-apiserver.yaml
   - resources/backends/lan-zigbee-bridge.yaml
   - resources/middlewares/authentik.yaml
   - resources/middlewares/secure-headers.yaml
@@ -22,4 +23,5 @@ resources:
   - resources/routes/portainer-forward-auth.yaml
   - resources/routes/portainer-native-oidc.yaml
   - resources/routes/portainer-lan-only.yaml
+  - resources/routes/kube-apiserver.yaml
   - resources/routes/ldap.yaml

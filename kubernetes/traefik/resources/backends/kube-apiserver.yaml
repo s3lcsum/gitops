@@ -1,0 +1,27 @@
+# kube-apiserver on the lake node. TLS stays end-to-end (client cert).
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-apiserver
+  namespace: traefik
+spec:
+  ports:
+    - name: kube-apiserver
+      port: 6443
+      targetPort: 6443
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: kube-apiserver
+  namespace: traefik
+  labels:
+    kubernetes.io/service-name: kube-apiserver
+addressType: IPv4
+ports:
+  - name: kube-apiserver
+    port: 6443
+    protocol: TCP
+endpoints:
+  - addresses:
+      - 192.168.89.252

@@ -65,6 +65,14 @@ ports:
     http:
       tls:
         enabled: true
+  # SNI passthrough for kubectl client certs. LAN only — no RouterOS dst-nat.
+  # Do not put this on websecure.
+  kubeapi:
+    port: 6444
+    expose:
+      default: true
+    hostPort: 6444
+    protocol: TCP
   # LDAP/LDAPS. Traefik terminates the wildcard, outpost sees plain LDAP.
   # Plain ldap:// without StartTLS will fail — both host ports speak TLS.
   ldap:
