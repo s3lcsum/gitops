@@ -9,4 +9,11 @@ spec:
   jetstream:
     # Pin to a version listed in configs.jetstream.versions (chart values).
     version: "2.10.29"
+    # Pod template only. Selector stays controller / eventbus-name / owner-name.
+    metadata:
+      labels:
+        app.kubernetes.io/name: eventbus
+        app.kubernetes.io/instance: default
+        app.kubernetes.io/part-of: argo-events
+        app.kubernetes.io/managed-by: argocd
     replicas: 1

@@ -1,0 +1,15 @@
+# kubeadm owns this Deployment. Server-side apply adds the recommended labels
+# and leaves selector, containers, and the Corefile mount with kubeadm.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coredns
+  namespace: kube-system
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: coredns
+        app.kubernetes.io/instance: coredns
+        app.kubernetes.io/part-of: coredns
+        app.kubernetes.io/managed-by: argocd

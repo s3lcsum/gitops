@@ -12,6 +12,10 @@ crdAnnotations:
 
 controller:
   replicas: 1
+  # Chart sets name and instance. Not part of the selector.
+  podLabels:
+    app.kubernetes.io/part-of: argo-rollouts
+    app.kubernetes.io/managed-by: Helm
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists

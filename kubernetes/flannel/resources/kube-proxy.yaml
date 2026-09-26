@@ -71,6 +71,10 @@ spec:
     metadata:
       labels:
         k8s-app: kube-proxy
+        app.kubernetes.io/name: kube-proxy
+        app.kubernetes.io/instance: kube-proxy
+        app.kubernetes.io/part-of: flannel
+        app.kubernetes.io/managed-by: argocd
     spec:
       priorityClassName: system-node-critical
       hostNetwork: true

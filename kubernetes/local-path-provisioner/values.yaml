@@ -4,6 +4,9 @@ chart: local-path-provisioner
 version: 0.0.38
 
 # Overrides for containeroo/local-path-provisioner 0.0.38 (app v0.0.37).
+# Chart already sets name, instance, and managed-by. Not part of the selector.
+commonLabels:
+  app.kubernetes.io/part-of: local-path-provisioner
 replicaCount: 1
 tolerations:
   - key: node-role.kubernetes.io/control-plane

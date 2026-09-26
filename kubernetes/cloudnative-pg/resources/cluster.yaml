@@ -8,6 +8,10 @@ metadata:
     argocd.argoproj.io/sync-wave: "2"
 spec:
   instances: 1
+  # Operator already sets name, instance, and managed-by on the pod.
+  inheritedMetadata:
+    labels:
+      app.kubernetes.io/part-of: cloudnative-pg
   enableSuperuserAccess: true
   storage:
     size: 8Gi

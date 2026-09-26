@@ -49,6 +49,25 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{index .path.segments 1}}"
+      # Those two charts cannot emit pod labels. Kyverno adds them on apply.
+      # Ignore the injected keys so selfHeal does not strip them and roll the pods.
+      ignoreDifferences:
+        - group: apps
+          kind: DaemonSet
+          name: kube-flannel-ds
+          namespace: flannel
+          jsonPointers:
+            - /spec/template/metadata/labels/app.kubernetes.io~1name
+            - /spec/template/metadata/labels/app.kubernetes.io~1instance
+            - /spec/template/metadata/labels/app.kubernetes.io~1part-of
+            - /spec/template/metadata/labels/app.kubernetes.io~1managed-by
+        - group: apps
+          kind: Deployment
+          name: cloudflare-tunnel-ingress-controller
+          namespace: cloudflare-tunnel-ingress-controller
+          jsonPointers:
+            - /spec/template/metadata/labels/app.kubernetes.io~1part-of
+            - /spec/template/metadata/labels/app.kubernetes.io~1managed-by
       syncPolicy:
         automated:
           prune: true

@@ -35,7 +35,6 @@ spec:
         'app.kubernetes.io/part-of', 'app.kubernetes.io/managed-by']
         .all(label, has(object.metadata.labels) && label in object.metadata.labels
         && object.metadata.labels[label] != '')
-      messageExpression: >-
-        'Pod ' + object.metadata.name + ' must have non-empty labels
-        app.kubernetes.io/name, instance, part-of, and managed-by. Found: ' +
-        (has(object.metadata.labels) ? string(object.metadata.labels) : 'none')
+      message: >-
+        Pod must have non-empty labels app.kubernetes.io/name, instance,
+        part-of, and managed-by.

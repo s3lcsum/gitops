@@ -14,6 +14,9 @@ argoSync:
 # (chart EXAMPLES: "Privileged Ports with Host Network").
 image:
   tag: v3.7.13
+# Chart already sets name, instance, and managed-by. Not part of the selector.
+commonLabels:
+  app.kubernetes.io/part-of: traefik
 deployment:
   replicas: 1
   # Required with hostNetwork so *.svc resolves via CoreDNS (not AdGuard).

@@ -11,6 +11,12 @@ version: 4.0.18
 #
 # The kubelet 192.168.89.252 is on the NFS allow list (with 192.168.89.254).
 # Wave 1 pods still use the host bind /mnt/nas-media (Proxmox mp0).
+# Chart selector is app + release. These are extra pod labels only.
+labels:
+  app.kubernetes.io/name: nfs-subdir-external-provisioner
+  app.kubernetes.io/instance: nfs
+  app.kubernetes.io/part-of: nfs
+  app.kubernetes.io/managed-by: Helm
 replicaCount: 1
 tolerations:
   - key: node-role.kubernetes.io/control-plane

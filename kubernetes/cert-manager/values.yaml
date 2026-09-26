@@ -9,6 +9,10 @@ version: v1.21.2
 crds:
   enabled: true
   keep: true
+# Chart already sets name, instance, and managed-by. Pods still need part-of.
+global:
+  commonLabels:
+    app.kubernetes.io/part-of: cert-manager
 replicaCount: 1
 dns01RecursiveNameservers: "1.1.1.1:53,8.8.8.8:53"
 dns01RecursiveNameserversOnly: true
