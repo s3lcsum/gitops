@@ -5,3 +5,4 @@ resources:
   - resources/namespace.yaml
   - resources/deployment.yaml
   - resources/ingressroute.yaml
+  - resources/ldap-outpost.yaml

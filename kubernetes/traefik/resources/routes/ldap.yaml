@@ -1,0 +1,35 @@
+# StartTLS on :389 has no SNI. HostSNI(`*`) catches it; TLS is the wildcard.
+# :636 is LDAPS with SNI ldap.dominiksiejak.pl. Outpost sees plain LDAP.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: ldap
+  namespace: traefik
+spec:
+  entryPoints:
+    - ldap
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: authentik-ldap-outpost
+          namespace: authentik
+          port: 389
+  tls:
+    secretName: dominiksiejak-pl-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: ldaps
+  namespace: traefik
+spec:
+  entryPoints:
+    - ldaps
+  routes:
+    - match: HostSNI(`ldap.dominiksiejak.pl`)
+      services:
+        - name: authentik-ldap-outpost
+          namespace: authentik
+          port: 389
+  tls:
+    secretName: dominiksiejak-pl-tls

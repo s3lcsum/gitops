@@ -55,14 +55,18 @@ resource "authentik_application" "ldap" {
   meta_launch_url   = "blank://blank"
 }
 
+# Manual deploy: kubernetes/authentik/resources/ldap-outpost.yaml.
+# docker-local targeted 192.168.89.253, which is down. Do not set
+# service_connection back to authentik_service_connection_docker.local.
 resource "authentik_outpost" "ldap" {
   name               = "ldap-outpost"
   type               = "ldap"
   protocol_providers = [authentik_provider_ldap.ldap.id]
-  service_connection = authentik_service_connection_docker.local.id
   config = jsonencode({
-    authentik_host          = "https://auth.${local.base_domain}"
-    authentik_host_insecure = false
+    authentik_host                 = "https://auth.${local.base_domain}"
+    authentik_host_insecure        = false
+    kubernetes_disabled_components = ["deployment", "service", "secret"]
+    kubernetes_replicas            = 1
   })
 }
 

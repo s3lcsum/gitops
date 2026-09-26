@@ -21,6 +21,7 @@ locals {
     "hass-timemachine.dominiksiejak.pl" = "192.168.89.252"
     "homepage.dominiksiejak.pl"         = "192.168.89.252"
     "jellyfin.dominiksiejak.pl"         = "192.168.89.252"
+    "ldap.dominiksiejak.pl"             = "192.168.89.252"
     "lan.dominiksiejak.pl"              = "192.168.89.252"
     "metrics.dominiksiejak.pl"          = "192.168.89.252"
     "n8n.dominiksiejak.pl"              = "192.168.89.252"

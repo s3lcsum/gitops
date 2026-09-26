@@ -22,3 +22,4 @@ resources:
   - resources/routes/portainer-forward-auth.yaml
   - resources/routes/portainer-native-oidc.yaml
   - resources/routes/portainer-lan-only.yaml
+  - resources/routes/ldap.yaml

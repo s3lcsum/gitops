@@ -6,6 +6,8 @@
 #   lan-only     — crowdsec + secure-headers + lan-only
 #
 # k8s-only hosts (not Portainer hop): argocd, headlamp, paperclip, policy-reporter, traefik, workflows
+# ldap.dominiksiejak.pl is IngressRouteTCP to the Authentik LDAP outpost.
+# Not an HTTP auth class — LDAPS on :636, not Authentik forward-auth.
 # LAN metal (Traefik-k8s → host): nas, proxmox, router, zigbee-bridge
 
 forward-auth:

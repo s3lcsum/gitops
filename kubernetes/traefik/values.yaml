@@ -65,6 +65,20 @@ ports:
     http:
       tls:
         enabled: true
+  # LDAP/LDAPS. Traefik terminates the wildcard, outpost sees plain LDAP.
+  # Plain ldap:// without StartTLS will fail — both host ports speak TLS.
+  ldap:
+    port: 3389
+    expose:
+      default: true
+    hostPort: 389
+    protocol: TCP
+  ldaps:
+    port: 6636
+    expose:
+      default: true
+    hostPort: 636
+    protocol: TCP
 providers:
   kubernetesCRD:
     enabled: true
