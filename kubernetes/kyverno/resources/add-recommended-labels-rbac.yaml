@@ -18,18 +18,6 @@ rules:
       - update
       - patch
   - apiGroups:
-      - apps
-    resources:
-      - deployments
-    resourceNames:
-      - cloudflare-tunnel-ingress-controller
-    verbs:
-      - get
-      - list
-      - watch
-      - update
-      - patch
-  - apiGroups:
       - ""
     resources:
       - pods
