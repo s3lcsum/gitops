@@ -1,0 +1,27 @@
+# App-owned route in paperclip ns. Shared middlewares + default TLS live in traefik.
+# Auth class: native-oidc (Paperclip Better Auth). No Authentik forward-auth.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: paperclip
+  namespace: paperclip
+  labels:
+    app.kubernetes.io/name: paperclip
+    app.kubernetes.io/instance: paperclip
+    app.kubernetes.io/part-of: paperclip
+    app.kubernetes.io/managed-by: argocd
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`paperclip.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: paperclip
+          port: 3100
+  tls: {}

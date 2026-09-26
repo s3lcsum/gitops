@@ -1,0 +1,27 @@
+# Kustomize only. No values.yaml → not in the Helm ApplicationSet.
+# Upstream has no published Helm chart (in-tree chart PR is still open).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: paperclip
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: paperclip
+    app.kubernetes.io/part-of: kubernetes
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/s3lcsum/gitops.git
+    targetRevision: main
+    path: kubernetes/paperclip
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: paperclip
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - ServerSideDiff=true

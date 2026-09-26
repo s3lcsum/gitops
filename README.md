@@ -268,6 +268,10 @@ The `terraform/portainer/` module handles syncing stacks to the Portainer host v
 
 ## Changelog
 
+### 26.09.2026
+
+**Paperclip on the lake node.** `kubernetes/paperclip/` (Argo Application `paperclip`, not the Helm ApplicationSet — upstream chart is still an open PR). Image `ghcr.io/paperclipai/paperclip:2026.916.1`, embedded Postgres on a 10Gi `local-path` volume. Deployment exposure stays `private` because `public` refuses embedded Postgres. Traefik-k8s serves `https://paperclip.dominiksiejak.pl` with CrowdSec only; Paperclip's own login is the gate, and open signup is off. Session secret is 1Password item `paperclip` (Servers vault, tag `ArgoCD External Secrets Operator`) via External Secrets. First account is a one-time bootstrap invite.
+
 ### 24.09.2026
 
 **HashiCorp Vault is gone.** `stacks/vault/` and `terraform/vault/` left. Authentik OAuth app `vault`, Traefik `vaultpki` resolver, homepage/gatus/blackbox/AdGuard/Cilium `vault.dominiksiejak.pl`, and the GCP KMS auto-unseal resources left with it. Compose secrets stay in Phase. Terraform secrets come from gitignored tfvars or a data source in another repo. Before the next `terraform/gcp` apply, run `make -C terraform/gcp state-rm-legacy` so OpenTofu drops the KMS key and unseal service account from state (`prevent_destroy` would otherwise block the plan). Delete those GCP objects in the console if you want them gone for real. GCS prefix `gitops-vault` can be deleted from the state bucket. Portainer drops the stack on the next `make apply` in `terraform/portainer`. Authentik drops the `vault` app on the next authentik apply.

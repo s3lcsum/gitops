@@ -5,7 +5,7 @@
 #   public       — crowdsec + secure-headers
 #   lan-only     — crowdsec + secure-headers + lan-only
 #
-# k8s-only hosts (not Portainer hop): argocd, policy-reporter, traefik-k8s, workflows
+# k8s-only hosts (not Portainer hop): argocd, paperclip, policy-reporter, traefik-k8s, workflows
 
 forward-auth:
   - adguard
@@ -33,6 +33,7 @@ native-oidc:
   - n8n
   - nas
   - netbox
+  - paperclip
   - portainer
   - profilarr
   - prowlarr
