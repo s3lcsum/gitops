@@ -15,6 +15,6 @@ terraform {
 }
 
 provider "grafana" {
-  url  = var.grafana_url
-  auth = "${var.grafana_admin_user}:${var.grafana_admin_password}"
+  url  = var.grafana_cloud_url
+  auth = var.grafana_cloud_auth
 }

@@ -93,6 +93,19 @@ locals {
         return {"role": "Viewer"}
       EOF
     }
+    grafana-cloud = {
+      name          = "Grafana Cloud"
+      launch_url    = var.grafana_cloud_url
+      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/grafana.svg"
+      redirect_uris = ["${trimsuffix(var.grafana_cloud_url, "/")}/login/generic_oauth"]
+      mapping       = <<-EOF
+        if request.user.ak_groups.filter(name="admins").exists():
+            return {"role": "Admin"}
+        elif request.user.ak_groups.filter(name="users").exists():
+            return {"role": "Editor"}
+        return {"role": "Viewer"}
+      EOF
+    }
     # Calibre-Web Automated (calibre.dominiksiejak.pl) — native OIDC SSO via the
     # generic OAuth provider in CWA. Callback path is fixed by CWA.
     # CWA emits the redirect_uri with scheme http (Flask-Dance url_for ignores
@@ -290,6 +303,7 @@ locals {
     "gatus",
     "gitea",
     "grafana",
+    "grafana-cloud",
     "seerr",
     "n8n",
     "netbox",

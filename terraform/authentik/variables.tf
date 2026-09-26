@@ -10,6 +10,12 @@ variable "authentik_domain" {
   default     = "auth.dominiksiejak.pl"
 }
 
+variable "grafana_cloud_url" {
+  description = "Grafana Cloud stack URL used for the grafana-cloud OAuth redirect URI"
+  type        = string
+  default     = "https://dreewniak.grafana.net"
+}
+
 variable "users" {
   description = "User accounts to create in Authentik"
   type = map(object({

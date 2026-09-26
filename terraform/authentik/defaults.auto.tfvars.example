@@ -1,0 +1,1 @@
+grafana_cloud_url = "https://dreewniak.grafana.net" # also set in terraform/authentik if non-default
