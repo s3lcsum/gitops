@@ -8,11 +8,11 @@ resources:
 configMapGenerator:
   - name: homepage-config
     files:
-      - settings.yaml=../../stacks/homepage/config/settings.yaml
-      - docker.yaml=../../stacks/homepage/config/docker.yaml
-      - services.yaml=../../stacks/homepage/config/services.yaml
-      - bookmarks.yaml=../../stacks/homepage/config/bookmarks.yaml
-      - widgets.yaml=../../stacks/homepage/config/widgets.yaml
+      - config/settings.yaml
+      - config/docker.yaml
+      - config/services.yaml
+      - config/bookmarks.yaml
+      - config/widgets.yaml
 generatorOptions:
   disableNameSuffixHash: true
   annotations:

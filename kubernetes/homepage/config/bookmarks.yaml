@@ -1,0 +1,12 @@
+---
+# Bookmarks — quick links
+# Icons: https://github.com/walkxcode/dashboard-icons
+
+- DevOps:
+    - GitHub:
+        - href: https://github.com/s3lcsum
+          icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/github.png
+
+    - Cloudflare:
+        - href: https://dash.cloudflare.com
+          icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/cloudflare.png
