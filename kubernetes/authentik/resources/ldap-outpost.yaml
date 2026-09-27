@@ -54,13 +54,15 @@ spec:
     app.kubernetes.io/name: authentik-ldap-outpost
     app.kubernetes.io/instance: ldap-outpost
   ports:
+    # Outpost process binds 3389/6636, not 389/636.
+    # Traefik entryPoints own the standard ports and forward here.
     - name: ldap
       port: 389
-      targetPort: ldap
+      targetPort: 3389
       protocol: TCP
     - name: ldaps
       port: 636
-      targetPort: ldaps
+      targetPort: 6636
       protocol: TCP
 ---
 apiVersion: apps/v1
