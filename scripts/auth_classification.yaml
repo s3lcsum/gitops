@@ -30,7 +30,6 @@ native-oidc:
   - bazarr
   - calibre
   - git
-  - grafana
   - hass
   - jellyfin
   - n8n
@@ -59,3 +58,5 @@ public:
 
 lan-only:
   - adminer
+  - grafana
+  - homepage-preview

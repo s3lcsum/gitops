@@ -78,10 +78,17 @@ spec:
             - name: provisioning
               mountPath: /etc/grafana/provisioning
               readOnly: true
+            - name: datasource-loki
+              mountPath: /etc/grafana/provisioning/datasources/loki.yaml
+              subPath: loki.yaml
+              readOnly: true
           resources:
             requests:
               cpu: 100m
               memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
       volumes:
         - name: data
           hostPath:
@@ -91,6 +98,9 @@ spec:
           hostPath:
             path: /mnt/nas-media/k8s/monitoring/config/grafana-provisioning
             type: Directory
+        - name: datasource-loki
+          configMap:
+            name: grafana-datasource-loki
 ---
 apiVersion: v1
 kind: Service
@@ -168,6 +178,9 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
       volumes:
         - name: data
           hostPath:
@@ -239,6 +252,9 @@ spec:
             requests:
               cpu: 25m
               memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
       volumes:
         - name: config
           hostPath:
@@ -306,6 +322,9 @@ spec:
             requests:
               cpu: 25m
               memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
       volumes:
         - name: config
           hostPath:
