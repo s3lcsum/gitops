@@ -59,8 +59,10 @@ spec:
         - name: secure-headers
           namespace: traefik
       services:
-        - name: prowlarr
-          port: 9696
+        - name: interceptor-prowlarr
+          namespace: keda
+          port: 8080
+          serversTransport: scale-to-zero
   tls: {}
 ---
 apiVersion: traefik.io/v1alpha1

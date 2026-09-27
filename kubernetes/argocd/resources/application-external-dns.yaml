@@ -1,21 +1,22 @@
-# Kustomize only. No values.yaml → not in the Helm ApplicationSet.
+# Kustomize-only. No values.yaml → not in the Helm ApplicationSet.
+# Cloudflare external-dns needs a shell wrapper for --default-targets; the chart quotes args.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: gatus
+  name: external-dns
   namespace: argocd
   labels:
-    app.kubernetes.io/name: gatus
+    app.kubernetes.io/name: external-dns
     app.kubernetes.io/part-of: kubernetes
 spec:
   project: default
   source:
     repoURL: https://github.com/s3lcsum/gitops.git
     targetRevision: main
-    path: kubernetes/gatus
+    path: kubernetes/external-dns
   destination:
     server: https://kubernetes.default.svc
-    namespace: gatus
+    namespace: external-dns
   syncPolicy:
     automated:
       prune: true

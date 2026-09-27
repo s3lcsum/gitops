@@ -1,0 +1,151 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: external-dns-cloudflare
+  namespace: external-dns
+  labels:
+    app.kubernetes.io/name: external-dns-cloudflare
+    app.kubernetes.io/part-of: external-dns
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-dns-cloudflare
+  labels:
+    app.kubernetes.io/name: external-dns-cloudflare
+    app.kubernetes.io/part-of: external-dns
+rules:
+  - apiGroups: ["externaldns.k8s.io"]
+    resources: ["dnsendpoints"]
+    verbs: ["get", "watch", "list"]
+  - apiGroups: ["externaldns.k8s.io"]
+    resources: ["dnsendpoints/status"]
+    verbs: ["update"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: external-dns-cloudflare
+  labels:
+    app.kubernetes.io/name: external-dns-cloudflare
+    app.kubernetes.io/part-of: external-dns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: external-dns-cloudflare
+subjects:
+  - kind: ServiceAccount
+    name: external-dns-cloudflare
+    namespace: external-dns
+---
+# dry-run stays on until logs list the expected A set, then drop --dry-run.
+# entrypoint.sh appends --default-targets from ConfigMap wan-ip. Chart quoting
+# would leave $(WAN_IP) literal, so this instance is not the Helm release.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-dns-cloudflare
+  namespace: external-dns
+  labels:
+    app.kubernetes.io/name: external-dns-cloudflare
+    app.kubernetes.io/instance: external-dns-cloudflare
+    app.kubernetes.io/part-of: external-dns
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: external-dns-cloudflare
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: external-dns-cloudflare
+        app.kubernetes.io/instance: external-dns-cloudflare
+        app.kubernetes.io/part-of: external-dns
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      serviceAccountName: external-dns-cloudflare
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: homelab.dominiksiejak.pl/worker
+          operator: Equal
+          value: "true"
+          effect: PreferNoSchedule
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: external-dns
+          image: registry.k8s.io/external-dns/external-dns:v0.23.0
+          command: ["/bin/sh", "/opt/entrypoint/entrypoint.sh"]
+          args:
+            - --log-level=info
+            - --interval=1m
+            - --source=crd
+            - --policy=sync
+            - --registry=txt
+            - --txt-owner-id=k8s-cf
+            - --txt-prefix=_external-dns.
+            - --domain-filter=dominiksiejak.pl
+            - --managed-record-types=A
+            - --managed-record-types=TXT
+            - --provider=cloudflare
+            - --cloudflare-proxied=false
+            - --cloudflare-dns-records-per-page=5000
+            - --dry-run
+          env:
+            - name: CF_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-api-token
+                  key: api-token
+          ports:
+            - name: http
+              containerPort: 7979
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65532
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: wan-ip
+              mountPath: /etc/wan-ip
+              readOnly: true
+            - name: entrypoint
+              mountPath: /opt/entrypoint
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+      volumes:
+        - name: wan-ip
+          configMap:
+            name: wan-ip
+        - name: entrypoint
+          configMap:
+            name: cloudflare-entrypoint
+            defaultMode: 0555

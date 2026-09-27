@@ -59,12 +59,12 @@ spec:
                     operator: In
                     values:
                       - "true"
-      # kube-dns ClusterIP is unreachable from pods. AdGuard then Cloudflare
-      # match the CoreDNS forwarders and are reachable on the LAN.
+      # kube-dns ClusterIP is unreachable from pods. AdGuard on the lake
+      # node, then Cloudflare. .253 is down — do not put it back.
       dnsPolicy: None
       dnsConfig:
         nameservers:
-          - 192.168.89.253
+          - 192.168.89.252
           - 1.1.1.1
         searches:
           - paperclip.svc.cluster.local

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "homeassistant": {
+      "type": "local",
+      "command": ["uvx", "ha-mcp"],
+      "enabled": true,
+      "environment": {
+        "HOMEASSISTANT_URL": "https://hass.dominiksiejak.pl",
+        "HOMEASSISTANT_TOKEN": "{env:HOMEASSISTANT_TOKEN}"
+      }
+    },
+    "n8n-mcp": {
+      "type": "remote",
+      "url": "https://n8n.dominiksiejak.pl/mcp-server/http",
+      "enabled": true,
+      "oauth": false,
+      "headers": {
+        "Authorization": "Bearer {env:N8N_MCP_TOKEN}"
+      }
+    },
+    "n8n-mcp-tools": {
+      "type": "local",
+      "command": ["npx", "-y", "n8n-mcp"],
+      "enabled": true,
+      "environment": {
+        "N8N_API_URL": "https://n8n.dominiksiejak.pl/api/v1",
+        "N8N_API_KEY": "{env:N8N_API_KEY}"
+      }
+    },
+    "kubernetes": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "kubernetes-mcp-server@latest",
+        "--config",
+        "/Users/dsiejak/Developer/s3lcsum/gitops/.opencode/kubernetes-mcp.toml"
+      ],
+      "enabled": true,
+      "timeout": 30000
+    }
+  }
+}

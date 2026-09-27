@@ -23,8 +23,8 @@ spec:
         - name: secure-headers
           namespace: traefik
       services:
-        - name: unifi
-          port: 8443
-          scheme: https
-          serversTransport: unifi-insecure
+        - name: interceptor-unifi
+          namespace: keda
+          port: 8080
+          serversTransport: scale-to-zero
   tls: {}

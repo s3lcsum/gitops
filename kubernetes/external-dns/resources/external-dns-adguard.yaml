@@ -1,0 +1,170 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: external-dns-adguard
+  namespace: external-dns
+  labels:
+    app.kubernetes.io/name: external-dns-adguard
+    app.kubernetes.io/part-of: external-dns
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-dns-adguard
+  labels:
+    app.kubernetes.io/name: external-dns-adguard
+    app.kubernetes.io/part-of: external-dns
+rules:
+  - apiGroups: ["externaldns.k8s.io"]
+    resources: ["dnsendpoints"]
+    verbs: ["get", "watch", "list"]
+  - apiGroups: ["externaldns.k8s.io"]
+    resources: ["dnsendpoints/status"]
+    verbs: ["update"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: external-dns-adguard
+  labels:
+    app.kubernetes.io/name: external-dns-adguard
+    app.kubernetes.io/part-of: external-dns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: external-dns-adguard
+subjects:
+  - kind: ServiceAccount
+    name: external-dns-adguard
+    namespace: external-dns
+---
+# dry-run stays on until logs list the expected dnsrewrite set.
+# AdGuard is hostNetwork on the lake node (:3000), not the dead Portainer host.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-dns-adguard
+  namespace: external-dns
+  labels:
+    app.kubernetes.io/name: external-dns-adguard
+    app.kubernetes.io/instance: external-dns-adguard
+    app.kubernetes.io/part-of: external-dns
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: external-dns-adguard
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: external-dns-adguard
+        app.kubernetes.io/instance: external-dns-adguard
+        app.kubernetes.io/part-of: external-dns
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      serviceAccountName: external-dns-adguard
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: homelab.dominiksiejak.pl/worker
+          operator: Equal
+          value: "true"
+          effect: PreferNoSchedule
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: external-dns
+          image: registry.k8s.io/external-dns/external-dns:v0.23.0
+          args:
+            - --log-level=info
+            - --interval=1m
+            - --source=crd
+            - --policy=sync
+            - --registry=txt
+            - --txt-owner-id=k8s-adguard
+            - --txt-prefix=_external-dns.
+            - --domain-filter=dominiksiejak.pl
+            - --managed-record-types=A
+            - --managed-record-types=TXT
+            - --provider=webhook
+            - --default-targets=192.168.89.252
+            - --dry-run
+          env:
+            - name: EXTERNAL_DNS_WEBHOOK_URL
+              value: http://127.0.0.1:8888
+          ports:
+            - name: http
+              containerPort: 7979
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65532
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+        - name: webhook
+          image: ghcr.io/muhlba91/external-dns-provider-adguard:v11.2.0
+          env:
+            - name: ADGUARD_URL
+              value: http://192.168.89.252:3000
+            - name: ADGUARD_USER
+              valueFrom:
+                secretKeyRef:
+                  name: adguard
+                  key: username
+            - name: ADGUARD_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: adguard
+                  key: password
+            - name: LOG_LEVEL
+              value: info
+            - name: DRY_RUN
+              value: "true"
+          ports:
+            - name: webhook
+              containerPort: 8888
+            - name: healthz
+              containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi

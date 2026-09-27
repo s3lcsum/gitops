@@ -8,7 +8,7 @@
         description: Reverse proxy
         widget:
           type: traefik
-          url: http://traefik:8080
+          url: http://192.168.89.252:9080
 
     - Grafana:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/grafana.png
@@ -17,22 +17,24 @@
         widget:
           type: grafana
           version: 2
-          url: http://grafana:3000
+          url: http://grafana.monitoring.svc:3000
           username: "{{HOMEPAGE_VAR_GRAFANA_USER}}"
           password: "{{HOMEPAGE_VAR_GRAFANA_PASS}}"
 
-    - Gatus:
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/gatus.png
-        href: https://status.dominiksiejak.pl
-        description: Uptime monitoring
-        widget:
-          type: gatus
-          url: http://gatus:8080
+    - Argo CD:
+        icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/argo-cd.png
+        href: https://argocd.dominiksiejak.pl
+        description: GitOps
 
-    - Dozzle:
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/dozzle.png
-        href: https://dozzle.dominiksiejak.pl
-        description: Log viewer
+    - Argo Workflows:
+        icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/argo-workflows.png
+        href: https://workflows.dominiksiejak.pl
+        description: Workflow engine
+
+    - Policy Reporter:
+        icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/kyverno.png
+        href: https://policy-reporter.dominiksiejak.pl
+        description: Policy reports
 
     - Metrics:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/victoriametrics.png
@@ -46,35 +48,15 @@
         description: SSO / Identity
         widget:
           type: authentik
-          url: http://authentik-server:9000
+          url: http://authentik-server.authentik.svc:9000
           key: "{{HOMEPAGE_VAR_AUTHENTIK_KEY}}"
           version: 2
-
-    - Phase:
-        icon: https://phase.dev/favicon.ico
-        href: https://phase.dominiksiejak.pl
-        description: Compose env secrets
-
-    - Vaultwarden:
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/vaultwarden.png
-        href: https://vaultwarden.dominiksiejak.pl
-        description: Password manager
 
 - Infrastructure:
     - Headlamp:
         icon: https://raw.githubusercontent.com/kubernetes-sigs/headlamp/v0.45.0/docs/headlamp_light.svg
         href: https://headlamp.dominiksiejak.pl
         description: Kubernetes UI
-
-    - Portainer:
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/portainer.png
-        href: https://portainer.dominiksiejak.pl
-        description: Container management
-        widget:
-          type: portainer
-          url: http://portainer:9000
-          env: 3
-          key: "{{HOMEPAGE_VAR_PORTAINER_TOKEN}}"
 
     - Proxmox:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/proxmox.png
@@ -119,11 +101,11 @@
 
     - AdGuard:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/adguard-home.png
-        href: http://192.168.89.253:3000
+        href: https://adguard.dominiksiejak.pl
         description: DNS filtering
         widget:
           type: adguard
-          url: http://192.168.89.253:3000
+          url: http://adguard.adguard.svc:3000
           username: "{{HOMEPAGE_VAR_ADGUARD_USER}}"
           password: "{{HOMEPAGE_VAR_ADGUARD_PASS}}"
 
@@ -149,13 +131,8 @@
         description: Git hosting
         widget:
           type: gitea
-          url: http://gitea:3000
+          url: http://gitea.gitea.svc:3000
           key: "{{HOMEPAGE_VAR_GITEA_TOKEN}}"
-
-    - Adminer:
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/adminer.png
-        href: https://adminer.dominiksiejak.pl
-        description: Database admin
 
     - NetBox:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/netbox.png
@@ -166,6 +143,11 @@
         icon: https://raw.githubusercontent.com/wealthfolio/wealthfolio/main/app-icon.png
         href: https://wealthfolio.dominiksiejak.pl
         description: Personal finance
+
+    - Paperclip:
+        icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/paperclip.png
+        href: https://paperclip.dominiksiejak.pl
+        description: Agent control plane
 
 - Automation:
     - Home Assistant:
@@ -209,7 +191,7 @@
         description: Torrent client
         widget:
           type: qbittorrent
-          url: http://gluetun:8080
+          url: http://gluetun.mediabox.svc:8080
           username: "{{HOMEPAGE_VAR_QBT_USER}}"
           password: "{{HOMEPAGE_VAR_QBT_PASS}}"
 
@@ -219,7 +201,7 @@
         description: Usenet downloader
         widget:
           type: sabnzbd
-          url: http://gluetun:8085
+          url: http://gluetun.mediabox.svc:8085
           key: "{{HOMEPAGE_VAR_SABNZBD_KEY}}"
 
     - Prowlarr:
@@ -238,7 +220,7 @@
         description: Movie automation
         widget:
           type: radarr
-          url: http://radarr:7878
+          url: http://radarr.mediabox.svc:7878
           key: "{{HOMEPAGE_VAR_RADARR_KEY}}"
 
     - Sonarr:
@@ -247,7 +229,7 @@
         description: Series automation
         widget:
           type: sonarr
-          url: http://sonarr:8989
+          url: http://sonarr.mediabox.svc:8989
           key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
 
     - Bazarr:
@@ -256,7 +238,7 @@
         description: Subtitle management
         widget:
           type: bazarr
-          url: http://bazarr:6767
+          url: http://bazarr.mediabox.svc:6767
           username: "{{HOMEPAGE_VAR_BAZARR_USER}}"
           key: "{{HOMEPAGE_VAR_BAZARR_KEY}}"
 
@@ -266,7 +248,7 @@
         description: Book automation
         widget:
           type: readarr
-          url: http://readarr:8787
+          url: http://readarr.mediabox.svc:8787
           key: "{{HOMEPAGE_VAR_READARR_KEY}}"
 
     - Jellyfin:
@@ -275,7 +257,7 @@
         description: Media streaming
         widget:
           type: jellyfin
-          url: http://jellyfin:8096
+          url: http://jellyfin.mediabox.svc:8096
           key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
 
     - Seerr:

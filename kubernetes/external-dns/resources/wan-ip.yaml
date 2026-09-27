@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wan-ip
+  namespace: external-dns
+  labels:
+    app.kubernetes.io/name: wan-ip
+    app.kubernetes.io/part-of: external-dns
+data:
+  ip: 109.173.240.144
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: wan-ip
+  namespace: external-dns
+  labels:
+    app.kubernetes.io/name: wan-ip
+    app.kubernetes.io/part-of: external-dns
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: wan-ip
+  namespace: external-dns
+  labels:
+    app.kubernetes.io/name: wan-ip
+    app.kubernetes.io/part-of: external-dns
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["wan-ip"]
+    verbs: ["get", "patch", "update"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames: ["external-dns-cloudflare"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: wan-ip
+  namespace: external-dns
+  labels:
+    app.kubernetes.io/name: wan-ip
+    app.kubernetes.io/part-of: external-dns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: wan-ip
+subjects:
+  - kind: ServiceAccount
+    name: wan-ip
+    namespace: external-dns
+---
+# Restarts the Cloudflare Deployment only when the public IPv4 changes.
+# Lookup failure keeps the last ConfigMap IP.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: wan-ip
+  namespace: external-dns
+  labels:
+    app.kubernetes.io/name: wan-ip
+    app.kubernetes.io/part-of: external-dns
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: wan-ip
+            app.kubernetes.io/part-of: external-dns
+        spec:
+          serviceAccountName: wan-ip
+          restartPolicy: OnFailure
+          tolerations:
+            - key: node-role.kubernetes.io/control-plane
+              operator: Exists
+              effect: NoSchedule
+            - key: homelab.dominiksiejak.pl/worker
+              operator: Equal
+              value: "true"
+              effect: PreferNoSchedule
+          containers:
+            - name: wan-ip
+              image: registry.k8s.io/kubectl:v1.37.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  trace=$(curl -fsS --max-time 10 https://cloudflare.com/cdn-cgi/trace)
+                  ip=$(printf '%s\n' "$trace" | sed -n 's/^ip=//p' | head -n1)
+                  case "$ip" in
+                    ""|*[!0-9.]*) echo "WAN lookup failed or not IPv4: ${ip:-empty}" >&2; exit 1 ;;
+                  esac
+                  current=$(kubectl get configmap wan-ip -n external-dns -o jsonpath='{.data.ip}')
+                  if [ "$current" = "$ip" ]; then
+                    echo "WAN IP unchanged: $ip"
+                    exit 0
+                  fi
+                  kubectl patch configmap wan-ip -n external-dns --type merge -p "{\"data\":{\"ip\":\"$ip\"}}"
+                  kubectl rollout restart deployment/external-dns-cloudflare -n external-dns
+                  echo "WAN IP $current -> $ip; restarted external-dns-cloudflare"
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi

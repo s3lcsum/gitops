@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflare-entrypoint
+  namespace: external-dns
+  labels:
+    app.kubernetes.io/name: external-dns-cloudflare
+    app.kubernetes.io/part-of: external-dns
+data:
+  entrypoint.sh: |
+    #!/bin/sh
+    set -eu
+    ip=$(tr -d '[:space:]' < /etc/wan-ip/ip)
+    case "$ip" in
+      ""|*[!0-9.]*) echo "wan-ip missing or not IPv4" >&2; exit 1 ;;
+    esac
+    exec /bin/external-dns "$@" --default-targets="$ip"

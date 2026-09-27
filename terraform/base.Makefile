@@ -5,7 +5,7 @@
 .PHONY: help header init plan apply destroy validate fmt check clean pre-apply pre-destroy help-migrate-tfc migrate-tfc-pull migrate-tfc-push
 .DEFAULT_GOAL := help
 
-# TFC → GCS (OpenTofu cannot migrate automatically). Run from this module directory, e.g. cd terraform/portainer && make migrate-tfc-pull
+# TFC → GCS (OpenTofu cannot migrate automatically). Run from this module directory, e.g. cd terraform/authentik && make migrate-tfc-pull
 # Default state file and GCS prefix follow workspace naming: gitops-<directory-name>
 MIGRATE_STATE_FILE ?= /tmp/migrate-$(notdir $(CURDIR)).tfstate
 GITOPS_PREFIX ?= gitops-$(notdir $(CURDIR))
@@ -39,7 +39,7 @@ help-migrate-tfc: ## Print manual TFC → GCS state migration (state pull / stat
 	@echo "  6) tofu state push /tmp/migrate-$$(basename $$(pwd)).tfstate"
 	@echo "  7) tofu plan   # expect no surprise destroys"
 	@echo ""
-	@echo "GCS prefix must match the old TFC workspace name (this repo uses gitops-<dirname>, e.g. gitops-portainer)."
+	@echo "GCS prefix must match the old TFC workspace name (this repo uses gitops-<dirname>, e.g. gitops-authentik)."
 	@echo ""
 	@echo "Batch (all modules): from repo root, make -C terraform migrate-all-tfc"
 	@echo "Or use: make migrate-tfc-pull  (with cloud {} in providers.tf)"

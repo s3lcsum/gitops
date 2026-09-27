@@ -23,7 +23,7 @@ inputs:
   dns:
     description: LAN resolver (AdGuard). Used only for dns-search.
     required: false
-    default: 192.168.89.253
+    default: 192.168.89.252
   dns-search:
     description: Domain routed through the LAN resolver once the tunnel is up
     required: false

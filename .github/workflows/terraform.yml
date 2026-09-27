@@ -15,8 +15,6 @@ on:
           - gitea
           - grafana
           - netbox
-          - portainer
-          - postgres
           - routeros
       command:
         description: tofu command
@@ -75,10 +73,7 @@ jobs:
           TFVARS_GITEA: ${{ secrets.TFVARS_GITEA }}
           TFVARS_GRAFANA: ${{ secrets.TFVARS_GRAFANA }}
           TFVARS_NETBOX: ${{ secrets.TFVARS_NETBOX }}
-          TFVARS_PORTAINER: ${{ secrets.TFVARS_PORTAINER }}
-          TFVARS_POSTGRES: ${{ secrets.TFVARS_POSTGRES }}
           TFVARS_ROUTEROS: ${{ secrets.TFVARS_ROUTEROS }}
-          TFVARS_VAULT: ${{ secrets.TFVARS_VAULT }}
         run: |
           set -euo pipefail
           key="TFVARS_$(printf '%s' "$MODULE" | tr '[:lower:]' '[:upper:]')"

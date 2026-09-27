@@ -22,3 +22,16 @@ resource "grafana_dashboard" "provisioned" {
 
   depends_on = [grafana_data_source.victoria_metrics]
 }
+
+# Cloud-only dashboards not in OSS file provisioning.
+# Reviewed 2026-09-26 against dreewniak.grafana.net (41 dashboards).
+# Kept: s3lcsum default dashboard — still queries Cloud Prometheus synthetic checks.
+# Dropped (deprecated, not imported):
+#   Proxmox (oaFOuxdVk) — last edit 2022-11-30, Graphite panels, no Proxmox metrics in Cloud.
+#   GrafanaCloud / Synthetic Monitoring / Cloud provider - GCP — stack-provisioned, not homelab SoT.
+resource "grafana_dashboard" "cloud_kept" {
+  for_each = fileset("${path.module}/dashboards", "*.json")
+
+  config_json = file("${path.module}/dashboards/${each.value}")
+  overwrite   = true
+}

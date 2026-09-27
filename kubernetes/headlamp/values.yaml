@@ -15,7 +15,8 @@ podLabels:
   app.kubernetes.io/part-of: headlamp
   app.kubernetes.io/managed-by: Helm
 
-replicaCount: 1
+# KEDA ScaledObject (kubernetes/keda) owns this. Argo must not selfHeal it back to 1.
+replicaCount: 0
 
 tolerations:
   - key: node-role.kubernetes.io/control-plane

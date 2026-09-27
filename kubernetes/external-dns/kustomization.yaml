@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - resources/namespace.yaml
+  - resources/dnsendpoint-crd.yaml
+  - resources/externalsecret-cloudflare.yaml
+  - resources/externalsecret-adguard.yaml
+  - resources/wan-ip.yaml
+  - resources/cloudflare-entrypoint.yaml
+  - resources/external-dns-cloudflare.yaml
+  - resources/ingressroute-dnsendpoints.yaml
+  - resources/external-dns-adguard.yaml

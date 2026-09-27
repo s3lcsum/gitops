@@ -10,7 +10,8 @@ metadata:
     app.kubernetes.io/part-of: unifi
     app.kubernetes.io/managed-by: argocd
 spec:
-  replicas: 1
+  # KEDA ScaledObject (kubernetes/keda) owns this.
+  replicas: 0
   strategy:
     type: Recreate
   selector:

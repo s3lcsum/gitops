@@ -1,0 +1,127 @@
+# Idle HTTP UIs. minReplicaCount 0.
+# Each nginx trigger watches its own interceptor stub_status. A request is an
+# active connection on that interceptor only.
+# cooldownPeriod is how long the app stays up after the last request.
+# Argo selfHeal owns spec.replicas; KEDA pauses that field while this object
+# exists. Git replicas is 0 so a missing ScaledObject does not pin the app up.
+#
+# Not here: calibre-web-automated (public API), n8n (webhooks), gitea, paperclip.
+# UniFi UI sleeps. APs keep forwarding. Inform :8080 and STUN :3478 are dark
+# until the UI request wakes the pod. New adopts wait for that.
+# flaresolverr has no IngressRoute. Prowlarr and the *arr apps call it on the
+# ClusterIP, which does not pass the interceptor, so a cold *arr request 503s
+# until something else wakes it.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: headlamp
+  namespace: headlamp
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: headlamp
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  cooldownPeriod: 300
+  pollingInterval: 15
+  triggers:
+    - type: nginx
+      metadata:
+        namespace: keda
+        deploymentName: interceptor-headlamp
+        serviceName: interceptor-headlamp
+        port: "8081"
+        targetPendingRequests: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: unifi
+  namespace: unifi
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: unifi
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  cooldownPeriod: 900
+  pollingInterval: 15
+  triggers:
+    - type: nginx
+      metadata:
+        namespace: keda
+        deploymentName: interceptor-unifi
+        serviceName: interceptor-unifi
+        port: "8081"
+        targetPendingRequests: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: calibre
+  namespace: calibre
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: calibre
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  cooldownPeriod: 900
+  pollingInterval: 15
+  triggers:
+    - type: nginx
+      metadata:
+        namespace: keda
+        deploymentName: interceptor-calibre
+        serviceName: interceptor-calibre
+        port: "8081"
+        targetPendingRequests: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: prowlarr
+  namespace: mediabox
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: prowlarr
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  cooldownPeriod: 600
+  pollingInterval: 15
+  triggers:
+    - type: nginx
+      metadata:
+        namespace: keda
+        deploymentName: interceptor-prowlarr
+        serviceName: interceptor-prowlarr
+        port: "8081"
+        targetPendingRequests: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: flaresolverr
+  namespace: mediabox
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: flaresolverr
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  cooldownPeriod: 600
+  pollingInterval: 15
+  triggers:
+    - type: nginx
+      metadata:
+        namespace: keda
+        deploymentName: interceptor-flaresolverr
+        serviceName: interceptor-flaresolverr
+        port: "8081"
+        targetPendingRequests: "1"

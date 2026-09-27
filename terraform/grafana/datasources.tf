@@ -1,6 +1,6 @@
-# Import existing UI connector (PDC HomeLab already bound):
-#   tofu import 'grafana_data_source.victoria_metrics' afzgefwo6esxsa
-# Apply then rewrites uid → victoria-metrics (matches OSS dashboard JSON).
+# Live Cloud datasource uid is victoria-metrics (PDC HomeLab).
+# Created via API because Grafana rejects uid changes on an existing datasource.
+# Do not import afzgefwo6esxsa — that leftover cannot be deleted with the MCP token.
 
 resource "grafana_data_source" "victoria_metrics" {
   type                                   = "victoriametrics-metrics-datasource"

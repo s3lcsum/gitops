@@ -32,7 +32,7 @@ spec:
           effect: PreferNoSchedule
       containers:
         - name: node-exporter
-          image: prom/node-exporter:v1.9.1
+          image: prom/node-exporter:v1.12.1
           args:
             - --path.procfs=/host/proc
             - --path.sysfs=/host/sys

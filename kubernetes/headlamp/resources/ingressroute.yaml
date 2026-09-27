@@ -18,6 +18,8 @@ spec:
         - name: authentik
           namespace: traefik
       services:
-        - name: headlamp
-          port: 80
+        - name: interceptor-headlamp
+          namespace: keda
+          port: 8080
+          serversTransport: scale-to-zero
   tls: {}

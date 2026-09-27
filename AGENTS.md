@@ -1,199 +1,60 @@
 # AGENTS.md — Home Infrastructure as Code
 
+Public repo. LAN topology and hostnames are intentional. Do not privatize them. Never commit `*.env`, `*.tfvars`, `.mcp.json`, or `.opencode/opencode.json` / `.opencode/kubeconfig-k8s-lake`.
+
 ## Commands
 
-### MkDocs (root `Makefile`)
-- `make serve` — dev server `http://localhost:8000` (uses `uvx` with mkdocs-material)
-- `make build` / `make lint` — strict build; fails on warnings
-- `make clean` — removes `site/`
-- No `mkdocs.yml` at root — config embedded in docs dir
+- OpenTofu, not Terraform. Pin: `1.12.5` (`terraform/.opentofu-version`, CI `tofu_version`). Each module `Makefile` includes `terraform/base.Makefile`.
+- From `terraform/<module>/`: `make check` (validate + fmt) then `make plan` then `make apply`. `apply`/`destroy` pass `-auto-approve`. Extra flags: `TOFU_ARGS`.
+- `required_version = ">= 1.11.5"`. Pin providers to exact versions, never `~>`.
+- GCS state bucket `dominiksiejak-gitops-tfstate`, prefix `gitops-<dirname>`.
+- `terraform/portainer` is gone. `terraform/postgres` targeted compose Postgres on the Portainer LXC at `192.168.89.253`. That host is down. Do not plan or apply `terraform/postgres`. Do not SSH to `portainer`. Do not recreate the portainer module.
+- `terraform/gcp`: `make state-rm-legacy` drops retired resources from state (includes Vault KMS). Does not delete them in GCP.
+- `terraform/cloudflare`: `make show-token` prints the tunnel token.
+- CI (`.github/workflows/terraform.yml`) is `workflow_dispatch` only. It joins the LAN over WireGuard, writes `defaults.auto.tfvars` from `TFVARS_<MODULE>`, then plan/apply. Module list omits `adguard` and `unifi`. Concurrency group `wireguard-peer-github-actions` — one runner at a time.
+- Pre-commit: `tofu_fmt`, `tofu_validate`, `terraform_tflint`. YAML hook skips `kubernetes/*/templates|charts|resources`.
 
-### OpenTofu (every `terraform/<module>/`)
-- Every module `Makefile` includes `terraform/base.Makefile`.
-- Targets: `init`, `plan`, `apply`, `destroy`, `validate`, `fmt`, `check` (= validate + fmt), `clean`
-- **Use `tofu`, not `terraform`**. Pinned version: `1.12.0` in `terraform/.opentofu-version`.
-- Tofu auto-approves. Use `TOFU_ARGS` env var to pass extra flags.
+Root `Makefile` only has `help`. Do not add `serve` / `build` / `lint` / `test` / `consistency` back until `mkdocs.yml` and `scripts/check-consistency.py` exist.
 
-### Notable module extras
-- `terraform/portainer/Makefile`: `sync-portainer` rsyncs `stacks/` to `portainer:/opt`. `apply` runs render-secrets (Phase) → sync → untaint-all → apply with `-parallelism=1`. Also `watch-portainer` (fswatch) and `sync-service` (systemd unit). `PHASE_SERVICE_TOKEN` or gitignored `.phase-service-token` is required once Phase is bootstrapped.
-- `terraform/postgres/Makefile`: sets `POSTGRES_SSH_TARGET`, auto-creates SSH `-L` tunnel for remote plan/apply (sets `TF_VAR_postgres_host` / `TF_VAR_postgres_port`).
-- `terraform/gcp/Makefile`: `state-rm-legacy` drops old resources from state (includes the retired Vault KMS auto-unseal).
-- `terraform/cloudflare/Makefile`: `show-token` prints tunnel token from output.
-- `terraform/Makefile`: `migrate-all-tfc` batch-migrates all modules from TFC to GCS. `apply-all` opens each module in a tmux window.
+## Layout
 
-## Architecture
+- `kubernetes/` is the workload tree. `terraform/` is OpenTofu (Authentik apps, AdGuard rewrites, RouterOS, UniFi WLAN, Cloudflare, Grafana Cloud, NetBox objects, GCP, compose Postgres users).
+- Two Argo patterns. Do not mix them.
+  - Helm ApplicationSet (`kubernetes/argocd/resources/applicationset.yaml`): a dir with `values.yaml` whose top keys are `repoURL` / `chart` / `version`. `argocd` is excluded. Auto-sync, selfHeal, prune. `cert-manager` schema rejects those pin keys — the Application sets `skipSchemaValidation: true`. Do not remove it.
+  - Kustomize-only apps have no `values.yaml`, so they are not in the ApplicationSet. Each is `kubernetes/argocd/resources/application-<name>.yaml`, and that file must be listed in `resources/kustomization.yaml`. Missing either → Argo never creates the Application.
+- ApplicationSet merge: `kustomization.yaml` beside `values.yaml` adds a third source (Kustomize path `kubernetes/<app>`). Absent file → that source is dropped. A `kustomization.yaml` whose `kind` is not `Kustomization` will not keep the directory source.
+- Flannel chart cannot emit pod labels. Kyverno injects them. `applicationset.yaml` `ignoreDifferences` on `kube-flannel-ds` stops selfHeal from stripping them and rolling pods. Do not delete those jsonPointers.
+- Argo CD self Application (`resources/application.yaml`) ignores `argocd-secret` `.data` because ESO merges the OIDC client secret. Empty `group:` on that ignore is dropped by the API and never converges — leave group unset.
+- Bootstrap (only when Argo is down): `make -C kubernetes/argocd bootstrap`. Context `k8s@lake`, chart `argo-cd` `10.9.2`.
 
-- `stacks/` — Only the remaining Portainer compose stacks (`dozzle`, `postgres`, `traefik`), synced to `portainer:/opt/<stack>/`. Migrated apps live under `kubernetes/<app>/`. Backup of the old tree: NAS `/mnt/nas-media/k8s/backups/stacks-backup-*.tar.gz`.
-  - `compose.yaml` + `*.env.example` (committed) → `*.env` (gitignored) with real secrets.
-  - Traefik labels handle **container discovery** on Portainer Traefik. Edge Host()/auth lives in `kubernetes/traefik/resources/routes/` (IngressRoute). New compose host on the allowlist → add IngressRoute (or class group) + `scripts/auth_classification.yaml` entry.
-- `terraform/` — OpenTofu modules. State: **GCS** (`dominiksiejak-gitops-tfstate`), migrated from TFC Apr 2026.
-  - GCS state prefix convention: `gitops-<dirname>` (e.g., `gitops-portainer`).
-  - `terraform/grafana/` — Grafana Cloud only (stack `dreewniak.grafana.net`): PDC-backed VictoriaMetrics datasource, dashboard sync from `kubernetes/monitoring/config/grafana-provisioning/dashboards/`, Authentik SSO (`grafana_sso_settings`), IRM phone paging. Needs `defaults.auto.tfvars` with Admin `glsa_` token. Apply Authentik `grafana-cloud` OAuth app first. OSS Grafana stays file-provisioned (Telegram); phone = Cloud IRM.
-- `kubernetes/argocd/` — Self-managed Argo CD for the kubeadm node (context `k8s@lake`). Helm installs the remote chart (`resources/application.yaml` pins repo, chart, version). Overrides: `values.yaml` (flat, not nested under a dependency name). Extra objects live in `resources/` and are applied with Kustomize (`resources/kustomization.yaml`), not a wrapper chart `templates/`. Bootstrap: `make -C kubernetes/argocd bootstrap`. Self Application is `resources/application.yaml` (remote `argo-cd` chart + `kubernetes/argocd/resources`, auto-sync + selfHeal, prune off). Sibling apps under `kubernetes/*` (except `argocd`) are parented by ApplicationSet `resources/applicationset.yaml` — drop a directory with `values.yaml` (chart pin `repoURL` / `chart` / `version` at the top) on `main` and Argo creates a Helm Application (auto-sync, selfHeal, prune). Add `kustomization.yaml` beside it only when there are extra manifests (`resources/` or generators). Absent file → directory source omitted. Present file → multi-source, Kustomize path `kubernetes/<app>`. UI: `https://argocd.dominiksiejak.pl` (Traefik-k8s IngressRoute). Port-forward `8080:80` / CLI SSO `8085` stay as Authentik + Argo `additionalUrls` fallbacks. Local admin is disabled. Authentik app slug `argocd`. OIDC client secret and the GitHub PAT come from 1Password via ExternalSecrets (`resources/externalsecret-oidc.yaml`, `resources/externalsecret-repo-creds.yaml`); tag those items `ArgoCD External Secrets Operator`. Group `admins` is Argo CD `role:admin`.
-- `kubernetes/coredns/` — CoreDNS Corefile plus a server-side label patch on the kubeadm Deployment (Argo Application `coredns`, prune off). Upstream: AdGuard `192.168.89.252` → RouterOS `192.168.89.1` → Cloudflare `1.1.1.1` (`forward` + `policy sequential`). kubeadm still owns the Deployment spec.
-- `kubernetes/paperclip/` — Paperclip (`ghcr.io/paperclipai/paperclip`, pinned tag). Kustomize Application `paperclip` (no `values.yaml`, so not in the Helm ApplicationSet). StatefulSet, embedded Postgres on a `local-path` PVC (`PAPERCLIP_DEPLOYMENT_EXPOSURE=private` — `public` refuses embedded Postgres), Traefik IngressRoute `paperclip.dominiksiejak.pl` (auth class `native-oidc`, Paperclip Better Auth, signup disabled). `BETTER_AUTH_SECRET` from 1Password item `paperclip` via ExternalSecrets. First admin is a bootstrap invite, not open signup.
-- `kubernetes/hass/` — Home Assistant, Mosquitto, Zigbee2MQTT Wi-Fi, Zigbee2MQTT USB, HA Time Machine. Kustomize Application `hass` (no `values.yaml`, so not in the Helm ApplicationSet). HA and Mosquitto are `hostNetwork` on `192.168.89.252` (`dnsPolicy: ClusterFirstWithHostNet` on HA). Mosquitto: anonymous `127.0.0.1:1883`, password `192.168.89.252:1883`. Config hostPath `/var/lib/hass` (`Directory`). USB stick `/dev/ttyUSB0` on the lake node. Recorder database `homeassistant` on CloudNativePG (`postgres-rw.cloudnative-pg.svc`). Secrets from 1Password via ExternalSecrets.
-- `kubernetes/nfs/` — NAS StorageClass `nfs` (not default) via `nfs-subdir-external-provisioner` 4.0.18. Export `/volume1/media` allows `192.168.89.252` and `192.168.89.254`. New dirs are `/volume1/media/k8s/<namespace>/<pvc>`. Proxmox also bind-mounts that export into the k8s LXC at `/mnt/nas-media` (`mp0`). Wave 1 pods use that hostPath.
-- `kubernetes/homepage/`, `kubernetes/wealthfolio/`, `kubernetes/calibre/`, `kubernetes/gatus/`, `kubernetes/gitea/`, `kubernetes/n8n/`, `kubernetes/netbox/`, `kubernetes/monitoring/`, `kubernetes/authentik/`, `kubernetes/cloudflared/`, `kubernetes/adguard/`, `kubernetes/mediabox/`, `kubernetes/unifi/`, `kubernetes/watchyourlan/` — Kustomize Applications (no `values.yaml`). Calibre books are hostPath `/mnt/nas-media/books`. Gitea data is hostPath `/mnt/nas-media/gitea`. Authentik listens on the lake node `:9000` (forward-auth URL). Dozzle and Portainer stay on the Portainer host. AdGuard is a hostNetwork Deployment on the lake node (`:53` and `:3000`). Monitoring scrapes kube-state-metrics, kubelet cAdvisor (API-server proxy), and a node-exporter DaemonSet; those jobs carry `cluster=homelab` for the Kubernetes Views dashboards. Mediabox runs here: Gluetun, qBittorrent, and SABnzbd share one pod (`/dev/net/tun` on the lake node) so downloads stay on the VPN. The library is hostPath `/mnt/nas-media`. Jellyfin has no `/dev/dri` (the LXC has no GPU node), so transcoding is software. UniFi is hostNetwork on the lake node (inform `:8080`; Traefik API moved to `:9080`). WatchYourLAN is hostNetwork on the lake node (`:8840`, main LAN arp-scan only). Still on compose: Dozzle, Portainer, Postgres (anything still on Docker), and Traefik (origin for the remaining hops). New app data is hostPath `/mnt/nas-media/k8s/<namespace>/<name>`. `/dev/dri` is not mounted: the k8s LXC has a `/dev/dri` directory without `card0` / `renderD128`.
-- `kubernetes/headlamp/` — Headlamp UI (Helm ApplicationSet, chart `0.45.0`). Traefik IngressRoute `headlamp.dominiksiejak.pl` (auth class `forward-auth`). `-proxy-auth` reads `X-authentik-*`. `unsafeUseServiceAccountToken` skips the token paste: everyone who passes Authentik uses the pod service account, which is `cluster-admin`. Authentik app is admins-only (not in `user_accessible_apps`).
-- `kubernetes/flannel/` — CNI (host-gw, pod CIDR `10.244.0.0/16`) + kube-proxy DaemonSet (replaces retired Cilium).
-- Scheduling: `k8s` is the only control plane and the preferred node. Other nodes take taint `homelab.dominiksiejak.pl/worker=true:PreferNoSchedule` (Kyverno `worker-overflow-taint`), so pods use them only when `k8s` cannot fit their requests. Label `homelab.dominiksiejak.pl/ai=true` marks AI nodes (`vibe` today); new AI nodes need that label, not every worker. Paperclip prefers it and tolerates the worker taint, so it falls back to `k8s` when no AI node is Ready. Argo Events, Argo Rollouts, and Argo Workflows (controller, server, and workflow pods) require `homelab.dominiksiejak.pl/ai=true`, so they run on `vibe` and stay Pending while that node is NotReady.
-- `kubernetes/traefik/` — L7 edge, hostNetwork DaemonSet (`:80/:443` on every node). Public WAN still arrives at `192.168.89.252`. TLS + CrowdSec + Authentik middlewares + Portainer allowlist hops + dashboard at `traefik.dominiksiejak.pl`. Per-app IngressRoutes live under `kubernetes/<app>/resources/` in that app’s namespace; middleware refs use `namespace: traefik`; TLS from Traefik default `TLSStore`.
-- `kubernetes/cloudnative-pg/` — CloudNativePG operator + shared `Cluster/postgres` (`local-path`, 8Gi, `instances: 1`). K8s apps add `Database` / `DatabaseRole` with `metadata.namespace: cloudnative-pg` (same ns as Cluster; example `kubernetes/hass/resources/database.yaml`); RW host `postgres-rw.cloudnative-pg.svc`. Portainer compose Postgres remains SoT for stacks still on Docker (`terraform/postgres`). Gatus, Gitea, n8n, NetBox, WatchYourLAN, and Authentik use this cluster. **Not in gitops yet:** Barman/`ScheduledBackup` to NAS S3 — cluster has no continuous backup wired; do not assume bucket backups exist. Wave 1 app data is hostPath `/mnt/nas-media/k8s`. StorageClass `nfs` is available for new claims.
-- Portainer Traefik (`stacks/traefik/`) — Docker-label origin only. No edge CrowdSec/Authentik/dashboard (those run on Traefik-k8s).
+Kustomize-only (no `values.yaml`): adguard, authentik, calibre, cloudflared, coredns, external-dns, gitea, grafana-synthetic-agent, hass, homepage, mediabox, monitoring, n8n, netbox, paperclip, unifi, watchyourlan, wealthfolio. Gatus is gone. Do not add `application-gatus.yaml` back unless `kubernetes/gatus` exists.
 
-## Networking
+## Scheduling and edge
 
-- Primary LAN: `192.168.89.0/24` (Portainer LXC: `192.168.89.253`)
-- Auxiliary/IoT LAN: `192.168.8.0/24`
-- IP allocation: `.0–.9` network devices, `.10–.99` static IPs, `.100–.199` DHCP, `.200–.254` homelab
-- Internal hostname pattern: `{service}.dominiksiejak.pl`
-- Public hostname pattern: `*.dominiksiejak.pl` (external IP, ports 80/443)
-- Remote Docker: accessible via `ssh://portainer` (configured in `.mcp.json` Docker MCP server)
-- **Public-by-design:** this repo is public and includes LAN topology / hostnames intentionally. Do not "fix" by privatizing or stripping the map.
-- **Dual WAN edge (both intentional — do not collapse to one):**
-  - **Direct WAN :80/:443** → Traefik-k8s (lake `.252`) + CrowdSec + Authentik forward-auth / native OIDC. Allowlisted compose hosts hop to Portainer Traefik (`.253`). RouterOS firewall allowlist is the IP gate for WAN; CF Access is not a substitute for that path.
-  - **Cloudflare Tunnel + Access** → separate path for specific hosts (JWT / Access where configured). Extra layer, not either/or with RouterOS.
-- Auth class per Traefik host: `scripts/auth_classification.yaml` (`forward-auth` | `native-oidc` | `public` | `lan-only`). Unclassified hosts fail `make consistency`.
-- AdGuard DNS rewrites (`filtering.rewrites`) are `terraform/adguard` (`adguard_rewrite`). Do not edit live AdGuardHome.yaml for host moves. external-dns (when enabled) writes `$dnsrewrite` custom filtering rules, a different store. Do not add `adguard_user_rules`: that resource replaces the whole list and would wipe those rules. Same hostname in both stores is a double answer — drop it from the terraform map when external-dns owns it.
+- `k8s` is the only control plane and the preferred node. Kyverno `worker-overflow-taint` puts `homelab.dominiksiejak.pl/worker=true:PreferNoSchedule` on every other node. PreferNoSchedule is a score penalty, not a filter.
+- Label `homelab.dominiksiejak.pl/ai=true` marks AI nodes (`vibe`). New AI nodes need that label. Do not put it on every worker. Paperclip prefers it and tolerates the worker taint, so it falls back to `k8s`. Argo Events, Argo Rollouts, and Argo Workflows require the label — they stay Pending while `vibe` is NotReady.
+- Traefik-k8s is a hostNetwork DaemonSet (`:80/:443` on every node). Public WAN arrives at `192.168.89.252`. Per-app IngressRoutes live in `kubernetes/<app>/resources/` in that app's namespace. Middleware refs need `namespace: traefik`. TLS comes from the Traefik default `TLSStore`.
+- `k8s.dominiksiejak.pl:6444` is kube-apiserver SNI passthrough (`IngressRouteTCP`, entryPoint `kubeapi`, hostPort `6444` → apiserver `:6443` on `.252`). LAN only — do not dst-nat `6444` from WAN. Do not put it on `:443` — HTTP TLS termination drops the client cert. AdGuard rewrite is in `terraform/adguard`. Apply Traefik before the DNS rewrite or kubectl hits the apiserver port with the wrong SNI.
+- Dual WAN is intentional. Do not collapse it. Direct `:80/:443` is Traefik-k8s + CrowdSec + Authentik; RouterOS firewall allowlist is the IP gate. Cloudflare Tunnel + Access is a separate path, not a substitute.
+- Auth class per host: `scripts/auth_classification.yaml` (`forward-auth` | `native-oidc` | `public` | `lan-only`). The checker that failed on unclassified hosts is gone; still add the host when adding a route.
+- AdGuard rewrites are `terraform/adguard` `adguard_rewrite` (`rewrites.tf`). Do not add `adguard_user_rules` — one resource replaces the whole custom-rule list, including external-dns `$dnsrewrite` rules. When external-dns owns a name, delete it from the terraform map.
 
-## Compose Conventions
+## Data and secrets
 
-### Field order
-`image`, `container_name`, `restart`, `env_file`, `environment`, `volumes`, `networks`, `ports`, `user`, `healthcheck`, `labels`
-
-### Env files
-- **Never add `env_file:` with relative paths** — paths on host: `/opt/<stack>/<service>.env`
-- **Never commit `*.env`** — gitignored globally (`**/*.env`)
-- Always provide `.env.example` with same keys + placeholder values
-- Use `env_file:` for secrets, `environment:` (object/map syntax) for config
-
-### Networks
-- `proxy` — external, for Traefik-exposed services
-- `database` — external, for centralized PostgreSQL access
-- `metrics` — external, for telemetry (optional)
-- Services on multiple networks + Traefik need `traefik.docker.network: proxy`
-- Define shared networks as `external: true`
-- Use `expose:` over `ports:` unless host access needed
-
-### Traefik
-- Default hostname pattern: `{service}.dominiksiejak.pl`
-- Public services: `*.dominiksiejak.pl` (external IP, ports 80/443)
-- Traefik file routers and compose labels use a single `Host()` of `{name}.dominiksiejak.pl` (no hello/lake aliases)
-- Forward-auth: `authentik@docker` on the UI. Webhooks and native-OIDC apps (HA, Seerr, Calibre-Web) stay off Authentik at the edge.
-- Use object syntax for labels
-- Traefik has `host.docker.internal:host-gateway` to reach host-networked services on the Portainer LXC
-
-### Centralized PostgreSQL
-- Single Postgres stack at `stacks/postgres/`. No separate DB instances.
-- DB users and databases come from `terraform/postgres/locals.tf`. Passwords live in Phase (compose `.env`) or in gitignored `defaults.auto.tfvars` / `TF_VAR_*`. Phase's own DB user is bootstrap-only (`phase.env` on the host).
-- Service connects via `env_file` pointing at `/opt/<stack>/<service>.env`
-- Postgres is **localhost-only** on host (`127.0.0.1:5432`)
-- Service needing DB must join `database` network
-
-## Terraform Conventions
-
-### File organization per module
-`main.tf` (resources), `variables.tf` (sensitive vars), `locals.tf` (computed values, heavily used), `providers.tf` (provider configs), `outputs.tf` (if needed), `data.tf` (lookups), `Makefile` (automation)
-
-### Providers
-- **Pin exact versions**, never use wildcards/ranges (`~>`)
-- `required_version = ">= 1.11.5"` minimum
-
-### Code style
-- Prefer `for_each` over repeated resources
-- No `.sh` scripts — use Makefile for automation
-- No module README files unless truly necessary
-- Run `tofu fmt` and `tofu validate` after changes
-
-## Stack Lifecycle
-
-### Source of truth
-`terraform/portainer/locals.tf` lists all actively managed stacks. **When adding/removing a stack in `stacks/`, update both `locals.tf` and `terraform/portainer/main.tf`.**
-
-## Secrets
-
-- **Never commit `*.env` or `*.tfvars`** — both gitignored
-- `.mcp.json` contains live API tokens (HA, n8n, Cloudflare) — do not leak or commit changes exposing them
-- Compose `.env` values live in Phase (`stacks/phase/`, render via `scripts/render_phase_env.py`). Terraform secrets come from gitignored `defaults.auto.tfvars`, `TF_VAR_*`, or a `terraform_remote_state` / data source in another repo.
-- Terraform variables passed via environment or `defaults.auto.tfvars`
-- OpenTofu state: **GCS** (`dominiksiejak-gitops-tfstate`).
-
-## Verification order before big changes
-
-1. For each affected terraform module: `make check` (validate + fmt)
-2. `make plan` before `make apply`
-
-## Consistency checks
-
-The repo has several lists that all mirror "the deployed app/host names", and they drift.
-`scripts/check-consistency.py` treats **the set of hosts Traefik routes** (Docker labels in
-`stacks/*/compose.yaml` + default-rule `{container}.dominiksiejak.pl` + file routers in
-`stacks/traefik/dynamic.yaml`) as the single source of truth, then verifies every consumer
-against it:
-
-- **Grafana/blackbox monitors all hosts** — `kubernetes/monitoring/config/promscrape.yaml`
- `blackbox-*` jobs. **Auto-fixed** by `--fix`.
-- **auth.dominiksiejak.pl shows all apps** — `terraform/authentik/locals.tf`
- (`oauth2_applications` + `proxy_applications` + `dashboard_applications`) + LDAP app in
- `ldap.tf`. **Report-only, never auto-edited** (terraform).
-- **homepage.dominiksiejak.pl shows all apps + built-in integrations** —
- `kubernetes/homepage/config/services.yaml`. Missing entries get a stub (+ best-effort widget)
-  on `--fix`; widgets present-but-missing issuance is flagged. **Auto-fixed**.
-- Tertiary, report-only: `gatus/config.yaml` and README host mentions.
-
-Usage:
-- `make consistency` — dry-run report; exits non-zero on blocking drift.
-- `make consistency-fix` — repairs the auto-fixable YAML (blackbox + homepage), exits non-zero
-  if any terraform/README/auth-classification issue remains for manual review.
-- Auth classification: every Traefik host must be in `scripts/auth_classification.yaml`.
-
-Gotchas baked in:
-- `BLACKBOX_SKIP` = `{"phase", "vaultwarden"}` — Traefik hosts with no Grafana blackbox job and no Gatus probe. `--fix` must not re-add them.
-- LAN metal UIs (`nas`, `router`, `proxmox`, `zigbee-bridge`) are Traefik-k8s → host (EndpointSlice), not Portainer hop. AdGuard rewrites point at `.252`.
-- `EXTERNAL_ROUTED` = `{"portainer"}` (routed but configured outside this repo).
-- `HOMEPAGE_LAN_IP` = `{nas, proxmox, router, adguard}` (homepage shows them via LAN IP, not the
-  proxied host) — excluded from homepage-missing checks.
-- `AUTH_NO_HTTP_ROUTE` = `{ldap}` (+ `routeros`, external) — apps with no HTTP host by design.
-- A service's Traefik host comes from `container_name`, **not** the router label name
-  (e.g. `hass-timemachine`, router label `timemachine`).
-
-## n8n automation
-
-- Instance: `https://n8n.dominiksiejak.pl`, API at `/api/v1` (disabled by default; `N8N_API_ENABLED=false`)
-- Authentik has one n8n app (OAuth2, for credentials / the dashboard tile). There is no Traefik forward-auth proxy for it. `/webhook*` is a higher-priority Traefik router (Authentik/Meta call these).
-- Login → WAN allowlist: Authentik notification webhook → `kubernetes/n8n/workflows/authentik-login-firewall.json`. After `tofu apply` in `terraform/authentik`, copy `tofu output -raw webhook_secret` into the n8n secret / headerAuth credential `wan-allowlist` (header `x-webhook-secret`). The workflow does not read `$env`. IPv4 only — IPv6 clients are rejected before RouterOS.
-- Do not put RouterOS passwords in Code nodes (`N8N_BLOCK_ENV_ACCESS_IN_NODE=true`); Set node copies `$env` then Code hashes locally.
-- `ROUTEROS_API_URL` must be `http://192.168.89.1/rest` (LAN). Do not hairpin through `https://router.dominiksiejak.pl`. With SSRF protection on, allowlist that IP (`N8N_SSRF_ALLOWED_IP_RANGES=192.168.89.1/32`).
-- MCP servers configured in `.mcp.json`: `n8n-mcp` (HTTP), `n8n-mcp-tools` (stdio/validation)
+- App DB on CloudNativePG: add `Database` / `DatabaseRole` with `metadata.namespace: cloudnative-pg` (same ns as `Cluster/postgres`). RW host `postgres-rw.cloudnative-pg.svc`. Example: `kubernetes/hass/resources/database.yaml`. Cluster is `local-path`, 8Gi, `instances: 1`, pinned to the control plane. No Barman / `ScheduledBackup` — do not assume bucket backups exist. Compose Postgres on `.253` is gone; do not add users there.
+- K8s secrets: 1Password via ExternalSecrets. Tag items so ESO can read them. Argo CD OIDC + GitHub PAT items need `ArgoCD External Secrets Operator`.
+- New app data: hostPath `/mnt/nas-media/k8s/<namespace>/<name>` (Proxmox bind of NAS `/volume1/media`). StorageClass `nfs` exists (`nfs-subdir-external-provisioner` `4.0.18`) and is not the default. Do not mount `/dev/dri` — the k8s LXC has the directory without `card0` / `renderD128`.
 
 ## Gotchas
 
-- `terraform/portainer/locals.tf` is the source of truth for deployed stacks — README tables should match it
-- Gitea: bind-mounts `/data` to NAS; needs `traefik.docker.network: proxy`
-- Home Assistant runs on the lake node (`kubernetes/hass/`), not in `stacks/`. Mosquitto listens anonymous on `127.0.0.1:1883` and with a password on `192.168.89.252:1883`. Do not bind `0.0.0.0:1883` together with localhost. Passwd, MQTT password, Time Machine token, and `hass_user` come from 1Password. `/var/lib/hass` must already exist on the node (`hostPath` type `Directory`).
-- Authentik compose: Docker socket `:ro`; `AUTHENTIK_LOG_LEVEL=info`
-- `stacks/postgres/init.sh` no longer exists — DB users/databases come from `terraform/postgres` only, not manual init scripts
-- Unused container images are deleted after 1 hour. kubelet `imageMaximumGCAge: 1h` on `k8s` and `vibe` (live `/var/lib/kubelet/config.yaml` + ConfigMap `kube-system/kubelet-config`). Portainer Docker: `docker-image-ttl.timer` every 10 minutes (`docker image prune -af --filter until=1h`). Images still referenced by a container stay.
-- After Cilium was removed, stale BPF stayed on the `k8s` LXC (`cil_sock4_connect` / `cil_sock4_sendmsg` on `/sys/fs/cgroup`, tcx on `eth0`). That swallowed `10.96.0.10` before kube-proxy, so CoreDNS from pods failed. Detach with `bpftool link detach`. A reboot drops them too. `pve` VG has ~768MB free, so the 32G LXC root cannot grow.
-
-## README changelog conventions
-
-- Entries use `### DD.MM.YYYY` date header. Casual/slang tone.
-- If change completes a TODO item, mark `[x]` in same commit.
-- If change wasn't on TODO, add new item as `[x] (retroactively added)`.
-
-## References
-
-- `README.md` — full architecture, services table, changelog
-
-## Workflow Memory
-
-### apply-portainer
-Triggers: say **"apply portainer"** OR finish editing inside `stacks/**`.
-
-1. Run `make apply` in `terraform/portainer/`
-2. Restart containers with volume-mounted configs Portainer won't auto-reload:
-   - Traefik: restart `traefik` container
-   - Gatus: restart `gatus` container
-   - Any other mounted config files: restart affected container manually
+- CoreDNS upstream is AdGuard `192.168.89.252` → RouterOS `192.168.89.1` → `1.1.1.1` (`forward` + `policy sequential`). kubeadm still owns the Deployment spec; this repo only ships the Corefile and a label patch. Application prune is off.
+- Home Assistant and Mosquitto are hostNetwork on `192.168.89.252`. Mosquitto: anonymous `127.0.0.1:1883`, password `192.168.89.252:1883`. Do not also bind `0.0.0.0:1883`. HA `dnsPolicy: ClusterFirstWithHostNet`. Recorder DB is CNPG, but HA is hostNetwork — it uses the headless Service in `kubernetes/hass/resources/postgres-headless.yaml`, not ClusterIP. Zigbee USB is `/dev/ttyUSB0` on the lake node. `/var/lib/hass` must already exist (`hostPath` type `Directory`).
+- AdGuard hostNetwork on the lake node (`:53`, `:3000`). UniFi hostNetwork (inform `:8080`; do not put Traefik's API back on `:8080`). WatchYourLAN hostNetwork (`:8840`). Authentik hostNetwork, HTTP `:9000` (forward-auth URL).
+- Mediabox: Gluetun, qBittorrent, and SABnzbd share one pod so downloads stay on the VPN. `/dev/net/tun` must exist on the lake node. Library is hostPath `/mnt/nas-media`. Jellyfin has no GPU — software transcode only.
+- Paperclip: `PAPERCLIP_DEPLOYMENT_EXPOSURE=private`. `public` refuses embedded Postgres. Signup is disabled (`PAPERCLIP_AUTH_DISABLE_SIGN_UP`). `BETTER_AUTH_SECRET` is 1Password item `paperclip`.
+- Headlamp: `unsafeUseServiceAccountToken` plus `clusterRoleName: cluster-admin`. Anyone who passes Authentik is cluster-admin. Keep the Authentik app out of `user_accessible_apps`.
+- n8n: `N8N_BLOCK_ENV_ACCESS_IN_NODE=true` — do not read `$env` from Code nodes. `N8N_SSRF_ALLOWED_IP_RANGES` is `192.168.89.1/32,192.168.89.200/32`. RouterOS API must be `http://192.168.89.1/rest`, not `https://router.dominiksiejak.pl`. Login → WAN allowlist workflow is `kubernetes/n8n/workflows/authentik-login-firewall.json` (credential `wan-allowlist`, header `x-webhook-secret`). After authentik apply, copy `tofu output -raw webhook_secret` into that credential. IPv4 only.
+- Grafana Cloud (`terraform/grafana`, stack `dreewniak.grafana.net`) is separate from file-provisioned OSS Grafana. Apply the Authentik `grafana-cloud` OAuth app first. Needs a `glsa_` token in `defaults.auto.tfvars`.
+- Gitea data is hostPath `/mnt/nas-media/gitea` (not the `k8s/` prefix). Calibre books are `/mnt/nas-media/books`.
+- `192.168.89.253` is down. No Portainer, Dozzle, compose Postgres, or compose Traefik. Do not recreate `stacks/` or the portainer IngressRoutes. CrowdSec LAPI lived there too — `crowdsec-bouncer` stays disabled until a live LAPI exists. RADIUS outpost is manual on `.252` (`kubernetes/authentik/resources/radius-outpost.yaml`); do not point it back at `docker-local`.
+- OpenCode MCP lives in `.opencode/opencode.json` (gitignored). Copy from `.opencode/opencode.json.example`. Tokens are `{env:HOMEASSISTANT_TOKEN}`, `{env:N8N_MCP_TOKEN}`, `{env:N8N_API_KEY}` — do not inline them. n8n URLs are `https://n8n.dominiksiejak.pl`. Kubernetes MCP is `kubernetes-mcp-server` pinned to context `k8s@lake` via `.opencode/kubeconfig-k8s-lake` (one context, generated, gitignored). Server URL is `https://k8s.dominiksiejak.pl:6444`. Cloudflare goes through the global Composio MCP, not `mcp.cloudflare.com`. Do not add a Docker MCP. Do not point it at `ssh://portainer`.

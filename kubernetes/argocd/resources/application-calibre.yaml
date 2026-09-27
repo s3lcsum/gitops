@@ -18,6 +18,13 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: calibre
+  # KEDA writes replicas on the GUI only. calibre-web-automated stays pinned.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: calibre
+      jqPathExpressions:
+        - .spec.replicas
   syncPolicy:
     automated:
       prune: true
@@ -26,3 +33,4 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
       - ServerSideDiff=true
+      - RespectIgnoreDifferences=true

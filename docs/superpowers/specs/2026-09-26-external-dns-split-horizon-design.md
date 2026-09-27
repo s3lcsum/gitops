@@ -1,7 +1,7 @@
 # External-DNS split-horizon (Cloudflare + AdGuard) — design
 
 **Date:** 2026-09-26
-**Status:** approved (pending implementation plan)
+**Status:** implemented (dry-run). App is `kubernetes/external-dns/` (Kustomize-only, not ApplicationSet). Flip `--dry-run` / `DRY_RUN` after log review. AdGuard URL is `http://192.168.89.252:3000` (hostNetwork on lake), not the dead Portainer host.
 
 **Scope:** Auto-create DNS for every Traefik `IngressRoute` `Host()` on lake: Cloudflare A → dynamic WAN IP (DNS-only); AdGuard dnsrewrite → `192.168.89.252`. Includes Portainer hop routes. Drop tofu tunnel CNAMEs for Traefik-backed hosts so external-dns owns those names.
 

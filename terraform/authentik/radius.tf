@@ -1,7 +1,8 @@
 # RouterOS device admin login via Authentik RADIUS.
 # RouterOS only supports RADIUS (not OIDC/LDAP) for WinBox/SSH/WebFig auth.
-# The Authentik RADIUS outpost publishes UDP 1812/1813 on the Portainer LXC
-# (192.168.89.253); the router reaches it over the LAN.
+# Manual deploy: kubernetes/authentik/resources/radius-outpost.yaml.
+# docker-local targeted 192.168.89.253, which is down. Do not set
+# service_connection back to authentik_service_connection_docker.local.
 
 resource "authentik_flow" "routeros_authentication" {
   name               = "routeros-authentication-flow"
@@ -88,10 +89,11 @@ resource "authentik_outpost" "radius" {
   name               = "radius-outpost"
   type               = "radius"
   protocol_providers = [authentik_provider_radius.routeros.id]
-  service_connection = authentik_service_connection_docker.local.id
   config = jsonencode({
-    authentik_host          = "https://auth.${local.base_domain}"
-    authentik_host_insecure = false
+    authentik_host                 = "https://auth.${local.base_domain}"
+    authentik_host_insecure        = false
+    kubernetes_disabled_components = ["deployment", "service", "secret"]
+    kubernetes_replicas            = 1
   })
 }
 
@@ -104,7 +106,7 @@ resource "authentik_policy_binding" "routeros_admin_access" {
 output "radius" {
   description = "RADIUS config for RouterOS admin login (consumed by terraform/routeros)."
   value = {
-    host      = "192.168.89.253"
+    host      = "192.168.89.252"
     auth_port = 1812
     secret    = random_password.routeros_radius_secret.result
   }

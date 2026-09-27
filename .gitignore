@@ -81,6 +81,8 @@ terraform/routeros/generated/
 
 # OpenCode config with embedded secrets (tokens inline for MCPs)
 .opencode/opencode.json
+.opencode/*.local.json
+.opencode/kubeconfig-k8s-lake
 
 # Playwright test artifacts
 .playwright-mcp/

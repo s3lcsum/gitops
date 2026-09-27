@@ -11,7 +11,7 @@ data "terraform_remote_state" "authentik" {
 }
 
 resource "routeros_radius" "authentik" {
-  address = "192.168.89.253"
+  address = "192.168.89.252"
   secret  = data.terraform_remote_state.authentik.outputs.radius.secret
   service = ["login"]
 }

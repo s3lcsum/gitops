@@ -10,12 +10,6 @@ locals {
   #───────────────────────────────────────────────────────────────────────────────
 
   oauth2_applications = {
-    portainer = {
-      name          = "Portainer"
-      launch_url    = "https://portainer.dominiksiejak.pl"
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/portainer.svg"
-      redirect_uris = ["https://portainer.dominiksiejak.pl/"]
-    }
     proxmox = {
       name          = "Proxmox"
       launch_url    = "https://proxmox.dominiksiejak.pl"
@@ -161,17 +155,9 @@ locals {
     victoriametrics = {
       name            = "VictoriaMetrics"
       external_host   = "https://metrics.dominiksiejak.pl"
-      internal_host   = "http://monitoring:8428"
+      internal_host   = "http://victoria-metrics.monitoring.svc:8428"
       launch_url      = "https://metrics.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/victoriametrics.svg"
-      skip_path_regex = ""
-    }
-    dozzle = {
-      name            = "Dozzle"
-      external_host   = "https://dozzle.dominiksiejak.pl"
-      internal_host   = "http://dozzle:8080"
-      launch_url      = "https://dozzle.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/dozzle.svg"
       skip_path_regex = ""
     }
     # calibre.dominiksiejak.pl (CWA) is NOT forward-auth'd — CWA handles its own
@@ -180,15 +166,17 @@ locals {
     calibre-gui = {
       name            = "Calibre GUI"
       external_host   = "https://calibre-gui.dominiksiejak.pl"
-      internal_host   = "http://calibre:8080"
+      internal_host   = "http://calibre.calibre.svc:8080"
       launch_url      = "https://calibre-gui.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/calibre.svg"
       skip_path_regex = ""
     }
+    # Chart Service is disabled. IngressRoute uses api@internal. API entrypoint
+    # is host :9080 (UniFi owns :8080). forward_single does not dial this.
     traefik = {
       name            = "Traefik"
       external_host   = "https://traefik.dominiksiejak.pl"
-      internal_host   = "http://traefik:8080"
+      internal_host   = "http://192.168.89.252:9080"
       launch_url      = "https://traefik.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/traefik.svg"
       skip_path_regex = ""
@@ -196,7 +184,7 @@ locals {
     zigbee2mqtt-wifi = {
       name            = "Zigbee2MQTT (WiFi)"
       external_host   = "https://zigbee2mqtt-wifi.dominiksiejak.pl"
-      internal_host   = "http://zigbee2mqtt-wifi:8080"
+      internal_host   = "http://zigbee2mqtt-wifi.hass.svc:8080"
       launch_url      = "https://zigbee2mqtt-wifi.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zigbee2mqtt.svg"
       skip_path_regex = ""
@@ -204,7 +192,7 @@ locals {
     zigbee2mqtt-usb = {
       name            = "Zigbee2MQTT (USB)"
       external_host   = "https://zigbee2mqtt-usb.dominiksiejak.pl"
-      internal_host   = "http://zigbee2mqtt-usb:8080"
+      internal_host   = "http://zigbee2mqtt-usb.hass.svc:8080"
       launch_url      = "https://zigbee2mqtt-usb.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zigbee2mqtt.svg"
       skip_path_regex = ""
@@ -212,7 +200,7 @@ locals {
     watchyourlan = {
       name            = "WatchYourLAN"
       external_host   = "https://lan.dominiksiejak.pl"
-      internal_host   = "http://watchyourlan:8840"
+      internal_host   = "http://watchyourlan.watchyourlan.svc:8840"
       launch_url      = "https://lan.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/watchyourlan.png"
       skip_path_regex = ""
@@ -220,7 +208,7 @@ locals {
     hass-timemachine = {
       name            = "HASS Time Machine"
       external_host   = "https://hass-timemachine.dominiksiejak.pl"
-      internal_host   = "http://hass-timemachine:3000"
+      internal_host   = "http://hass-timemachine.hass.svc:54000"
       launch_url      = "https://hass-timemachine.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/home-assistant.svg"
       skip_path_regex = ""
@@ -228,7 +216,7 @@ locals {
     adguard = {
       name          = "AdGuard"
       external_host = "https://adguard.dominiksiejak.pl"
-      internal_host = "http://adguard:3000"
+      internal_host = "http://adguard.adguard.svc:3000"
       launch_url    = "https://adguard.dominiksiejak.pl"
       icon_url      = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/adguard-home.svg"
       # DoH only — /control is the admin API and must stay Authentik-gated.
@@ -237,7 +225,7 @@ locals {
     zigbee-bridge = {
       name            = "Zigbee Bridge"
       external_host   = "https://zigbee-bridge.dominiksiejak.pl"
-      internal_host   = "http://192.168.89.20:80"
+      internal_host   = "http://lan-zigbee-bridge.traefik.svc:80"
       launch_url      = "https://zigbee-bridge.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zigbee2mqtt.svg"
       skip_path_regex = ""
@@ -280,17 +268,60 @@ locals {
   #───────────────────────────────────────────────────────────────────────────────
 
   dashboard_applications = {
-    gatus = {
-      name       = "Gatus"
-      launch_url = "https://status.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/gatus.svg"
-    }
     # Tile only — UniFi has no free OIDC/LDAP; local admin still required after launch.
     # Traefik class = public (no Authentik forward-auth).
     unifi = {
       name       = "UniFi"
       launch_url = "https://unifi.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/unifi.svg"
+    }
+    # Tile only — Better Auth, signup off. No Authentik provider.
+    paperclip = {
+      name       = "Paperclip"
+      launch_url = "https://paperclip.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/paperclip.svg"
+    }
+    # *arr classified native-oidc but no OIDC client is configured in this repo.
+    # Tiles only — do not add oauth2 entries until each app has a real callback.
+    bazarr = {
+      name       = "Bazarr"
+      launch_url = "https://bazarr.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/bazarr.svg"
+    }
+    jellyfin = {
+      name       = "Jellyfin"
+      launch_url = "https://jellyfin.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyfin.svg"
+    }
+    profilarr = {
+      name       = "Profilarr"
+      launch_url = "https://profilarr.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/profilarr.svg"
+    }
+    prowlarr = {
+      name       = "Prowlarr"
+      launch_url = "https://prowlarr.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/prowlarr.svg"
+    }
+    radarr = {
+      name       = "Radarr"
+      launch_url = "https://radarr.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/radarr.svg"
+    }
+    readarr = {
+      name       = "Readarr"
+      launch_url = "https://readarr.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/readarr.svg"
+    }
+    sabnzbd = {
+      name       = "SABnzbd"
+      launch_url = "https://sabnzbd.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sabnzbd.svg"
+    }
+    sonarr = {
+      name       = "Sonarr"
+      launch_url = "https://sonarr.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sonarr.svg"
     }
   }
 
@@ -299,8 +330,6 @@ locals {
   #───────────────────────────────────────────────────────────────────────────────
 
   user_accessible_apps = toset([
-    "dozzle",
-    "gatus",
     "gitea",
     "grafana",
     "grafana-cloud",

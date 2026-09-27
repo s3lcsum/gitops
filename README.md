@@ -1,282 +1,190 @@
-# Home Infrastructure as Code
+# homelab
 
-A reference repository showcasing how I like to manage my home lab infrastructure — treating personal infra with the same rigor you'd expect in a production environment. Everything is versioned, automated where it makes sense, and documented properly.
+<p align="center">
+  <strong>one house, one git repo, too many daemons</strong>
+</p>
 
-**Public by design:** the repo (and the LAN map / hostnames in it) is intentionally public. Treat topology as non-secret; protect credentials and private Cloudflare/state separately.
+<p align="center">
+  kubeadm on a mini PC · Argo CD · OpenTofu · Traefik · Authentik · a NAS that holds everything
+</p>
 
-**What's here:**
-
-- `stacks/` — Remaining Portainer compose only (`dozzle`, `postgres`, `traefik`)
-- `kubernetes/` — Argo CD apps (most workloads)
-- `terraform/` — Infrastructure as Code modules for various providers (OpenTofu state in **GCS**, not Terraform Cloud)
-- `docs/` — MkDocs: ADRs, golden paths, runbooks, networking notes
-
----
-
-## At a Glance
-
-| Layer | What | Tools |
-|-------|------|-------|
-| **Compute** | Proxmox VE hosts running LXC containers | lake / edge hosts (not TF-managed in this repo) |
-| **Containers** | Leftover Docker on Portainer (Dozzle, Postgres, Traefik hop origin) | Compose in `stacks/{dozzle,postgres,traefik}/` |
-| **Kubernetes** | kubeadm on lake (+ vibe worker when Ready); Flannel host-gw; Traefik-k8s edge | `kubernetes/` (Argo CD) |
-| **Networking** | MikroTik RouterOS + UniFi Wi-Fi | OpenTofu (`terraform/routeros/`, `terraform/unifi/`); UniFi controller in `kubernetes/unifi/` |
-| **Edge** | Traefik-k8s + CrowdSec on direct WAN; Portainer Traefik for remaining hops; Cloudflare Tunnel/Access for specific hosts | `kubernetes/traefik/`, `stacks/traefik/`, `kubernetes/cloudflared/`, `terraform/cloudflare/` |
-| **Identity** | Authentik (OAuth, SAML, LDAP) | `kubernetes/authentik/` + OpenTofu (`terraform/authentik/`) |
-| **Inventory** | NetBox for IPAM/DCIM | `kubernetes/netbox/` + OpenTofu (`terraform/netbox/`) |
-| **Secrets** | Host-local compose `.env` + gitignored tfvars; k8s via 1Password ExternalSecrets | `*.env` / `defaults.auto.tfvars`, `kubernetes/*/resources/externalsecret-*.yaml` |
-| **Monitoring** | Gatus, Grafana + VictoriaMetrics + Blackbox | `kubernetes/gatus/`, `kubernetes/monitoring/` (promscrape + CasC under `config/`), `terraform/grafana/` |
-| **Media** | Jellyfin + *arr + downloaders (Gluetun VPN) | `kubernetes/mediabox/` |
-
-📖 **[Documentation site](docs/index.md)** — MkDocs (networking notes, ADRs, golden paths).
+<p align="center">
+  <a href="#stack">stack</a> ·
+  <a href="#hardware">hardware</a> ·
+  <a href="#edge">edge</a> ·
+  <a href="#apps">apps</a> ·
+  <a href="#layout">layout</a> ·
+  <a href="#operating-it">operating it</a> ·
+  <a href="#roadmap">roadmap</a> ·
+  <a href="#changelog">changelog</a>
+</p>
 
 ---
 
-## NetBox: Source of Truth
+Public on purpose. Hostnames and the LAN map are not secrets. Credentials, `*.env`, `*.tfvars`, and Cloudflare state are.
 
-[NetBox](https://github.com/netbox-community/netbox) serves as the single source of truth for infrastructure inventory:
+Most of the lab runs on a single kubeadm node and is reconciled by Argo CD. OpenTofu owns the things Kubernetes should not: DNS rewrites, the router, Wi-Fi, identity apps, and Grafana Cloud.
 
-- **What it tracks**: Sites, devices, device types, manufacturers, IP addresses, prefixes, VLANs, tags
-- **How it fits**: The `terraform/netbox/` module manages NetBox objects as code, keeping the inventory in sync with reality
-- **Access**: Internal only — `https://netbox.your-domain.local` (placeholder)
+```
+                        internet
+                           │
+            ┌──────────────┴──────────────┐
+            │                             │
+     WAN :80/:443                  Cloudflare Tunnel
+     RouterOS allowlist            + Access (some hosts)
+            │                             │
+            └──────────────┬──────────────┘
+                           ▼
+                  traefik-k8s  :443
+                  crowdsec + authentik
+                           │
+              ┌────────────┴────────────┐
+              ▼                         ▼
+           argocd apps              hostNetwork
+           (lake .252)              hass mosquitto
+                                    adguard unifi
+```
 
-The OpenTofu module (`terraform/netbox/`) defines:
-- Device roles and types
-- Manufacturers
-- Sites and locations
-- IP prefixes and addresses
-- Tags for organization
+## stack
 
----
+| layer | what | where |
+| --- | --- | --- |
+| remote | WireGuard on the router, Tailscale if that path dies | `terraform/routeros/wireguard.tf` |
+| compute | Proxmox VE, LXC | lake-1 (always), edge-1 (mostly off) |
+| kubernetes | kubeadm, Flannel host-gw, Argo CD | `kubernetes/` |
+| edge | Traefik-k8s, CrowdSec, Authentik | `kubernetes/traefik/` |
+| identity | Authentik OAuth / SAML / LDAP | `kubernetes/authentik/` + `terraform/authentik/` |
+| dns | AdGuard Home → RouterOS → 1.1.1.1 | `kubernetes/adguard/` + `terraform/adguard/` |
+| wifi | UniFi U7 Lite, WLANs as code | `kubernetes/unifi/` + `terraform/unifi/` |
+| router | MikroTik hAP ac3 | `terraform/routeros/` |
+| data | CloudNativePG + NAS hostPath | `kubernetes/cloudnative-pg/` |
+| secrets | 1Password → External Secrets | `kubernetes/*/resources/externalsecret-*.yaml` |
+| monitoring | VictoriaMetrics, Grafana, blackbox | `kubernetes/monitoring/` + `terraform/grafana/` |
 
-## Services
+## hardware
 
-What follows matches **Docker Compose stacks deployed from this repo** (see `terraform/portainer/locals.tf`) plus a couple of things that live **outside** `stacks/` but are still part of the lab.
+| box | role | notes |
+| --- | --- | --- |
+| **lake-1** | always on | FIREBAT T8 Pro Plus, N100, 16 GB, 512 GB. Proxmox. The k8s LXC lives here (`192.168.89.252`). |
+| **edge-1** | experimental | Dell PowerEdge R610. Usually off. Sometimes a Minecraft server. |
+| **nas** | storage | Synology DS220+, 2×4 TB. Export `/volume1/media` bind-mounted into the k8s LXC at `/mnt/nas-media`. |
 
-### Apps
+ISP is INEA, 300 Mb/s FTTH, Poland. Router is a MikroTik hAP ac3. AP is a UniFi U7 Lite (`Hass` hidden 2.4 GHz for Zigbee, `Raval` on 5 GHz).
 
-| Stack | Role |
-|-------|------|
-| [Authentik](https://goauthentik.io/) | Identity (OAuth / SAML / LDAP) |
-| [AdGuard Home](https://github.com/AdguardTeam/AdGuardHome) | DNS sinkhole / ad-blocking |
-| [Calibre](https://github.com/kovidgoyal/calibre) | eBook library |
-| [Cloudflared](https://github.com/cloudflare/cloudflared) | Cloudflare Tunnel |
-| [Dozzle](https://github.com/amir20/dozzle) | Container logs UI |
-| [Gatus](https://github.com/TwiN/gatus) | Uptime / status page |
-| [Gitea](https://github.com/go-gitea/gitea) | Git hosting |
-| [Homepage](https://gethomepage.dev/) | Dashboard (`kubernetes/homepage/config/services.yaml`) |
-| **Mediabox** (see below) | Media + *arr + VPN-routed downloaders |
-| **Monitoring** | [Grafana](https://grafana.com/), [VictoriaMetrics](https://github.com/VictoriaMetrics/VictoriaMetrics), [Blackbox exporter](https://github.com/prometheus/blackbox_exporter) synthetic probes, PVE exporter, [k6](https://k6.io/) smoke — CasC dashboards + alerting (TG + SMTP) |
-| [n8n](https://n8n.io/) | Workflow automation |
-| [NetBox](https://github.com/netbox-community/netbox) | IPAM / DCIM |
-| [PostgreSQL](https://www.postgresql.org/) | Shared database host |
-| [Traefik](https://traefik.io/) | Reverse proxy (Portainer / Docker-label origin; edge CrowdSec+Authentik lives on Traefik-k8s) |
-| [UniFi Network Application](https://ui.com/software) | UniFi controller (+ `mongo:7.0.40` — do not bump to 8.x on this host kernel) |
-| [WatchYourLAN](https://github.com/aceberg/watchyourlan) | LAN host visibility |
-| [Wealthfolio](https://wealthfolio.app/) | Personal finance |
+Remote access is WireGuard on the router (`terraform/routeros/wireguard.tf`). Endpoint `vpn.dominiksiejak.pl:51820`, overlay `192.168.200.0/24`, peers for laptops, phones, the micrus VPS, and the GitHub Actions runner. When that path is down, Tailscale is the fallback mesh.
 
-### Mediabox (`kubernetes/mediabox/`)
+Clients are the usual pile: Apple, Android, a Kobo, Windows, Fedora, Samsung TVs, a Pi doing SDR, printers that should not be on the internet.
 
-[Jellyfin](https://jellyfin.org/), [Seerr](https://github.com/seerr-team/seerr) (image `fallenbagel/jellyseerr`), Sonarr, Radarr, Prowlarr, FlareSolverr, [Gluetun](https://github.com/qdm12/gluetun), qBittorrent, SABnzbd, plus a `scraparr` metrics exporter for the arr stack — wired the usual way behind Traefik and the VPN gateway where applicable.
+`192.168.89.0/24` is the primary LAN. `.0–.9` network gear, `.10–.99` static, `.100–.199` DHCP, `.200–.254` homelab. IoT sits on `192.168.8.0/24`. DHCP and NTP come from RouterOS.
 
-### Still on Portainer (`stacks/`)
+## edge
 
-- **Dozzle**, **compose Postgres**, **compose Traefik** (hop origin for a few hosts). Everything else is under `kubernetes/`.
+Two doors. Both stay.
 
----
+| path | what it is |
+| --- | --- |
+| **direct :80/:443** | Traefik-k8s on `.252`, CrowdSec, Authentik forward-auth or the app's own OIDC. RouterOS firewall allowlist is the IP gate. |
+| **Cloudflare Tunnel + Access** | Separate ingress for specific hosts. Extra layer. Does not replace the allowlist. |
 
-## Infrastructure Overview
+Auth class per host is `scripts/auth_classification.yaml`: `forward-auth`, `native-oidc`, `public`, `lan-only`.
 
-### Network
+## apps
 
-- **ISP**: INEA (Poland) — 300Mb/s synchronous FTTH
-- **Router**: MikroTik hAP ac3
-- **Wireless**: UniFi U7 Lite AP (controller in `kubernetes/unifi/`, WLAN/AP as code in `terraform/unifi/`)
-- **Remote Access**: Public IP with WireGuard / ngrok (backup)
+Argo CD parents everything under `kubernetes/`. A directory with `values.yaml` (`repoURL` / `chart` / `version`) becomes a Helm Application. No `values.yaml` means a hand-written Application in `kubernetes/argocd/resources/`.
 
-**Dual WAN edge (both intentional — do not "pick one"):**
+| app | job |
+| --- | --- |
+| [AdGuard Home](https://github.com/AdguardTeam/AdGuardHome) | DNS. hostNetwork on the lake node, `:53` and `:3000`. |
+| [Authentik](https://goauthentik.io/) | Identity. hostNetwork HTTP `:9000` (that is the forward-auth URL). |
+| [Argo CD](https://argo-cd.readthedocs.io/) | This repo, applied to itself. Login is Authentik OIDC. |
+| [Calibre](https://github.com/kovidgoyal/calibre) | Books. Library is `/mnt/nas-media/books`. |
+| [CloudNativePG](https://cloudnative-pg.io/) | Shared Postgres. `local-path`, 8 Gi, one instance, pinned to the control plane. |
+| [Gitea](https://github.com/go-gitea/gitea) | Git. Data is `/mnt/nas-media/gitea`. |
+| [Headlamp](https://headlamp.dev/) | Kubernetes UI. Authentik in front. The pod SA is cluster-admin, so the app is admins-only. |
+| [Home Assistant](https://www.home-assistant.io/) | hostNetwork on `.252`, plus Mosquitto, two Zigbee2MQTT, Time Machine. |
+| [Homepage](https://gethomepage.dev/) | The dashboard. |
+| [Mediabox](https://jellyfin.org/) | Jellyfin, Seerr, Sonarr, Radarr, Prowlarr, Bazarr, Readarr, FlareSolverr. Gluetun + qBittorrent + SABnzbd share one pod so downloads stay on the VPN. No GPU, software transcode. |
+| [n8n](https://n8n.io/) | Workflows. Login webhook drives the WAN allowlist. |
+| [NetBox](https://github.com/netbox-community/netbox) | IPAM / DCIM, also managed as code from `terraform/netbox/`. |
+| [Paperclip](https://github.com/paperclipai/paperclip) | Agents. Embedded Postgres, signup off. |
+| [Traefik](https://traefik.io/) | The edge. hostNetwork DaemonSet, `:80` / `:443` on every node. |
+| [UniFi](https://ui.com/software) | Controller. hostNetwork so inform can own `:8080`. Mongo stays on 7.0.x. |
+| [WatchYourLAN](https://github.com/aceberg/watchyourlan) | Who is on the LAN. hostNetwork `:8840`. |
+| [Wealthfolio](https://wealthfolio.app/) | Personal finance. |
 
-| Path | What sits on it |
-|------|-----------------|
-| **Direct WAN :80/:443** | Traefik-k8s + CrowdSec + Authentik forward-auth / native OIDC. **RouterOS firewall allowlist** is the IP gate. Cloudflare Access is *not* required on this path. Compose hosts on the allowlist hop to Portainer Traefik. |
-| **Cloudflare Tunnel + Access** | Separate ingress for specific hosts/services (JWT / Access where configured). Extra layer for those apps — complements RouterOS, does not replace it. |
+Portainer, Dozzle, and compose Postgres are gone. `192.168.89.253` is down. App databases live on CloudNativePG.
 
-Auth class for every Traefik host lives in `scripts/auth_classification.yaml`.
+## layout
 
-**IP Allocation:**
+```
+.
+├── kubernetes/          Argo CD apps. This is the workload tree.
+│   ├── argocd/          self-managed Argo CD + ApplicationSet
+│   ├── traefik/         edge
+│   ├── flannel/         CNI
+│   └── <app>/           one directory per app
+├── terraform/           OpenTofu. State in GCS, prefix gitops-<module>.
+│   ├── authentik/  adguard/  routeros/  unifi/  cloudflare/
+│   ├── grafana/  netbox/  gcp/  gitea/  backblaze/
+│   └── base.Makefile
+├── scripts/             auth_classification.yaml
+└── .github/workflows/   manual tofu plan/apply over WireGuard
+```
 
-| Range | Purpose |
-|-------|---------|
-| `.0–.9` | Network devices |
-| `.10–.99` | Static IPs |
-| `.100–.199` | DHCP pool |
-| `.200–.254` | Homelab interfaces |
+## operating it
 
-DHCP + NTP handled via RouterOS.
-
-### Compute
-
-- **Main Server (lake-1)**: Mini PC FIREBAT T8 Pro Plus — Intel N100, 16GB DDR5, 512GB SSD
-  - Runs Proxmox VE
-  - Hosts containers and VMs
-- **Secondary Server (edge-1)**: Dell PowerEdge R610 (experimental)
-  - Runs Proxmox VE
-  - Mostly off, sometimes runs a Minecraft server for my brother
-
-**LXC Containers on Proxmox:**
-
-- Docker (Portainer host)
-- HomeAssistant
-
-### Storage
-
-- **NAS**: Synology DS220+ with 2 × 4TB disks
-  - Primary storage + backups
-
-### Client Devices
-
-- Apple ecosystem (MacBook, iPhone, iPad, etc.)
-- Android devices
-- eBook readers (Kobo/Kindle)
-- PCs with Windows 11/Fedora
-- Samsung TVs
-- Raspberry Pi (SDR Radio, 3D Printers)
-- Printers: Sharp MX-4071, OKI ES5461
-
----
-
-## How to Use This Repo
-
-### OpenTofu Workflow
-
-Each OpenTofu module under `terraform/` has a `Makefile` with standard targets:
+OpenTofu `1.12.5`. From a module directory:
 
 ```bash
 cd terraform/<module>
-make init      # Initialize OpenTofu
-make plan      # Preview changes
-make apply     # Apply changes (auto-approve)
-make destroy   # Tear down (auto-approve)
-make validate  # Validate configuration
-make fmt       # Format files
-make check     # Run validate + fmt
-make clean     # Remove .terraform/ and lock files
+make check     # validate + fmt
+make plan
+make apply     # -auto-approve
 ```
 
-Some modules have extra targets (e.g., `terraform/portainer/` has `sync-portainer` to rsync stacks to the host).
+Argo CD is the deploy path for `kubernetes/`. Bootstrap (only if Argo itself is down):
 
-### Docker Stacks Workflow
-
-Stacks live in `stacks/<service>/` with:
-
-- `compose.yaml` — the Docker Compose file
-- `*.env.example` — example environment variables (copy to `*.env` and fill in secrets)
-- Optional config files (e.g., `traefik.yaml`, `dynamic.yaml`)
-
-**To deploy a stack:**
-
-1. Copy `*.env.example` to `*.env` and fill in secrets
-2. Either:
-   - Use Portainer to deploy the stack, or
-   - Run `docker compose up -d` directly on the host
-
-The `terraform/portainer/` module handles syncing stacks to the Portainer host via rsync.
-
-### Secrets Handling
-
-- **`.env.example` files**: Committed to the repo — contain structure and placeholder values
-- **`.env` files**: Never committed — contain actual secrets (gitignored). Fill on the Portainer host under `/opt/<stack>/` (rsync from `make -C terraform/portainer apply` syncs compose, not secrets).
-- **Terraform secrets:** gitignored `defaults.auto.tfvars`, `TF_VAR_*`, or a data source / remote state from another repo (e.g. UniFi admin + WLAN passphrases from 1Password into `terraform/unifi/defaults.auto.tfvars`).
-- **Kubernetes secrets:** 1Password via External Secrets Operator (`kubernetes/*/resources/externalsecret-*.yaml`).
-
----
-
-## Repository Structure
-
-```
-├── docs/                           # MkDocs source
-│   ├── index.md                    # Docs home
-│   ├── networking/                 # Homelab addressing
-│   ├── adr/                        # Architecture Decision Records
-│   ├── golden-paths/               # How-to guides
-│   ├── runbooks/                   # Operational procedures
-│   └── assets/                     # Icons and images (e.g. README)
-│
-├── stacks/                         # Docker Compose stacks (Portainer)
-│   ├── adguard/
-│   ├── authentik/
-│   ├── calibre/
-│   ├── dozzle/
-│   ├── gatus/
-│   ├── gitea/
-│   ├── homepage/
-│   ├── mediabox/
-│   ├── monitoring/
-│   ├── n8n/
-│   ├── netbox/
-│   ├── postgres/
-│   ├── traefik/
-│   ├── unifi/
-│   ├── watchyourlan/
-│   └── wealthfolio/
-│
-├── kubernetes/                     # In-cluster GitOps (kubeadm node on lake)
-│   ├── argocd/                     # Self-managed Argo CD (remote chart + values + Kustomize)
-│   ├── traefik/                    # Edge L7 (hostNetwork :80/:443, CrowdSec, Authentik)
-│   ├── flannel/                    # CNI (host-gw) + kube-proxy
-│   ├── cert-manager/
-│   ├── external-secrets/
-│   ├── cloudnative-pg/
-│   ├── headlamp/                   # Kubernetes UI (Authentik forward-auth)
-│   ├── kyverno/                    # + policy-reporter UI
-│   ├── cloudflared/                # Cloudflare Tunnel connector → Traefik-k8s
-│   ├── argo-workflows/
-│   ├── argo-events/
-│   ├── argo-rollouts/
-│   ├── coredns/
-│   └── local-path-provisioner/
-│
-├── terraform/                      # Infrastructure as Code (GCS state)
-│   ├── authentik/
-│   ├── backblaze/
-│   ├── cloudflare/
-│   ├── gcp/
-│   ├── gitea/
-│   ├── grafana/
-│   ├── netbox/
-│   ├── portainer/
-│   ├── postgres/
-│   ├── routeros/
-│   └── unifi/                      # U7 Lite + WLANs (Hass / Raval)
-│
-├── mkdocs.yml                      # MkDocs configuration
-└── README.md
+```bash
+make -C kubernetes/argocd bootstrap
 ```
 
----
+Context `k8s@lake`, chart `argo-cd` `10.4.0`. After that, push to `main`.
 
-## Roadmap
+Secrets:
 
-- [ ] Migrate cloud drives to NAS
-- [ ] Migrate backups from Proxmox to NAS
-- [x] Use Authentik LDAP for Synology
-- [ ] Add NUT/UPS integration
-- [x] (retroactively added) kubeadm node + self-managed Argo CD
-- [x] (retroactively added) Argo CD login via Authentik OIDC (local admin off); client secret + GitHub PAT come from 1Password via External Secrets
-- [x] (retroactively added) Dropped Phase + Vaultwarden from the public repo; compose secrets are host-local `.env` again
-- [x] (retroactively added) Remove HashiCorp Vault. Postgres passwords and other app secrets live in host `.env` or tfvars
-- [x] (retroactively added) UniFi controller + U7 Lite / WLANs as code (`stacks/unifi/`, `terraform/unifi/`)
-- [ ] Move `terraform/cloudflare` (zone/tunnel/Access/Workers) to a private sibling repo
-- [ ] Self-hosted LLM (Ollama)
-- [ ] Separated subnets (IoT isolation)
-- [ ] Use Terraform for RouterOS management (or via NetBox)?
-- [x] (retroactively added) Static `x-webhook-secret` on public n8n webhooks; Authentik login firewall is IPv4-only
-- [x] (retroactively added) Home Assistant stack on the lake node (`kubernetes/hass/`) instead of Portainer
-- [x] (retroactively added) Drop empty `kustomization.yaml` on Helm-only ApplicationSet apps
+- Kubernetes: 1Password items, External Secrets. Tag Argo CD items `ArgoCD External Secrets Operator`.
+- OpenTofu: gitignored `defaults.auto.tfvars`. Never commit it.
+
+New app data goes on the NAS bind: `/mnt/nas-media/k8s/<namespace>/<name>`. StorageClass `nfs` exists and is not the default. Do not mount `/dev/dri`. The LXC has the directory and no GPU nodes.
+
+## roadmap
+
+- [ ] Cloud drives onto the NAS
+- [ ] Proxmox backups onto the NAS
+- [x] Authentik LDAP for the Synology
+- [ ] NUT / UPS
+- [x] kubeadm + self-managed Argo CD
+- [x] Argo CD via Authentik OIDC, secrets from 1Password
+- [x] Vault, Phase, and Vaultwarden out of the public repo
+- [x] UniFi controller + U7 Lite / WLANs as code
+- [ ] `terraform/cloudflare` into a private sibling repo
+- [ ] Self-hosted LLM
+- [ ] Real IoT isolation
+- [ ] RouterOS fully driven from this repo (or from NetBox)
+- [x] Home Assistant on the lake node
+- [x] Helm-only apps drop empty `kustomization.yaml`
 
 ---
 
 ## Changelog
+
+### 27.09.2026
+
+**LDAP outpost left `.253`.** The docker-local Authentik LDAP outpost targeted `192.168.89.253`, which is down. It now runs in-cluster. Traefik terminates LDAPS on `ldap.dominiksiejak.pl` (`:389` / `:636`).
+
+**kube-apiserver via Traefik.** `k8s.dominiksiejak.pl` is LAN-only SNI passthrough on `:6444` so kubectl client certs reach the apiserver. HTTP `:443` would terminate TLS and drop the cert. No WAN dst-nat on that entrypoint.
+
+**RouterOS dst-nat for `:6444`.** WAN sources stay on `allowed-wan`. Hairpin covers clients that resolve the public IP from the LAN and still need the lake node.
 
 ### 26.09.2026
 

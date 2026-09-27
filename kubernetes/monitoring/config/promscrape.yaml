@@ -17,12 +17,6 @@ scrape_configs:
       - targets:
           - traefik:9100
 
-  - job_name: "gatus"
-    static_configs:
-      - targets:
-          - "gatus.gatus.svc:8080"
-    metrics_path: /metrics
-
   # WatchYourLAN is hostNetwork on the lake node.
   - job_name: "watchyourlan"
     static_configs:
@@ -124,21 +118,6 @@ scrape_configs:
       - targets:
           - n8n.n8n.svc:5678
 
-  - job_name: blackbox-portainer
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://portainer.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
   - job_name: blackbox-netbox
     metrics_path: /probe
     params:
@@ -146,21 +125,6 @@ scrape_configs:
     static_configs:
       - targets:
           - "https://netbox.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-dozzle
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://dozzle.dominiksiejak.pl"
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -529,21 +493,6 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter.monitoring.svc:9115
 
-  - job_name: blackbox-adminer
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://adminer.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
   - job_name: blackbox-bazarr
     metrics_path: /probe
     params:
@@ -626,21 +575,6 @@ scrape_configs:
     static_configs:
       - targets:
           - "https://readarr.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-status
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://status.dominiksiejak.pl"
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

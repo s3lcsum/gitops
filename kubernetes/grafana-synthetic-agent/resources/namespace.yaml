@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: grafana-synthetic-agent
+  labels:
+    app.kubernetes.io/name: grafana-synthetic-agent
+    app.kubernetes.io/part-of: grafana-synthetic-agent

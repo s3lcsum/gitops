@@ -6,8 +6,8 @@ resources:
   - application-authentik.yaml
   - application-calibre.yaml
   - application-cloudflared.yaml
-  - application-gatus.yaml
   - application-gitea.yaml
+  - application-grafana-synthetic-agent.yaml
   - application-mediabox.yaml
   - application-monitoring.yaml
   - application-n8n.yaml
@@ -15,6 +15,7 @@ resources:
   - application-unifi.yaml
   - application-watchyourlan.yaml
   - application-coredns.yaml
+  - application-external-dns.yaml
   - application-hass.yaml
   - application-homepage.yaml
   - application-paperclip.yaml

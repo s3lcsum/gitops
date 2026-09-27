@@ -1,0 +1,70 @@
+# ApplicationSet chart pin.
+repoURL: https://kedacore.github.io/charts
+chart: keda
+version: 2.21.0
+
+# Overrides for kedacore/keda 2.21.0 (app v2.21.0).
+# Scale-to-zero is HTTP via Traefik, not the HTTP add-on. The add-on replaces
+# the edge; Traefik already owns :443. An nginx interceptor in resources/
+# holds the request and feeds the nginx scaler.
+crds:
+  install: true
+
+additionalLabels:
+  app.kubernetes.io/part-of: keda
+
+podLabels:
+  keda:
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: Helm
+  metricsAdapter:
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: Helm
+  webhooks:
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: Helm
+
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+
+operator:
+  replicaCount: 1
+metricsServer:
+  replicaCount: 1
+webhooks:
+  replicaCount: 1
+  # Missing CRDs must not block unrelated applies.
+  failurePolicy: Ignore
+
+resources:
+  operator:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  metricServer:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  webhooks:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+logging:
+  operator:
+    format: json
+  metricServer:
+    zapEncoder: json
+  webhooks:
+    format: json

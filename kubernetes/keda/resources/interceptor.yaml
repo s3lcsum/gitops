@@ -1,0 +1,490 @@
+# One always-on proxy per scaled app. Traefik (or in-cluster callers) point here.
+# stub_status active connections feed that app's ScaledObject only.
+# proxy_connect_timeout holds the client until the backend accepts TCP.
+#
+# flaresolverr has no IngressRoute. *arr apps call the ClusterIP, which has
+# no endpoints at 0 replicas. interceptor-flaresolverr is what they should
+# use (http://interceptor-flaresolverr.keda.svc:8191). Until that URL is set
+# in Prowlarr, a cold *arr request gets connection refused.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: interceptor
+  namespace: keda
+  labels:
+    app.kubernetes.io/name: interceptor
+    app.kubernetes.io/instance: interceptor
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: argocd
+data:
+  nginx.conf: |
+    worker_processes 1;
+    error_log /dev/stderr warn;
+    pid /tmp/nginx.pid;
+
+    events {
+      worker_connections 64;
+    }
+
+    http {
+      access_log off;
+      client_body_temp_path /tmp/client_body;
+      proxy_temp_path /tmp/proxy;
+      fastcgi_temp_path /tmp/fastcgi;
+      uwsgi_temp_path /tmp/uwsgi;
+      scgi_temp_path /tmp/scgi;
+
+      proxy_connect_timeout 150s;
+      proxy_send_timeout 150s;
+      proxy_read_timeout 150s;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $forwarded_proto;
+      proxy_ssl_verify off;
+      proxy_ssl_server_name on;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+
+      map $http_upgrade $connection_upgrade {
+        default upgrade;
+        "" close;
+      }
+
+      server {
+        listen LISTEN_METRICS;
+        location /healthz {
+          return 200 "ok\n";
+        }
+        location /metrics {
+          stub_status;
+        }
+      }
+
+      server {
+        listen LISTEN_HTTP;
+        location / {
+          proxy_pass UPSTREAM_URL;
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: interceptor-headlamp
+  namespace: keda
+  labels:
+    app.kubernetes.io/name: interceptor-headlamp
+    app.kubernetes.io/instance: interceptor-headlamp
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: interceptor-headlamp
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: interceptor-headlamp
+        app.kubernetes.io/instance: interceptor-headlamp
+        app.kubernetes.io/part-of: keda
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: interceptor
+          image: nginx:1.29.1-alpine
+          env:
+            - name: UPSTREAM_URL
+              value: http://headlamp.headlamp.svc.cluster.local:80
+            - name: LISTEN_HTTP
+              value: "8080"
+            - name: LISTEN_METRICS
+              value: "8081"
+          command: ["/bin/sh", "-c"]
+          args:
+            - sed -e "s|UPSTREAM_URL|$UPSTREAM_URL|" -e "s|LISTEN_HTTP|$LISTEN_HTTP|" -e "s|LISTEN_METRICS|$LISTEN_METRICS|" /config/nginx.conf > /tmp/nginx.conf && exec nginx -c /tmp/nginx.conf -g 'daemon off;'
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: metrics
+              containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+      volumes:
+        - name: config
+          configMap:
+            name: interceptor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: interceptor-headlamp
+  namespace: keda
+  labels:
+    app.kubernetes.io/name: interceptor-headlamp
+    app.kubernetes.io/instance: interceptor-headlamp
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: interceptor-headlamp
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+    - name: metrics
+      port: 8081
+      targetPort: metrics
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: interceptor-calibre
+  namespace: keda
+  labels:
+    app.kubernetes.io/name: interceptor-calibre
+    app.kubernetes.io/instance: interceptor-calibre
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: interceptor-calibre
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: interceptor-calibre
+        app.kubernetes.io/instance: interceptor-calibre
+        app.kubernetes.io/part-of: keda
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: interceptor
+          image: nginx:1.29.1-alpine
+          env:
+            - name: UPSTREAM_URL
+              value: http://calibre.calibre.svc.cluster.local:8080
+            - name: LISTEN_HTTP
+              value: "8080"
+            - name: LISTEN_METRICS
+              value: "8081"
+          command: ["/bin/sh", "-c"]
+          args:
+            - sed -e "s|UPSTREAM_URL|$UPSTREAM_URL|" -e "s|LISTEN_HTTP|$LISTEN_HTTP|" -e "s|LISTEN_METRICS|$LISTEN_METRICS|" /config/nginx.conf > /tmp/nginx.conf && exec nginx -c /tmp/nginx.conf -g 'daemon off;'
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: metrics
+              containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+      volumes:
+        - name: config
+          configMap:
+            name: interceptor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: interceptor-calibre
+  namespace: keda
+  labels:
+    app.kubernetes.io/name: interceptor-calibre
+    app.kubernetes.io/instance: interceptor-calibre
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: interceptor-calibre
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+    - name: metrics
+      port: 8081
+      targetPort: metrics
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: interceptor-prowlarr
+  namespace: keda
+  labels:
+    app.kubernetes.io/name: interceptor-prowlarr
+    app.kubernetes.io/instance: interceptor-prowlarr
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: interceptor-prowlarr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: interceptor-prowlarr
+        app.kubernetes.io/instance: interceptor-prowlarr
+        app.kubernetes.io/part-of: keda
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: interceptor
+          image: nginx:1.29.1-alpine
+          env:
+            - name: UPSTREAM_URL
+              value: http://prowlarr.mediabox.svc.cluster.local:9696
+            - name: LISTEN_HTTP
+              value: "8080"
+            - name: LISTEN_METRICS
+              value: "8081"
+          command: ["/bin/sh", "-c"]
+          args:
+            - sed -e "s|UPSTREAM_URL|$UPSTREAM_URL|" -e "s|LISTEN_HTTP|$LISTEN_HTTP|" -e "s|LISTEN_METRICS|$LISTEN_METRICS|" /config/nginx.conf > /tmp/nginx.conf && exec nginx -c /tmp/nginx.conf -g 'daemon off;'
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: metrics
+              containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+      volumes:
+        - name: config
+          configMap:
+            name: interceptor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: interceptor-prowlarr
+  namespace: keda
+  labels:
+    app.kubernetes.io/name: interceptor-prowlarr
+    app.kubernetes.io/instance: interceptor-prowlarr
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: interceptor-prowlarr
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+    - name: metrics
+      port: 8081
+      targetPort: metrics
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: interceptor-flaresolverr
+  namespace: keda
+  labels:
+    app.kubernetes.io/name: interceptor-flaresolverr
+    app.kubernetes.io/instance: interceptor-flaresolverr
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: interceptor-flaresolverr
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: interceptor-flaresolverr
+        app.kubernetes.io/instance: interceptor-flaresolverr
+        app.kubernetes.io/part-of: keda
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: interceptor
+          image: nginx:1.29.1-alpine
+          env:
+            - name: UPSTREAM_URL
+              value: http://flaresolverr.mediabox.svc.cluster.local:8191
+            - name: LISTEN_HTTP
+              value: "8191"
+            - name: LISTEN_METRICS
+              value: "8081"
+          command: ["/bin/sh", "-c"]
+          args:
+            - sed -e "s|UPSTREAM_URL|$UPSTREAM_URL|" -e "s|LISTEN_HTTP|$LISTEN_HTTP|" -e "s|LISTEN_METRICS|$LISTEN_METRICS|" /config/nginx.conf > /tmp/nginx.conf && exec nginx -c /tmp/nginx.conf -g 'daemon off;'
+          ports:
+            - name: http
+              containerPort: 8191
+            - name: metrics
+              containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+      volumes:
+        - name: config
+          configMap:
+            name: interceptor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: interceptor-flaresolverr
+  namespace: keda
+  labels:
+    app.kubernetes.io/name: interceptor-flaresolverr
+    app.kubernetes.io/instance: interceptor-flaresolverr
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: interceptor-flaresolverr
+  ports:
+    - name: http
+      port: 8191
+      targetPort: http
+    - name: metrics
+      port: 8081
+      targetPort: metrics
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: interceptor-unifi
+  namespace: keda
+  labels:
+    app.kubernetes.io/name: interceptor-unifi
+    app.kubernetes.io/instance: interceptor-unifi
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: interceptor-unifi
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: interceptor-unifi
+        app.kubernetes.io/instance: interceptor-unifi
+        app.kubernetes.io/part-of: keda
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: interceptor
+          image: nginx:1.29.1-alpine
+          env:
+            - name: UPSTREAM_URL
+              value: https://unifi.unifi.svc.cluster.local:8443
+            - name: LISTEN_HTTP
+              value: "8080"
+            - name: LISTEN_METRICS
+              value: "8081"
+          command: ["/bin/sh", "-c"]
+          args:
+            - sed -e "s|UPSTREAM_URL|$UPSTREAM_URL|" -e "s|LISTEN_HTTP|$LISTEN_HTTP|" -e "s|LISTEN_METRICS|$LISTEN_METRICS|" /config/nginx.conf > /tmp/nginx.conf && exec nginx -c /tmp/nginx.conf -g 'daemon off;'
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: metrics
+              containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+      volumes:
+        - name: config
+          configMap:
+            name: interceptor
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: interceptor-unifi
+  namespace: keda
+  labels:
+    app.kubernetes.io/name: interceptor-unifi
+    app.kubernetes.io/instance: interceptor-unifi
+    app.kubernetes.io/part-of: keda
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: interceptor-unifi
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+    - name: metrics
+      port: 8081
+      targetPort: metrics

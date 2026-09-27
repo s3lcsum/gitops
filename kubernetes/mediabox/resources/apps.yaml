@@ -9,7 +9,8 @@ metadata:
     app.kubernetes.io/part-of: mediabox
     app.kubernetes.io/managed-by: argocd
 spec:
-  replicas: 1
+  # KEDA ScaledObject (kubernetes/keda) owns this.
+  replicas: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: flaresolverr
@@ -25,14 +26,18 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+        - key: homelab.dominiksiejak.pl/worker
+          operator: Exists
+          effect: PreferNoSchedule
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: kubernetes.io/hostname
+                  - key: homelab.dominiksiejak.pl/ai
                     operator: In
-                    values: ["k8s"]
+                    values:
+                      - "true"
       containers:
         - name: flaresolverr
           image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
@@ -89,7 +94,8 @@ metadata:
     app.kubernetes.io/part-of: mediabox
     app.kubernetes.io/managed-by: argocd
 spec:
-  replicas: 1
+  # KEDA ScaledObject (kubernetes/keda) owns this.
+  replicas: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: prowlarr
@@ -105,14 +111,18 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+        - key: homelab.dominiksiejak.pl/worker
+          operator: Exists
+          effect: PreferNoSchedule
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
               - matchExpressions:
-                  - key: kubernetes.io/hostname
+                  - key: homelab.dominiksiejak.pl/ai
                     operator: In
-                    values: ["k8s"]
+                    values:
+                      - "true"
       containers:
         - name: prowlarr
           image: lscr.io/linuxserver/prowlarr:2.6.5
@@ -391,7 +401,7 @@ spec:
                     values: ["k8s"]
       containers:
         - name: bazarr
-          image: lscr.io/linuxserver/bazarr:1.6.1
+          image: lscr.io/linuxserver/bazarr:1.6.2
           env:
             - name: PUID
               value: "0"
@@ -583,7 +593,7 @@ spec:
                     values: ["k8s"]
       containers:
         - name: jellyfin
-          image: ghcr.io/linuxserver/jellyfin:10.11.11
+          image: ghcr.io/linuxserver/jellyfin:12.1
           env:
             - name: PUID
               value: "0"
@@ -898,12 +908,7 @@ spec:
     - name: http
       port: 7100
       targetPort: http
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: rreading-glasses
-  namespace: mediabox
+
   labels:
     app.kubernetes.io/name: rreading-glasses
     app.kubernetes.io/instance: rreading-glasses
