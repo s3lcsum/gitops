@@ -635,7 +635,7 @@ spec:
                     values: ["k8s"]
       containers:
         - name: jellyfin
-          image: ghcr.io/linuxserver/jellyfin:12.1
+          image: ghcr.io/linuxserver/jellyfin:12.1ubu2604-ls50
           env:
             - name: PUID
               value: "0"
