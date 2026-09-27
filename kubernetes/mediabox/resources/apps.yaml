@@ -59,6 +59,13 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /app/data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
       volumes:
         - name: config
           hostPath:
@@ -148,6 +155,13 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
       volumes:
         - name: config
           hostPath:
@@ -236,6 +250,13 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
       volumes:
         - name: config
           hostPath:
@@ -332,6 +353,13 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
       volumes:
         - name: config
           hostPath:
@@ -428,6 +456,13 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
       volumes:
         - name: config
           hostPath:
@@ -524,6 +559,13 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
       volumes:
         - name: config
           hostPath:
@@ -624,6 +666,9 @@ spec:
             requests:
               cpu: 200m
               memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
       volumes:
         - name: config
           hostPath:
@@ -718,6 +763,13 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /app/config
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
       volumes:
         - name: config
           hostPath:
@@ -804,6 +856,13 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 512Mi
       volumes:
         - name: config
           hostPath:
@@ -885,6 +944,13 @@ spec:
             - name: config
               mountPath: /app/src/scraparr/config/config.yaml
               readOnly: true
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
       volumes:
         - name: config
           hostPath:
@@ -908,7 +974,12 @@ spec:
     - name: http
       port: 7100
       targetPort: http
-
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rreading-glasses
+  namespace: mediabox
   labels:
     app.kubernetes.io/name: rreading-glasses
     app.kubernetes.io/instance: rreading-glasses
@@ -966,6 +1037,9 @@ spec:
             requests:
               cpu: 20m
               memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
 ---
 apiVersion: v1
 kind: Service
