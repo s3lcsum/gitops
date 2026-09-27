@@ -78,9 +78,8 @@ spec:
             - name: provisioning
               mountPath: /etc/grafana/provisioning
               readOnly: true
-            - name: datasource-loki
-              mountPath: /etc/grafana/provisioning/datasources/loki.yaml
-              subPath: loki.yaml
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
               readOnly: true
           resources:
             requests:
@@ -98,7 +97,7 @@ spec:
           hostPath:
             path: /mnt/nas-media/k8s/monitoring/config/grafana-provisioning
             type: Directory
-        - name: datasource-loki
+        - name: datasources
           configMap:
             name: grafana-datasource-loki
 ---
