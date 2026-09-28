@@ -1,0 +1,75 @@
+# App-owned routes. Shared middlewares + default TLS live in traefik.
+# Dex SSO is the gate. No authentik forward-auth middleware.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: terrakube-ui
+  namespace: terrakube
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`terrakube.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: terrakube-ui-service
+          port: 8080
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: terrakube-api
+  namespace: terrakube
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`terrakube-api.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: terrakube-api-service
+          port: 8080
+    - match: Host(`terrakube-api.dominiksiejak.pl`) && PathPrefix(`/dex`)
+      kind: Rule
+      priority: 10
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: terrakube-dex
+          port: 5556
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: terrakube-registry
+  namespace: terrakube
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`terrakube-reg.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: terrakube-registry-service
+          port: 8075
+  tls: {}

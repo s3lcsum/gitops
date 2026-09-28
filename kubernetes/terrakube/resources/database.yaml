@@ -1,0 +1,28 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: terrakube-user
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  cluster:
+    name: postgres
+  name: terrakube_user
+  login: true
+  databaseRoleReclaimPolicy: delete
+  passwordSecret:
+    name: terrakube-user
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: terrakube
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  name: terrakube
+  owner: terrakube_user
+  cluster:
+    name: postgres

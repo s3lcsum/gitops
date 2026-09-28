@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: terrakube-minio
+  labels:
+    app.kubernetes.io/name: terrakube
+    app.kubernetes.io/part-of: terrakube
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/terrakube/minio
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: terrakube-minio
+  namespace: terrakube
+  labels:
+    app.kubernetes.io/name: terrakube
+    app.kubernetes.io/part-of: terrakube
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nas-bind
+  volumeName: terrakube-minio
+  resources:
+    requests:
+      storage: 20Gi

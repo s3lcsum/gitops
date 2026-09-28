@@ -48,6 +48,9 @@ native-oidc:
   - sonarr
   - wealthfolio
   - workflows
+  - terrakube
+  - terrakube-api
+  - terrakube-reg
 
 public:
   - auth

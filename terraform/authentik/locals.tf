@@ -145,6 +145,16 @@ locals {
         "https://workflows.dominiksiejak.pl/oauth2/callback",
       ]
     }
+    # Dex OIDC connector. Callback is the API host, not the UI.
+    # Client id must match security.dexClientId (terrakube).
+    terrakube = {
+      name       = "Terrakube"
+      launch_url = "https://terrakube.dominiksiejak.pl"
+      icon_url   = "https://avatars.githubusercontent.com/u/80990539"
+      redirect_uris = [
+        "https://terrakube-api.dominiksiejak.pl/dex/callback",
+      ]
+    }
   }
 
   #───────────────────────────────────────────────────────────────────────────────

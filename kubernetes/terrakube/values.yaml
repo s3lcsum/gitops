@@ -1,0 +1,185 @@
+# ApplicationSet chart pin.
+repoURL: https://charts.terrakube.io
+chart: terrakube
+version: 4.7.10
+
+# Overrides for terrakube 4.7.10 (app 2.33.1).
+# Bundled Bitnami Postgres/MinIO/OpenLDAP stay off. CNPG + chart Valkey + chart MinIO.
+# Traefik IngressRoutes own the edge. Chart ingress stays disabled.
+name: terrakube
+
+security:
+  useOpenLDAP: false
+  adminGroup: TERRAKUBE_ADMIN
+  dexClientId: terrakube
+  dexClientScope: email openid profile offline_access groups
+
+openldap:
+  enabled: false
+
+dex:
+  enabled: true
+  priorityClassName: homelab-low
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  envVars:
+    - name: AUTHENTIK_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: terrakube-dex
+          key: client-secret
+  config:
+    issuer: https://terrakube-api.dominiksiejak.pl/dex
+    storage:
+      type: memory
+    web:
+      http: 0.0.0.0:5556
+      allowedOrigins: ["*"]
+    oauth2:
+      responseTypes: ["code", "token", "id_token"]
+      skipApprovalScreen: true
+    connectors:
+      - type: oidc
+        id: authentik
+        name: Authentik
+        config:
+          issuer: https://auth.dominiksiejak.pl/application/o/terrakube/
+          clientID: terrakube
+          clientSecret: $AUTHENTIK_CLIENT_SECRET
+          redirectURI: https://terrakube-api.dominiksiejak.pl/dex/callback
+          insecureEnableGroups: true
+          scopes:
+            - openid
+            - profile
+            - email
+            - offline_access
+            - groups
+    staticClients:
+      - id: terrakube
+        redirectURIs:
+          - https://terrakube.dominiksiejak.pl
+          - /device/callback
+          - http://localhost:10000/login
+          - http://localhost:10001/login
+        name: terrakube
+        public: true
+
+storage:
+  defaultStorage: true
+  default:
+    region: us-east-1
+
+minio:
+  mode: standalone
+  auth:
+    existingSecret: terrakube-minio
+    rootUserSecretKey: root-user
+    rootPasswordSecretKey: root-password
+  persistence:
+    enabled: true
+    existingClaim: terrakube-minio
+    size: 20Gi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+  priorityClassName: homelab-low
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+
+api:
+  defaultDatabase: false
+  defaultRedis: true
+  loadSampleData: false
+  existingSecret: true
+  replicaCount: 1
+  priorityClassName: homelab-low
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+  properties:
+    databaseType: POSTGRESQL
+    databaseHostname: postgres-rw.cloudnative-pg.svc
+    databaseName: terrakube
+    databaseUser: terrakube_user
+    databaseSslMode: disable
+    databasePort: "5432"
+    databaseSchema: public
+    executorUrl: http://terrakube-executor-service:8090
+
+executor:
+  enabled: true
+  existingSecret: true
+  replicaCount: 1
+  priorityClassName: homelab-low
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+registry:
+  enabled: true
+  existingSecret: true
+  replicaCount: 1
+  priorityClassName: homelab-low
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+
+ui:
+  enabled: true
+  existingSecret: true
+  replicaCount: 1
+  priorityClassName: homelab-low
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+
+valkey:
+  auth:
+    usersExistingSecret: terrakube-valkey
+  priorityClassName: homelab-low
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+
+ingress:
+  useTls: true
+  ui:
+    enabled: false
+  api:
+    enabled: false
+  registry:
+    enabled: false
+  dex:
+    enabled: false
+  executor:
+    enabled: false
