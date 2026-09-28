@@ -3,11 +3,12 @@ kind: Kustomization
 namespace: monitoring
 resources:
   - resources/namespace.yaml
+  - resources/nfs.yaml
   - resources/deployment.yaml
-  - resources/grafana-datasource-loki.yaml
   - resources/loki.yaml
   - resources/alloy.yaml
   - resources/ingressroute.yaml
   - resources/kube-state-metrics.yaml
   - resources/node-exporter.yaml
   - resources/victoria-metrics-rbac.yaml
+  - resources/mktxp.yaml

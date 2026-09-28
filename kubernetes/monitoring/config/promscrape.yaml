@@ -178,6 +178,13 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter.monitoring.svc:9115
 
+  # MKTXP talks to RouterOS API at 192.168.89.1:8728. Not router.dominiksiejak.pl.
+  - job_name: mktxp
+    scrape_interval: 60s
+    static_configs:
+      - targets:
+          - mktxp.monitoring.svc:49090
+
   - job_name: blackbox-router
     metrics_path: /probe
     params:
@@ -410,21 +417,6 @@ scrape_configs:
     static_configs:
       - targets:
           - "https://hass-timemachine.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-grafana
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://grafana.dominiksiejak.pl"
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

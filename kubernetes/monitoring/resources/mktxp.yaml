@@ -1,0 +1,152 @@
+# MKTXP scrapes RouterOS API and serves Prometheus metrics for VictoriaMetrics.
+# Grafana Cloud reads VictoriaMetrics (terraform/grafana datasource uid victoria-metrics).
+# 1Password item: Servers / mktxp. Tag: ArgoCD External Secrets Operator
+# Fields: username, password. RouterOS user needs policy api,read.
+# Do not point hostname at https://router.dominiksiejak.pl — that path is WebFig
+# behind Authentik. API is plain HTTP on 192.168.89.1:8728.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: mktxp
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: mktxp
+    app.kubernetes.io/instance: monitoring
+    app.kubernetes.io/part-of: monitoring
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: onepassword
+    kind: ClusterSecretStore
+  target:
+    name: mktxp
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      metadata:
+        labels: {}
+        annotations:
+          argocd.argoproj.io/sync-options: Prune=false
+      data:
+        mktxp.conf: |
+          [Router]
+              hostname = 192.168.89.1
+              port = 8728
+              username = {{ .username }}
+              password = {{ .password }}
+              use_ssl = False
+              plaintext_login = True
+              installed_packages = True
+              dhcp = True
+              dhcp_lease = True
+              connections = True
+              connection_stats = True
+              interface = True
+              route = True
+              pool = True
+              firewall = True
+              ipsec = True
+              wireguard = True
+              wireless = True
+              wireless_clients = True
+              capsman = True
+              capsman_clients = True
+              kid_control_devices = True
+        _mktxp.conf: |
+          [MKTXP]
+              listen = '0.0.0.0:49090'
+              socket_timeout = 5
+              initial_delay_on_failure = 120
+              max_delay_on_failure = 900
+              bandwidth = False
+              fetch_routers_in_parallel = False
+              persistent_router_connection_pool = True
+              persistent_dhcp_cache = True
+  data:
+    - secretKey: username
+      remoteRef:
+        key: mktxp/username
+    - secretKey: password
+      remoteRef:
+        key: mktxp/password
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mktxp
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: mktxp
+    app.kubernetes.io/instance: monitoring
+    app.kubernetes.io/part-of: monitoring
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mktxp
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mktxp
+        app.kubernetes.io/instance: monitoring
+        app.kubernetes.io/part-of: monitoring
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      priorityClassName: homelab-high
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: mktxp
+          image: ghcr.io/akpw/mktxp:v2.0.3
+          args:
+            - --cfg-dir
+            - /etc/mktxp
+            - export
+          ports:
+            - name: http
+              containerPort: 49090
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: http
+            periodSeconds: 30
+          volumeMounts:
+            - name: config
+              mountPath: /etc/mktxp
+              readOnly: true
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+      volumes:
+        - name: config
+          secret:
+            secretName: mktxp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mktxp
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: mktxp
+    app.kubernetes.io/instance: monitoring
+    app.kubernetes.io/part-of: monitoring
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: mktxp
+  ports:
+    - name: http
+      port: 49090
+      targetPort: http
