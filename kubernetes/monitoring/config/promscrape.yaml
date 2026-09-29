@@ -148,21 +148,6 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter.monitoring.svc:9115
 
-  - job_name: blackbox-unifi
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://unifi.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
   - job_name: blackbox-proxmox
     metrics_path: /probe
     params:
@@ -275,21 +260,6 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter.monitoring.svc:9115
 
-  - job_name: blackbox-prowlarr
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://prowlarr.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
   - job_name: blackbox-qbittorrent
     metrics_path: /probe
     params:
@@ -342,21 +312,6 @@ scrape_configs:
     static_configs:
       - targets:
           - "https://git.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-calibre
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://calibre.dominiksiejak.pl"
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -552,21 +507,6 @@ scrape_configs:
     static_configs:
       - targets:
           - "https://profilarr.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-readarr
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://readarr.dominiksiejak.pl"
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

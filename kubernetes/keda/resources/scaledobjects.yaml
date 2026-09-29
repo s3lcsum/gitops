@@ -4,7 +4,9 @@
 # fallback.failureThreshold keeps replicas at 1 if the interceptor metrics die.
 # Git replicas is 1 so a missing ScaledObject does not pin the app at 0.
 #
-# Not here: calibre-web-automated (public API), n8n (webhooks), gitea, paperclip.
+# Not here: calibre-web-automated (public API), n8n (webhooks), gitea.
+# Blackbox HTTP probes hit the interceptor and reset the idle window.
+# Do not add blackbox jobs for these hosts.
 # UniFi UI sleeps. APs keep forwarding. Inform :8080 and STUN :3478 are dark
 # until the UI request wakes the pod. New adopts wait for that.
 # flaresolverr has no IngressRoute. Prowlarr and the *arr apps call it on the
