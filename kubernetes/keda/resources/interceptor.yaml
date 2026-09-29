@@ -40,7 +40,7 @@ data:
       proxy_http_version 1.1;
       proxy_set_header Host $host;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto $forwarded_proto;
+      proxy_set_header X-Forwarded-Proto https;
       proxy_ssl_verify off;
       proxy_ssl_server_name on;
       proxy_set_header Upgrade $http_upgrade;
@@ -92,6 +92,7 @@ spec:
         app.kubernetes.io/part-of: keda
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-critical
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -176,6 +177,7 @@ spec:
         app.kubernetes.io/part-of: keda
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-critical
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -260,6 +262,7 @@ spec:
         app.kubernetes.io/part-of: keda
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-critical
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -344,6 +347,7 @@ spec:
         app.kubernetes.io/part-of: keda
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-critical
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -428,6 +432,7 @@ spec:
         app.kubernetes.io/part-of: keda
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-critical
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists

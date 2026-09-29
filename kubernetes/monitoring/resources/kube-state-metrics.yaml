@@ -147,6 +147,7 @@ spec:
         app.kubernetes.io/component: exporter
         app.kubernetes.io/version: 2.20.0
     spec:
+      priorityClassName: homelab-critical
       serviceAccountName: kube-state-metrics
       automountServiceAccountToken: true
       tolerations:
@@ -186,6 +187,9 @@ spec:
             requests:
               cpu: 25m
               memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
 ---
 apiVersion: v1
 kind: Service

@@ -1,0 +1,82 @@
+# Git-owned failurePolicy. Kyverno's admission controller rewrites these
+# objects and will put Fail back while it is up. That is fine: while it is
+# up, the webhook answers. While it is down, Argo selfHeal puts Ignore back
+# so a dead Kyverno does not freeze Deployments, Pods, or Nodes.
+# Do not drop these from the Kyverno Application. Do not set Replace on them.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: kyverno-resource-mutating-webhook-cfg
+  labels:
+    webhook.kyverno.io/managed-by: kyverno
+  annotations:
+    admissions.enforcer/disabled: "true"
+webhooks:
+  - name: mutate.kyverno.svc-fail
+    failurePolicy: Ignore
+    admissionReviewVersions:
+      - v1
+    sideEffects: NoneOnDryRun
+    timeoutSeconds: 10
+    matchPolicy: Equivalent
+    reinvocationPolicy: IfNeeded
+    clientConfig:
+      service:
+        name: kyverno-svc
+        namespace: kyverno
+        path: /mutate/fail
+        port: 443
+    rules:
+      - apiGroups: ["*"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["*/*"]
+        scope: "*"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: kyverno-resource-validating-webhook-cfg
+  labels:
+    webhook.kyverno.io/managed-by: kyverno
+  annotations:
+    admissions.enforcer/disabled: "true"
+webhooks:
+  - name: validate.kyverno.svc-fail
+    failurePolicy: Ignore
+    admissionReviewVersions:
+      - v1
+    sideEffects: NoneOnDryRun
+    timeoutSeconds: 10
+    matchPolicy: Equivalent
+    clientConfig:
+      service:
+        name: kyverno-svc
+        namespace: kyverno
+        path: /validate/fail
+        port: 443
+    rules:
+      - apiGroups: ["*"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE", "DELETE", "CONNECT"]
+        resources: ["*/*"]
+        scope: "*"
+  - name: vpol.validate.kyverno.svc-fail
+    failurePolicy: Ignore
+    admissionReviewVersions:
+      - v1
+    sideEffects: NoneOnDryRun
+    timeoutSeconds: 10
+    matchPolicy: Equivalent
+    clientConfig:
+      service:
+        name: kyverno-svc
+        namespace: kyverno
+        path: /vpol/require-labels
+        port: 443
+    rules:
+      - apiGroups: ["*"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["*/*"]
+        scope: "*"

@@ -11,6 +11,7 @@ crds:
   keep: true
 # Chart already sets name, instance, and managed-by. Pods still need part-of.
 global:
+  priorityClassName: homelab-critical
   commonLabels:
     app.kubernetes.io/part-of: cert-manager
 replicaCount: 1

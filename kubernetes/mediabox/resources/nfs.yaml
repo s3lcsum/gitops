@@ -1,0 +1,513 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-library
+  labels:
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 10Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-library
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-library
+  resources:
+    requests:
+      storage: 10Ti
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-local-media
+  labels:
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 500Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/local-media
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-local-media
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-local-media
+  resources:
+    requests:
+      storage: 500Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-flaresolverr
+  labels:
+    app.kubernetes.io/name: flaresolverr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/flaresolverr
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-flaresolverr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: flaresolverr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-flaresolverr
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-prowlarr
+  labels:
+    app.kubernetes.io/name: prowlarr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/prowlarr
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-prowlarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: prowlarr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-prowlarr
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-radarr
+  labels:
+    app.kubernetes.io/name: radarr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/radarr
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-radarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: radarr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-radarr
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-sonarr
+  labels:
+    app.kubernetes.io/name: sonarr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/sonarr
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-sonarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: sonarr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-sonarr
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-bazarr
+  labels:
+    app.kubernetes.io/name: bazarr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/bazarr
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-bazarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: bazarr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-bazarr
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-readarr
+  labels:
+    app.kubernetes.io/name: readarr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/readarr
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-readarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: readarr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-readarr
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-jellyfin
+  labels:
+    app.kubernetes.io/name: jellyfin
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/jellyfin
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-jellyfin
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: jellyfin
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-jellyfin
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-seerr
+  labels:
+    app.kubernetes.io/name: seerr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/seerr
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-seerr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: seerr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-seerr
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-profilarr
+  labels:
+    app.kubernetes.io/name: profilarr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/profilarr
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-profilarr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: profilarr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-profilarr
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-scraparr
+  labels:
+    app.kubernetes.io/name: scraparr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/scraparr/config.yaml
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-scraparr
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: scraparr
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-scraparr
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-qbittorrent
+  labels:
+    app.kubernetes.io/name: gluetun
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/qbittorrent
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-qbittorrent
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: gluetun
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-qbittorrent
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-sabnzbd
+  labels:
+    app.kubernetes.io/name: gluetun
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/sabnzbd
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-sabnzbd
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: gluetun
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-sabnzbd
+  resources:
+    requests:
+      storage: 5Gi

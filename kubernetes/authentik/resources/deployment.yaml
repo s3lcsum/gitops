@@ -23,6 +23,7 @@ spec:
         app.kubernetes.io/part-of: authentik
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-high
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       tolerations:
@@ -69,17 +70,14 @@ spec:
               memory: 512Mi
       volumes:
         - name: media
-          hostPath:
-            path: /mnt/nas-media/k8s/authentik/media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: authentik-media
         - name: templates
-          hostPath:
-            path: /mnt/nas-media/k8s/authentik/templates
-            type: Directory
+          persistentVolumeClaim:
+            claimName: authentik-templates
         - name: certs
-          hostPath:
-            path: /mnt/nas-media/k8s/authentik/certs
-            type: Directory
+          persistentVolumeClaim:
+            claimName: authentik-certs
 ---
 apiVersion: v1
 kind: Service
@@ -122,6 +120,7 @@ spec:
         app.kubernetes.io/part-of: authentik
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-high
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -155,14 +154,11 @@ spec:
               memory: 256Mi
       volumes:
         - name: media
-          hostPath:
-            path: /mnt/nas-media/k8s/authentik/media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: authentik-media
         - name: templates
-          hostPath:
-            path: /mnt/nas-media/k8s/authentik/templates
-            type: Directory
+          persistentVolumeClaim:
+            claimName: authentik-templates
         - name: certs
-          hostPath:
-            path: /mnt/nas-media/k8s/authentik/certs
-            type: Directory
+          persistentVolumeClaim:
+            claimName: authentik-certs

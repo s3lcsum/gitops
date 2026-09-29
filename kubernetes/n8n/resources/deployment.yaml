@@ -23,6 +23,7 @@ spec:
         app.kubernetes.io/part-of: n8n
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-high
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -76,9 +77,8 @@ spec:
               memory: 512Mi
       volumes:
         - name: data
-          hostPath:
-            path: /mnt/nas-media/k8s/n8n/data
-            type: Directory
+          persistentVolumeClaim:
+            claimName: n8n-data
 ---
 apiVersion: v1
 kind: Service

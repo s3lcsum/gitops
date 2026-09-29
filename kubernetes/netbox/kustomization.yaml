@@ -3,5 +3,6 @@ kind: Kustomization
 namespace: netbox
 resources:
   - resources/namespace.yaml
+  - resources/nfs.yaml
   - resources/deployment.yaml
   - resources/ingressroute.yaml

@@ -13,6 +13,7 @@ image:
 # Chart already sets name, instance, and managed-by. Not part of the selector.
 commonLabels:
   app.kubernetes.io/part-of: traefik
+priorityClassName: homelab-critical
 deployment:
   # One pod per node. hostNetwork :80/:443 then cannot collide.
   # Public WAN still arrives only at 192.168.89.252.

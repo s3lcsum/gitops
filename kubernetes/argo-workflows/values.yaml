@@ -24,6 +24,7 @@ workflow:
     create: true
 
 controller:
+  priorityClassName: homelab-critical
   workflowNamespaces:
     - argo-workflows
   # Workflow pods inherit these defaults (otherwise Pending on control-plane taint).
@@ -67,6 +68,7 @@ controller:
       memory: 128Mi
 
 server:
+  priorityClassName: homelab-critical
   secure: false
   authModes:
     - sso

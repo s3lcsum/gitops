@@ -1,9 +1,8 @@
-# Idle HTTP UIs. minReplicaCount 0.
-# Each nginx trigger watches its own interceptor stub_status. A request is an
-# active connection on that interceptor only.
-# cooldownPeriod is how long the app stays up after the last request.
-# Argo selfHeal owns spec.replicas; KEDA pauses that field while this object
-# exists. Git replicas is 0 so a missing ScaledObject does not pin the app up.
+# Idle HTTP UIs. Default is 1 (idleReplicaCount). KEDA scales to 0 only after
+# cooldownPeriod with no requests on that app's interceptor.
+# metrics-api reads nginx stub_status. KEDA 2.21 has no nginx scaler.
+# fallback.failureThreshold keeps replicas at 1 if the interceptor metrics die.
+# Git replicas is 1 so a missing ScaledObject does not pin the app at 0.
 #
 # Not here: calibre-web-automated (public API), n8n (webhooks), gitea, paperclip.
 # UniFi UI sleeps. APs keep forwarding. Inform :8080 and STUN :3478 are dark
@@ -21,18 +20,21 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: headlamp
-  minReplicaCount: 0
+  idleReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 1
   cooldownPeriod: 300
   pollingInterval: 15
+  fallback:
+    failureThreshold: 3
+    replicas: 1
   triggers:
-    - type: nginx
+    - type: metrics-api
       metadata:
-        namespace: keda
-        deploymentName: interceptor-headlamp
-        serviceName: interceptor-headlamp
-        port: "8081"
-        targetPendingRequests: "1"
+        targetValue: "1"
+        url: http://interceptor-headlamp.keda.svc:8081/metrics
+        valueLocation: Active connections
+        format: "Active connections: {value}"
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -44,18 +46,21 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: unifi
-  minReplicaCount: 0
+  idleReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 1
   cooldownPeriod: 900
   pollingInterval: 15
+  fallback:
+    failureThreshold: 3
+    replicas: 1
   triggers:
-    - type: nginx
+    - type: metrics-api
       metadata:
-        namespace: keda
-        deploymentName: interceptor-unifi
-        serviceName: interceptor-unifi
-        port: "8081"
-        targetPendingRequests: "1"
+        targetValue: "1"
+        url: http://interceptor-unifi.keda.svc:8081/metrics
+        valueLocation: Active connections
+        format: "Active connections: {value}"
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -67,18 +72,21 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: calibre
-  minReplicaCount: 0
+  idleReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 1
   cooldownPeriod: 900
   pollingInterval: 15
+  fallback:
+    failureThreshold: 3
+    replicas: 1
   triggers:
-    - type: nginx
+    - type: metrics-api
       metadata:
-        namespace: keda
-        deploymentName: interceptor-calibre
-        serviceName: interceptor-calibre
-        port: "8081"
-        targetPendingRequests: "1"
+        targetValue: "1"
+        url: http://interceptor-calibre.keda.svc:8081/metrics
+        valueLocation: Active connections
+        format: "Active connections: {value}"
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -90,18 +98,21 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: prowlarr
-  minReplicaCount: 0
+  idleReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 1
   cooldownPeriod: 600
   pollingInterval: 15
+  fallback:
+    failureThreshold: 3
+    replicas: 1
   triggers:
-    - type: nginx
+    - type: metrics-api
       metadata:
-        namespace: keda
-        deploymentName: interceptor-prowlarr
-        serviceName: interceptor-prowlarr
-        port: "8081"
-        targetPendingRequests: "1"
+        targetValue: "1"
+        url: http://interceptor-prowlarr.keda.svc:8081/metrics
+        valueLocation: Active connections
+        format: "Active connections: {value}"
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -113,15 +124,18 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: flaresolverr
-  minReplicaCount: 0
+  idleReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 1
   cooldownPeriod: 600
   pollingInterval: 15
+  fallback:
+    failureThreshold: 3
+    replicas: 1
   triggers:
-    - type: nginx
+    - type: metrics-api
       metadata:
-        namespace: keda
-        deploymentName: interceptor-flaresolverr
-        serviceName: interceptor-flaresolverr
-        port: "8081"
-        targetPendingRequests: "1"
+        targetValue: "1"
+        url: http://interceptor-flaresolverr.keda.svc:8081/metrics
+        valueLocation: Active connections
+        format: "Active connections: {value}"

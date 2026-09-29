@@ -12,6 +12,7 @@ crdAnnotations:
 
 controller:
   replicas: 1
+  priorityClassName: homelab-critical
   # Chart sets name and instance. Not part of the selector.
   podLabels:
     app.kubernetes.io/part-of: argo-rollouts

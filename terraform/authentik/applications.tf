@@ -49,6 +49,7 @@ resource "authentik_provider_oauth2" "oauth2" {
 
   name               = each.value.name
   client_id          = each.key
+  client_type        = lookup(each.value, "client_type", "confidential")
   client_secret      = random_password.oauth2_client_secrets[each.key].result
   authorization_flow = data.authentik_flow.default-authorization-flow.id
   invalidation_flow  = data.authentik_flow.default-invalidation-flow.id

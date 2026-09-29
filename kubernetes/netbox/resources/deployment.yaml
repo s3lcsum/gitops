@@ -123,21 +123,17 @@ spec:
               memory: 512Mi
       volumes:
         - name: media
-          hostPath:
-            path: /mnt/nas-media/k8s/netbox/media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: netbox-media
         - name: reports
-          hostPath:
-            path: /mnt/nas-media/k8s/netbox/reports
-            type: Directory
+          persistentVolumeClaim:
+            claimName: netbox-reports
         - name: scripts
-          hostPath:
-            path: /mnt/nas-media/k8s/netbox/scripts
-            type: Directory
+          persistentVolumeClaim:
+            claimName: netbox-scripts
         - name: extra
-          hostPath:
-            path: /mnt/nas-media/k8s/netbox/extra.py
-            type: File
+          persistentVolumeClaim:
+            claimName: netbox-extra
 ---
 apiVersion: v1
 kind: Service
@@ -215,18 +211,14 @@ spec:
               memory: 256Mi
       volumes:
         - name: media
-          hostPath:
-            path: /mnt/nas-media/k8s/netbox/media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: netbox-media
         - name: reports
-          hostPath:
-            path: /mnt/nas-media/k8s/netbox/reports
-            type: Directory
+          persistentVolumeClaim:
+            claimName: netbox-reports
         - name: scripts
-          hostPath:
-            path: /mnt/nas-media/k8s/netbox/scripts
-            type: Directory
+          persistentVolumeClaim:
+            claimName: netbox-scripts
         - name: extra
-          hostPath:
-            path: /mnt/nas-media/k8s/netbox/extra.py
-            type: File
+          persistentVolumeClaim:
+            claimName: netbox-extra

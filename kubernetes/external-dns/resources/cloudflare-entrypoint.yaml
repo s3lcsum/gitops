@@ -14,4 +14,5 @@ data:
     case "$ip" in
       ""|*[!0-9.]*) echo "wan-ip missing or not IPv4" >&2; exit 1 ;;
     esac
-    exec /bin/external-dns "$@" --default-targets="$ip"
+    printf '%s\n' "--default-targets=${ip}" > /etc/external-dns/args
+    while true; do sleep 3600; done

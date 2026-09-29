@@ -11,9 +11,9 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  # KEDA ScaledObject (kubernetes/keda) owns this. Argo must not selfHeal it back to 1.
+  # KEDA ScaledObject (kubernetes/keda) owns this. Default 1; idle scales to 0.
   # calibre-web-automated stays at 1 — public API host.
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
@@ -27,17 +27,11 @@ spec:
         app.kubernetes.io/part-of: calibre
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: Exists
       containers:
         - name: calibre
           image: ghcr.io/linuxserver/calibre:9.15.0
@@ -69,13 +63,11 @@ spec:
               memory: 1Gi
       volumes:
         - name: config
-          hostPath:
-            path: /mnt/nas-media/k8s/calibre/calibre-config
-            type: DirectoryOrCreate
+          persistentVolumeClaim:
+            claimName: calibre-config
         - name: books
-          hostPath:
-            path: /mnt/nas-media/books
-            type: Directory
+          persistentVolumeClaim:
+            claimName: calibre-books
 ---
 apiVersion: v1
 kind: Service
@@ -122,17 +114,11 @@ spec:
         app.kubernetes.io/part-of: calibre
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: Exists
       containers:
         - name: calibre-web-automated
           image: crocodilestick/calibre-web-automated:v4.0.6
@@ -172,13 +158,11 @@ spec:
               memory: 512Mi
       volumes:
         - name: config
-          hostPath:
-            path: /mnt/nas-media/k8s/calibre/cwa-config
-            type: DirectoryOrCreate
+          persistentVolumeClaim:
+            claimName: calibre-cwa-config
         - name: books
-          hostPath:
-            path: /mnt/nas-media/books
-            type: Directory
+          persistentVolumeClaim:
+            claimName: calibre-books
 ---
 apiVersion: v1
 kind: Service

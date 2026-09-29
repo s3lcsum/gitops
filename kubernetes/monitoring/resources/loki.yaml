@@ -84,12 +84,11 @@ spec:
         app.kubernetes.io/part-of: monitoring
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-critical
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      nodeSelector:
-        kubernetes.io/hostname: k8s
       securityContext:
         fsGroup: 10001
       initContainers:
@@ -142,9 +141,8 @@ spec:
           configMap:
             name: loki
         - name: data
-          hostPath:
-            path: /mnt/nas-media/k8s/monitoring/loki-data
-            type: DirectoryOrCreate
+          persistentVolumeClaim:
+            claimName: monitoring-loki-data
 ---
 apiVersion: v1
 kind: Service

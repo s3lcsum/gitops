@@ -87,10 +87,13 @@ locals {
         return {"role": "Viewer"}
       EOF
     }
+    # Public + PKCE: Grafana Cloud's token call comes from US and is blocked by
+    # the Cloudflare country WAF. A public client does not send client_secret.
     grafana-cloud = {
       name          = "Grafana Cloud"
       launch_url    = var.grafana_cloud_url
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/grafana.svg"
+      client_type   = "public"
       redirect_uris = ["${trimsuffix(var.grafana_cloud_url, "/")}/login/generic_oauth"]
       mapping       = <<-EOF
         if request.user.ak_groups.filter(name="admins").exists():

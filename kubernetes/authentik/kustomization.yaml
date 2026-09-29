@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: authentik
 resources:
   - resources/namespace.yaml
+  - resources/nfs.yaml
   - resources/deployment.yaml
   - resources/ingressroute.yaml
   - resources/ldap-outpost.yaml

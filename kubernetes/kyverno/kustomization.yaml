@@ -1,6 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - resources/priorityclasses.yaml
+  - resources/webhook-failure-policy.yaml
   - resources/require-labels.yaml
   - resources/add-recommended-labels.yaml
   - resources/add-recommended-labels-rbac.yaml

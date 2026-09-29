@@ -23,6 +23,7 @@ spec:
         app.kubernetes.io/part-of: gitea
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -80,9 +81,8 @@ spec:
               memory: 256Mi
       volumes:
         - name: data
-          hostPath:
-            path: /mnt/nas-media/gitea
-            type: Directory
+          persistentVolumeClaim:
+            claimName: gitea-data
 ---
 apiVersion: v1
 kind: Service

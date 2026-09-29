@@ -13,3 +13,5 @@ spec:
         app.kubernetes.io/instance: coredns
         app.kubernetes.io/part-of: coredns
         app.kubernetes.io/managed-by: argocd
+    spec:
+      priorityClassName: homelab-critical

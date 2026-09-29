@@ -8,6 +8,7 @@ version: 0.0.38
 commonLabels:
   app.kubernetes.io/part-of: local-path-provisioner
 replicaCount: 1
+priorityClassName: homelab-critical
 tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists

@@ -1,0 +1,8 @@
+kubeconfig = "/Users/dsiejak/.kube/config"
+cluster_provider_strategy = "kubeconfig"
+toolsets = ["core", "config", "helm"]
+log_file = "stderr"
+server_instructions = """
+This server is pinned to kube context k8s@lake. Do not switch context.
+The kubeconfig only contains that context.
+"""

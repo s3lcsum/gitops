@@ -25,17 +25,11 @@ spec:
         app.kubernetes.io/part-of: wealthfolio
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: Exists
       containers:
         - name: wealthfolio
           image: wealthfolio/wealthfolio:3.8
@@ -60,9 +54,8 @@ spec:
               memory: 128Mi
       volumes:
         - name: data
-          hostPath:
-            path: /mnt/nas-media/k8s/wealthfolio/data
-            type: DirectoryOrCreate
+          persistentVolumeClaim:
+            claimName: wealthfolio-data
 ---
 apiVersion: v1
 kind: Service

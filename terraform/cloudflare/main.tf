@@ -7,6 +7,8 @@ resource "cloudflare_zone" "main" {
 }
 
 # Zone-wide WAF rule: block requests from countries other than PL, DE, ES.
+# Grafana Cloud (prod-us-central-0) token + userinfo calls come from US, so
+# those egress IPs skip the country rule instead of opening all of US.
 # Adopted from the dashboard's "Zone lockdown" custom ruleset (the only custom
 # ruleset Cloudflare allows in the http_request_firewall_custom phase).
 resource "cloudflare_ruleset" "country_allowlist" {
@@ -17,10 +19,15 @@ resource "cloudflare_ruleset" "country_allowlist" {
 
   rules = [
     {
-      ref         = "skip-messenger-webhook"
-      action      = "skip"
-      expression  = "(http.host eq \"n8n.dominiksiejak.pl\" and (starts_with(http.request.uri.path, \"/webhook/messenger\") or starts_with(http.request.uri.path, \"/webhook/toggl-time-entry\") or starts_with(http.request.uri.path, \"/webhook/focus-work\") or starts_with(http.request.uri.path, \"/webhook/authentik-login\"))) or (http.host eq \"auth.dominiksiejak.pl\" and starts_with(http.request.uri.path, \"/application/o/\")) or http.host in {\"dominiksiejak.pl\" \"www.dominiksiejak.pl\"}"
-      description = "Allow n8n webhooks + Authentik OIDC endpoints + public sites to bypass the country allowlist"
+      ref    = "skip-messenger-webhook"
+      action = "skip"
+      expression = join(" or ", [
+        "(http.host eq \"n8n.dominiksiejak.pl\" and (starts_with(http.request.uri.path, \"/webhook/messenger\") or starts_with(http.request.uri.path, \"/webhook/toggl-time-entry\") or starts_with(http.request.uri.path, \"/webhook/focus-work\") or starts_with(http.request.uri.path, \"/webhook/authentik-login\")))",
+        "(http.host eq \"auth.dominiksiejak.pl\" and starts_with(http.request.uri.path, \"/application/o/\"))",
+        "http.host in {\"dominiksiejak.pl\" \"www.dominiksiejak.pl\"}",
+        "(http.host eq \"auth.dominiksiejak.pl\" and ip.src in {${join(" ", local.grafana_cloud_us_egress)}})",
+      ])
+      description = "Allow n8n webhooks + Authentik OIDC + public sites + Grafana Cloud us-central egress to bypass the country allowlist"
       enabled     = true
 
       action_parameters = {

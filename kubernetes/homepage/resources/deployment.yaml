@@ -1,5 +1,5 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: homepage
   namespace: homepage
@@ -12,9 +12,16 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"
 spec:
   replicas: 1
+  revisionHistoryLimit: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: homepage
+  strategy:
+    blueGreen:
+      activeService: homepage
+      previewService: homepage-preview
+      autoPromotionEnabled: true
+      scaleDownDelaySeconds: 30
   template:
     metadata:
       labels:
@@ -23,16 +30,20 @@ spec:
         app.kubernetes.io/part-of: homepage
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+        - key: homelab.dominiksiejak.pl/worker
+          operator: Exists
+          effect: PreferNoSchedule
       containers:
         - name: homepage
           image: ghcr.io/gethomepage/homepage:v2.4.0
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
-              value: homepage.dominiksiejak.pl
+              value: homepage.dominiksiejak.pl,homepage-preview.dominiksiejak.pl
           envFrom:
             - secretRef:
                 name: homepage
@@ -85,6 +96,24 @@ metadata:
   labels:
     app.kubernetes.io/name: homepage
     app.kubernetes.io/instance: homepage
+    app.kubernetes.io/part-of: homepage
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: homepage
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homepage-preview
+  namespace: homepage
+  labels:
+    app.kubernetes.io/name: homepage
+    app.kubernetes.io/instance: homepage-preview
     app.kubernetes.io/part-of: homepage
     app.kubernetes.io/managed-by: argocd
 spec:

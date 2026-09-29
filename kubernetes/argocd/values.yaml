@@ -2,6 +2,7 @@
 global:
   # Must match browser origin used for SSO (return_url host check).
   domain: argocd.dominiksiejak.pl
+  priorityClassName: homelab-critical
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists

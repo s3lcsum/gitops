@@ -12,6 +12,7 @@ podLabels:
   app.kubernetes.io/managed-by: Helm
 
 replicaCount: 1
+priorityClassName: homelab-low
 
 tolerations:
   - key: node-role.kubernetes.io/control-plane
@@ -34,6 +35,7 @@ ui:
   podLabels:
     app.kubernetes.io/part-of: policy-reporter
   replicaCount: 1
+  priorityClassName: homelab-low
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
@@ -53,6 +55,7 @@ plugin:
     podLabels:
       app.kubernetes.io/part-of: policy-reporter
     replicaCount: 1
+    priorityClassName: homelab-low
     tolerations:
       - key: node-role.kubernetes.io/control-plane
         operator: Exists

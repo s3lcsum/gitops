@@ -29,14 +29,6 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values: ["k8s"]
       containers:
         - name: watchyourlan
           image: aceberg/watchyourlan:2.1.4
@@ -79,9 +71,8 @@ spec:
               memory: 32Mi
       volumes:
         - name: data
-          hostPath:
-            path: /mnt/nas-media/k8s/watchyourlan/data
-            type: Directory
+          persistentVolumeClaim:
+            claimName: watchyourlan-data
 ---
 apiVersion: v1
 kind: Service

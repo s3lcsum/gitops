@@ -6,6 +6,7 @@ version: v0.28.9
 # Overrides for flannel-io/flannel v0.28.9.
 # Single-node lake: host-gw (no VXLAN). Pod CIDR matches kubeadm.
 podCidr: "10.244.0.0/16"
+podPriorityClassName: homelab-critical
 flannel:
   backend: host-gw
   args:

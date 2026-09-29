@@ -69,6 +69,7 @@ spec:
         app.kubernetes.io/part-of: external-dns
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-critical
       serviceAccountName: external-dns-cloudflare
       tolerations:
         - key: node-role.kubernetes.io/control-plane
@@ -83,10 +84,34 @@ spec:
         fsGroup: 65534
         seccompProfile:
           type: RuntimeDefault
+      shareProcessNamespace: true
       containers:
+        - name: wan-target
+          image: busybox:1.37
+          command: ["/bin/sh", "/opt/entrypoint/entrypoint.sh"]
+          volumeMounts:
+            - name: wan-ip
+              mountPath: /etc/wan-ip
+              readOnly: true
+            - name: entrypoint
+              mountPath: /opt/entrypoint
+              readOnly: true
+            - name: args
+              mountPath: /etc/external-dns
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65532
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
         - name: external-dns
           image: registry.k8s.io/external-dns/external-dns:v0.23.0
-          command: ["/bin/sh", "/opt/entrypoint/entrypoint.sh"]
+          command: ["/bin/external-dns"]
           args:
             - --log-level=info
             - --interval=1m
@@ -131,11 +156,8 @@ spec:
             capabilities:
               drop: ["ALL"]
           volumeMounts:
-            - name: wan-ip
-              mountPath: /etc/wan-ip
-              readOnly: true
-            - name: entrypoint
-              mountPath: /opt/entrypoint
+            - name: args
+              mountPath: /etc/external-dns
               readOnly: true
           resources:
             requests:
@@ -149,3 +171,5 @@ spec:
           configMap:
             name: cloudflare-entrypoint
             defaultMode: 0555
+        - name: args
+          emptyDir: {}

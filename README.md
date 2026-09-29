@@ -182,9 +182,7 @@ New app data goes on the NAS bind: `/mnt/nas-media/k8s/<namespace>/<name>`. Stor
 
 **LDAP outpost left `.253`.** The docker-local Authentik LDAP outpost targeted `192.168.89.253`, which is down. It now runs in-cluster. Traefik terminates LDAPS on `ldap.dominiksiejak.pl` (`:389` / `:636`).
 
-**kube-apiserver via Traefik.** `k8s.dominiksiejak.pl` is LAN-only SNI passthrough on `:6444` so kubectl client certs reach the apiserver. HTTP `:443` would terminate TLS and drop the cert. No WAN dst-nat on that entrypoint.
-
-**RouterOS dst-nat for `:6444`.** WAN sources stay on `allowed-wan`. Hairpin covers clients that resolve the public IP from the LAN and still need the lake node.
+**`k8s.dominiksiejak.pl` is gone.** Public `:6444` SNI passthrough never worked. Traefik no longer binds `kubeapi`. RouterOS no longer dst-nats `:6444`.
 
 ### 26.09.2026
 
@@ -192,7 +190,7 @@ New app data goes on the NAS bind: `/mnt/nas-media/k8s/<namespace>/<name>`. Stor
 
 **Kyverno label reports.** Pods that failed `require-labels` now get `app.kubernetes.io` name, instance, part-of, and managed-by. Helm values cover the charts that have a pod-label hook. Flannel and the Cloudflare tunnel controller do not, so Kyverno mutates those templates. CoreDNS gets a server-side label patch (kubeadm still owns the rest). Static control-plane pods and the leftover `dnscheck` pod are mutated too. Label changes roll the affected pods, including the single CloudNativePG instance.
 
-**Firebird via the public IP.** `xero.dominiksiejak.pl` is a DNS-only A record to `109.173.240.144`. RouterOS dst-nats TCP `3050` to micrus `192.168.200.40:3050` over WireGuard. WAN sources still have to be on `allowed-wan`. The client string is `xero.dominiksiejak.pl:3050/BAZA_CPC.fdb`. The Cloudflare tunnel route to `yasmin476.mikrus.xyz:20476` is gone. The `micrus` WireGuard peer config has to be installed on the VPS, and Firebird there has to listen on `3050`.
+**Firebird via the public IP.** `xero.dominiksiejak.pl` is a DNS-only A record to `109.173.240.144`. RouterOS dst-nats TCP `3050` to micrus `192.168.200.40:3050` over WireGuard. WAN TCP `3050` is open to every source. The client string is `xero.dominiksiejak.pl:3050/BAZA_CPC.fdb`. The Cloudflare tunnel route to `yasmin476.mikrus.xyz:20476` is gone. The `micrus` WireGuard peer config has to be installed on the VPS, and Firebird there has to listen on `3050`.
 
 **Headlamp on the lake node.** Helm chart `0.45.0` via the Kubernetes ApplicationSet (`kubernetes/headlamp/`). UI is `https://headlamp.dominiksiejak.pl`, CrowdSec + Authentik forward-auth, admins group only. Headlamp skips its own token page and uses the pod service account, which is `cluster-admin`. Authentik proxy app lands on the next `terraform/authentik` apply; Argo creates the app once this is on `main`.
 

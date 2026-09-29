@@ -16,6 +16,7 @@ spec:
   storage:
     size: 8Gi
     storageClass: local-path
+  priorityClassName: homelab-high
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:

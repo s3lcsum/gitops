@@ -9,8 +9,8 @@ metadata:
     app.kubernetes.io/part-of: mediabox
     app.kubernetes.io/managed-by: argocd
 spec:
-  # KEDA ScaledObject (kubernetes/keda) owns this.
-  replicas: 0
+  # KEDA ScaledObject (kubernetes/keda) owns this. Default 1; idle scales to 0.
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: flaresolverr
@@ -22,22 +22,13 @@ spec:
         app.kubernetes.io/part-of: mediabox
         app.kubernetes.io/managed-by: argocd
     spec:
+      # hostPath / NFS config lives on lake; AI affinity pinned vibe → FailedMount 29h.
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-        - key: homelab.dominiksiejak.pl/worker
-          operator: Exists
-          effect: PreferNoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: homelab.dominiksiejak.pl/ai
-                    operator: In
-                    values:
-                      - "true"
+      nodeSelector:
+        kubernetes.io/hostname: k8s
       containers:
         - name: flaresolverr
           image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
@@ -68,9 +59,8 @@ spec:
               memory: 1Gi
       volumes:
         - name: config
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/flaresolverr
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-flaresolverr
 ---
 apiVersion: v1
 kind: Service
@@ -101,8 +91,8 @@ metadata:
     app.kubernetes.io/part-of: mediabox
     app.kubernetes.io/managed-by: argocd
 spec:
-  # KEDA ScaledObject (kubernetes/keda) owns this.
-  replicas: 0
+  # KEDA ScaledObject (kubernetes/keda) owns this. Default 1; idle scales to 0.
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: prowlarr
@@ -114,22 +104,13 @@ spec:
         app.kubernetes.io/part-of: mediabox
         app.kubernetes.io/managed-by: argocd
     spec:
+      # hostPath / NFS config lives on lake; AI affinity pinned vibe → FailedMount 29h.
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-        - key: homelab.dominiksiejak.pl/worker
-          operator: Exists
-          effect: PreferNoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: homelab.dominiksiejak.pl/ai
-                    operator: In
-                    values:
-                      - "true"
+      nodeSelector:
+        kubernetes.io/hostname: k8s
       containers:
         - name: prowlarr
           image: lscr.io/linuxserver/prowlarr:2.6.5
@@ -164,9 +145,8 @@ spec:
               memory: 512Mi
       volumes:
         - name: config
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/prowlarr
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-prowlarr
 ---
 apiVersion: v1
 kind: Service
@@ -213,14 +193,6 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values: ["k8s"]
       containers:
         - name: radarr
           image: lscr.io/linuxserver/radarr:6.4.4
@@ -259,17 +231,14 @@ spec:
               memory: 1Gi
       volumes:
         - name: config
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/radarr
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-radarr
         - name: local-media
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/local-media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-local-media
         - name: nas
-          hostPath:
-            path: /mnt/nas-media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-library
 ---
 apiVersion: v1
 kind: Service
@@ -316,14 +285,6 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values: ["k8s"]
       containers:
         - name: sonarr
           image: ghcr.io/linuxserver/sonarr:4.0.20
@@ -362,17 +323,14 @@ spec:
               memory: 1Gi
       volumes:
         - name: config
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/sonarr
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-sonarr
         - name: local-media
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/local-media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-local-media
         - name: nas
-          hostPath:
-            path: /mnt/nas-media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-library
 ---
 apiVersion: v1
 kind: Service
@@ -415,18 +373,11 @@ spec:
         app.kubernetes.io/part-of: mediabox
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values: ["k8s"]
       containers:
         - name: bazarr
           image: lscr.io/linuxserver/bazarr:1.6.2
@@ -465,17 +416,14 @@ spec:
               memory: 512Mi
       volumes:
         - name: config
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/bazarr
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-bazarr
         - name: local-media
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/local-media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-local-media
         - name: nas
-          hostPath:
-            path: /mnt/nas-media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-library
 ---
 apiVersion: v1
 kind: Service
@@ -518,18 +466,11 @@ spec:
         app.kubernetes.io/part-of: mediabox
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values: ["k8s"]
       containers:
         - name: readarr
           image: ghcr.io/faustvii/readarr:0.10.0
@@ -568,17 +509,14 @@ spec:
               memory: 512Mi
       volumes:
         - name: config
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/readarr
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-readarr
         - name: local-media
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/local-media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-local-media
         - name: nas
-          hostPath:
-            path: /mnt/nas-media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-library
 ---
 apiVersion: v1
 kind: Service
@@ -621,18 +559,11 @@ spec:
         app.kubernetes.io/part-of: mediabox
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-high
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values: ["k8s"]
       containers:
         - name: jellyfin
           image: ghcr.io/linuxserver/jellyfin:12.1ubu2604-ls50
@@ -671,17 +602,14 @@ spec:
               memory: 4Gi
       volumes:
         - name: config
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/jellyfin
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-jellyfin
         - name: local-media
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/local-media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-local-media
         - name: nas
-          hostPath:
-            path: /mnt/nas-media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-library
 ---
 apiVersion: v1
 kind: Service
@@ -728,14 +656,6 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values: ["k8s"]
       containers:
         - name: seerr
           image: ghcr.io/seerr-team/seerr:v3.4.1
@@ -772,9 +692,8 @@ spec:
               memory: 1Gi
       volumes:
         - name: config
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/seerr
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-seerr
 ---
 apiVersion: v1
 kind: Service
@@ -821,14 +740,6 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values: ["k8s"]
       containers:
         - name: profilarr
           image: ghcr.io/dictionarry-hub/profilarr:2.2.0
@@ -859,15 +770,14 @@ spec:
           resources:
             requests:
               cpu: 25m
-              memory: 128Mi
+              memory: 256Mi
             limits:
               cpu: 250m
-              memory: 512Mi
+              memory: 1Gi
       volumes:
         - name: config
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/profilarr
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-profilarr
 ---
 apiVersion: v1
 kind: Service
@@ -914,14 +824,6 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values: ["k8s"]
       containers:
         - name: scraparr
           image: ghcr.io/thecfu/scraparr:3.2.0
@@ -953,9 +855,8 @@ spec:
               memory: 256Mi
       volumes:
         - name: config
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/scraparr/config.yaml
-            type: File
+          persistentVolumeClaim:
+            claimName: mediabox-scraparr
 ---
 apiVersion: v1
 kind: Service
@@ -1002,14 +903,6 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values: ["k8s"]
       containers:
         - name: rreading-glasses
           image: blampe/rreading-glasses:latest

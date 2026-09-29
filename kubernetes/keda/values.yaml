@@ -24,6 +24,7 @@ podLabels:
     app.kubernetes.io/part-of: keda
     app.kubernetes.io/managed-by: Helm
 
+priorityClassName: homelab-critical
 tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists

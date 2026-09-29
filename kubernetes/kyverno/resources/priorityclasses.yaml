@@ -1,0 +1,45 @@
+# Preemption order when the node is full. Higher value wins.
+# system-node-critical (2000001000) and system-cluster-critical (2000000000)
+# stay above these — kube-proxy, flannel, and the control plane are not in this set.
+# Unset pods stay at the cluster default (0).
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: homelab-critical
+  labels:
+    app.kubernetes.io/name: homelab-critical
+    app.kubernetes.io/instance: homelab-critical
+    app.kubernetes.io/part-of: kyverno
+    app.kubernetes.io/managed-by: argocd
+value: 1000000
+preemptionPolicy: PreemptLowerPriority
+globalDefault: false
+description: Cluster plumbing. DNS, ingress, GitOps, secrets, certs, CNI chart, storage.
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: homelab-high
+  labels:
+    app.kubernetes.io/name: homelab-high
+    app.kubernetes.io/instance: homelab-high
+    app.kubernetes.io/part-of: kyverno
+    app.kubernetes.io/managed-by: argocd
+value: 100000
+preemptionPolicy: PreemptLowerPriority
+globalDefault: false
+description: Identity, database, DNS filter, Home Assistant stack, Jellyfin, n8n.
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: homelab-low
+  labels:
+    app.kubernetes.io/name: homelab-low
+    app.kubernetes.io/instance: homelab-low
+    app.kubernetes.io/part-of: kyverno
+    app.kubernetes.io/managed-by: argocd
+value: -100
+preemptionPolicy: Never
+globalDefault: false
+description: Yields under pressure. Never preempts. Bazarr, paperclip, UniFi, Calibre, wealthfolio, Readarr, Gitea, Headlamp, Homepage.

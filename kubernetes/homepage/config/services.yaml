@@ -10,16 +10,10 @@
           type: traefik
           url: http://192.168.89.252:9080
 
-    - Grafana:
+    - Grafana Cloud:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/grafana.png
-        href: https://grafana.dominiksiejak.pl
+        href: https://dreewniak.grafana.net
         description: Dashboards
-        widget:
-          type: grafana
-          version: 2
-          url: http://grafana.monitoring.svc:3000
-          username: "{{HOMEPAGE_VAR_GRAFANA_USER}}"
-          password: "{{HOMEPAGE_VAR_GRAFANA_PASS}}"
 
     - Argo CD:
         icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/argo-cd.png

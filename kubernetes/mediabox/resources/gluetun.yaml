@@ -28,14 +28,6 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values: ["k8s"]
       containers:
         - name: gluetun
           image: ghcr.io/qdm12/gluetun:v3.41.3
@@ -125,21 +117,17 @@ spec:
             medium: Memory
             sizeLimit: 1Gi
         - name: qbittorrent
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/qbittorrent
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-qbittorrent
         - name: sabnzbd
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/sabnzbd
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-sabnzbd
         - name: local-media
-          hostPath:
-            path: /mnt/nas-media/k8s/mediabox/local-media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-local-media
         - name: nas
-          hostPath:
-            path: /mnt/nas-media
-            type: Directory
+          persistentVolumeClaim:
+            claimName: mediabox-library
 ---
 apiVersion: v1
 kind: Service

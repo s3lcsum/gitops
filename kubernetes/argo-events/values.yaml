@@ -17,6 +17,7 @@ configs:
       replicas: 1
 
 controller:
+  priorityClassName: homelab-critical
   resources:
     requests:
       cpu: 10m

@@ -10,8 +10,8 @@ metadata:
     app.kubernetes.io/part-of: unifi
     app.kubernetes.io/managed-by: argocd
 spec:
-  # KEDA ScaledObject (kubernetes/keda) owns this.
-  replicas: 0
+  # KEDA ScaledObject (kubernetes/keda) owns this. Default 1; idle scales to 0.
+  replicas: 1
   strategy:
     type: Recreate
   selector:
@@ -25,6 +25,7 @@ spec:
         app.kubernetes.io/part-of: unifi
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       tolerations:

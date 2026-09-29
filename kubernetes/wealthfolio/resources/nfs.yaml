@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: wealthfolio-data
+  labels:
+    app.kubernetes.io/name: wealthfolio
+    app.kubernetes.io/part-of: wealthfolio
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/wealthfolio/data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wealthfolio-data
+  namespace: wealthfolio
+  labels:
+    app.kubernetes.io/name: wealthfolio
+    app.kubernetes.io/part-of: wealthfolio
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: wealthfolio-data
+  resources:
+    requests:
+      storage: 10Gi

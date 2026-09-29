@@ -1,6 +1,6 @@
 resource "grafana_oncall_integration" "homelab" {
-  name = "homelab-alertmanager"
-  type = "alertmanager"
+  name = "homelab-grafana-alerting"
+  type = "grafana_alerting"
 
   default_route {
     escalation_chain_id = grafana_oncall_escalation_chain.homelab.id

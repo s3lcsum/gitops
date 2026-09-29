@@ -6,17 +6,8 @@
       "command": ["uvx", "ha-mcp"],
       "enabled": true,
       "environment": {
-        "HOMEASSISTANT_URL": "https://hass.dominiksiejak.pl",
-        "HOMEASSISTANT_TOKEN": "{env:HOMEASSISTANT_TOKEN}"
-      }
-    },
-    "n8n-mcp": {
-      "type": "remote",
-      "url": "https://n8n.dominiksiejak.pl/mcp-server/http",
-      "enabled": true,
-      "oauth": false,
-      "headers": {
-        "Authorization": "Bearer {env:N8N_MCP_TOKEN}"
+        "HOMEASSISTANT_URL": "{env:HA_URL}",
+        "HOMEASSISTANT_TOKEN": "{env:HA_TOKEN}"
       }
     },
     "n8n-mcp-tools": {
@@ -26,6 +17,15 @@
       "environment": {
         "N8N_API_URL": "https://n8n.dominiksiejak.pl/api/v1",
         "N8N_API_KEY": "{env:N8N_API_KEY}"
+      }
+    },
+    "argocd": {
+      "type": "local",
+      "command": ["npx", "-y", "argocd-mcp@latest", "stdio"],
+      "enabled": true,
+      "environment": {
+        "ARGOCD_BASE_URL": "https://argocd.dominiksiejak.pl",
+        "ARGOCD_API_TOKEN": "{env:ARGOCD_API_TOKEN}"
       }
     },
     "kubernetes": {

@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: mediabox
 resources:
   - resources/namespace.yaml
+  - resources/nfs.yaml
   - resources/gluetun.yaml
   - resources/apps.yaml
   - resources/ingressroute.yaml

@@ -16,6 +16,12 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: homepage
+  # Rollout injects a ReplicaSet hash into these selectors. Empty group
+  # is dropped by the API and never converges — omit it.
+  ignoreDifferences:
+    - kind: Service
+      jsonPointers:
+        - /spec/selector/rollouts-pod-template-hash
   syncPolicy:
     automated:
       prune: true

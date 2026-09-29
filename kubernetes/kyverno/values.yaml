@@ -10,6 +10,7 @@ crds:
 
 # Global — applied to all chart workloads; per-controller empty tolerations inherit this.
 global:
+  priorityClassName: homelab-critical
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
@@ -41,6 +42,14 @@ cleanupController:
     requests:
       cpu: 10m
       memory: 64Mi
+
+# Resource webhooks match Deployments. Fail + a dead admission controller
+# freezes applies. The flag forces Ignore while this pod is up. The git
+# overlay in resources/webhook-failure-policy.yaml is what Argo puts back
+# when the pod is not.
+features:
+  forceFailurePolicyIgnore:
+    enabled: true
 
 reportsController:
   replicas: 1

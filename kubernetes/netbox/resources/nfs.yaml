@@ -1,0 +1,147 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: netbox-media
+  labels:
+    app.kubernetes.io/name: netbox
+    app.kubernetes.io/part-of: netbox
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/netbox/media
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: netbox-media
+  namespace: netbox
+  labels:
+    app.kubernetes.io/name: netbox
+    app.kubernetes.io/part-of: netbox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: netbox-media
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: netbox-reports
+  labels:
+    app.kubernetes.io/name: netbox
+    app.kubernetes.io/part-of: netbox
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/netbox/reports
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: netbox-reports
+  namespace: netbox
+  labels:
+    app.kubernetes.io/name: netbox
+    app.kubernetes.io/part-of: netbox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: netbox-reports
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: netbox-scripts
+  labels:
+    app.kubernetes.io/name: netbox
+    app.kubernetes.io/part-of: netbox
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/netbox/scripts
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: netbox-scripts
+  namespace: netbox
+  labels:
+    app.kubernetes.io/name: netbox
+    app.kubernetes.io/part-of: netbox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: netbox-scripts
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: netbox-extra
+  labels:
+    app.kubernetes.io/name: netbox
+    app.kubernetes.io/part-of: netbox
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/netbox/extra.py
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: netbox-extra
+  namespace: netbox
+  labels:
+    app.kubernetes.io/name: netbox
+    app.kubernetes.io/part-of: netbox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: netbox-extra
+  resources:
+    requests:
+      storage: 1Gi

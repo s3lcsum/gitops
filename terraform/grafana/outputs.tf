@@ -4,7 +4,7 @@ output "victoria_metrics_datasource_uid" {
 }
 
 output "irm_integration_link" {
-  description = "HTTP endpoint for the homelab Alertmanager → IRM integration"
+  description = "HTTP endpoint for the homelab Grafana Alerting → IRM integration"
   value       = grafana_oncall_integration.homelab.link
   sensitive   = true
 }
