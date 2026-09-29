@@ -845,6 +845,7 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /app/src/scraparr/config/config.yaml
+              subPath: config.yaml
               readOnly: true
           resources:
             requests:
