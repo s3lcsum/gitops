@@ -1,0 +1,26 @@
+# ApplicationSet chart pin.
+repoURL: https://kubernetes-sigs.github.io/metrics-server/
+chart: metrics-server
+version: 3.14.0
+
+# Overrides for metrics-server 3.14.0 (app v0.9.0).
+# Serves metrics.k8s.io. k9s and kubectl top read this, not VictoriaMetrics.
+# kubelet TLS uses a node cert the API server does not trust. Skip verify.
+# Chart already sets name, instance, and managed-by. Not part of the selector.
+commonLabels:
+  app.kubernetes.io/part-of: metrics-server
+replicas: 1
+priorityClassName: homelab-critical
+args:
+  - --kubelet-insecure-tls
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+  - key: homelab.dominiksiejak.pl/worker
+    operator: Exists
+    effect: PreferNoSchedule
