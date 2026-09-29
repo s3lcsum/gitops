@@ -74,19 +74,6 @@ locals {
         return {"gitea": "public"}
       EOF
     }
-    grafana = {
-      name          = "Grafana"
-      launch_url    = "https://grafana.dominiksiejak.pl"
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/grafana.svg"
-      redirect_uris = ["https://grafana.dominiksiejak.pl/login/generic_oauth"]
-      mapping       = <<-EOF
-        if request.user.ak_groups.filter(name="admins").exists():
-            return {"role": "Admin"}
-        elif request.user.ak_groups.filter(name="users").exists():
-            return {"role": "Editor"}
-        return {"role": "Viewer"}
-      EOF
-    }
     # Public + PKCE: Grafana Cloud's token call comes from US and is blocked by
     # the Cloudflare country WAF. A public client does not send client_secret.
     grafana-cloud = {

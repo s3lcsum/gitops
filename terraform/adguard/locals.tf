@@ -15,7 +15,6 @@ locals {
     "dozzle.dominiksiejak.pl"           = "192.168.89.253"
     "git.dominiksiejak.pl"              = "192.168.89.252"
     "ghostfolio.dominiksiejak.pl"       = "192.168.89.253"
-    "grafana.dominiksiejak.pl"          = "192.168.89.252"
     "hass.dominiksiejak.pl"             = "192.168.89.252"
     "headlamp.dominiksiejak.pl"         = "192.168.89.252"
     "hass-timemachine.dominiksiejak.pl" = "192.168.89.252"

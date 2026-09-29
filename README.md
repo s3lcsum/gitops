@@ -57,7 +57,7 @@ Most of the lab runs on a single kubeadm node and is reconciled by Argo CD. Open
 | router | MikroTik hAP ac3 | `terraform/routeros/` |
 | data | CloudNativePG + NAS | `kubernetes/cloudnative-pg/` |
 | secrets | 1Password → External Secrets | `kubernetes/*/resources/externalsecret-*.yaml` |
-| monitoring | VictoriaMetrics, Grafana, blackbox | `kubernetes/monitoring/` + `terraform/grafana/` |
+| monitoring | VictoriaMetrics, Grafana Cloud | `kubernetes/monitoring/` + `terraform/grafana/` |
 
 ## 🖥️ hardware
 
