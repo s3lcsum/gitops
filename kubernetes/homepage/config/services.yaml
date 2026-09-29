@@ -20,10 +20,10 @@
         href: https://argocd.dominiksiejak.pl
         description: GitOps
 
-    - Argo Workflows:
-        icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/argo-workflows.png
-        href: https://workflows.dominiksiejak.pl
-        description: Workflow engine
+    - Argo Rollouts:
+        icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/argo.png
+        href: https://rollouts.dominiksiejak.pl
+        description: Progressive delivery
 
     - Policy Reporter:
         icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/kyverno.png
@@ -138,11 +138,6 @@
         href: https://wealthfolio.dominiksiejak.pl
         description: Personal finance
 
-    - Paperclip:
-        icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/paperclip.png
-        href: https://paperclip.dominiksiejak.pl
-        description: Agent control plane
-
 - Automation:
     - Home Assistant:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant.png
@@ -235,15 +230,6 @@
           url: http://bazarr.mediabox.svc:6767
           username: "{{HOMEPAGE_VAR_BAZARR_USER}}"
           key: "{{HOMEPAGE_VAR_BAZARR_KEY}}"
-
-    - Readarr:
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/readarr.png
-        href: https://readarr.dominiksiejak.pl
-        description: Book automation
-        widget:
-          type: readarr
-          url: http://readarr.mediabox.svc:8787
-          key: "{{HOMEPAGE_VAR_READARR_KEY}}"
 
     - Jellyfin:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyfin.png

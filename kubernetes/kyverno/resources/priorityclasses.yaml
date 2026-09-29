@@ -42,4 +42,4 @@ metadata:
 value: -100
 preemptionPolicy: Never
 globalDefault: false
-description: Yields under pressure. Never preempts. Bazarr, paperclip, UniFi, Calibre, wealthfolio, Readarr, Gitea, Headlamp, Homepage.
+description: Yields under pressure. Never preempts. Bazarr, UniFi, Calibre, wealthfolio, Gitea, Headlamp, Homepage.

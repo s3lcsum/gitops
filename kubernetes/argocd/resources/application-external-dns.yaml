@@ -1,5 +1,6 @@
 # Kustomize-only. No values.yaml → not in the Helm ApplicationSet.
-# Cloudflare external-dns needs a shell wrapper for --default-targets; the chart quotes args.
+# Official Deployment: no command override. --default-targets=$(WAN_IP) because
+# there is no cloud LB. Chart quoting would leave $(WAN_IP) literal.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

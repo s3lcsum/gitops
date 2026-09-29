@@ -54,7 +54,7 @@ spec:
           command:
             - sh
             - -c
-            - until mosquitto_sub -h 192.168.89.252 -p 1883 -u "$MQTT_USER" -P "$MQTT_PASSWORD" -t '$SYS/broker/uptime' -C 1 -W 3; do sleep 2; done
+            - until mosquitto_sub -h mosquitto.hass.svc -p 1883 -u "$MQTT_USER" -P "$MQTT_PASSWORD" -t '$SYS/broker/uptime' -C 1 -W 3; do sleep 2; done
       containers:
         - name: zigbee2mqtt
           image: ghcr.io/koenkk/zigbee2mqtt:2.14.1
@@ -64,7 +64,7 @@ spec:
             - name: TZ
               value: Europe/Warsaw
             - name: ZIGBEE2MQTT_CONFIG_MQTT_SERVER
-              value: mqtt://192.168.89.252:1883
+              value: mqtt://mosquitto.hass.svc:1883
             - name: ZIGBEE2MQTT_CONFIG_MQTT_USER
               valueFrom:
                 secretKeyRef:

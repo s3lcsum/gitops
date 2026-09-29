@@ -256,43 +256,6 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: mediabox-readarr
-  labels:
-    app.kubernetes.io/name: readarr
-    app.kubernetes.io/part-of: mediabox
-spec:
-  capacity:
-    storage: 5Gi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: nas-bind
-  mountOptions:
-    - nfsvers=4.1
-  nfs:
-    server: 192.168.89.240
-    path: /volume1/media/k8s/mediabox/readarr
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mediabox-readarr
-  namespace: mediabox
-  labels:
-    app.kubernetes.io/name: readarr
-    app.kubernetes.io/part-of: mediabox
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: nas-bind
-  volumeName: mediabox-readarr
-  resources:
-    requests:
-      storage: 5Gi
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
   name: mediabox-jellyfin
   labels:
     app.kubernetes.io/name: jellyfin

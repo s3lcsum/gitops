@@ -6,7 +6,6 @@ resources:
   - resources/externalsecret-cloudflare.yaml
   - resources/externalsecret-adguard.yaml
   - resources/wan-ip.yaml
-  - resources/cloudflare-entrypoint.yaml
   - resources/external-dns-cloudflare.yaml
   - resources/ingressroute-dnsendpoints.yaml
   - resources/external-dns-adguard.yaml

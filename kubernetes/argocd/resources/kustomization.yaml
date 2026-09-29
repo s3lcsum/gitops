@@ -18,7 +18,6 @@ resources:
   - application-external-dns.yaml
   - application-hass.yaml
   - application-homepage.yaml
-  - application-paperclip.yaml
   - application-wealthfolio.yaml
   - applicationset.yaml
   - externalsecret-oidc.yaml

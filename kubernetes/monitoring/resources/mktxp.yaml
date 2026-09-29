@@ -104,11 +104,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: mktxp
-          image: ghcr.io/akpw/mktxp:v2.0.3
-          args:
-            - --cfg-dir
-            - /etc/mktxp
-            - export
+          image: ghcr.io/akpw/mktxp:2.0.3
           ports:
             - name: http
               containerPort: 49090

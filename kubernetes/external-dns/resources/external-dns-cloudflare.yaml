@@ -41,9 +41,11 @@ subjects:
     name: external-dns-cloudflare
     namespace: external-dns
 ---
+# Official shape: no command override. Image entrypoint is /ko-app/external-dns.
 # dry-run stays on until logs list the expected A set, then drop --dry-run.
-# entrypoint.sh appends --default-targets from ConfigMap wan-ip. Chart quoting
-# would leave $(WAN_IP) literal, so this instance is not the Helm release.
+# No cloud LB, so --default-targets fills CRD endpoints that omit targets.
+# $(WAN_IP) is Kubernetes env expansion, not a shell. Chart quoting would
+# leave it literal, so this instance is not the Helm release.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -84,34 +86,9 @@ spec:
         fsGroup: 65534
         seccompProfile:
           type: RuntimeDefault
-      shareProcessNamespace: true
       containers:
-        - name: wan-target
-          image: busybox:1.37
-          command: ["/bin/sh", "/opt/entrypoint/entrypoint.sh"]
-          volumeMounts:
-            - name: wan-ip
-              mountPath: /etc/wan-ip
-              readOnly: true
-            - name: entrypoint
-              mountPath: /opt/entrypoint
-              readOnly: true
-            - name: args
-              mountPath: /etc/external-dns
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 65532
-            capabilities:
-              drop: ["ALL"]
-          resources:
-            requests:
-              cpu: 5m
-              memory: 16Mi
         - name: external-dns
           image: registry.k8s.io/external-dns/external-dns:v0.23.0
-          command: ["/bin/external-dns"]
           args:
             - --log-level=info
             - --interval=1m
@@ -124,10 +101,15 @@ spec:
             - --managed-record-types=A
             - --managed-record-types=TXT
             - --provider=cloudflare
-            - --cloudflare-proxied=false
             - --cloudflare-dns-records-per-page=5000
+            - --default-targets=$(WAN_IP)
             - --dry-run
           env:
+            - name: WAN_IP
+              valueFrom:
+                configMapKeyRef:
+                  name: wan-ip
+                  key: ip
             - name: CF_API_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -155,21 +137,7 @@ spec:
             runAsUser: 65532
             capabilities:
               drop: ["ALL"]
-          volumeMounts:
-            - name: args
-              mountPath: /etc/external-dns
-              readOnly: true
           resources:
             requests:
               cpu: 10m
               memory: 64Mi
-      volumes:
-        - name: wan-ip
-          configMap:
-            name: wan-ip
-        - name: entrypoint
-          configMap:
-            name: cloudflare-entrypoint
-            defaultMode: 0555
-        - name: args
-          emptyDir: {}

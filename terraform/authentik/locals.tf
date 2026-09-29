@@ -126,15 +126,6 @@ locals {
         "http://localhost:8085/auth/callback",
       ]
     }
-    # UI is https://workflows.dominiksiejak.pl (Cilium Gateway).
-    workflows = {
-      name       = "Argo Workflows"
-      launch_url = "https://workflows.dominiksiejak.pl"
-      icon_url   = "https://raw.githubusercontent.com/argoproj/argo-workflows/main/docs/assets/logo.png"
-      redirect_uris = [
-        "https://workflows.dominiksiejak.pl/oauth2/callback",
-      ]
-    }
     # Dex OIDC connector. Callback is the API host, not the UI.
     # Client id must match security.dexClientId (terrakube).
     terrakube = {
@@ -275,12 +266,6 @@ locals {
       launch_url = "https://unifi.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/unifi.svg"
     }
-    # Tile only — Better Auth, signup off. No Authentik provider.
-    paperclip = {
-      name       = "Paperclip"
-      launch_url = "https://paperclip.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/paperclip.svg"
-    }
     # *arr classified native-oidc but no OIDC client is configured in this repo.
     # Tiles only — do not add oauth2 entries until each app has a real callback.
     bazarr = {
@@ -307,11 +292,6 @@ locals {
       name       = "Radarr"
       launch_url = "https://radarr.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/radarr.svg"
-    }
-    readarr = {
-      name       = "Readarr"
-      launch_url = "https://readarr.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/readarr.svg"
     }
     sabnzbd = {
       name       = "SABnzbd"

@@ -17,15 +17,6 @@ controller:
   podLabels:
     app.kubernetes.io/part-of: argo-rollouts
     app.kubernetes.io/managed-by: Helm
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: homelab.dominiksiejak.pl/ai
-                operator: In
-                values:
-                  - "true"
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
@@ -39,4 +30,12 @@ controller:
       memory: 64Mi
 
 dashboard:
-  enabled: false
+  enabled: true
+  priorityClassName: homelab-low
+  readonly: false
+  service:
+    port: 3100
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi

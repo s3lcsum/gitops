@@ -7,3 +7,4 @@ resources:
   - resources/deployment.yaml
   - resources/ingressroute.yaml
   - resources/ldap-outpost.yaml
+  - resources/radius-outpost.yaml

@@ -102,7 +102,6 @@ Argo CD parents everything under `kubernetes/`. A directory with `values.yaml` (
 | [Mediabox](https://jellyfin.org/) | Jellyfin and the *arr stack. Downloads stay on a VPN. |
 | [n8n](https://n8n.io/) | Workflows. |
 | [NetBox](https://github.com/netbox-community/netbox) | IPAM / DCIM. |
-| [Paperclip](https://github.com/paperclipai/paperclip) | Agents. Signup off. |
 | [Traefik](https://traefik.io/) | The edge. |
 | [UniFi](https://ui.com/software) | Wi-Fi controller. |
 | [WatchYourLAN](https://github.com/aceberg/watchyourlan) | Who is on the LAN. |

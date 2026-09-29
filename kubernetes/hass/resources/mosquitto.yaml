@@ -16,6 +16,10 @@ data:
     listener_allow_anonymous true
     listener 1883 192.168.89.252
     listener_allow_anonymous false
+    # Pod IP. ClusterIP Service mosquitto.hass.svc lands here.
+    # LAN devices stay on 192.168.89.252. Do not bind 0.0.0.0.
+    listener 1883
+    listener_allow_anonymous false
     password_file /mosquitto/config/passwd
 ---
 apiVersion: apps/v1
@@ -127,3 +131,21 @@ spec:
           hostPath:
             path: /var/lib/hass/mosquitto-data
             type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto
+  namespace: hass
+  labels:
+    app.kubernetes.io/name: mosquitto
+    app.kubernetes.io/instance: mosquitto
+    app.kubernetes.io/part-of: hass
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: mosquitto
+  ports:
+    - name: mqtt
+      port: 1883
+      targetPort: mqtt
