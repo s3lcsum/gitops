@@ -25,17 +25,23 @@ Public on purpose. Hostnames and the LAN map are not secrets. Credentials, `*.en
 
 Most of the lab runs on a single kubeadm node and is reconciled by Argo CD. OpenTofu owns the things Kubernetes should not: DNS rewrites, the router, Wi-Fi, identity apps, and Grafana Cloud.
 
-```mermaid
-flowchart TD
-  internet[internet]
-  internet --> wan["WAN (firewalled)"]
-  internet --> wg[WireGuard]
-  internet --> cf["Cloudflare Tunnel (WAF)"]
-  wan --> edge[Traefik]
-  wg --> lan[LAN]
-  lan --> edge
-  cf --> apps[apps]
-  edge --> apps
+```
+                      internet
+                      │
+     ┌────────────────┼────────────────┐
+     │                │                │
+    WAN           WireGuard       Cloudflare
+ (firewall)           │                │
+     │                │                │
+     └────────────────┼────────────────┘
+                      │
+     ┌──────────┬─────┴────┬───────────┐
+     │          │          │           │
+    NAS       Lake        Vibe      CloudVM
+                │          │
+                └─────┬────┘
+                      │
+                   Traefik
 ```
 
 ## 🧰 stack
