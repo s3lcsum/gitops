@@ -127,7 +127,7 @@ spec:
     - nfsvers=4.1
   nfs:
     server: 192.168.89.240
-    path: /volume1/media/k8s/netbox/extra.py
+    path: /volume1/media/k8s/netbox
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
