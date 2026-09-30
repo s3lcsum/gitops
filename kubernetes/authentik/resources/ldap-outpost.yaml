@@ -1,7 +1,7 @@
 # Manual LDAP outpost. docker-local on 192.168.89.253 is down; do not
 # point authentik_outpost.ldap at that integration.
 # AUTHENTIK_TOKEN is the outpost service-account token (intent api),
-# not an app password. 1Password item: authentik-ldap-outpost / token.
+# not an app password. 1Password item: authentik / ldap-token.
 # Tag: ArgoCD External Secrets Operator.
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
@@ -35,7 +35,7 @@ spec:
   data:
     - secretKey: token
       remoteRef:
-        key: authentik-ldap-outpost/token
+        key: authentik/ldap-token
 ---
 apiVersion: v1
 kind: Service

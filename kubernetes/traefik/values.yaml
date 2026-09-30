@@ -89,6 +89,14 @@ ports:
       default: true
     hostPort: 636
     protocol: TCP
+  # Prometheus entrypoint. Chart default metrics.prometheus.entryPoint is "metrics".
+  # hostNetwork: container port == host port. Do not put this on :8080 (UniFi inform).
+  metrics:
+    port: 9100
+    expose:
+      default: true
+    hostPort: 9100
+    protocol: TCP
 providers:
   kubernetesCRD:
     enabled: true
@@ -134,3 +142,10 @@ log:
   level: INFO
 accessLog:
   enabled: true
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+    service:
+      enabled: true

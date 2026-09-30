@@ -12,10 +12,13 @@ scrape_configs:
       - targets:
           - postgres-exporter:9187
 
+  # hostNetwork DaemonSet. Metrics listen on every node :9100.
+  # Do not scrape traefik:9100 — chart disables the main Service (service.enabled: false).
   - job_name: traefik
     static_configs:
       - targets:
-          - traefik:9100
+          - 192.168.89.252:9100
+          - 192.168.89.201:9100
 
   # WatchYourLAN is hostNetwork on the lake node.
   - job_name: "watchyourlan"

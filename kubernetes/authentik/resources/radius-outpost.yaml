@@ -1,7 +1,7 @@
 # Manual RADIUS outpost. docker-local on 192.168.89.253 is down; do not
 # point authentik_outpost.radius at that integration.
 # AUTHENTIK_TOKEN is the outpost service-account token (intent api),
-# not an app password. 1Password item: authentik-radius-outpost / token.
+# not an app password. 1Password item: authentik / radius-token.
 # Tag: ArgoCD External Secrets Operator.
 # hostNetwork so RouterOS can reach UDP 1812/1813 on 192.168.89.252.
 # authentik apply must land before this pod, or the token has no outpost.
@@ -37,7 +37,7 @@ spec:
   data:
     - secretKey: token
       remoteRef:
-        key: authentik-radius-outpost/token
+        key: authentik/radius-token
 ---
 apiVersion: apps/v1
 kind: Deployment

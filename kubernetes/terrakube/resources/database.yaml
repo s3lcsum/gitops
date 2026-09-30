@@ -11,8 +11,6 @@ spec:
   name: terrakube_user
   login: true
   databaseRoleReclaimPolicy: delete
-  passwordSecret:
-    name: terrakube-user
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: Database

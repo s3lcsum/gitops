@@ -52,18 +52,104 @@ spec:
               wireless = True
               wireless_clients = True
               capsman = True
-              capsman_clients = True
-              kid_control_devices = True
+               capsman_clients = True
+               kid_control_devices = True
+               enabled = True
+               module_only = False
+               health = True
+               connection_stats_destinations = False
+               interface_with_default_name = False
+               routerboard = False
+               wireguard_peers = False
+               bridge_vlan = False
+               neighbor = True
+               total_address_list_counts = True
+               dns = False
+               ipv6_route = False
+               ipv6_pool = False
+               ipv6_firewall = False
+               ipv6_neighbor = False
+               ipv6_total_address_list_counts = True
+               poe = True
+               monitor = True
+               netwatch = True
+               public_ip = True
+               w60g = False
+               eoip = False
+               gre = False
+               ipip = False
+               lte = False
+               switch_port = False
+               kid_control_assigned = False
+               kid_control_dynamic = False
+               user = True
+               queue = True
+               bfd = False
+               bgp = False
+               routing_stats = False
+               certificate = False
+               container = False
+               interface_name_format = name
+               check_for_updates = False
+               no_ssl_certificate = False
+               ssl_certificate_verify = False
+               ssl_check_hostname = True
+        # 2.0.3 rewrites missing keys in place. Secret mount is read-only —
+        # a short file logs EROFS and never collects RouterOS metrics.
+        # Keep this in sync with ghcr.io/akpw/mktxp:2.0.3 defaults.
         _mktxp.conf: |
           [MKTXP]
               listen = '0.0.0.0:49090'
               socket_timeout = 5
               initial_delay_on_failure = 120
               max_delay_on_failure = 900
+              delay_inc_div = 5
               bandwidth = False
+              bandwidth_test_dns_server = 8.8.8.8
+              bandwidth_test_interval = 600
+              minimal_collect_interval = 5
+              verbose_mode = False
               fetch_routers_in_parallel = False
+              max_worker_threads = 5
+              max_scrape_duration = 30
+              total_max_scrape_duration = 90
+              http_server_threads = 16
               persistent_router_connection_pool = True
               persistent_dhcp_cache = True
+              compact_default_conf_values = False
+              prometheus_headers_deduplication = False
+              probe_connection_pool = False
+              probe_connection_pool_ttl = 300
+              probe_connection_pool_max_size = 128
+
+          [RSC]
+              base_dir = './exports'
+              numbered_files = True
+              wrap_lines = False
+              wrap_column = 80
+              extract_scripts = False
+              strip_mac_addresses = False
+              ssh_port = 22
+              ssh_timeout = 15
+              show_sensitive = False
+              handler_order = base, wifi, system, ip, dhcp-leases, firewall, lte, wireguard
+              handler_base = /interface bridge, /interface ethernet, /interface vlan, /interface list, /interface macvlan, /interface ovpn-server
+              handler_wifi = /caps-man, /interface wifi, /interface wireless
+              handler_system = /system, /user, /certificate, /zerotier, /ppp, /queue, /snmp, /interface l2tp-server, /interface sstp-server, /ip smb, /ip neighbor discovery-settings, /ip settings, /ipv6 settings, /ip ipsec, /ip service, /ip ssh, /ipv6 nd, /routing bfd, /routing bgp, /routing ospf, /tool bandwidth-server, /tool mac-server, /tool romon, /tool e-mail, /tool netwatch, /tool traffic-monitor, /app, /ip kid-control, /caps-man access-list
+              handler_dhcp-leases = /ip dhcp-server lease
+              handler_ip = /ip address, /ipv6 address, /ip pool, /ipv6 pool, /ip dhcp-client, /ip dhcp-server, /ipv6 dhcp-client, /ipv6 dhcp-server, /ip dns, /ip route, /ipv6 route, /ip cloud, /routing table, /routing rule
+              handler_firewall = /ip firewall, /ipv6 firewall
+              handler_lte = /interface lte, /tool sms
+              handler_wireguard = /interface wireguard
+
+          [DIAG]
+              low_signal_threshold = -75
+              min_signal_threshold = -60
+              low_rate_threshold = '18M'
+              recent_duration = '15m'
+              top_connections_count = 10
+              rate_above_threshold = '1M'
+              degraded_threshold = '100M'
   data:
     - secretKey: username
       remoteRef:
