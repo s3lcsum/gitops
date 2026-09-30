@@ -12,8 +12,11 @@ metadata:
     policies.kyverno.io/severity: medium
     policies.kyverno.io/subject: Pod
 spec:
+  admission: true
   background: true
+  emitWarning: false
   mutateExistingOnPolicyUpdate: true
+  validationFailureAction: Audit
   rules:
     - name: flannel-daemonset
       match:

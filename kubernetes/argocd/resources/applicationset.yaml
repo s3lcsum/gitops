@@ -83,6 +83,13 @@ spec:
             - .spec.template.metadata.labels."app.kubernetes.io/instance"
             - .spec.template.metadata.labels."app.kubernetes.io/part-of"
             - .spec.template.metadata.labels."app.kubernetes.io/managed-by"
+            # kube-controller writes this; Helm never emits it.
+            - .metadata.annotations."deprecated.daemonset.template.generation"
+        # Endpoint controller defaults conditions to {}. Git omits it.
+        - group: discovery.k8s.io
+          kind: EndpointSlice
+          jqPathExpressions:
+            - .endpoints[]?.conditions
         # Kyverno rewrites its own CRDs and admission webhooks after install.
         - group: apiextensions.k8s.io
           kind: CustomResourceDefinition
@@ -94,10 +101,19 @@ spec:
           kind: MutatingWebhookConfiguration
           jqPathExpressions:
             - .webhooks[]?.clientConfig.caBundle
+            # Kyverno renames mutate.kyverno.svc-fail → -ignore while up.
+            - .webhooks[]?.name
         - group: admissionregistration.k8s.io
           kind: ValidatingWebhookConfiguration
           jqPathExpressions:
             - .webhooks[]?.clientConfig.caBundle
+            - .webhooks[]?.name
+        # Kyverno drops controller-gen annotations and sets conversion.strategy
+        # on policies.kyverno.io CRDs after install. Status already ignored.
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          jqPathExpressions:
+            - .spec.conversion.strategy
       syncPolicy:
         automated:
           prune: true
@@ -141,6 +157,11 @@ spec:
             - .spec.template.metadata.labels."app.kubernetes.io/instance"
             - .spec.template.metadata.labels."app.kubernetes.io/part-of"
             - .spec.template.metadata.labels."app.kubernetes.io/managed-by"
+            - .metadata.annotations."deprecated.daemonset.template.generation"
+        - group: discovery.k8s.io
+          kind: EndpointSlice
+          jqPathExpressions:
+            - .endpoints[]?.conditions
         - group: apiextensions.k8s.io
           kind: CustomResourceDefinition
           jqPathExpressions:
@@ -151,10 +172,16 @@ spec:
           kind: MutatingWebhookConfiguration
           jqPathExpressions:
             - .webhooks[]?.clientConfig.caBundle
+            - .webhooks[]?.name
         - group: admissionregistration.k8s.io
           kind: ValidatingWebhookConfiguration
           jqPathExpressions:
             - .webhooks[]?.clientConfig.caBundle
+            - .webhooks[]?.name
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          jqPathExpressions:
+            - .spec.conversion.strategy
     {{- else }}
     {}
     {{- end }}
