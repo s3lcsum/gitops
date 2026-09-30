@@ -12,13 +12,12 @@ data:
   mosquitto.conf: |
     persistence true
     persistence_location /mosquitto/data/
+    # HA hostNetwork → 127.0.0.1 anonymous. LAN + ClusterIP → node IP + passwd.
+    # Never bare "listener 1883" (0.0.0.0) — collides with the binds above.
+    # Mosquitto 2.1+: listener_allow_anonymous is scoped to the preceding listener.
     listener 1883 127.0.0.1
     listener_allow_anonymous true
     listener 1883 192.168.89.252
-    listener_allow_anonymous false
-    # Pod IP. ClusterIP Service mosquitto.hass.svc lands here.
-    # LAN devices stay on 192.168.89.252. Do not bind 0.0.0.0.
-    listener 1883
     listener_allow_anonymous false
     password_file /mosquitto/config/passwd
 ---

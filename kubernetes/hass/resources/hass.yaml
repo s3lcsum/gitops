@@ -39,13 +39,6 @@ spec:
               - matchExpressions:
                   - key: node-role.kubernetes.io/control-plane
                     operator: Exists
-      initContainers:
-        - name: wait-mqtt
-          image: eclipse-mosquitto:2.1.2-alpine
-          command:
-            - sh
-            - -c
-            - until mosquitto_sub -h 127.0.0.1 -p 1883 -t '$SYS/broker/uptime' -C 1 -W 3; do sleep 2; done
       containers:
         - name: hass
           image: ghcr.io/home-assistant/home-assistant:2026.9.3

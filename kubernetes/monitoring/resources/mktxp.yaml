@@ -29,73 +29,81 @@ spec:
         annotations:
           argocd.argoproj.io/sync-options: Prune=false
       data:
+        # 2.0.3 treats any missing key as stale and rewrites the file in place.
+        # Secret mount is read-only — EROFS aborts load, HTTP stays up, no RouterOS metrics.
+        # Every key from the image sample must be present. Keep in sync with ghcr.io/akpw/mktxp:2.0.3.
         mktxp.conf: |
           [Router]
               hostname = 192.168.89.1
               port = 8728
               username = {{ .username }}
               password = {{ .password }}
+              credentials_file = ""
+              custom_labels = None
               use_ssl = False
+              no_ssl_certificate = False
+              ssl_certificate_verify = False
+              ssl_check_hostname = True
+              ssl_ca_file = ""
               plaintext_login = True
+              enabled = True
+              module_only = False
+              health = True
               installed_packages = True
               dhcp = True
               dhcp_lease = True
               connections = True
               connection_stats = True
+              connection_stats_destinations = False
               interface = True
+              interface_with_default_name = False
+              routerboard = False
+              wireguard = True
+              wireguard_peers = False
+              bridge_vlan = False
               route = True
               pool = True
               firewall = True
-              ipsec = True
-              wireguard = True
+              neighbor = True
+              address_list = None
+              total_address_list_counts = True
+              dns = False
+              ipv6_route = False
+              ipv6_pool = False
+              ipv6_firewall = False
+              ipv6_neighbor = False
+              ipv6_address_list = None
+              ipv6_total_address_list_counts = True
+              poe = True
+              monitor = True
+              netwatch = True
+              public_ip = True
               wireless = True
               wireless_clients = True
               capsman = True
-               capsman_clients = True
-               kid_control_devices = True
-               enabled = True
-               module_only = False
-               health = True
-               connection_stats_destinations = False
-               interface_with_default_name = False
-               routerboard = False
-               wireguard_peers = False
-               bridge_vlan = False
-               neighbor = True
-               total_address_list_counts = True
-               dns = False
-               ipv6_route = False
-               ipv6_pool = False
-               ipv6_firewall = False
-               ipv6_neighbor = False
-               ipv6_total_address_list_counts = True
-               poe = True
-               monitor = True
-               netwatch = True
-               public_ip = True
-               w60g = False
-               eoip = False
-               gre = False
-               ipip = False
-               lte = False
-               switch_port = False
-               kid_control_assigned = False
-               kid_control_dynamic = False
-               user = True
-               queue = True
-               bfd = False
-               bgp = False
-               routing_stats = False
-               certificate = False
-               container = False
-               interface_name_format = name
-               check_for_updates = False
-               no_ssl_certificate = False
-               ssl_certificate_verify = False
-               ssl_check_hostname = True
-        # 2.0.3 rewrites missing keys in place. Secret mount is read-only —
-        # a short file logs EROFS and never collects RouterOS metrics.
-        # Keep this in sync with ghcr.io/akpw/mktxp:2.0.3 defaults.
+              capsman_clients = True
+              w60g = False
+              eoip = False
+              gre = False
+              ipip = False
+              lte = False
+              ipsec = True
+              switch_port = False
+              kid_control_assigned = False
+              kid_control_dynamic = False
+              user = True
+              queue = True
+              bfd = False
+              bgp = False
+              routing_stats = False
+              certificate = False
+              container = False
+              remote_dhcp_entry = None
+              remote_capsman_entry = None
+              interface_name_format = name
+              check_for_updates = False
+        # 2.0.3 also rewrites missing [MKTXP] / [DIAG] keys. Keep in sync with image defaults.
+        # Quote False/0. Unquoted False is ConfigObj falsy, so .get(key) misses and 2.0.3 rewrites.
         _mktxp.conf: |
           [MKTXP]
               listen = '0.0.0.0:49090'
@@ -103,21 +111,21 @@ spec:
               initial_delay_on_failure = 120
               max_delay_on_failure = 900
               delay_inc_div = 5
-              bandwidth = False
+              bandwidth = 'False'
               bandwidth_test_dns_server = 8.8.8.8
               bandwidth_test_interval = 600
               minimal_collect_interval = 5
-              verbose_mode = False
-              fetch_routers_in_parallel = False
+              verbose_mode = 'False'
+              fetch_routers_in_parallel = 'False'
               max_worker_threads = 5
               max_scrape_duration = 30
               total_max_scrape_duration = 90
               http_server_threads = 16
               persistent_router_connection_pool = True
               persistent_dhcp_cache = True
-              compact_default_conf_values = False
-              prometheus_headers_deduplication = False
-              probe_connection_pool = False
+              compact_default_conf_values = 'False'
+              prometheus_headers_deduplication = 'False'
+              probe_connection_pool = 'False'
               probe_connection_pool_ttl = 300
               probe_connection_pool_max_size = 128
 
