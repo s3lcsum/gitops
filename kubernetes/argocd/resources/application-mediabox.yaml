@@ -16,18 +16,6 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: mediabox
-  # KEDA writes replicas. Name-scoped so radarr/sonarr stay pinned.
-  ignoreDifferences:
-    - group: apps
-      kind: Deployment
-      name: flaresolverr
-      jqPathExpressions:
-        - .spec.replicas
-    - group: apps
-      kind: Deployment
-      name: prowlarr
-      jqPathExpressions:
-        - .spec.replicas
   syncPolicy:
     automated:
       prune: true

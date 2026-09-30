@@ -16,13 +16,6 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: unifi
-  # KEDA writes replicas. Without this, selfHeal pins the Deployment at 0.
-  ignoreDifferences:
-    - group: apps
-      kind: Deployment
-      name: unifi
-      jqPathExpressions:
-        - .spec.replicas
   syncPolicy:
     automated:
       prune: true

@@ -75,13 +75,6 @@ spec:
             - /spec/template/metadata/labels/app.kubernetes.io~1instance
             - /spec/template/metadata/labels/app.kubernetes.io~1part-of
             - /spec/template/metadata/labels/app.kubernetes.io~1managed-by
-        # KEDA writes /spec/replicas. selfHeal would put git's 0 back.
-        - group: apps
-          kind: Deployment
-          jqPathExpressions:
-            - .spec.replicas
-          name: headlamp
-          namespace: headlamp
       syncPolicy:
         automated:
           prune: true
