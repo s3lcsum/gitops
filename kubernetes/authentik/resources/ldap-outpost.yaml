@@ -13,8 +13,6 @@ metadata:
     app.kubernetes.io/instance: ldap-outpost
     app.kubernetes.io/part-of: authentik
     app.kubernetes.io/managed-by: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "-1"
 spec:
   refreshInterval: 24h
   secretStoreRef:

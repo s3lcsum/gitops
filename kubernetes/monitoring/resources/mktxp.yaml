@@ -14,8 +14,6 @@ metadata:
     app.kubernetes.io/instance: monitoring
     app.kubernetes.io/part-of: monitoring
     app.kubernetes.io/managed-by: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "-1"
 spec:
   refreshInterval: 24h
   secretStoreRef:
