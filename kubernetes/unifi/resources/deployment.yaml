@@ -10,7 +10,6 @@ metadata:
     app.kubernetes.io/part-of: unifi
     app.kubernetes.io/managed-by: argocd
 spec:
-  # KEDA ScaledObject (kubernetes/keda) owns this. Default 1; idle scales to 0.
   replicas: 1
   strategy:
     type: Recreate
@@ -115,7 +114,7 @@ spec:
               mountPath: /config
           resources:
             requests:
-              cpu: 100m
+              cpu: 50m
               memory: 512Mi
       volumes:
         - name: config

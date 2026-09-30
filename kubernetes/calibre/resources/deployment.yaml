@@ -11,8 +11,6 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  # KEDA ScaledObject (kubernetes/keda) owns this. Default 1; idle scales to 0.
-  # calibre-web-automated stays at 1 — public API host.
   replicas: 1
   strategy:
     type: Recreate
@@ -59,8 +57,8 @@ spec:
               mountPath: /mnt/NAS_Shared_Media/books
           resources:
             requests:
-              cpu: 200m
-              memory: 1Gi
+              cpu: 50m
+              memory: 512Mi
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -154,8 +152,8 @@ spec:
               subPath: library
           resources:
             requests:
-              cpu: 100m
-              memory: 512Mi
+              cpu: 50m
+              memory: 256Mi
       volumes:
         - name: config
           persistentVolumeClaim:

@@ -17,10 +17,8 @@ spec:
         - name: authentik
           namespace: traefik
       services:
-        - name: interceptor-calibre
-          namespace: keda
+        - name: calibre
           port: 8080
-          serversTransport: scale-to-zero
     - match: Host(`calibre.dominiksiejak.pl`)
       kind: Rule
       middlewares:

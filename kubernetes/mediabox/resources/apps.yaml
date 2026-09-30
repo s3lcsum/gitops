@@ -9,7 +9,6 @@ metadata:
     app.kubernetes.io/part-of: mediabox
     app.kubernetes.io/managed-by: argocd
 spec:
-  # KEDA ScaledObject (kubernetes/keda) owns this. Default 1; idle scales to 0.
   replicas: 1
   selector:
     matchLabels:
@@ -91,7 +90,6 @@ metadata:
     app.kubernetes.io/part-of: mediabox
     app.kubernetes.io/managed-by: argocd
 spec:
-  # KEDA ScaledObject (kubernetes/keda) owns this. Default 1; idle scales to 0.
   replicas: 1
   selector:
     matchLabels:
@@ -502,8 +500,8 @@ spec:
               mountPath: /mnt/NAS_Shared_Media
           resources:
             requests:
-              cpu: 200m
-              memory: 1Gi
+              cpu: 50m
+              memory: 512Mi
             limits:
               cpu: "2"
               memory: 4Gi
