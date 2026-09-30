@@ -66,8 +66,10 @@ spec:
               mountPath: /certs
           resources:
             requests:
-              cpu: 100m
-              memory: 512Mi
+              cpu: 50m
+              memory: 768Mi
+            limits:
+              memory: 1280Mi
       volumes:
         - name: media
           persistentVolumeClaim:
@@ -150,7 +152,7 @@ spec:
               mountPath: /certs
           resources:
             requests:
-              cpu: 100m
+              cpu: 50m
               memory: 256Mi
       volumes:
         - name: media

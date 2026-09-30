@@ -114,8 +114,8 @@ configs:
 controller:
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 200m
+      memory: 512Mi
 
 repoServer:
   resources:

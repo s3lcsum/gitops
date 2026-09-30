@@ -120,8 +120,10 @@ spec:
               readOnly: true
           resources:
             requests:
-              cpu: 100m
-              memory: 512Mi
+              cpu: 50m
+              memory: 768Mi
+            limits:
+              memory: 1536Mi
       volumes:
         - name: media
           persistentVolumeClaim:

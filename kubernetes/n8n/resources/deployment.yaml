@@ -73,8 +73,8 @@ spec:
               mountPath: /home/node/.n8n
           resources:
             requests:
-              cpu: 100m
-              memory: 512Mi
+              cpu: 50m
+              memory: 256Mi
       volumes:
         - name: data
           persistentVolumeClaim:

@@ -28,3 +28,15 @@ variable "oncall_username" {
   type        = string
   default     = "s3lcsum"
 }
+
+variable "oncall_url" {
+  description = "Grafana Cloud OnCall API. Provider default is us-central-0; this stack is eu-west-0."
+  type        = string
+  default     = "https://oncall-prod-eu-west-0.grafana.net/oncall"
+}
+
+variable "oncall_access_token" {
+  description = "OnCall API token from Alerts & IRM → Settings. Not a glsa_ service account token."
+  type        = string
+  sensitive   = true
+}

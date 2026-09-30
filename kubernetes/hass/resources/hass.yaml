@@ -68,8 +68,10 @@ spec:
             timeoutSeconds: 10
           resources:
             requests:
-              cpu: 100m
-              memory: 512Mi
+              cpu: 50m
+              memory: 768Mi
+            limits:
+              memory: 1280Mi
       volumes:
         - name: config
           hostPath:

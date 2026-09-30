@@ -38,9 +38,9 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: monitoring-promscrape
+  name: monitoring-config
   labels:
-    app.kubernetes.io/name: victoria-metrics
+    app.kubernetes.io/name: monitoring
     app.kubernetes.io/part-of: monitoring
 spec:
   capacity:
@@ -53,95 +53,21 @@ spec:
     - nfsvers=4.1
   nfs:
     server: 192.168.89.240
-    path: /volume1/media/k8s/monitoring/config/promscrape.yaml
+    path: /volume1/media/k8s/monitoring/config
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: monitoring-promscrape
+  name: monitoring-config
   namespace: monitoring
   labels:
-    app.kubernetes.io/name: victoria-metrics
+    app.kubernetes.io/name: monitoring
     app.kubernetes.io/part-of: monitoring
 spec:
   accessModes:
     - ReadWriteMany
   storageClassName: nas-bind
-  volumeName: monitoring-promscrape
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: monitoring-blackbox
-  labels:
-    app.kubernetes.io/name: blackbox-exporter
-    app.kubernetes.io/part-of: monitoring
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: nas-bind
-  mountOptions:
-    - nfsvers=4.1
-  nfs:
-    server: 192.168.89.240
-    path: /volume1/media/k8s/monitoring/config/blackbox.yaml
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: monitoring-blackbox
-  namespace: monitoring
-  labels:
-    app.kubernetes.io/name: blackbox-exporter
-    app.kubernetes.io/part-of: monitoring
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: nas-bind
-  volumeName: monitoring-blackbox
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: monitoring-snmp
-  labels:
-    app.kubernetes.io/name: snmp-exporter
-    app.kubernetes.io/part-of: monitoring
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: nas-bind
-  mountOptions:
-    - nfsvers=4.1
-  nfs:
-    server: 192.168.89.240
-    path: /volume1/media/k8s/monitoring/config/snmp.yml
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: monitoring-snmp
-  namespace: monitoring
-  labels:
-    app.kubernetes.io/name: snmp-exporter
-    app.kubernetes.io/part-of: monitoring
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: nas-bind
-  volumeName: monitoring-snmp
+  volumeName: monitoring-config
   resources:
     requests:
       storage: 1Gi

@@ -52,10 +52,11 @@ spec:
               mountPath: /storage
             - name: config
               mountPath: /etc/victoria-metrics/promscrape.yaml
+              subPath: promscrape.yaml
               readOnly: true
           resources:
             requests:
-              cpu: 100m
+              cpu: 50m
               memory: 256Mi
             limits:
               cpu: "1"
@@ -66,7 +67,7 @@ spec:
             claimName: monitoring-vm-data
         - name: config
           persistentVolumeClaim:
-            claimName: monitoring-promscrape
+            claimName: monitoring-config
 ---
 apiVersion: v1
 kind: Service
@@ -125,6 +126,7 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/blackbox_exporter/blackbox.yaml
+              subPath: blackbox.yaml
               readOnly: true
           resources:
             requests:
@@ -136,7 +138,7 @@ spec:
       volumes:
         - name: config
           persistentVolumeClaim:
-            claimName: monitoring-blackbox
+            claimName: monitoring-config
 ---
 apiVersion: v1
 kind: Service
@@ -195,6 +197,7 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/snmp_exporter/config.yml
+              subPath: snmp.yml
               readOnly: true
           resources:
             requests:
@@ -206,7 +209,7 @@ spec:
       volumes:
         - name: config
           persistentVolumeClaim:
-            claimName: monitoring-snmp
+            claimName: monitoring-config
 ---
 apiVersion: v1
 kind: Service

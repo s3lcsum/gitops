@@ -17,4 +17,8 @@ terraform {
 provider "grafana" {
   url  = var.grafana_cloud_url
   auth = var.grafana_cloud_auth
+
+  # Provider default OnCall host is us-central-0. This stack is eu-west-0.
+  oncall_url          = var.oncall_url
+  oncall_access_token = var.oncall_access_token
 }

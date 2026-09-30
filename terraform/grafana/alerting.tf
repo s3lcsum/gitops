@@ -29,7 +29,7 @@ resource "grafana_rule_group" "synthetic_page" {
 
       datasource_uid = grafana_data_source.victoria_metrics.uid
       model = jsonencode({
-        expr          = "min(probe_success) by (instance)"
+        expr          = "min(probe_success{instance!~\"https://(portainer|adminer|readarr|status|dozzle|opencode)\\\\.dominiksiejak\\\\.pl\"}) by (instance)"
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200
@@ -117,7 +117,7 @@ resource "grafana_rule_group" "homelab_incident" {
 
       datasource_uid = grafana_data_source.victoria_metrics.uid
       model = jsonencode({
-        expr          = "min by (instance) (probe_success{instance=~\".*dominiksiejak\\\\.pl.*\"})"
+        expr          = "min by (instance) (probe_success{instance=~\".*dominiksiejak\\\\.pl.*\",instance!~\"https://(portainer|adminer|readarr|status|dozzle|opencode)\\\\.dominiksiejak\\\\.pl\"})"
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200

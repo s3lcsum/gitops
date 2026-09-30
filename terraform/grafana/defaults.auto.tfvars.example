@@ -7,3 +7,5 @@ grafana_cloud_auth = "glsa_..." # Cloud Admin service account token
 # pdc_network_id       = "e8558cb8-eea9-4eb5-a58e-1ba9f7181431"
 # victoria_metrics_url = "http://victoria-metrics:8428"
 # oncall_username      = "s3lcsum"
+# oncall_url           = "https://oncall-prod-eu-west-0.grafana.net/oncall"
+oncall_access_token = "..." # Alerts & IRM → Settings → API tokens. Not glsa_.
