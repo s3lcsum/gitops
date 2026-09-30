@@ -18,14 +18,15 @@ deployment:
   # One pod per node. hostNetwork :80/:443 then cannot collide.
   # Public WAN still arrives only at 192.168.89.252.
   kind: DaemonSet
+  # Required with hostNetwork so *.svc resolves via CoreDNS (not AdGuard).
+  # Chart reads deployment.dnsPolicy, not a sibling of updateStrategy.
+  dnsPolicy: ClusterFirstWithHostNet
 # hostNetwork cannot surge a second pod onto the same port.
 updateStrategy:
   type: RollingUpdate
   rollingUpdate:
     maxUnavailable: 1
     maxSurge: 0
-  # Required with hostNetwork so *.svc resolves via CoreDNS (not AdGuard).
-  dnsPolicy: ClusterFirstWithHostNet
 hostNetwork: true
 service:
   enabled: false
