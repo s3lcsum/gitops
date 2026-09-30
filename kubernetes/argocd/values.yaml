@@ -88,6 +88,14 @@ configs:
       - http://localhost:8080
       - http://localhost:8085
     admin.enabled: false
+    # Built-in ExternalSecret health is Degraded/Progressing when 1Password
+    # has no item. Argo then fails the sync hook and retries forever.
+    # ESO still retries on its own. A missing item must not block the app.
+    resource.customizations.health.external-secrets.io_ExternalSecret: |
+      hs = {}
+      hs.status = "Healthy"
+      hs.message = "ESO owns refresh; missing 1Password item is not a sync failure"
+      return hs
     oidc.config: |
       name: Authentik
       issuer: https://auth.dominiksiejak.pl/application/o/argocd/
