@@ -111,12 +111,6 @@ spec:
             - /spec/template/metadata/labels/app.kubernetes.io~1instance
             - /spec/template/metadata/labels/app.kubernetes.io~1part-of
             - /spec/template/metadata/labels/app.kubernetes.io~1managed-by
-        - group: apps
-          kind: Deployment
-          jqPathExpressions:
-            - .spec.replicas
-          name: headlamp
-          namespace: headlamp
     {{- else }}
     {}
     {{- end }}
