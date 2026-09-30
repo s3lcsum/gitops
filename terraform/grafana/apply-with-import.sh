@@ -9,6 +9,6 @@ fi
 tofu init -input=false
 tofu import 'grafana_folder.monitoring' monitoring || true
 tofu import 'grafana_data_source.victoria_metrics' victoria-metrics || true
-tofu import 'grafana_rule_group.synthetic_page' monitoring:synthetic-page-call || true
+tofu import 'grafana_rule_group.blackbox_page' monitoring:blackbox-page-call || true
 tofu import 'grafana_dashboard.cloud_kept["s3lcsum-default.json"]' uJbKRMcVk || true
 make apply

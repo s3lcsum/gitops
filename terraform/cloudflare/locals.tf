@@ -1,4 +1,12 @@
 locals {
+  # Hosts Grafana Cloud public probes may hit. Tunnel already routes these
+  # to Traefik. WAF country rule still blocks probe source countries.
+  synthetic_probe_hosts = [
+    "auth.dominiksiejak.pl",
+    "hass.dominiksiejak.pl",
+    "n8n.dominiksiejak.pl",
+  ]
+
   # Grafana Cloud prod-us-central-0 egress (allowlists.us.grafana.net/v1/grafana).
   # These are the source IPs of Hosted Grafana back-channel calls (OAuth token,
   # userinfo, alert webhooks). They change; refresh from that URL when login

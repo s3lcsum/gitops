@@ -26,8 +26,12 @@ resource "cloudflare_ruleset" "country_allowlist" {
         "(http.host eq \"auth.dominiksiejak.pl\" and starts_with(http.request.uri.path, \"/application/o/\"))",
         "http.host in {\"dominiksiejak.pl\" \"www.dominiksiejak.pl\"}",
         "(http.host eq \"auth.dominiksiejak.pl\" and ip.src in {${join(" ", local.grafana_cloud_us_egress)}})",
+        # Public Grafana Synthetic Monitoring probes (EU/US/APAC). Country
+        # allowlist is PL/DE/ES only; probe source countries are not in that set.
+        # Health paths only — not the whole host.
+        "(http.host in {${join(" ", formatlist("\"%s\"", local.synthetic_probe_hosts))}} and http.request.uri.path in {\"/\" \"/healthz\"})",
       ])
-      description = "Allow n8n webhooks + Authentik OIDC + public sites + Grafana Cloud us-central egress to bypass the country allowlist"
+      description = "Allow n8n webhooks + Authentik OIDC + public sites + Grafana Cloud egress + synthetic probe health paths to bypass the country allowlist"
       enabled     = true
 
       action_parameters = {
