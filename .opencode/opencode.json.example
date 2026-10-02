@@ -35,7 +35,7 @@
         "-y",
         "kubernetes-mcp-server@latest",
         "--config",
-        "/Users/dsiejak/Developer/s3lcsum/gitops/.opencode/kubernetes-mcp.toml"
+        "/Users/Apple/Developer/s3lcsum/gitops/.opencode/kubernetes-mcp.toml"
       ],
       "enabled": true,
       "timeout": 30000
