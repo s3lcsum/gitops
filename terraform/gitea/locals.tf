@@ -100,7 +100,6 @@ locals {
     "dominiksiejak/postgres-init"         = { clone_url = "https://github.com/s3lcsum/postgres-init.git", private = false }
     "dominiksiejak/posti-devopsi"         = { clone_url = "https://github.com/s3lcsum/posti-devopsi.git", private = false }
     "dominiksiejak/dotfiles-chezmoi"      = { clone_url = "https://github.com/s3lcsum/dotfiles-chezmoi.git", private = false }
-    "dominiksiejak/terraform-grafana"     = { clone_url = "https://github.com/s3lcsum/terraform-grafana.git", private = true }
     "dominiksiejak/gai"                   = { clone_url = "https://github.com/s3lcsum/gai.git", private = false }
     "dominiksiejak/semaphore-homelab"     = { clone_url = "https://github.com/s3lcsum/semaphore-homelab.git", private = true }
     "dominiksiejak/devi-revolutti"        = { clone_url = "https://github.com/s3lcsum/devi-revolutti.git", private = false }
