@@ -1,8 +1,8 @@
-kubeconfig = "/Users/dsiejak/.kube/config"
+kubeconfig = "/Users/Apple/Developer/s3lcsum/gitops/.opencode/kubeconfig-k8s-lake"
 cluster_provider_strategy = "kubeconfig"
 toolsets = ["core", "config", "helm"]
 log_file = "stderr"
 server_instructions = """
-This server is pinned to kube context k8s@lake. Do not switch context.
-The kubeconfig only contains that context.
+This server is pinned to kube context k8s@lake via an SSH tunnel on 127.0.0.1:16443.
+Do not switch context. The kubeconfig only contains that context.
 """
