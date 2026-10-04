@@ -1,4 +1,4 @@
-# Overrides for argo-cd 10.9.2 (app v3.5.3).
+# Overrides for argo-cd 10.9.6 (app v3.5.3).
 global:
   # Must match browser origin used for SSO (return_url host check).
   domain: argocd.dominiksiejak.pl

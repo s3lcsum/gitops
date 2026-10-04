@@ -27,7 +27,7 @@ Root `Makefile` only has `help`. Do not add `serve` / `build` / `lint` / `test` 
 - PriorityClasses live in `kubernetes/kyverno/resources/priorityclasses.yaml`: `homelab-critical` (1000000), `homelab-high` (100000), `homelab-low` (-100, `preemptionPolicy: Never`). Unset stays at the cluster default (0). `system-node-critical` / `system-cluster-critical` stay above these. Do not mark `homelab-critical` `globalDefault`.
 - Kyverno resource webhooks must stay `failurePolicy: Ignore`. `features.forceFailurePolicyIgnore` covers the window while the admission controller is up. `resources/webhook-failure-policy.yaml` is what Argo puts back when it is down — the controller rewrites those objects to `Fail` while running, and selfHeal races it back. Do not delete that overlay. Do not set `Replace` on those webhook configs.
 - Argo CD self Application (`resources/application.yaml`) ignores `argocd-secret` `.data` because ESO merges the OIDC client secret. Empty `group:` on that ignore is dropped by the API and never converges — leave group unset.
-- Bootstrap (only when Argo is down): `make -C kubernetes/argocd bootstrap`. Context `k8s@lake`, chart `argo-cd` `10.9.2`.
+- Bootstrap (only when Argo is down): `make -C kubernetes/argocd bootstrap`. Context `k8s@lake`, chart `argo-cd` `10.9.6`.
 
 Kustomize-only (no `values.yaml`): adguard, authentik, calibre, cloudflared, coredns, external-dns, gitea, grafana-synthetic-agent, hass, homepage, mediabox, monitoring, n8n, netbox, unifi, watchyourlan, wealthfolio. Gatus is gone. Do not add `application-gatus.yaml` back unless `kubernetes/gatus` exists. Paperclip is gone. Do not add `application-paperclip.yaml` back unless `kubernetes/paperclip` exists.
 

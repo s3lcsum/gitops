@@ -1,9 +1,9 @@
 # ApplicationSet chart pin.
 repoURL: https://traefik.github.io/charts
 chart: traefik
-version: 41.6.0
+version: 41.6.1
 
-# Overrides for Traefik Helm 41.6.0 (app v3.7.13).
+# Overrides for Traefik Helm 41.6.1 (app v3.7.13).
 # hostNetwork owns :80/:443 after Cilium Gateway is down.
 # The lake LXC has no CAP_SETFCAP, so setcap cannot stamp the binary and a
 # non-root process cannot bind :443 there. Root + NET_BIND_SERVICE can.

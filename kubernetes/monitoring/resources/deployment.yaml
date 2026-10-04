@@ -31,7 +31,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: victoria-metrics
-          image: victoriametrics/victoria-metrics:v1.152.0
+          image: victoriametrics/victoria-metrics:v1.153.0
           args:
             - -storageDataPath=/storage
             - -retentionPeriod=30d
