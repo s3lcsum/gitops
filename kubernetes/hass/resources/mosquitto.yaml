@@ -68,7 +68,7 @@ spec:
                     operator: Exists
       initContainers:
         - name: config
-          image: eclipse-mosquitto:2.1.2-alpine
+          image: public.ecr.aws/docker/library/eclipse-mosquitto:2.1.2-alpine
           securityContext:
             runAsUser: 0
           command:
@@ -86,7 +86,7 @@ spec:
               mountPath: /dst
       containers:
         - name: mosquitto
-          image: eclipse-mosquitto:2.1.2-alpine
+          image: public.ecr.aws/docker/library/eclipse-mosquitto:2.1.2-alpine
           ports:
             - name: mqtt
               containerPort: 1883

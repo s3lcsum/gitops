@@ -33,7 +33,7 @@ spec:
           effect: PreferNoSchedule
       containers:
         - name: node-exporter
-          image: prom/node-exporter:v1.12.1
+          image: quay.io/prometheus/node-exporter:v1.12.1
           args:
             - --path.procfs=/host/proc
             - --path.sysfs=/host/sys

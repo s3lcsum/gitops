@@ -7,6 +7,11 @@ version: 0.0.38
 # Chart already sets name, instance, and managed-by. Not part of the selector.
 commonLabels:
   app.kubernetes.io/part-of: local-path-provisioner
+image:
+  # Chart defaults to docker.io; use GCR Hub mirror.
+  repository: mirror.gcr.io/rancher/local-path-provisioner
+helperImage:
+  repository: public.ecr.aws/docker/library/busybox
 replicaCount: 1
 priorityClassName: homelab-critical
 tolerations:

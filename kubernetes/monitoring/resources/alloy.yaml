@@ -134,7 +134,7 @@ spec:
         - operator: Exists
       containers:
         - name: alloy
-          image: grafana/alloy:v1.20.1
+          image: mirror.gcr.io/grafana/alloy:v1.20.1
           args:
             - run
             - /etc/alloy/config.alloy

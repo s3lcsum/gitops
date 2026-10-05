@@ -191,7 +191,7 @@ spec:
           effect: PreferNoSchedule
       containers:
         - name: bridge
-          image: python:3.13-alpine
+          image: public.ecr.aws/docker/library/python:3.13-alpine
           command: ["python", "-u", "/opt/bridge/bridge.py"]
           env:
             - name: POD_NAMESPACE

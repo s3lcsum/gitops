@@ -42,7 +42,7 @@ spec:
                       - "true"
       containers:
         - name: grafana-synthetic-agent
-          image: grafana/synthetic-monitoring-agent:v0.66.0
+          image: mirror.gcr.io/grafana/synthetic-monitoring-agent:v0.66.0
           command:
             - /bin/sh
             - -c

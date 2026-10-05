@@ -89,7 +89,7 @@ spec:
               effect: PreferNoSchedule
           containers:
             - name: wan-ip
-              image: alpine:3.22
+              image: public.ecr.aws/docker/library/alpine:3.22
               command: ["/bin/sh", "-c"]
               args:
                 - |

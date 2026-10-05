@@ -41,7 +41,7 @@ spec:
                     values: ["k8s"]
       containers:
         - name: unifi-db
-          image: mongo:7.0.40
+          image: public.ecr.aws/docker/library/mongo:7.0.40
           envFrom:
             - secretRef:
                 name: unifi

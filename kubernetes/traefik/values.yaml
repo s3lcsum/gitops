@@ -9,6 +9,9 @@ version: 41.6.1
 # non-root process cannot bind :443 there. Root + NET_BIND_SERVICE can.
 # WAN dst-nat and AdGuard both target 192.168.89.252.
 image:
+  # Avoid docker.io rate limits; Traefik also publishes to GHCR.
+  registry: ghcr.io
+  repository: traefik/traefik
   tag: v3.7.13
 # Chart already sets name, instance, and managed-by. Not part of the selector.
 commonLabels:

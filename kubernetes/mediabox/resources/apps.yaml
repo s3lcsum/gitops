@@ -811,7 +811,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: rreading-glasses
-          image: blampe/rreading-glasses:latest
+          image: mirror.gcr.io/blampe/rreading-glasses:latest
           command: ["/main", "serve"]
           args: ["--upstream=www.goodreads.com", "--verbose"]
           envFrom:

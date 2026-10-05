@@ -32,7 +32,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: cloudflared
-          image: cloudflare/cloudflared:2026.9.3
+          image: mirror.gcr.io/cloudflare/cloudflared:2026.9.3
           args: ["tunnel", "run"]
           envFrom:
             - secretRef:

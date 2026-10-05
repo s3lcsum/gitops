@@ -42,7 +42,7 @@ spec:
                     operator: Exists
       initContainers:
         - name: wait-mqtt
-          image: eclipse-mosquitto:2.1.2-alpine
+          image: public.ecr.aws/docker/library/eclipse-mosquitto:2.1.2-alpine
           env:
             - name: MQTT_USER
               valueFrom:

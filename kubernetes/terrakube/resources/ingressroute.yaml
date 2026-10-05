@@ -40,9 +40,11 @@ spec:
       services:
         - name: terrakube-api-service
           port: 8080
+    # Must beat Host-only route. Explicit priority:10 was below Traefik's
+    # auto len(Host(...)) score → /dex hit Spring API (401) instead of Dex.
     - match: Host(`terrakube-api.dominiksiejak.pl`) && PathPrefix(`/dex`)
       kind: Rule
-      priority: 10
+      priority: 100
       middlewares:
         - name: crowdsec-bouncer
           namespace: traefik

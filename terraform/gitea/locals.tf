@@ -54,7 +54,6 @@ locals {
     "mirrors/NetBox"                          = { clone_url = "https://github.com/netbox-community/netbox.git" }
     "mirrors/nfs-subdir-external-provisioner" = { clone_url = "https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner.git" }
     "mirrors/node_exporter"                   = { clone_url = "https://github.com/prometheus/node_exporter.git" }
-    "mirrors/paperclip"                       = { clone_url = "https://github.com/paperclipai/paperclip.git" }
     "mirrors/policy-reporter"                 = { clone_url = "https://github.com/kyverno/policy-reporter.git" }
     "mirrors/PostgreSQL"                      = { clone_url = "https://github.com/postgres/postgres.git" }
     "mirrors/pre-commit-hooks"                = { clone_url = "https://github.com/pre-commit/pre-commit-hooks.git" }

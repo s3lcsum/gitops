@@ -119,7 +119,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: calibre-web-automated
-          image: crocodilestick/calibre-web-automated:v4.0.6
+          image: ghcr.io/crocodilestick/calibre-web-automated:v4.0.6
           env:
             - name: PUID
               value: "0"

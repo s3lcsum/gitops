@@ -30,7 +30,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: gitea
-          image: gitea/gitea:1.27.3
+          image: docker.gitea.com/gitea:1.27.3
           envFrom:
             - secretRef:
                 name: gitea

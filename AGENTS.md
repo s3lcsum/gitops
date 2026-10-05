@@ -29,12 +29,12 @@ Root `Makefile` only has `help`. Do not add `serve` / `build` / `lint` / `test` 
 - Argo CD self Application (`resources/application.yaml`) ignores `argocd-secret` `.data` because ESO merges the OIDC client secret. Empty `group:` on that ignore is dropped by the API and never converges — leave group unset.
 - Bootstrap (only when Argo is down): `make -C kubernetes/argocd bootstrap`. Context `k8s@lake`, chart `argo-cd` `10.9.6`.
 
-Kustomize-only (no `values.yaml`): adguard, authentik, calibre, cloudflared, coredns, external-dns, gitea, grafana-synthetic-agent, hass, homepage, mediabox, monitoring, n8n, netbox, unifi, watchyourlan, wealthfolio. Gatus is gone. Do not add `application-gatus.yaml` back unless `kubernetes/gatus` exists. Paperclip is gone. Do not add `application-paperclip.yaml` back unless `kubernetes/paperclip` exists.
+Kustomize-only (no `values.yaml`): adguard, authentik, calibre, cloudflared, coredns, external-dns, gitea, grafana-synthetic-agent, hass, homepage, mediabox, monitoring, n8n, netbox, unifi, watchyourlan, wealthfolio. Gatus is gone. Do not add `application-gatus.yaml` back unless `kubernetes/gatus` exists.
 
 ## Scheduling and edge
 
 - `k8s` is the only control plane and the preferred node. Kyverno `worker-overflow-taint` puts `homelab.dominiksiejak.pl/worker=true:PreferNoSchedule` on every other node. PreferNoSchedule is a score penalty, not a filter.
-- Label `homelab.dominiksiejak.pl/ai=true` marks AI nodes (`vibe`). New AI nodes need that label. Do not put it on every worker. Paperclip prefers it and tolerates the worker taint, so it falls back to `k8s`. Argo Events, Argo Rollouts, and Argo Workflows require the label — they stay Pending while `vibe` is NotReady.
+- Label `homelab.dominiksiejak.pl/ai=true` marks AI nodes (`vibe`). New AI nodes need that label. Do not put it on every worker. Argo Events, Argo Rollouts, and Argo Workflows require the label — they stay Pending while `vibe` is NotReady.
 - Traefik-k8s is a hostNetwork DaemonSet (`:80/:443` on every node). Public WAN arrives at `192.168.89.252`. Per-app IngressRoutes live in `kubernetes/<app>/resources/` in that app's namespace. Middleware refs need `namespace: traefik`. TLS comes from the Traefik default `TLSStore`.
 - Three ingress paths. Do not collapse them. WAN is firewalled (`allowed-wan` → Traefik-k8s on `.252`). WireGuard (`vpn.dominiksiejak.pl:51820`, overlay `192.168.200.0/24`) lands peers on the LAN. Cloudflare Tunnel + Access is a separate WAF path, not a substitute for either.
 - Auth class per host: `scripts/auth_classification.yaml` (`forward-auth` | `native-oidc` | `public` | `lan-only`). The checker that failed on unclassified hosts is gone; still add the host when adding a route.
