@@ -102,10 +102,15 @@ api:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
       effect: NoSchedule
+  # Cold Spring + Liquibase exceeds chart defaults on this node.
+  startupProbe:
+    initialDelaySeconds: 60
+    failureThreshold: 90
+    periodSeconds: 5
   resources:
     requests:
       cpu: 100m
-      memory: 512Mi
+      memory: 1Gi
   properties:
     databaseType: POSTGRESQL
     databaseHostname: postgres-rw.cloudnative-pg.svc

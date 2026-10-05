@@ -1,3 +1,5 @@
+# Password Secret: kubernetes.io/basic-auth terrakube-user in cloudnative-pg
+# (ExternalSecret ← 1Password terrakube/db-password). See externalsecret.yaml.
 apiVersion: postgresql.cnpg.io/v1
 kind: DatabaseRole
 metadata:
@@ -11,6 +13,8 @@ spec:
   name: terrakube_user
   login: true
   databaseRoleReclaimPolicy: delete
+  passwordSecret:
+    name: terrakube-user
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: Database
