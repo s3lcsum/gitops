@@ -1,5 +1,6 @@
-# Password Secret: kubernetes.io/basic-auth terrakube-user in cloudnative-pg
-# (ExternalSecret ← 1Password terrakube/db-password). See externalsecret.yaml.
+# Role password: cluster Secret cloudnative-pg/terrakube-user
+# (kubernetes.io/basic-auth). Not in 1Password — same as hass-user.
+# CNPG DatabaseRole does not generate passwords; it consumes passwordSecret.
 apiVersion: postgresql.cnpg.io/v1
 kind: DatabaseRole
 metadata:
