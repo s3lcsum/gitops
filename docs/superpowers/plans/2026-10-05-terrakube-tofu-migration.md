@@ -1,3 +1,5 @@
+> **Status (2026-10-06):** Workspaces + state cutover done for 11 modules in HomeLab. GHA terraform.yml retired. Apply/plan via Terrakube; refresh stale workspace secrets (esp. Backblaze) and load adguard/proxmox vars before first UI apply.
+
 # Terrakube OpenTofu Migration Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans or implement inline. Steps use checkbox (`- [ ]`) syntax for tracking.
