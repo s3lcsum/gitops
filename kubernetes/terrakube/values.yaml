@@ -126,7 +126,8 @@ api:
 executor:
   enabled: true
   existingSecret: true
-  replicaCount: 1
+  # One job per pod; chart readiness drops busy pods from Service. Need >=2 for queue drain.
+  replicaCount: 2
   priorityClassName: homelab-low
   tolerations:
     - key: node-role.kubernetes.io/control-plane
@@ -135,7 +136,7 @@ executor:
   resources:
     requests:
       cpu: 100m
-      memory: 256Mi
+      memory: 512Mi
 
 registry:
   enabled: true
