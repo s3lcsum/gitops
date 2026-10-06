@@ -22,6 +22,7 @@ spec:
         app.kubernetes.io/managed-by: argocd
     spec:
       # hostPath / NFS config lives on lake; AI affinity pinned vibe → FailedMount 29h.
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -103,6 +104,7 @@ spec:
         app.kubernetes.io/managed-by: argocd
     spec:
       # hostPath / NFS config lives on lake; AI affinity pinned vibe → FailedMount 29h.
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -187,6 +189,7 @@ spec:
         app.kubernetes.io/part-of: mediabox
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -279,6 +282,7 @@ spec:
         app.kubernetes.io/part-of: mediabox
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -557,6 +561,7 @@ spec:
         app.kubernetes.io/part-of: mediabox
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -641,6 +646,7 @@ spec:
         app.kubernetes.io/part-of: mediabox
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -725,6 +731,7 @@ spec:
         app.kubernetes.io/part-of: mediabox
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -805,6 +812,7 @@ spec:
         app.kubernetes.io/part-of: mediabox
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists

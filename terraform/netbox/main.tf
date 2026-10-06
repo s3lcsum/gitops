@@ -150,18 +150,30 @@ resource "netbox_device" "devices" {
   description = contains(each.value, "description") ? each.value.description : "${each.value.name} - ${netbox_device_type.device_types[each.value.device_type].model}"
 }
 
-# Create IP addresses for devices
-resource "netbox_ip_address" "ip_addresses" {
+# Static / reserved addresses from data/networks.yaml
+resource "netbox_ip_address" "static" {
+  for_each = local.networks.ip_addresses
+
+  ip_address  = each.value.address
+  status      = each.value.status
+  description = each.value.description
+
+  tags = concat(local.common_tags, [netbox_tag.site_tags[each.value.site].name])
+}
+
+# Optional per-device IPs from inventory (empty today; avoid duplicating networks.ip_addresses)
+resource "netbox_ip_address" "devices" {
   for_each = {
-    for key, device in local.inventory.devices : key => { ip = device.ip_address, name = key } if contains(device, "ip_address")
+    for key, device in local.inventory.devices : key => device
+    if try(device.ip_address, null) != null
   }
 
-  ip_address  = each.value.ip
+  ip_address  = each.value.ip_address
   status      = "active"
-  description = "Static IP for ${each.value.name}"
+  description = "Static IP for ${each.key}"
 
   tags = concat(
     local.common_tags,
-    [netbox_tag.site_tags[local.inventory.devices[each.value.name].site].name]
+    [netbox_tag.site_tags[each.value.site].name]
   )
 }

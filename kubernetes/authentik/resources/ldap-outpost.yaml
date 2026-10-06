@@ -14,6 +14,8 @@ metadata:
     app.kubernetes.io/part-of: authentik
     app.kubernetes.io/managed-by: argocd
 spec:
+  refreshPolicy: OnChange
+  refreshInterval: 0s
   secretStoreRef:
     name: onepassword
     kind: ClusterSecretStore
@@ -86,7 +88,7 @@ spec:
         app.kubernetes.io/part-of: authentik
         app.kubernetes.io/managed-by: argocd
     spec:
-      priorityClassName: homelab-high
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists

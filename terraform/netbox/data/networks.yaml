@@ -1,30 +1,123 @@
-# Homelab IP plan — keep in sync with terraform/proxmox (Talos) and RouterOS.
-# IPv4: RFC1918 LAN. IPv6: RFC4193 ULA site prefix + dedicated /48s for K8s (simple, typeable).
+# Homelab IP plan — keep in sync with terraform/routeros, kubernetes/flannel, AGENTS.md.
+# IPv4 only. No dual-stack / ULA in use (old fd12: Talos prefixes dropped).
 prefixes:
   lan-ipv4:
     prefix: 192.168.89.0/24
     site: lake
-    description: Primary LAN — DHCP, Wi‑Fi, user devices, servers, printers, NAS, IoT (same L2 unless VLAN-split)
+    description: Primary LAN — DHCP (.100-.199 via RouterOS), Wi‑Fi, servers, NAS, IoT (flat L2)
     is_pool: true
     status: active
 
-  ula-site-ipv6:
-    prefix: fd12:34::/48
+  wireguard-ipv4:
+    prefix: 192.168.200.0/24
     site: lake
-    description: RFC 4193 ULA /48 — reserve for future LAN VLANs or dual-stack (document subnets here)
+    description: WireGuard overlay (vpn.dominiksiejak.pl:51820) — peers; CI github-actions .254/32
     is_pool: false
     status: active
 
-  k8s-pods-ipv6:
-    prefix: fd12:35::/56
+  k8s-pods-ipv4:
+    prefix: 10.244.0.0/16
     site: lake
-    description: Talos/Kubernetes pod CIDR (matches terraform/proxmox locals)
+    description: Flannel host-gw pod CIDR (matches kubernetes/flannel values)
     is_pool: false
     status: active
 
-  k8s-services-ipv6:
-    prefix: fd12:36::/112
+# Static / reserved host addresses (CIDR form required by NetBox).
+# DHCP clients (.100-.199) stay out of this map.
+ip_addresses:
+  router:
+    address: 192.168.89.1/24
     site: lake
-    description: Kubernetes service CIDR (IPv6)
-    is_pool: false
     status: active
+    description: MikroTik RouterOS gateway
+
+  vibe:
+    address: 192.168.89.200/24
+    site: lake
+    status: active
+    description: Mac host vibe (SSH / node_exporter)
+
+  vibe-k8s:
+    address: 192.168.89.201/24
+    site: lake
+    status: active
+    description: vibe Lima/k8s worker bridge (Traefik hostNetwork, NFS client)
+
+  nas:
+    address: 192.168.89.240/24
+    site: lake
+    status: active
+    description: Synology NAS (NFS server)
+
+  k8s:
+    address: 192.168.89.252/24
+    site: lake
+    status: active
+    description: Proxmox LXC CT101 — kubeadm control plane, Traefik/AdGuard/HA hostNetwork
+
+  portainer-retired:
+    address: 192.168.89.253/24
+    site: lake
+    status: reserved
+    description: Former Portainer LXC — host down; do not reassign
+
+  proxmox:
+    address: 192.168.89.254/24
+    site: lake
+    status: active
+    description: Proxmox VE host lake-1
+
+  # WireGuard peers — keep in sync with terraform/routeros wireguard_peers
+  wg-atom-1:
+    address: 192.168.200.10/24
+    site: lake
+    status: active
+    description: WireGuard peer atom-1
+
+  wg-dsiejak-macbook:
+    address: 192.168.200.20/24
+    site: lake
+    status: active
+    description: WireGuard peer dsiejak-macbook
+
+  wg-dsiejak-iphone:
+    address: 192.168.200.21/24
+    site: lake
+    status: active
+    description: WireGuard peer dsiejak-iphone
+
+  wg-dsiejak-ipad:
+    address: 192.168.200.23/24
+    site: lake
+    status: active
+    description: WireGuard peer dsiejak-ipad
+
+  wg-dsiejak-xgimi:
+    address: 192.168.200.24/24
+    site: lake
+    status: active
+    description: WireGuard peer dsiejak-xgimi
+
+  wg-jsiejak-iphone:
+    address: 192.168.200.31/24
+    site: lake
+    status: active
+    description: WireGuard peer jsiejak-iphone
+
+  wg-jsiejak-macbook:
+    address: 192.168.200.32/24
+    site: lake
+    status: active
+    description: WireGuard peer jsiejak-macbook
+
+  wg-micrus:
+    address: 192.168.200.40/24
+    site: lake
+    status: active
+    description: WireGuard peer micrus (Mikrus VPS / Firebird)
+
+  wg-github-actions:
+    address: 192.168.200.254/24
+    site: lake
+    status: active
+    description: WireGuard peer github-actions (CI)

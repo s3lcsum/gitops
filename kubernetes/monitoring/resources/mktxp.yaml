@@ -15,6 +15,8 @@ metadata:
     app.kubernetes.io/part-of: monitoring
     app.kubernetes.io/managed-by: argocd
 spec:
+  refreshPolicy: OnChange
+  refreshInterval: 0s
   secretStoreRef:
     name: onepassword
     kind: ClusterSecretStore

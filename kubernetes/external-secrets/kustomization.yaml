@@ -4,3 +4,4 @@ resources:
   - resources/clustersecretstore.yaml
   - resources/clustersecretstore-kubernetes-cnpg.yaml
   - resources/externalsecret-onepassword.yaml
+  - resources/eso-stagger-refresh.yaml

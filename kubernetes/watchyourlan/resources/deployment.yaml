@@ -23,6 +23,7 @@ spec:
         app.kubernetes.io/part-of: watchyourlan
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       tolerations:

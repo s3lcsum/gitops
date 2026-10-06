@@ -23,6 +23,7 @@ spec:
         app.kubernetes.io/part-of: grafana-synthetic-agent
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists

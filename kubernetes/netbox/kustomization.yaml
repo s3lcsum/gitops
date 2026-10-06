@@ -4,5 +4,7 @@ namespace: netbox
 resources:
   - resources/namespace.yaml
   - resources/nfs.yaml
+  - resources/configmap-api-token-peppers.yaml
+  - resources/externalsecret.yaml
   - resources/deployment.yaml
   - resources/ingressroute.yaml

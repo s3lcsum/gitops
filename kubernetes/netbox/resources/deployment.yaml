@@ -21,6 +21,7 @@ spec:
         app.kubernetes.io/part-of: netbox
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-high
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -83,6 +84,7 @@ spec:
         app.kubernetes.io/part-of: netbox
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -118,6 +120,10 @@ spec:
               mountPath: /etc/netbox/config/extra.py
               subPath: extra.py
               readOnly: true
+            - name: api-token-peppers
+              mountPath: /etc/netbox/config/api_token_peppers.py
+              subPath: api_token_peppers.py
+              readOnly: true
           resources:
             requests:
               cpu: 50m
@@ -137,6 +143,9 @@ spec:
         - name: extra
           persistentVolumeClaim:
             claimName: netbox-extra
+        - name: api-token-peppers
+          configMap:
+            name: netbox-api-token-peppers
 ---
 apiVersion: v1
 kind: Service
@@ -179,6 +188,7 @@ spec:
         app.kubernetes.io/part-of: netbox
         app.kubernetes.io/managed-by: argocd
     spec:
+      priorityClassName: homelab-low
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -209,6 +219,10 @@ spec:
               mountPath: /etc/netbox/config/extra.py
               subPath: extra.py
               readOnly: true
+            - name: api-token-peppers
+              mountPath: /etc/netbox/config/api_token_peppers.py
+              subPath: api_token_peppers.py
+              readOnly: true
           resources:
             requests:
               cpu: 50m
@@ -226,3 +240,6 @@ spec:
         - name: extra
           persistentVolumeClaim:
             claimName: netbox-extra
+        - name: api-token-peppers
+          configMap:
+            name: netbox-api-token-peppers

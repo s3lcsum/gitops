@@ -6,7 +6,7 @@ version: 0.29.1
 
 # Overrides for cloudnative-pg 0.29.1 (app 1.30.1).
 # Pod template uses selector labels plus podLabels. Selector stays name + instance.
-priorityClassName: homelab-high
+priorityClassName: homelab-critical
 podLabels:
   app.kubernetes.io/part-of: cloudnative-pg
   app.kubernetes.io/managed-by: Helm

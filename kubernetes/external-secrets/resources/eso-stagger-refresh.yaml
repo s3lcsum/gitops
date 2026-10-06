@@ -1,0 +1,123 @@
+# Round-robin force-sync for onepassword ExternalSecrets.
+# ESO has no refresh offset; OnChange + this CronJob ≈ 1 ES / hour → under SA hourly quota.
+# Manual: kubectl annotate externalsecret NAME -n NS force-sync=$(date +%s) --overwrite
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: eso-stagger-refresh
+  namespace: external-secrets
+  labels:
+    app.kubernetes.io/name: eso-stagger-refresh
+    app.kubernetes.io/instance: eso-stagger-refresh
+    app.kubernetes.io/part-of: external-secrets
+    app.kubernetes.io/managed-by: argocd
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eso-stagger-refresh
+  labels:
+    app.kubernetes.io/name: eso-stagger-refresh
+    app.kubernetes.io/instance: eso-stagger-refresh
+    app.kubernetes.io/part-of: external-secrets
+    app.kubernetes.io/managed-by: argocd
+rules:
+  - apiGroups: ["external-secrets.io"]
+    resources: ["externalsecrets"]
+    verbs: ["get", "list", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: eso-stagger-refresh
+  labels:
+    app.kubernetes.io/name: eso-stagger-refresh
+    app.kubernetes.io/instance: eso-stagger-refresh
+    app.kubernetes.io/part-of: external-secrets
+    app.kubernetes.io/managed-by: argocd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: eso-stagger-refresh
+subjects:
+  - kind: ServiceAccount
+    name: eso-stagger-refresh
+    namespace: external-secrets
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: eso-stagger-refresh
+  namespace: external-secrets
+  labels:
+    app.kubernetes.io/name: eso-stagger-refresh
+    app.kubernetes.io/instance: eso-stagger-refresh
+    app.kubernetes.io/part-of: external-secrets
+    app.kubernetes.io/managed-by: argocd
+spec:
+  # Minute 7 — avoid top-of-hour stampede with other CronJobs.
+  schedule: "7 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: eso-stagger-refresh
+            app.kubernetes.io/instance: eso-stagger-refresh
+            app.kubernetes.io/part-of: external-secrets
+            app.kubernetes.io/managed-by: argocd
+        spec:
+          serviceAccountName: eso-stagger-refresh
+          restartPolicy: OnFailure
+          priorityClassName: homelab-low
+          tolerations:
+            - key: node-role.kubernetes.io/control-plane
+              operator: Exists
+              effect: NoSchedule
+            - key: homelab.dominiksiejak.pl/worker
+              operator: Equal
+              value: "true"
+              effect: PreferNoSchedule
+          containers:
+            - name: refresh
+              # Alpine is cached on nodes (wan-ip). Install matching kubectl each run.
+              image: public.ecr.aws/docker/library/alpine:3.22
+              imagePullPolicy: IfNotPresent
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  apk add --no-cache curl >/dev/null
+                  curl -fsSL -o /usr/local/bin/kubectl \
+                    "https://dl.k8s.io/release/v1.37.1/bin/linux/amd64/kubectl"
+                  chmod +x /usr/local/bin/kubectl
+                  items=$(
+                    kubectl get externalsecret -A \
+                      -o custom-columns=NS:.metadata.namespace,NAME:.metadata.name,STORE:.spec.secretStoreRef.name \
+                      --no-headers \
+                    | awk '$3 == "onepassword" { print $1 "/" $2 }' \
+                    | sort
+                  )
+                  if [ -z "$items" ]; then
+                    echo "no onepassword ExternalSecrets found"
+                    exit 0
+                  fi
+                  n=$(printf '%s\n' "$items" | wc -l | tr -d ' ')
+                  slot=$(( $(date +%s) / 3600 % n ))
+                  # 1-based line for sed
+                  line=$((slot + 1))
+                  target=$(printf '%s\n' "$items" | sed -n "${line}p")
+                  ns="${target%%/*}"
+                  name="${target#*/}"
+                  ts=$(date +%s)
+                  echo "slot=${slot}/${n} refreshing ${ns}/${name}"
+                  kubectl annotate externalsecret "${name}" -n "${ns}" "force-sync=${ts}" --overwrite
+                  echo "annotated force-sync=${ts}"
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 64Mi

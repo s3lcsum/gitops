@@ -14,7 +14,7 @@ metadata:
 value: 1000000
 preemptionPolicy: PreemptLowerPriority
 globalDefault: false
-description: Cluster plumbing. DNS, ingress, GitOps, secrets, certs, CNI chart, storage.
+description: Cluster plumbing. DNS (AdGuard + CoreDNS), ingress, GitOps, secrets, certs, CNI chart, storage, shared Postgres.
 ---
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
@@ -28,7 +28,7 @@ metadata:
 value: 100000
 preemptionPolicy: PreemptLowerPriority
 globalDefault: false
-description: Identity, database, DNS filter, Home Assistant stack, Jellyfin, n8n.
+description: Identity (Authentik server), DNS filter consumers' deps (MQTT, netbox-redis, terrakube minio/valkey), Jellyfin, n8n. Dependents stay lower.
 ---
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
@@ -42,4 +42,4 @@ metadata:
 value: -100
 preemptionPolicy: Never
 globalDefault: false
-description: Yields under pressure. Never preempts. Bazarr, UniFi, Calibre, wealthfolio, Gitea, Headlamp, Homepage.
+description: Yields under pressure. Never preempts. Authentik outposts, Zigbee2MQTT + HA, postgres/MQTT consumers, mediabox *arr, probes, Bazarr, UniFi, Calibre, wealthfolio, Gitea, Headlamp, Homepage.

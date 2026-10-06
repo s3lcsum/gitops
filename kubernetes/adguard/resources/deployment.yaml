@@ -23,7 +23,7 @@ spec:
         app.kubernetes.io/part-of: adguard
         app.kubernetes.io/managed-by: argocd
     spec:
-      priorityClassName: homelab-high
+      priorityClassName: homelab-critical
       hostNetwork: true
       dnsPolicy: Default
       tolerations:
