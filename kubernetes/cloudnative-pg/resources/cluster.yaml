@@ -16,11 +16,13 @@ spec:
   storage:
     size: 8Gi
     storageClass: local-path
-  priorityClassName: homelab-high
+  priorityClassName: homelab-critical
   resources:
     requests:
-      cpu: 50m
-      memory: 256Mi
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      memory: 2Gi
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:

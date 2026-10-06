@@ -12,9 +12,12 @@ terraform {
     }
   }
 
-  backend "gcs" {
-    bucket = "dominiksiejak-gitops-tfstate"
-    prefix = "gitops-authentik"
+  backend "remote" {
+    hostname     = "terrakube-api.dominiksiejak.pl"
+    organization = "HomeLab"
+    workspaces {
+      name = "authentik"
+    }
   }
 }
 

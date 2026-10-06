@@ -8,9 +8,12 @@ terraform {
     }
   }
 
-  backend "gcs" {
-    bucket = "dominiksiejak-gitops-tfstate"
-    prefix = "gitops-gitea"
+  backend "remote" {
+    hostname     = "terrakube-api.dominiksiejak.pl"
+    organization = "HomeLab"
+    workspaces {
+      name = "gitea"
+    }
   }
 }
 

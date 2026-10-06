@@ -4,14 +4,15 @@ Public repo. LAN topology and hostnames are intentional. Do not privatize them. 
 
 ## Commands
 
-- OpenTofu, not Terraform. Pin: `1.12.5` (`terraform/.opentofu-version`, CI `tofu_version`). Each module `Makefile` includes `terraform/base.Makefile`.
-- From `terraform/<module>/`: `make check` (validate + fmt) then `make plan` then `make apply`. `apply`/`destroy` pass `-auto-approve`. Extra flags: `TOFU_ARGS`.
+- OpenTofu, not Terraform. Pin: `1.12.5` (`terraform/.opentofu-version`). Each module `Makefile` includes `terraform/base.Makefile`.
+- Plan/apply ownership: **Terrakube** org `HomeLab` (UI apply; VCS plan on PR). One workspace per `terraform/<module>` dir. Remote backend hostname `terrakube-api.dominiksiejak.pl`.
+- Local CLI: `tofu login terrakube-api.dominiksiejak.pl` (or Terrakube PAT in `~/.terraform.d/credentials.tfrc.json`). From `terraform/<module>/`: `make check` then remote `tofu plan` / UI apply. Extra flags: `TOFU_ARGS`.
 - `required_version = ">= 1.11.5"`. Pin providers to exact versions, never `~>`.
-- GCS state bucket `dominiksiejak-gitops-tfstate`, prefix `gitops-<dirname>`.
-- `terraform/portainer` is gone. `terraform/postgres` targeted compose Postgres on the Portainer LXC at `192.168.89.253`. That host is down. Do not plan or apply `terraform/postgres`. Do not SSH to `portainer`. Do not recreate the portainer module.
-- `terraform/gcp`: `make state-rm-legacy` drops retired resources from state (includes Vault KMS). Does not delete them in GCP.
+- Workspace secrets live in Terrakube vars (sourced from local `defaults.auto.tfvars` / 1Password). Do not commit `*.tfvars`.
+- `terraform/portainer` is gone. `terraform/postgres` targeted compose Postgres on the Portainer LXC at `192.168.89.253`. That host is down. Do not plan or apply `terraform/postgres`. Do not SSH to `portainer`. Do not recreate the portainer module. Leave its GCS backend alone.
+- `terraform/gcp`: `make state-rm-legacy` drops retired resources from state (includes Vault KMS). Does not delete them in GCP. Executor needs GCP credentials as workspace ENV.
 - `terraform/cloudflare`: `make show-token` prints the tunnel token.
-- CI (`.github/workflows/terraform.yml`) is `workflow_dispatch` only. It joins the LAN over WireGuard, writes `defaults.auto.tfvars` from `TFVARS_<MODULE>`, then plan/apply. Module list omits `adguard` and `unifi`. Concurrency group `wireguard-peer-github-actions` — one runner at a time.
+- Retired: `.github/workflows/terraform.yml` (GHA WireGuard tofu). Do not resurrect it.
 - Pre-commit: `tofu_fmt`, `tofu_validate`, `terraform_tflint`. YAML hook skips `kubernetes/*/templates|charts|resources`.
 
 Root `Makefile` only has `help`. Do not add `serve` / `build` / `lint` / `test` / `consistency` back until `mkdocs.yml` and `scripts/check-consistency.py` exist.
@@ -24,7 +25,7 @@ Root `Makefile` only has `help`. Do not add `serve` / `build` / `lint` / `test` 
   - Kustomize-only apps have no `values.yaml`, so they are not in the ApplicationSet. Each is `kubernetes/argocd/resources/application-<name>.yaml`, and that file must be listed in `resources/kustomization.yaml`. Missing either → Argo never creates the Application.
 - ApplicationSet merge: `kustomization.yaml` beside `values.yaml` adds a third source (Kustomize path `kubernetes/<app>`). Absent file → that source is dropped. A `kustomization.yaml` whose `kind` is not `Kustomization` will not keep the directory source.
 - Flannel chart cannot emit pod labels. Kyverno injects them. `applicationset.yaml` `ignoreDifferences` on `kube-flannel-ds` stops selfHeal from stripping them and rolling pods. Do not delete those jsonPointers.
-- PriorityClasses live in `kubernetes/kyverno/resources/priorityclasses.yaml`: `homelab-critical` (1000000), `homelab-high` (100000), `homelab-low` (-100, `preemptionPolicy: Never`). Unset stays at the cluster default (0). `system-node-critical` / `system-cluster-critical` stay above these. Do not mark `homelab-critical` `globalDefault`.
+- PriorityClasses live in `kubernetes/kyverno/resources/priorityclasses.yaml`: `homelab-critical` (1000000), `homelab-high` (100000), `homelab-low` (-100, `preemptionPolicy: Never`). Unset stays at the cluster default (0) and outranks `homelab-low` — always set an explicit class. Do not mark `homelab-critical` `globalDefault`. Dep rule: depended-upon outranks dependent. Shared Postgres + AdGuard are `homelab-critical` (CoreDNS / Authentik / external-dns consumers sit at or below). MQTT `homelab-high` → Zigbee2MQTT/HA `homelab-low`. Authentik server `homelab-high` → outposts `homelab-low`. Redis/minio deps outrank their app pods.
 - Kyverno resource webhooks must stay `failurePolicy: Ignore`. `features.forceFailurePolicyIgnore` covers the window while the admission controller is up. `resources/webhook-failure-policy.yaml` is what Argo puts back when it is down — the controller rewrites those objects to `Fail` while running, and selfHeal races it back. Do not delete that overlay. Do not set `Replace` on those webhook configs.
 - Argo CD self Application (`resources/application.yaml`) ignores `argocd-secret` `.data` because ESO merges the OIDC client secret. Empty `group:` on that ignore is dropped by the API and never converges — leave group unset.
 - Bootstrap (only when Argo is down): `make -C kubernetes/argocd bootstrap`. Context `k8s@lake`, chart `argo-cd` `10.9.6`.

@@ -3,10 +3,13 @@
 # The local admin account remains as fallback if Authentik/RADIUS is unreachable.
 
 data "terraform_remote_state" "authentik" {
-  backend = "gcs"
+  backend = "remote"
   config = {
-    bucket = "dominiksiejak-gitops-tfstate"
-    prefix = "gitops-authentik"
+    hostname     = "terrakube-api.dominiksiejak.pl"
+    organization = "HomeLab"
+    workspaces = {
+      name = "authentik"
+    }
   }
 }
 

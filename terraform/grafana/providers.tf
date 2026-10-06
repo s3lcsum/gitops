@@ -8,9 +8,12 @@ terraform {
     }
   }
 
-  backend "gcs" {
-    bucket = "dominiksiejak-gitops-tfstate"
-    prefix = "gitops-grafana"
+  backend "remote" {
+    hostname     = "terrakube-api.dominiksiejak.pl"
+    organization = "HomeLab"
+    workspaces {
+      name = "grafana"
+    }
   }
 }
 
