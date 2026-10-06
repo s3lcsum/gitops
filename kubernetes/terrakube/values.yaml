@@ -10,7 +10,9 @@ name: terrakube
 
 security:
   useOpenLDAP: false
-  adminGroup: TERRAKUBE_ADMIN
+  # Must match an Authentik group name in the Dex `groups` claim.
+  # Authentik identity uses `admins` (not TERRAKUBE_ADMIN).
+  adminGroup: admins
   dexClientId: terrakube
   dexClientScope: email openid profile offline_access groups
 
@@ -28,7 +30,7 @@ dex:
     - name: AUTHENTIK_CLIENT_SECRET
       valueFrom:
         secretKeyRef:
-          name: terrakube-dex
+          name: terrakube-dex-client
           key: client-secret
   config:
     issuer: https://terrakube-api.dominiksiejak.pl/dex
@@ -85,7 +87,7 @@ minio:
     requests:
       cpu: 50m
       memory: 256Mi
-  priorityClassName: homelab-low
+  priorityClassName: homelab-high
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
@@ -166,7 +168,7 @@ ui:
 valkey:
   auth:
     usersExistingSecret: terrakube-valkey
-  priorityClassName: homelab-low
+  priorityClassName: homelab-high
   tolerations:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
@@ -178,12 +180,16 @@ valkey:
 
 ingress:
   useTls: true
+  # Domains still feed TerrakubeUiURL / CORS even with chart ingress disabled.
   ui:
     enabled: false
+    domain: terrakube.dominiksiejak.pl
   api:
     enabled: false
+    domain: terrakube-api.dominiksiejak.pl
   registry:
     enabled: false
+    domain: terrakube-registry.dominiksiejak.pl
   dex:
     enabled: false
   executor:
