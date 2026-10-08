@@ -31,16 +31,6 @@ spec:
         - key: homelab.dominiksiejak.pl/worker
           operator: Exists
           effect: PreferNoSchedule
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              preference:
-                matchExpressions:
-                  - key: homelab.dominiksiejak.pl/ai
-                    operator: In
-                    values:
-                      - "true"
       containers:
         - name: grafana-synthetic-agent
           image: mirror.gcr.io/grafana/synthetic-monitoring-agent:v0.66.0

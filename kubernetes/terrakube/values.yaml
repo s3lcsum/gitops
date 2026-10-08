@@ -6,6 +6,7 @@ version: 4.7.10
 # Overrides for terrakube 4.7.10 (app 2.33.1).
 # Bundled Bitnami Postgres/MinIO/OpenLDAP stay off. CNPG + chart Valkey + chart MinIO.
 # Traefik IngressRoutes own the edge. Chart ingress stays disabled.
+# MinIO NFS: Synology clients must include vibe (192.168.89.201) — pin is hostname vibe.
 name: terrakube
 
 security:
@@ -22,7 +23,9 @@ openldap:
 dex:
   enabled: true
   priorityClassName: homelab-low
-  tolerations:
+  nodeSelector: &terrakubeNodeSelector
+    kubernetes.io/hostname: vibe
+  tolerations: &terrakubeTolerations
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
       effect: NoSchedule
@@ -88,10 +91,8 @@ minio:
       cpu: 50m
       memory: 256Mi
   priorityClassName: homelab-high
-  tolerations:
-    - key: node-role.kubernetes.io/control-plane
-      operator: Exists
-      effect: NoSchedule
+  nodeSelector: *terrakubeNodeSelector
+  tolerations: *terrakubeTolerations
 
 api:
   defaultDatabase: false
@@ -100,10 +101,8 @@ api:
   existingSecret: true
   replicaCount: 1
   priorityClassName: homelab-low
-  tolerations:
-    - key: node-role.kubernetes.io/control-plane
-      operator: Exists
-      effect: NoSchedule
+  nodeSelector: *terrakubeNodeSelector
+  tolerations: *terrakubeTolerations
   # Cold Spring + Liquibase exceeds chart defaults on this node.
   startupProbe:
     initialDelaySeconds: 60
@@ -129,10 +128,8 @@ executor:
   # One job per pod; chart readiness drops busy pods from Service. Need >=2 for queue drain.
   replicaCount: 2
   priorityClassName: homelab-low
-  tolerations:
-    - key: node-role.kubernetes.io/control-plane
-      operator: Exists
-      effect: NoSchedule
+  nodeSelector: *terrakubeNodeSelector
+  tolerations: *terrakubeTolerations
   resources:
     requests:
       cpu: 100m
@@ -143,10 +140,8 @@ registry:
   existingSecret: true
   replicaCount: 1
   priorityClassName: homelab-low
-  tolerations:
-    - key: node-role.kubernetes.io/control-plane
-      operator: Exists
-      effect: NoSchedule
+  nodeSelector: *terrakubeNodeSelector
+  tolerations: *terrakubeTolerations
   resources:
     requests:
       cpu: 50m
@@ -157,10 +152,8 @@ ui:
   existingSecret: true
   replicaCount: 1
   priorityClassName: homelab-low
-  tolerations:
-    - key: node-role.kubernetes.io/control-plane
-      operator: Exists
-      effect: NoSchedule
+  nodeSelector: *terrakubeNodeSelector
+  tolerations: *terrakubeTolerations
   resources:
     requests:
       cpu: 20m
@@ -170,10 +163,8 @@ valkey:
   auth:
     usersExistingSecret: terrakube-valkey
   priorityClassName: homelab-high
-  tolerations:
-    - key: node-role.kubernetes.io/control-plane
-      operator: Exists
-      effect: NoSchedule
+  nodeSelector: *terrakubeNodeSelector
+  tolerations: *terrakubeTolerations
   resources:
     requests:
       cpu: 20m

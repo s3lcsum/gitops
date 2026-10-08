@@ -1,3 +1,5 @@
+# Synology NFS clients must include every node IP that mounts this PVC
+# (lake .252 / Proxmox .254 / vibe .201 — Terrakube pinned to vibe).
 apiVersion: v1
 kind: PersistentVolume
 metadata:

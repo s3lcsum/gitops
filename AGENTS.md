@@ -35,7 +35,6 @@ Kustomize-only (no `values.yaml`): adguard, authentik, calibre, cloudflared, cor
 ## Scheduling and edge
 
 - `k8s` is the only control plane and the preferred node. Kyverno `worker-overflow-taint` puts `homelab.dominiksiejak.pl/worker=true:PreferNoSchedule` on every other node. PreferNoSchedule is a score penalty, not a filter.
-- Label `homelab.dominiksiejak.pl/ai=true` marks AI nodes (`vibe`). New AI nodes need that label. Do not put it on every worker. Argo Events, Argo Rollouts, and Argo Workflows require the label — they stay Pending while `vibe` is NotReady.
 - Traefik-k8s is a hostNetwork DaemonSet (`:80/:443` on every node). Public WAN arrives at `192.168.89.252`. Per-app IngressRoutes live in `kubernetes/<app>/resources/` in that app's namespace. Middleware refs need `namespace: traefik`. TLS comes from the Traefik default `TLSStore`.
 - Three ingress paths. Do not collapse them. WAN is firewalled (`allowed-wan` → Traefik-k8s on `.252`). WireGuard (`vpn.dominiksiejak.pl:51820`, overlay `192.168.200.0/24`) lands peers on the LAN. Cloudflare Tunnel + Access is a separate WAF path, not a substitute for either.
 - Auth class per host: `scripts/auth_classification.yaml` (`forward-auth` | `native-oidc` | `public` | `lan-only`). The checker that failed on unclassified hosts is gone; still add the host when adding a route.

@@ -11,7 +11,9 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  replicas: 1
+  # Coordinator SLZB at 192.168.89.20 is unreachable (EHOSTUNREACH :8888).
+  # Scale back to 1 when the bridge is back on the LAN.
+  replicas: 0
   strategy:
     type: Recreate
   selector:

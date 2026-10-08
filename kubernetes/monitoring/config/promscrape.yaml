@@ -54,6 +54,13 @@ scrape_configs:
     # MacBook Pro dev machine (en5 USB Ethernet, static IP)
     # Wi-Fi fallback: 192.168.89.130:9100 (DHCP, may change)
 
+  - job_name: "vibe-ismc"
+    static_configs:
+      - targets:
+          - "192.168.89.200:65002"
+    # iSMC + SMART exporter on vibe (LaunchAgent tech.skowronski.ismc-exporter)
+    # Feeds dashboard ismc-vibe (temps, fans, power, NVMe SMART).
+
   # Kubernetes Views dashboards expect label cluster on these series.
   - job_name: kube-state-metrics
     scrape_interval: 30s

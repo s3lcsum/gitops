@@ -1,197 +1,22 @@
-resource "grafana_rule_group" "blackbox_page" {
-  name             = "blackbox-page-call"
+resource "grafana_rule_group" "homelab_critical_workloads" {
+  name             = "homelab-critical-workloads"
   folder_uid       = grafana_folder.monitoring.uid
   interval_seconds = 60
 
   rule {
-    name      = "Blackbox probe down (page)"
-    uid       = "blackbox-probe-down-page"
+    name      = "Critical workload down 15m"
+    uid       = "critical-workloads-down-15m"
     condition = "C"
-    for       = "5m"
+    for       = "15m"
 
     annotations = {
-      summary     = "Blackbox probe failed: {{ $labels.instance }}"
-      description = "blackbox-exporter probe_success < 1 for {{ $labels.instance }} — Grafana Cloud app via IRM"
-    }
-
-    labels = {
-      severity = "warning"
-      page     = "call"
-    }
-
-    data {
-      ref_id = "A"
-
-      relative_time_range {
-        from = 300
-        to   = 0
-      }
-
-      datasource_uid = grafana_data_source.victoria_metrics.uid
-      model = jsonencode({
-        expr          = "min(probe_success{instance!~\"https://(portainer|adminer|readarr|status|dozzle|opencode)\\\\.dominiksiejak\\\\.pl\"}) by (instance)"
-        instant       = true
-        intervalMs    = 1000
-        maxDataPoints = 43200
-        refId         = "A"
-      })
-    }
-
-    data {
-      ref_id = "C"
-
-      relative_time_range {
-        from = 300
-        to   = 0
-      }
-
-      datasource_uid = "__expr__"
-      model = jsonencode({
-        type       = "threshold"
-        expression = "A"
-        conditions = [
-          {
-            evaluator = {
-              type   = "lt"
-              params = [1]
-            }
-            operator = {
-              type = "and"
-            }
-            query = {
-              params = ["C"]
-            }
-            reducer = {
-              type   = "last"
-              params = []
-            }
-            type = "query"
-          }
-        ]
-        datasource = {
-          type = "__expr__"
-          uid  = "__expr__"
-        }
-        refId = "C"
-      })
-    }
-
-    # Empty query (VM restart, scrape gap) must not fan out one NoData
-    # instance per stale series. Probe failure is a real 0, not missing data.
-    no_data_state  = "OK"
-    exec_err_state = "Error"
-
-    # Route this rule straight to IRM. Do not rely on the root policy:
-    # Grafana inserts a __grafana_receiver__ child that swallows the alert
-    # before a continue=true sibling can reach the Cloud app.
-    notification_settings {
-      contact_point = grafana_contact_point.irm.name
-      group_by      = ["grafana_folder", "alertname"]
-    }
-  }
-
-  rule {
-    name      = "Blackbox probe data missing (page)"
-    uid       = "blackbox-probe-nodata-page"
-    condition = "C"
-    for       = "5m"
-
-    annotations = {
-      summary     = "Blackbox probe_success has no series"
-      description = "VictoriaMetrics returned no probe_success series. Scrape gap or blackbox-exporter down — one alert, not one per target."
-    }
-
-    labels = {
-      severity = "warning"
-      page     = "call"
-    }
-
-    data {
-      ref_id = "A"
-
-      relative_time_range {
-        from = 300
-        to   = 0
-      }
-
-      datasource_uid = grafana_data_source.victoria_metrics.uid
-      model = jsonencode({
-        expr          = "absent(probe_success)"
-        instant       = true
-        intervalMs    = 1000
-        maxDataPoints = 43200
-        refId         = "A"
-      })
-    }
-
-    data {
-      ref_id = "C"
-
-      relative_time_range {
-        from = 300
-        to   = 0
-      }
-
-      datasource_uid = "__expr__"
-      model = jsonencode({
-        type       = "threshold"
-        expression = "A"
-        conditions = [
-          {
-            evaluator = {
-              type   = "gt"
-              params = [0]
-            }
-            operator = {
-              type = "and"
-            }
-            query = {
-              params = ["C"]
-            }
-            reducer = {
-              type   = "last"
-              params = []
-            }
-            type = "query"
-          }
-        ]
-        datasource = {
-          type = "__expr__"
-          uid  = "__expr__"
-        }
-        refId = "C"
-      })
-    }
-
-    no_data_state  = "OK"
-    exec_err_state = "Error"
-
-    notification_settings {
-      contact_point = grafana_contact_point.irm.name
-      group_by      = ["grafana_folder", "alertname"]
-    }
-  }
-}
-
-resource "grafana_rule_group" "homelab_incident" {
-  name             = "homelab-incident"
-  folder_uid       = grafana_folder.monitoring.uid
-  interval_seconds = 60
-
-  rule {
-    name      = "dominiksiejak.pl down 60m"
-    uid       = "dominiksiejak-down-incident"
-    condition = "C"
-    for       = "1h"
-
-    annotations = {
-      summary     = "{{ $labels.instance }} down for 60 minutes"
-      description = "Blackbox probe_success=0 for a dominiksiejak.pl host for 60 minutes. Grafana Cloud app via IRM."
+      summary     = "{{ $labels.namespace }} critical workload not running"
+      description = "hass, mosquitto, authentik-server/worker available replicas < 1, or postgres-* not Running, for 15 minutes."
     }
 
     labels = {
       severity = "critical"
-      incident = "true"
+      page     = "call"
     }
 
     data {
@@ -204,7 +29,7 @@ resource "grafana_rule_group" "homelab_incident" {
 
       datasource_uid = grafana_data_source.victoria_metrics.uid
       model = jsonencode({
-        expr          = "min by (instance) (probe_success{instance=~\".*dominiksiejak\\\\.pl.*\",instance!~\"https://(portainer|adminer|readarr|status|dozzle|opencode)\\\\.dominiksiejak\\\\.pl\"})"
+        expr          = "(kube_deployment_status_replicas_available{namespace=~\"hass|authentik\",deployment=~\"hass|mosquitto|authentik-server|authentik-worker\"}) or (kube_pod_status_phase{namespace=\"cloudnative-pg\",pod=~\"postgres-[0-9]+\",phase=\"Running\"})"
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200
@@ -251,11 +76,11 @@ resource "grafana_rule_group" "homelab_incident" {
       })
     }
 
-    no_data_state  = "OK"
+    no_data_state  = "Alerting"
     exec_err_state = "Error"
 
     notification_settings {
-      contact_point = grafana_contact_point.irm.name
+      contact_point = "s3lcsum"
       group_by      = ["grafana_folder", "alertname"]
     }
   }

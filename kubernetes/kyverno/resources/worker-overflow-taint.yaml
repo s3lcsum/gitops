@@ -1,8 +1,6 @@
 # Non-control-plane nodes are overflow capacity.
 # PreferNoSchedule is a score penalty, not a filter: pods still land here
 # when the control-plane node cannot fit their requests.
-# AI pods tolerate this taint and prefer label homelab.dominiksiejak.pl/ai=true.
-# New AI nodes: add that label. Do not add it to every worker.
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:

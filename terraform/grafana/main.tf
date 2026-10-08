@@ -3,4 +3,4 @@
 #   dashboards.tf   — JSON from terraform/grafana/dashboards
 #   sso.tf          — Authentik Generic OAuth
 #   irm.tf          — OnCall grafana_alerting integration + escalation
-#   alerting.tf     — IRM-routed blackbox probe + 60m incident rules
+#   alerting.tf     — critical workload pod-down (15m) via s3lcsum
