@@ -63,6 +63,14 @@ ports:
           to: websecure
           scheme: https
           permanent: true
+    # cloudflared (pod CIDR) terminates CF Tunnel → Traefik. Trust its
+    # X-Forwarded-For / Cf-Connecting-Ip chain or Authentik records 10.244.x
+    # and the WAN allowlist workflow banlists Flannel instead of the client.
+    forwardedHeaders:
+      trustedIPs:
+        - 10.244.0.0/16
+        - 127.0.0.1/32
+      insecure: false
   websecure:
     port: 443
     expose:
@@ -70,6 +78,11 @@ ports:
     http:
       tls:
         enabled: true
+    forwardedHeaders:
+      trustedIPs:
+        - 10.244.0.0/16
+        - 127.0.0.1/32
+      insecure: false
   # SNI passthrough for kubectl client certs. LAN only — no RouterOS dst-nat.
   # Do not put this on websecure.
   kubeapi:
