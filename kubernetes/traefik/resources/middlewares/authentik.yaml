@@ -5,8 +5,9 @@ metadata:
   namespace: traefik
 spec:
   forwardAuth:
-    # hostNetwork Traefik cannot use the ClusterIP. Authentik listens on the lake node.
-    address: http://192.168.89.252:9000/outpost.goauthentik.io/auth/traefik
+    # Traefik dnsPolicy=ClusterFirstWithHostNet → ClusterIP works. Endpoints
+    # track whichever node hostNetwork Authentik is on — no lake pin needed.
+    address: http://authentik-server.authentik.svc:9000/outpost.goauthentik.io/auth/traefik
     trustForwardHeader: false
     authResponseHeaders:
       - X-authentik-username
