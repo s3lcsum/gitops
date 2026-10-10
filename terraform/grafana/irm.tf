@@ -28,3 +28,13 @@ resource "grafana_contact_point" "irm" {
     disable_resolve_message = false
   }
 }
+
+# Terrakube drift-enforce template POSTs formatted_webhook payloads here.
+resource "grafana_oncall_integration" "terrakube_drift" {
+  name = "terrakube-drift-enforce"
+  type = "formatted_webhook"
+
+  default_route {
+    escalation_chain_id = grafana_oncall_escalation_chain.homelab.id
+  }
+}

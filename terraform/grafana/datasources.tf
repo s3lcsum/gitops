@@ -15,3 +15,18 @@ resource "grafana_data_source" "victoria_metrics" {
     httpMethod = "POST"
   })
 }
+
+# In-cluster Loki (Alloy → loki.monitoring.svc). PDC agent runs in monitoring ns.
+# Agent PermitRemoteOpen must include loki:3100 (see kubernetes/monitoring/resources/grafana-pdc-agent.yaml).
+resource "grafana_data_source" "loki" {
+  type                                   = "loki"
+  name                                   = "Loki"
+  uid                                    = "loki"
+  url                                    = var.loki_url
+  access_mode                            = "proxy"
+  private_data_source_connect_network_id = var.pdc_network_id
+
+  json_data_encoded = jsonencode({
+    maxLines = 1000
+  })
+}

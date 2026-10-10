@@ -8,6 +8,10 @@ if [[ ! -f defaults.auto.tfvars ]]; then
 fi
 tofu init -input=false
 tofu import 'grafana_folder.monitoring' monitoring || true
+tofu import 'grafana_folder.category["overview"]' monitoring-overview || true
+tofu import 'grafana_folder.category["kubernetes"]' monitoring-kubernetes || true
+tofu import 'grafana_folder.category["network"]' monitoring-network || true
+tofu import 'grafana_folder.category["apps"]' monitoring-apps || true
 tofu import 'grafana_data_source.victoria_metrics' victoria-metrics || true
-tofu import 'grafana_dashboard.cloud_kept["s3lcsum-default.json"]' uJbKRMcVk || true
+tofu import 'grafana_data_source.loki' loki || true
 make apply

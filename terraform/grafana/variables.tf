@@ -23,10 +23,18 @@ variable "victoria_metrics_url" {
   default = "http://victoria-metrics:8428"
 }
 
+variable "loki_url" {
+  description = "Loki URL reachable from the PDC agent (cluster DNS or short Service name)"
+  type        = string
+  # Short name; agent runs in monitoring ns alongside Service/loki.
+  default = "http://loki:3100"
+}
+
 variable "oncall_username" {
   description = "Grafana OnCall / Cloud username to page for important alerts"
   type        = string
-  default     = "s3lcsum"
+  # Must match OnCall API username (email), not Grafana login handle.
+  default = "dreewniak@gmail.com"
 }
 
 variable "oncall_url" {

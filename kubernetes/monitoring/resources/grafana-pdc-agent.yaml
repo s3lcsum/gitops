@@ -1,0 +1,84 @@
+# Grafana Cloud Private Data source Connect agent (HomeLab network).
+# Secret grafana-pdc-agent (token, cluster, hosted-grafana-id) is pre-provisioned
+# — not managed here. PermitRemoteOpen must list every PDC datasource host:port.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-pdc-agent
+  namespace: monitoring
+  labels:
+    app: grafana-pdc-agent
+    name: grafana-pdc-agent
+    app.kubernetes.io/name: grafana-pdc-agent
+    app.kubernetes.io/instance: monitoring
+    app.kubernetes.io/part-of: monitoring
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  # Selector must stay name=... — Deployment selector is immutable (UI-applied agent).
+  selector:
+    matchLabels:
+      name: grafana-pdc-agent
+  template:
+    metadata:
+      labels:
+        name: grafana-pdc-agent
+        app.kubernetes.io/name: grafana-pdc-agent
+        app.kubernetes.io/instance: monitoring
+        app.kubernetes.io/part-of: monitoring
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      priorityClassName: homelab-high
+      securityContext:
+        fsGroup: 30000
+        runAsGroup: 30000
+        runAsUser: 30000
+      containers:
+        - name: grafana-pdc-agent
+          # Upstream tags are floating; pin when a digest/tag exists that matches the binary.
+          image: grafana/pdc-agent:latest
+          imagePullPolicy: Always
+          args:
+            - -cluster
+            - $(CLUSTER)
+            - -token
+            - $(TOKEN)
+            - -gcloud-hosted-grafana-id
+            - $(HOSTED_GRAFANA_ID)
+            - -ssh-flag
+            - -o PermitRemoteOpen=victoria-metrics:8428 loki:3100
+          env:
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-pdc-agent
+                  key: token
+            - name: CLUSTER
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-pdc-agent
+                  key: cluster
+            - name: HOSTED_GRAFANA_ID
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-pdc-agent
+                  key: hosted-grafana-id
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsNonRoot: true

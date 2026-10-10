@@ -1,0 +1,134 @@
+# Terrakube org template: hourly drift remediate (plan → apply, no approval).
+# Applied by scripts/terrakube/apply-drift-enforce.sh (stored as base64 tcl).
+#
+# Requires org global ENV var GRAFANA_ONCALL_WEBHOOK_URL (formatted_webhook).
+# Silent when plan is empty. Alerts OnCall on remediated drift or plan failure.
+#
+# Note: plan/apply steps do not share a workdir for side-car files — always
+# re-read terraformLibrary.tfPlan in the apply after-script.
+flow:
+  - type: "terraformPlan"
+    name: "Plan"
+    step: 100
+    ignoreError: true
+    commands:
+      - runtime: "BASH"
+        priority: 100
+        after: true
+        script: |
+          set -u
+          cd "$workingDirectory"
+          WEBHOOK="${GRAFANA_ONCALL_WEBHOOK_URL:-}"
+          WS="${workspaceName:-${workspaceId:-unknown}}"
+          ORG="${organizationName:-${organizationId:-unknown}}"
+          JOB="${jobId:-unknown}"
+          LINK="https://terrakube.dominiksiejak.pl/organizations/${organizationId}/workspaces/${workspaceId}/runs"
+          PLAN_FILE="terraformLibrary.tfPlan"
+
+          post_oncall() {
+            local uid="$1" title="$2" message="$3" state="$4"
+            if [ -z "$WEBHOOK" ]; then
+              echo "GRAFANA_ONCALL_WEBHOOK_URL unset; skip OnCall: $title"
+              return 0
+            fi
+            curl -fsS -X POST "$WEBHOOK" \
+              -H 'Content-Type: application/json' \
+              -d "$(jq -n \
+                --arg uid "$uid" \
+                --arg title "$title" \
+                --arg message "$message" \
+                --arg state "$state" \
+                --arg link "$LINK" \
+                '{alert_uid:$uid,title:$title,message:$message,state:$state,link_to_upstream_details:$link}')"
+            echo "OnCall POST ok: $title"
+          }
+
+          if [ ! -f "$PLAN_FILE" ]; then
+            post_oncall \
+              "terrakube-drift-${workspaceId}-${JOB}" \
+              "Terrakube drift plan failed: ${WS}" \
+              "Organization ${ORG} workspace ${WS} job ${JOB}: plan produced no terraformLibrary.tfPlan." \
+              "alerting"
+            exit 1
+          fi
+          echo "Plan artifact present"
+  - type: "terraformApply"
+    name: "Apply"
+    step: 200
+    ignoreError: true
+    commands:
+      - runtime: "BASH"
+        priority: 100
+        after: true
+        script: |
+          set -u
+          cd "$workingDirectory"
+          WEBHOOK="${GRAFANA_ONCALL_WEBHOOK_URL:-}"
+          WS="${workspaceName:-${workspaceId:-unknown}}"
+          ORG="${organizationName:-${organizationId:-unknown}}"
+          JOB="${jobId:-unknown}"
+          LINK="https://terrakube.dominiksiejak.pl/organizations/${organizationId}/workspaces/${workspaceId}/runs"
+          PLAN_FILE="terraformLibrary.tfPlan"
+
+          post_oncall() {
+            local uid="$1" title="$2" message="$3" state="$4"
+            if [ -z "$WEBHOOK" ]; then
+              echo "GRAFANA_ONCALL_WEBHOOK_URL unset; skip OnCall: $title"
+              return 0
+            fi
+            curl -fsS -X POST "$WEBHOOK" \
+              -H 'Content-Type: application/json' \
+              -d "$(jq -n \
+                --arg uid "$uid" \
+                --arg title "$title" \
+                --arg message "$message" \
+                --arg state "$state" \
+                --arg link "$LINK" \
+                '{alert_uid:$uid,title:$title,message:$message,state:$state,link_to_upstream_details:$link}')"
+            echo "OnCall POST ok: $title"
+          }
+
+          if [ ! -f "$PLAN_FILE" ]; then
+            post_oncall \
+              "terrakube-drift-${workspaceId}-${JOB}" \
+              "Terrakube drift apply failed: ${WS}" \
+              "Organization ${ORG} workspace ${WS} job ${JOB}: missing plan file at apply." \
+              "alerting"
+            exit 1
+          fi
+
+          if command -v tofu >/dev/null 2>&1; then
+            TF=tofu
+          else
+            TF=terraform
+          fi
+
+          set +e
+          "$TF" show -json "$PLAN_FILE" > tfplan.json 2>tfplan.show.err
+          SHOW_EC=$?
+          set -e
+          if [ "$SHOW_EC" -ne 0 ]; then
+            post_oncall \
+              "terrakube-drift-${workspaceId}-${JOB}" \
+              "Terrakube drift apply failed: ${WS}" \
+              "Organization ${ORG} workspace ${WS} job ${JOB}: cannot read plan JSON after apply." \
+              "alerting"
+            exit 1
+          fi
+
+          CHANGES=$(jq '[.resource_changes[]? | select((.change.actions | index("no-op") | not) and (.change.actions | index("read") | not))] | length' tfplan.json)
+          echo "Drift change count (from plan artifact): $CHANGES"
+
+          if [ "$CHANGES" -eq 0 ]; then
+            echo "No drift; silent"
+            exit 0
+          fi
+
+          # terraformApply already ran (ignoreError). Notify remediated when plan had changes.
+          # If apply itself errored, Terrakube job logs still show failure; we still page so it is visible.
+          post_oncall \
+            "terrakube-drift-${workspaceId}-${JOB}" \
+            "Terrakube drift remediated: ${WS}" \
+            "Organization ${ORG} workspace ${WS} job ${JOB}: drift-enforce ran apply for ${CHANGES} change(s). Review Terrakube run if apply errored." \
+            "alerting"
+          exit 0

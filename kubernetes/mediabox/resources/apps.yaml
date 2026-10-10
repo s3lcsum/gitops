@@ -121,6 +121,9 @@ spec:
               value: "0"
             - name: TZ
               value: Europe/Warsaw
+            # Short ClusterDNS hosts (prowlarr:9696) fail HostFiltering without this.
+            - name: ASPNETCORE_ALLOWEDHOSTS
+              value: "*"
           ports:
             - name: http
               containerPort: 9696
@@ -204,6 +207,9 @@ spec:
               value: "0"
             - name: TZ
               value: Europe/Warsaw
+            # Short ClusterDNS hosts (radarr:7878) fail HostFiltering without this.
+            - name: ASPNETCORE_ALLOWEDHOSTS
+              value: "*"
           ports:
             - name: http
               containerPort: 7878
@@ -297,6 +303,9 @@ spec:
               value: "0"
             - name: TZ
               value: Europe/Warsaw
+            # Short ClusterDNS hosts (sonarr:8989) fail HostFiltering without this.
+            - name: ASPNETCORE_ALLOWEDHOSTS
+              value: "*"
           ports:
             - name: http
               containerPort: 8989
