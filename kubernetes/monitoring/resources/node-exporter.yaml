@@ -42,6 +42,35 @@ spec:
             - --web.listen-address=:9101
             - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|run|var/lib/docker/.+|var/lib/kubelet/.+)($|/)
             - --collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
+            # Drop pod veth / CNI / loopback — biggest series win. Keep eth*/en*/wl*.
+            - --collector.netdev.device-exclude=^(veth.*|cni.*|flannel.*|cali.*|docker.*|br-.*|lo|tun.*|kube-ipvs.*)$
+            - --collector.netclass.ignored-devices=^(veth.*|cni.*|flannel.*|cali.*|docker.*|br-.*|lo|tun.*|kube-ipvs.*)$
+            # Homelab nodes: drop collectors dashboards/alerts do not use.
+            - --no-collector.arp
+            - --no-collector.nfs
+            - --no-collector.nfsd
+            - --no-collector.zfs
+            - --no-collector.softnet
+            - --no-collector.sockstat
+            - --no-collector.netstat
+            - --no-collector.cooling
+            - --no-collector.edac
+            - --no-collector.dmi
+            - --no-collector.selinux
+            - --no-collector.watchdog
+            - --no-collector.schedstat
+            - --no-collector.udp_queues
+            - --no-collector.bcache
+            - --no-collector.btrfs
+            - --no-collector.xfs
+            - --no-collector.mdadm
+            - --no-collector.ipvs
+            - --no-collector.fibrechannel
+            - --no-collector.infiniband
+            - --no-collector.tapestats
+            - --no-collector.nvme
+            - --no-collector.rapl
+            - --no-collector.pcidevice
           ports:
             - name: http
               containerPort: 9101

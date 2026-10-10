@@ -120,15 +120,14 @@ spec:
         automated:
           prune: true
           selfHeal: true
-        # ServerSideDiff stays off. Helm charts (cert-manager, kyverno, CNPG,
-        # external-secrets) omit webhook .name. Argo v3.5.3 builds a typed value
-        # before ignoreDifferences, then ComparisonError:
+        # SSA off. Helm charts (cert-manager, kyverno, CNPG, external-secrets)
+        # omit webhook .name. Argo v3.5.3 auto-uses structured-merge diff when
+        # ServerSideApply is on, before ignoreDifferences → ComparisonError:
         # "does not contain declared merge key: name"
         # "duplicate entries for key [name=""]".
-        # Three-way diff still works. SSA apply stays on.
+        # ServerSideDiff alone was not enough; SSA must stay off too.
         syncOptions:
           - CreateNamespace=true
-          - ServerSideApply=true
           - RespectIgnoreDifferences=true
   # No kustomization.yaml → directory source would apply values.yaml as a manifest.
   # Drop that source. Apps that have the file keep the template's third source.

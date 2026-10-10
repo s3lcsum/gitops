@@ -112,6 +112,14 @@ scrape_configs:
         replacement: ${1}:9101
       - target_label: cluster
         replacement: homelab
+    # Belt-and-suspenders vs DaemonSet collector flags. Keep cpu/mem/disk/fs/load/pressure/net.
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: node_scrape_collector_.+|go_.+|process_.+|promhttp_.+
+        action: drop
+      - source_labels: [device]
+        regex: veth.+|cni.+|flannel.+|cali.+|docker.+|br-.+|lo|tun.+|kube-ipvs.+
+        action: drop
 
   - job_name: scraparr
     static_configs:
