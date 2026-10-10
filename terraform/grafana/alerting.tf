@@ -85,3 +85,199 @@ resource "grafana_rule_group" "homelab_critical_workloads" {
     }
   }
 }
+
+# vibe iSMC: fan duty >60% of max, or exporter silent while node_exporter still up.
+resource "grafana_rule_group" "vibe_ismc" {
+  name             = "vibe-ismc"
+  folder_uid       = grafana_folder.monitoring.uid
+  interval_seconds = 60
+
+  rule {
+    name      = "vibe fan above 60%"
+    uid       = "vibe-fan-above-60pct"
+    condition = "C"
+    for       = "5m"
+
+    annotations = {
+      summary     = "vibe fan {{ $labels.fan }} above 60% of max"
+      description = "Fan duty (current/max RPM) > 0.60 for 5m on {{ $labels.instance }}. Dashboard: ismc-vibe."
+    }
+
+    labels = {
+      severity = "warning"
+      host     = "vibe"
+    }
+
+    data {
+      ref_id = "A"
+
+      relative_time_range {
+        from = 300
+        to   = 0
+      }
+
+      datasource_uid = grafana_data_source.victoria_metrics.uid
+      model = jsonencode({
+        expr = trimspace(<<-EOT
+          (
+            label_replace(
+              ismc_fans{job="vibe-ismc",key="F0Ac"}
+              / on(instance, job) group_left()
+                ismc_fans{job="vibe-ismc",key="F0Mx"},
+              "fan", "fan_1", "", ""
+            )
+          )
+          or
+          (
+            label_replace(
+              ismc_fans{job="vibe-ismc",key="F1Ac"}
+              / on(instance, job) group_left()
+                ismc_fans{job="vibe-ismc",key="F1Mx"},
+              "fan", "fan_2", "", ""
+            )
+          )
+        EOT
+        )
+        instant       = true
+        intervalMs    = 1000
+        maxDataPoints = 43200
+        refId         = "A"
+      })
+    }
+
+    data {
+      ref_id = "C"
+
+      relative_time_range {
+        from = 300
+        to   = 0
+      }
+
+      datasource_uid = "__expr__"
+      model = jsonencode({
+        type       = "threshold"
+        expression = "A"
+        conditions = [
+          {
+            evaluator = {
+              type   = "gt"
+              params = [0.6]
+            }
+            operator = {
+              type = "and"
+            }
+            query = {
+              params = ["C"]
+            }
+            reducer = {
+              type   = "last"
+              params = []
+            }
+            type = "query"
+          }
+        ]
+        datasource = {
+          type = "__expr__"
+          uid  = "__expr__"
+        }
+        refId = "C"
+      })
+    }
+
+    no_data_state  = "OK"
+    exec_err_state = "Error"
+
+    notification_settings {
+      contact_point = "s3lcsum"
+      group_by      = ["grafana_folder", "alertname", "fan"]
+    }
+  }
+
+  rule {
+    name      = "vibe iSMC no data 1h"
+    uid       = "vibe-ismc-no-data-1h"
+    condition = "C"
+    for       = "1h"
+
+    annotations = {
+      summary     = "vibe iSMC exporter silent >1h"
+      description = "up{job=\"vibe-ismc\"} < 1 for 1h while up{job=\"vibe\"} == 1 (node_exporter still reachable). Suppressed when vibe node itself is down."
+    }
+
+    labels = {
+      severity = "warning"
+      host     = "vibe"
+    }
+
+    data {
+      ref_id = "A"
+
+      relative_time_range {
+        from = 300
+        to   = 0
+      }
+
+      datasource_uid = grafana_data_source.victoria_metrics.uid
+      model = jsonencode({
+        # Fire only when iSMC is down/absent AND vibe node_exporter is still up.
+        expr = trimspace(<<-EOT
+          ((max(up{job="vibe-ismc"}) or vector(0)) < 1)
+          and
+          ((max(up{job="vibe"}) or vector(0)) == 1)
+        EOT
+        )
+        instant       = true
+        intervalMs    = 1000
+        maxDataPoints = 43200
+        refId         = "A"
+      })
+    }
+
+    data {
+      ref_id = "C"
+
+      relative_time_range {
+        from = 300
+        to   = 0
+      }
+
+      datasource_uid = "__expr__"
+      model = jsonencode({
+        type       = "threshold"
+        expression = "A"
+        conditions = [
+          {
+            evaluator = {
+              type   = "gt"
+              params = [0]
+            }
+            operator = {
+              type = "and"
+            }
+            query = {
+              params = ["C"]
+            }
+            reducer = {
+              type   = "last"
+              params = []
+            }
+            type = "query"
+          }
+        ]
+        datasource = {
+          type = "__expr__"
+          uid  = "__expr__"
+        }
+        refId = "C"
+      })
+    }
+
+    no_data_state  = "OK"
+    exec_err_state = "Error"
+
+    notification_settings {
+      contact_point = "s3lcsum"
+      group_by      = ["grafana_folder", "alertname"]
+    }
+  }
+}
