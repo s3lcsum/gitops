@@ -179,7 +179,7 @@
       ],
       "parameters": {
         "authentication": "predefinedCredentialType",
-        "jsonBody": "={{ JSON.stringify({ created_with: 'n8n-focus-webhook', description: String($('Plan Immediate On').item.json.description), project_id: Number($('Plan Immediate On').item.json.project_id), workspace_id: Number($('Plan Immediate On').item.json.workspace_id), start: String($('Plan Immediate On').item.json.start_iso), duration: -1 }) }}",
+        "jsonBody": "={{ JSON.stringify(Object.assign({ created_with: 'n8n-focus-webhook', description: String($('Plan Immediate On').item.json.description), project_id: Number($('Plan Immediate On').item.json.project_id), workspace_id: Number($('Plan Immediate On').item.json.workspace_id), start: String($('Plan Immediate On').item.json.start_iso), duration: -1 }, (Array.isArray($('Plan Immediate On').item.json.tag_ids) && $('Plan Immediate On').item.json.tag_ids.length) ? { tag_ids: $('Plan Immediate On').item.json.tag_ids.map(Number) } : {})) }}",
         "method": "POST",
         "nodeCredentialType": "togglApi",
         "options": {},
@@ -346,7 +346,7 @@
         -384
       ],
       "parameters": {
-        "jsCode": "const route = $('Route Focus Event').first().json;\nconst row = $('Get Controller (Focus)').first().json;\nconst cur = $input.first().json;\nconst entry = cur && cur.id ? cur : (cur.data || null);\nconst has = !!(entry && entry.id);\nconst workspace_id = Number(route.workspace_id || 3825058);\nconst target = route.target || { project_id: Number(route.inpost_project_id || 215500877), description: 'Work' };\nconst project_id = Number(target.project_id);\nconst description = String(target.description || route.focus || 'Work');\nconst curPid = has ? Number(entry.project_id || 0) : 0;\nconst matches = has && curPid === project_id;\nconst need_stop = has && !matches;\n\n// Resume window: same project stopped < 5 minutes ago → one continuous entry\nconst RESUME_MS = 5 * 60 * 1000;\nconst lastStoppedAt = row.last_timer_stopped_at ? Date.parse(row.last_timer_stopped_at) : 0;\nconst lastPid = Number(row.last_timer_project_id || 0);\nconst lastEntryId = row.last_timer_entry_id ? String(row.last_timer_entry_id) : '';\nconst lastStart = row.last_timer_start ? String(row.last_timer_start) : '';\nconst canResume = !matches\n  && !!lastEntryId\n  && !!lastStart\n  && lastPid === project_id\n  && lastStoppedAt\n  && (Date.now() - lastStoppedAt) < RESUME_MS;\n\nconst need_resume = canResume;\nconst need_start = !matches;\nconst start_iso = need_resume ? lastStart : new Date().toISOString();\n\n// When stopping a different running timer (e.g. Work→Fitness), remember it for resume\nconst remember_stop = need_stop;\nconst remember_entry_id = remember_stop ? String(entry.id) : null;\nconst remember_start = remember_stop ? String(entry.start || '') : null;\nconst remember_project_id = remember_stop ? curPid : null;\nconst remember_description = remember_stop ? String(entry.description || '') : null;\n\nreturn [{ json: {\n  desired: true,\n  need_stop,\n  need_start,\n  need_resume,\n  need_focus: !!route.need_focus,\n  shortcut: route.shortcut || 'Set Work Focus',\n  stop_id: need_stop ? entry.id : null,\n  stop_wid: need_stop ? (entry.workspace_id || workspace_id) : null,\n  workspace_id,\n  project_id,\n  description,\n  start_iso,\n  resume_delete_id: need_resume ? lastEntryId : null,\n  remember_stop,\n  remember_entry_id,\n  remember_start,\n  remember_project_id,\n  remember_description,\n  inpost_project_id: Number(route.inpost_project_id || 215500877),\n  focus: route.focus,\n  suppress_until: new Date(Date.now() + 120000).toISOString(),\n  suppress_focus_until: route.need_focus\n    ? new Date(Date.now() + 120000).toISOString()\n    : (row.suppress_focus_until || null),\n  notes: `focus on focus=${route.focus} project=${project_id} stop=${need_stop} start=${need_start} resume=${need_resume} need_focus=${!!route.need_focus}`\n}}];"
+        "jsCode": "const route = $('Route Focus Event').first().json;\nconst row = $('Get Controller (Focus)').first().json;\nconst prep = $('Prepare OverHours Context').first().json;\nconst entry = prep.current && prep.current.id ? prep.current : null;\nconst has = !!(entry && entry.id);\nconst workspace_id = Number(route.workspace_id || prep.workspace_id || 3825058);\nconst target = route.target || { project_id: Number(route.inpost_project_id || 215500877), description: 'Work' };\nlet project_id = Number(target.project_id);\nlet description = String(target.description || route.focus || 'Work');\nconst INPOST = Number(prep.inpost_project_id || 215500877);\nconst THRESHOLD = 8 * 3600;\nconst OH_DESC = 'Work OverHours';\n\nlet oh_tag_id = null;\ntry {\n  const ensured = $('Ensure OH Tag').first().json;\n  if (ensured && ensured.oh_tag_id) oh_tag_id = Number(ensured.oh_tag_id);\n} catch (e) {}\ntry {\n  if (!oh_tag_id) {\n    const created = $('Create OH Tag').first().json;\n    if (created && created.id) oh_tag_id = Number(created.id);\n  }\n} catch (e) {}\n\nfunction clampOverlapSec(startIso, stopIso, winStart, winEnd, nowMs) {\n  const start = Date.parse(startIso);\n  if (!Number.isFinite(start)) return 0;\n  let end = stopIso ? Date.parse(stopIso) : nowMs;\n  if (!Number.isFinite(end)) end = nowMs;\n  const a = Math.max(start, winStart);\n  const b = Math.min(end, winEnd);\n  return Math.max(0, Math.floor((b - a) / 1000));\n}\n\nlet tag_ids = [];\nif (route.focus === 'Work' && project_id === INPOST) {\n  const entries = Array.isArray($('Normalize Day Entries').first().json.day_entries) ? $('Normalize Day Entries').first().json.day_entries : [];\n  const nowMs = Date.now();\n  const winStart = Number(prep.window_start_ms);\n  const winEnd = Number(prep.window_end_ms);\n  let sum = 0;\n  const seen = new Set();\n  for (const e of entries) {\n    if (Number(e.project_id || 0) !== INPOST) continue;\n    seen.add(String(e.id));\n    const stop = e.stop || (e.duration >= 0 ? e.stop : null);\n    const running = !e.stop && Number(e.duration) < 0;\n    sum += clampOverlapSec(e.start, running ? null : e.stop, winStart, winEnd, nowMs);\n  }\n  if (has && Number(entry.project_id || 0) === INPOST && !seen.has(String(entry.id))) {\n    sum += clampOverlapSec(entry.start, null, winStart, winEnd, nowMs);\n  }\n  if (prep.before_7am || sum >= THRESHOLD) {\n    description = OH_DESC;\n    if (oh_tag_id) tag_ids = [oh_tag_id];\n  } else {\n    description = 'Work';\n  }\n}\n\nconst curPid = has ? Number(entry.project_id || 0) : 0;\nconst curDesc = has ? String(entry.description || '') : '';\nconst matches = has && curPid === project_id && curDesc === description;\nconst need_stop = has && !matches;\n\nconst RESUME_MS = 5 * 60 * 1000;\nconst lastStoppedAt = row.last_timer_stopped_at ? Date.parse(row.last_timer_stopped_at) : 0;\nconst lastPid = Number(row.last_timer_project_id || 0);\nconst lastDesc = String(row.last_timer_description || '');\nconst lastEntryId = row.last_timer_entry_id ? String(row.last_timer_entry_id) : '';\nconst lastStart = row.last_timer_start ? String(row.last_timer_start) : '';\nconst canResume = !matches\n  && !!lastEntryId\n  && !!lastStart\n  && lastPid === project_id\n  && lastDesc === description\n  && lastStoppedAt\n  && (Date.now() - lastStoppedAt) < RESUME_MS;\n\nconst need_resume = canResume;\nconst need_start = !matches;\nconst start_iso = need_resume ? lastStart : new Date().toISOString();\n\nconst remember_stop = need_stop;\nconst remember_entry_id = remember_stop ? String(entry.id) : null;\nconst remember_start = remember_stop ? String(entry.start || '') : null;\nconst remember_project_id = remember_stop ? curPid : null;\nconst remember_description = remember_stop ? curDesc : null;\n\nreturn [{ json: {\n  desired: true,\n  need_stop,\n  need_start,\n  need_resume,\n  need_focus: !!route.need_focus,\n  shortcut: route.shortcut || 'Set Work Focus',\n  stop_id: need_stop ? entry.id : null,\n  stop_wid: need_stop ? (entry.workspace_id || workspace_id) : null,\n  workspace_id,\n  project_id,\n  description,\n  tag_ids,\n  start_iso,\n  resume_delete_id: need_resume ? lastEntryId : null,\n  remember_stop,\n  remember_entry_id,\n  remember_start,\n  remember_project_id,\n  remember_description,\n  inpost_project_id: INPOST,\n  focus: route.focus,\n  suppress_until: new Date(Date.now() + 120000).toISOString(),\n  suppress_focus_until: route.need_focus\n    ? new Date(Date.now() + 120000).toISOString()\n    : (row.suppress_focus_until || null),\n  notes: `focus on focus=${route.focus} project=${project_id} desc=${description} tags=${tag_ids.join(',')} stop=${need_stop} start=${need_start} resume=${need_resume} need_focus=${!!route.need_focus}`\n}}];"
       }
     },
     {
@@ -719,6 +719,176 @@
         },
         "options": {}
       }
+    },
+    {
+      "id": "focus-oh-prepare",
+      "name": "Prepare OverHours Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        -384
+      ],
+      "parameters": {
+        "jsCode": "const curRaw = $input.first().json;\nconst current = curRaw && curRaw.id ? curRaw : (curRaw && curRaw.data && curRaw.data.id ? curRaw.data : null);\nconst route = $('Route Focus Event').first().json;\nconst TZ = 'Europe/Warsaw';\nconst INPOST = Number(route.inpost_project_id || 215500877);\n\nfunction warsawParts(date) {\n  const parts = new Intl.DateTimeFormat('en-GB', {\n    timeZone: TZ,\n    year: 'numeric', month: '2-digit', day: '2-digit',\n    hour: '2-digit', minute: '2-digit', second: '2-digit',\n    hour12: false,\n  }).formatToParts(date);\n  const g = (t) => {\n    const v = parts.find((p) => p.type === t)?.value || '0';\n    return Number(v === '24' ? '0' : v);\n  };\n  return { y: g('year'), m: g('month'), d: g('day'), H: g('hour'), M: g('minute'), S: g('second') };\n}\n\nfunction warsawLocalToUtcMs(y, m, d, H = 0, M = 0, S = 0) {\n  let utc = Date.UTC(y, m - 1, d, H, M, S);\n  for (let i = 0; i < 4; i++) {\n    const p = warsawParts(new Date(utc));\n    const asUtc = Date.UTC(p.y, p.m - 1, p.d, p.H, p.M, p.S);\n    const target = Date.UTC(y, m - 1, d, H, M, S);\n    utc += target - asUtc;\n  }\n  return utc;\n}\n\nfunction addWarsawDays(y, m, d, days) {\n  const noon = warsawLocalToUtcMs(y, m, d, 12, 0, 0) + days * 24 * 3600 * 1000;\n  const p = warsawParts(new Date(noon));\n  return [p.y, p.m, p.d];\n}\n\nconst now = new Date();\nconst p = warsawParts(now);\nconst before_7am = p.H < 7;\nlet wy = p.y, wm = p.m, wd = p.d;\nif (before_7am) {\n  [wy, wm, wd] = addWarsawDays(p.y, p.m, p.d, -1);\n}\nconst windowStartMs = warsawLocalToUtcMs(wy, wm, wd, 7, 0, 0);\nconst [ey, em, ed] = addWarsawDays(wy, wm, wd, 1);\nconst windowEndMs = warsawLocalToUtcMs(ey, em, ed, 7, 0, 0);\n\nreturn [{ json: {\n  current,\n  focus: route.focus,\n  is_work: route.focus === 'Work',\n  before_7am,\n  window_start_iso: new Date(windowStartMs).toISOString(),\n  window_end_iso: new Date(windowEndMs).toISOString(),\n  window_start_ms: windowStartMs,\n  window_end_ms: windowEndMs,\n  inpost_project_id: INPOST,\n  workspace_id: Number(route.workspace_id || 3825058),\n}}];"
+      }
+    },
+    {
+      "id": "focus-oh-fetch-day",
+      "name": "Fetch Day Entries",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1880,
+        -384
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.track.toggl.com/api/v9/me/time_entries?start_date={{ $('Prepare OverHours Context').item.json.window_start_iso }}&end_date={{ $('Prepare OverHours Context').item.json.window_end_iso }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "focus-oh-fetch-tags",
+      "name": "Fetch Workspace Tags",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1980,
+        -384
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.track.toggl.com/api/v9/workspaces/{{ $('Prepare OverHours Context').item.json.workspace_id }}/tags",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "focus-oh-ensure-tag",
+      "name": "Ensure OH Tag",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        -384
+      ],
+      "parameters": {
+        "jsCode": "const tags = $input.all().map((i) => i.json).filter((t) => t && t.id && t.name !== '__none__');\nconst oh = tags.find((t) => String(t.name || '').trim() === 'OH');\nif (oh) {\n  return [{ json: { oh_tag_id: Number(oh.id), need_create: false } }];\n}\nreturn [{ json: { oh_tag_id: null, need_create: true } }];"
+      }
+    },
+    {
+      "id": "focus-oh-need-create",
+      "name": "Need Create OH Tag?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2180,
+        -384
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "nc1",
+              "leftValue": "={{ $json.need_create }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "focus-oh-create-tag",
+      "name": "Create OH Tag",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2300,
+        -480
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.track.toggl.com/api/v9/workspaces/{{ $('Prepare OverHours Context').item.json.workspace_id }}/tags",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ name: 'OH' }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "focus-oh-normalize-day",
+      "name": "Normalize Day Entries",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1930,
+        -384
+      ],
+      "parameters": {
+        "jsCode": "const prep = $('Prepare OverHours Context').first().json;\nconst entries = $input.all().map((i) => i.json).filter((e) => e && e.id);\nreturn [{ json: { ...prep, day_entries: entries } }];"
+      }
+    },
+    {
+      "id": "focus-oh-normalize-tags",
+      "name": "Normalize Workspace Tags",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2030,
+        -384
+      ],
+      "parameters": {
+        "jsCode": "const tags = $input.all().map((i) => i.json).filter((t) => t && t.id);\nreturn tags.length ? tags.map((t) => ({ json: t })) : [{ json: { id: null, name: '__none__' } }];"
+      }
     }
   ],
   "connections": {
@@ -806,7 +976,7 @@
       "main": [
         [
           {
-            "node": "Plan Immediate On",
+            "node": "Prepare OverHours Context",
             "type": "main",
             "index": 0
           }
@@ -1036,6 +1206,101 @@
         [
           {
             "node": "Start Focus Timer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare OverHours Context": {
+      "main": [
+        [
+          {
+            "node": "Fetch Day Entries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Day Entries": {
+      "main": [
+        [
+          {
+            "node": "Normalize Day Entries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Workspace Tags": {
+      "main": [
+        [
+          {
+            "node": "Normalize Workspace Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure OH Tag": {
+      "main": [
+        [
+          {
+            "node": "Need Create OH Tag?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Need Create OH Tag?": {
+      "main": [
+        [
+          {
+            "node": "Create OH Tag",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Plan Immediate On",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create OH Tag": {
+      "main": [
+        [
+          {
+            "node": "Plan Immediate On",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Day Entries": {
+      "main": [
+        [
+          {
+            "node": "Fetch Workspace Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Workspace Tags": {
+      "main": [
+        [
+          {
+            "node": "Ensure OH Tag",
             "type": "main",
             "index": 0
           }

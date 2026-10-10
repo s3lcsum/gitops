@@ -18,9 +18,10 @@ The combined `work-state-controller` was split into three active workflows (shar
 | `toggl-webhook` | `hOi5vpTB7uAvSH72` | Toggl `POST /webhook/toggl-time-entry` (state only; no Focus SSH) |
 | `work-reconcile-schedule` | `sa0Ufb9jP9QQO0Pf` | **inactive** (was Toggl→Focus drift repair; deactivated 2026-09-09) |
 | `toggl-calendar-sync` | `4dVHTshAnUXeUQvv` | Force sync `POST /webhook/toggl-calendar-sync`, hourly schedule |
+| `toggl-overhours-schedule` | `nwHBjRYInriH2HAk` | 5-minute OverHours split poll |
 | `zz-archived-work-state-controller` | `2x4mVjHEzlwPkvCI` | **inactive** (archived combined controller) |
 
-Repo exports: `stacks/n8n/workflows/focus-webhook.json`, `toggl-webhook.json`, `work-reconcile-schedule.json`, `toggl-calendar-sync.json`.
+Repo exports: `kubernetes/n8n/workflows/focus-webhook.json`, `toggl-webhook.json`, `work-reconcile-schedule.json`, `toggl-calendar-sync.json`, `toggl-overhours-schedule.json`.
 
 ## State & secrets
 
@@ -61,10 +62,11 @@ Repo exports: `stacks/n8n/workflows/focus-webhook.json`, `toggl-webhook.json`, `
 | `Sleep` / `Personal` / `Do not disturb` / `""` / unknown | — | — | **stop** any running timer |
 
 3. Switching Focus (e.g. Work → Fitness) is a single POST of the new name: stop the previous timer if different project, then start the mapped one (idempotent if already correct).
-4. **5-minute same-project resume:** stop is always immediate. On stop, controller stores `last_timer_entry_id` / `last_timer_start` / `last_timer_project_id` / `last_timer_stopped_at`. If the same project is started again within **5 minutes**, DELETE the stopped entry and POST a new running entry with the **original start** (one continuous Toggl entry). Different project → no resume; previous stopped entry is kept.
-5. **ON (Work / Fitness):** after auth — resume or start mapped timer; SSH `Set Work Focus` only for `Work` when `work_active` mismatches. `work_active` is true only while Focus is `Work`.
-6. **OFF (Sleep / Personal / DND / empty / unknown):** stop any running timer and remember it for the resume window; SSH `Clear Work Focus` only when clearing Work state (`need_focus`).
-7. `suppress_own_focus` applies only to `Work` POSTs (SSH echo guard). Leftover `focus_pending_*` fields are cleared on apply; unused for routing.
+4. **5-minute same-project resume:** stop is always immediate. On stop, controller stores `last_timer_entry_id` / `last_timer_start` / `last_timer_project_id` / `last_timer_description` / `last_timer_stopped_at`. If the same project **and same description** is started again within **5 minutes**, DELETE the stopped entry and POST a new running entry with the **original start** (one continuous Toggl entry). Different project or description → no resume; previous stopped entry is kept.
+5. **Work OverHours split:** see [`2026-10-10-toggl-overhours-split-design.md`](./2026-10-10-toggl-overhours-split-design.md). InPost day window 07:00→07:00 Europe/Warsaw; at 8h (or before 07:00) start/split to description `Work OverHours` + tag `OH`. Cron workflow `toggl-overhours-schedule` (5 min).
+6. **ON (Work / Fitness):** after auth — resume or start mapped timer; SSH `Set Work Focus` only for `Work` when `work_active` mismatches. `work_active` is true only while Focus is `Work`.
+7. **OFF (Sleep / Personal / DND / empty / unknown):** stop any running timer and remember it for the resume window; SSH `Clear Work Focus` only when clearing Work state (`need_focus`).
+8. `suppress_own_focus` applies only to `Work` POSTs (SSH echo guard). Leftover `focus_pending_*` fields are cleared on apply; unused for routing.
 
 ### Toggl → state only (no automatic Focus)
 

@@ -1,0 +1,526 @@
+{
+  "name": "toggl-overhours-schedule",
+  "nodes": [
+    {
+      "id": "oh-sched",
+      "name": "OverHours Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        },
+        "skipDurableScheduler": true,
+        "misfirePolicy": "skip"
+      }
+    },
+    {
+      "id": "oh-cur",
+      "name": "Get Current Timer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.track.toggl.com/api/v9/me/time_entries/current",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "oh-prep",
+      "name": "Prepare Split Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const curRaw = $input.first().json;\nconst current = curRaw && curRaw.id ? curRaw : (curRaw && curRaw.data && curRaw.data.id ? curRaw.data : null);\nconst INPOST = 215500877;\nconst WORKSPACE = 3825058;\nconst TZ = 'Europe/Warsaw';\n\nfunction warsawParts(date) {\n  const parts = new Intl.DateTimeFormat('en-GB', {\n    timeZone: TZ,\n    year: 'numeric', month: '2-digit', day: '2-digit',\n    hour: '2-digit', minute: '2-digit', second: '2-digit',\n    hour12: false,\n  }).formatToParts(date);\n  const g = (t) => {\n    const v = parts.find((p) => p.type === t)?.value || '0';\n    return Number(v === '24' ? '0' : v);\n  };\n  return { y: g('year'), m: g('month'), d: g('day'), H: g('hour'), M: g('minute'), S: g('second') };\n}\nfunction warsawLocalToUtcMs(y, m, d, H = 0, M = 0, S = 0) {\n  let utc = Date.UTC(y, m - 1, d, H, M, S);\n  for (let i = 0; i < 4; i++) {\n    const p = warsawParts(new Date(utc));\n    const asUtc = Date.UTC(p.y, p.m - 1, p.d, p.H, p.M, p.S);\n    const target = Date.UTC(y, m - 1, d, H, M, S);\n    utc += target - asUtc;\n  }\n  return utc;\n}\nfunction addWarsawDays(y, m, d, days) {\n  const noon = warsawLocalToUtcMs(y, m, d, 12, 0, 0) + days * 24 * 3600 * 1000;\n  const p = warsawParts(new Date(noon));\n  return [p.y, p.m, p.d];\n}\n\nconst has = !!(current && current.id);\nconst isCandidate = has\n  && Number(current.project_id || 0) === INPOST\n  && String(current.description || '') === 'Work';\n\nconst now = new Date();\nconst p = warsawParts(now);\nconst before_7am = p.H < 7;\nlet wy = p.y, wm = p.m, wd = p.d;\nif (before_7am) [wy, wm, wd] = addWarsawDays(p.y, p.m, p.d, -1);\nconst windowStartMs = warsawLocalToUtcMs(wy, wm, wd, 7, 0, 0);\nconst [ey, em, ed] = addWarsawDays(wy, wm, wd, 1);\nconst windowEndMs = warsawLocalToUtcMs(ey, em, ed, 7, 0, 0);\n\nreturn [{ json: {\n  skip: !isCandidate,\n  current,\n  before_7am,\n  window_start_iso: new Date(windowStartMs).toISOString(),\n  window_end_iso: new Date(windowEndMs).toISOString(),\n  window_start_ms: windowStartMs,\n  window_end_ms: windowEndMs,\n  inpost_project_id: INPOST,\n  workspace_id: WORKSPACE,\n}}];"
+      }
+    },
+    {
+      "id": "oh-cand",
+      "name": "Is Work Candidate?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ !$json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "oh-day",
+      "name": "Fetch Day Entries",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        -40
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.track.toggl.com/api/v9/me/time_entries?start_date={{ $('Prepare Split Context').item.json.window_start_iso }}&end_date={{ $('Prepare Split Context').item.json.window_end_iso }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "oh-norm",
+      "name": "Normalize Day Entries",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -40
+      ],
+      "parameters": {
+        "jsCode": "const prep = $('Prepare Split Context').first().json;\nconst entries = $input.all().map((i) => i.json).filter((e) => e && e.id);\nreturn [{ json: { ...prep, day_entries: entries } }];"
+      }
+    },
+    {
+      "id": "oh-tags",
+      "name": "Fetch Workspace Tags",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1320,
+        -40
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.track.toggl.com/api/v9/workspaces/{{ $('Prepare Split Context').item.json.workspace_id }}/tags",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "oh-ensure",
+      "name": "Ensure OH Tag",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -40
+      ],
+      "parameters": {
+        "jsCode": "const tags = $input.all().map((i) => i.json).filter((t) => t && t.id && t.name !== '__none__');\nconst oh = tags.find((t) => String(t.name || '').trim() === 'OH');\nif (oh) return [{ json: { oh_tag_id: Number(oh.id), need_create: false } }];\nreturn [{ json: { oh_tag_id: null, need_create: true } }];"
+      }
+    },
+    {
+      "id": "oh-need-tag",
+      "name": "Need Create OH Tag?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        -40
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.need_create }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "oh-create-tag",
+      "name": "Create OH Tag",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1980,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.track.toggl.com/api/v9/workspaces/{{ $('Prepare Split Context').item.json.workspace_id }}/tags",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ name: 'OH' }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "oh-decide",
+      "name": "Decide Split",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        -40
+      ],
+      "parameters": {
+        "jsCode": "const prep = $('Prepare Split Context').first().json;\nif (prep.skip) return [{ json: { skip: true, reason: 'not_running_work' } }];\n\nconst entry = prep.current;\nconst INPOST = Number(prep.inpost_project_id);\nconst THRESHOLD = 8 * 3600;\nconst OH_DESC = 'Work OverHours';\n\nlet oh_tag_id = null;\ntry {\n  const ensured = $('Ensure OH Tag').first().json;\n  if (ensured && ensured.oh_tag_id) oh_tag_id = Number(ensured.oh_tag_id);\n} catch (e) {}\ntry {\n  if (!oh_tag_id) {\n    const created = $('Create OH Tag').first().json;\n    if (created && created.id) oh_tag_id = Number(created.id);\n  }\n} catch (e) {}\n\nfunction clampOverlapSec(startIso, stopIso, winStart, winEnd, nowMs) {\n  const start = Date.parse(startIso);\n  if (!Number.isFinite(start)) return 0;\n  let end = stopIso ? Date.parse(stopIso) : nowMs;\n  if (!Number.isFinite(end)) end = nowMs;\n  const a = Math.max(start, winStart);\n  const b = Math.min(end, winEnd);\n  return Math.max(0, Math.floor((b - a) / 1000));\n}\n\nconst entries = Array.isArray($('Normalize Day Entries').first().json.day_entries)\n  ? $('Normalize Day Entries').first().json.day_entries : [];\nconst nowMs = Date.now();\nconst winStart = Number(prep.window_start_ms);\nconst winEnd = Number(prep.window_end_ms);\nlet sum = 0;\nconst seen = new Set();\nfor (const e of entries) {\n  if (Number(e.project_id || 0) !== INPOST) continue;\n  seen.add(String(e.id));\n  const running = !e.stop && Number(e.duration) < 0;\n  sum += clampOverlapSec(e.start, running ? null : e.stop, winStart, winEnd, nowMs);\n}\nif (entry && entry.id && Number(entry.project_id || 0) === INPOST && !seen.has(String(entry.id))) {\n  sum += clampOverlapSec(entry.start, null, winStart, winEnd, nowMs);\n}\n\nconst need_split = prep.before_7am || sum >= THRESHOLD;\nif (!need_split) {\n  return [{ json: { skip: true, reason: 'under_threshold', sum_sec: sum } }];\n}\nif (String(entry.description || '') === OH_DESC) {\n  return [{ json: { skip: true, reason: 'already_overhours', sum_sec: sum } }];\n}\n\nreturn [{ json: {\n  skip: false,\n  need_split: true,\n  stop_id: entry.id,\n  stop_wid: entry.workspace_id || prep.workspace_id,\n  workspace_id: Number(prep.workspace_id),\n  project_id: INPOST,\n  description: OH_DESC,\n  tag_ids: oh_tag_id ? [oh_tag_id] : [],\n  start_iso: new Date().toISOString(),\n  sum_sec: sum,\n  before_7am: !!prep.before_7am,\n}}];"
+      }
+    },
+    {
+      "id": "oh-need-split",
+      "name": "Need Split?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2420,
+        -40
+      ],
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ !$json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          }
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "oh-stop",
+      "name": "Stop Work Timer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2640,
+        -160
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.track.toggl.com/api/v9/workspaces/{{ $('Decide Split').item.json.stop_wid }}/time_entries/{{ $('Decide Split').item.json.stop_id }}/stop",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "options": {}
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "oh-start",
+      "name": "Start OverHours Timer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2860,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.track.toggl.com/api/v9/workspaces/{{ $('Decide Split').item.json.workspace_id }}/time_entries",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "togglApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify(Object.assign({ created_with: 'n8n-toggl-overhours', description: String($('Decide Split').item.json.description), project_id: Number($('Decide Split').item.json.project_id), workspace_id: Number($('Decide Split').item.json.workspace_id), start: String($('Decide Split').item.json.start_iso), duration: -1 }, (Array.isArray($('Decide Split').item.json.tag_ids) && $('Decide Split').item.json.tag_ids.length) ? { tag_ids: $('Decide Split').item.json.tag_ids.map(Number) } : {})) }}",
+        "options": {}
+      },
+      "credentials": {
+        "togglApi": {
+          "id": "LT5dvmGwtJLuyDp7",
+          "name": "Toggl account"
+        }
+      }
+    },
+    {
+      "id": "oh-norm-tags",
+      "name": "Normalize Workspace Tags",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1430,
+        -40
+      ],
+      "parameters": {
+        "jsCode": "const tags = $input.all().map((i) => i.json).filter((t) => t && t.id);\nreturn tags.length ? tags.map((t) => ({ json: t })) : [{ json: { id: null, name: '__none__' } }];"
+      }
+    }
+  ],
+  "connections": {
+    "OverHours Schedule": {
+      "main": [
+        [
+          {
+            "node": "Get Current Timer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Current Timer": {
+      "main": [
+        [
+          {
+            "node": "Prepare Split Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Split Context": {
+      "main": [
+        [
+          {
+            "node": "Is Work Candidate?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Work Candidate?": {
+      "main": [
+        [
+          {
+            "node": "Fetch Day Entries",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Fetch Day Entries": {
+      "main": [
+        [
+          {
+            "node": "Normalize Day Entries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Day Entries": {
+      "main": [
+        [
+          {
+            "node": "Fetch Workspace Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Workspace Tags": {
+      "main": [
+        [
+          {
+            "node": "Normalize Workspace Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure OH Tag": {
+      "main": [
+        [
+          {
+            "node": "Need Create OH Tag?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Need Create OH Tag?": {
+      "main": [
+        [
+          {
+            "node": "Create OH Tag",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Decide Split",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create OH Tag": {
+      "main": [
+        [
+          {
+            "node": "Decide Split",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Split": {
+      "main": [
+        [
+          {
+            "node": "Need Split?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Need Split?": {
+      "main": [
+        [
+          {
+            "node": "Stop Work Timer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Stop Work Timer": {
+      "main": [
+        [
+          {
+            "node": "Start OverHours Timer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Workspace Tags": {
+      "main": [
+        [
+          {
+            "node": "Ensure OH Tag",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": true,
+  "id": "nwHBjRYInriH2HAk"
+}
