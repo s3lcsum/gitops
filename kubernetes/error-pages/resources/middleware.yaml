@@ -1,0 +1,18 @@
+# Entrypoint ref: error-pages-error-pages@kubernetescrd
+# (namespace-name@kubernetescrd). Wired on Traefik websecure in values.yaml.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: error-pages
+  namespace: error-pages
+  labels:
+    app.kubernetes.io/name: error-pages
+    app.kubernetes.io/part-of: error-pages
+spec:
+  errors:
+    status:
+      - "400-599"
+    service:
+      name: error-pages
+      port: 8080
+    query: /{status}.html
