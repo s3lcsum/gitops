@@ -1,0 +1,62 @@
+# ApplicationSet chart pin.
+repoURL: https://openbao.github.io/openbao-helm
+chart: openbao
+version: 0.30.3
+
+# Overrides for openbao/openbao 0.30.3 (appVersion v2.7.1).
+# Single-node Raft. Traefik terminates TLS. Injector/CSI off (ESO-only consumers).
+global:
+  enabled: true
+  tlsDisable: true
+
+injector:
+  enabled: false
+
+csi:
+  enabled: false
+
+server:
+  enabled: true
+  priorityClassName: homelab-critical
+  extraLabels:
+    app.kubernetes.io/part-of: openbao
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+  # Replace chart default podAntiAffinity with control-plane pin (single-node lake).
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  dataStorage:
+    enabled: true
+    size: 10Gi
+    storageClass: local-path
+  authDelegator:
+    enabled: true
+  standalone:
+    enabled: false
+  ha:
+    enabled: true
+    replicas: 1
+    raft:
+      enabled: true
+      setNodeId: true
+  service:
+    enabled: true
+    active:
+      enabled: true
+
+ui:
+  enabled: true
+  serviceType: ClusterIP

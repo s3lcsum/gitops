@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - resources/ingressroute.yaml
+  - resources/externalsecret-unseal.yaml
+  - resources/externalsecret-oidc.yaml
+  - resources/unseal-cronjob.yaml
+  - resources/eso-openbao-sa.yaml
+  - resources/clustersecretstore.yaml
+  - resources/bootstrap-notes.yaml

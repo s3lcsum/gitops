@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: eso-openbao
+  namespace: external-secrets
+  labels:
+    app.kubernetes.io/name: eso-openbao
+    app.kubernetes.io/part-of: openbao

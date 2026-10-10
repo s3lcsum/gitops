@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openbao-bootstrap
+  namespace: openbao
+  labels:
+    app.kubernetes.io/name: openbao-bootstrap
+    app.kubernetes.io/part-of: openbao
+data:
+  RUNBOOK.md: |
+    # OpenBao bootstrap
+
+    ## 1. Init (once)
+    kubectl exec -n openbao openbao-0 -- bao operator init -key-shares=5 -key-threshold=3
+
+    Store unseal-key-1..3 (any 3 of 5 shares) and root token in 1Password Servers/openbao.
+    Force-sync:
+      kubectl annotate externalsecret openbao-unseal -n openbao force-sync=$(date +%s) --overwrite
+
+    ## 2. KV + Kubernetes auth
+    kubectl exec -n openbao openbao-0 -- bao login
+    kubectl exec -n openbao openbao-0 -- bao secrets enable -path=secret kv-v2
+    kubectl exec -n openbao openbao-0 -- bao auth enable kubernetes
+
+    kubectl exec -n openbao openbao-0 -- sh -c 'bao write auth/kubernetes/config \
+      kubernetes_host=https://kubernetes.default.svc:443 \
+      kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
+      token_reviewer_jwt=@/var/run/secrets/kubernetes.io/serviceaccount/token'
+
+    kubectl exec -n openbao openbao-0 -- bao policy write eso - <<'EOF'
+    path "secret/data/*" {
+      capabilities = ["read", "list"]
+    }
+    path "secret/metadata/*" {
+      capabilities = ["read", "list"]
+    }
+    EOF
+
+    kubectl exec -n openbao openbao-0 -- bao write auth/kubernetes/role/eso-openbao \
+      bound_service_account_names=eso-openbao \
+      bound_service_account_namespaces=external-secrets \
+      policies=eso \
+      ttl=1h
+
+    ## 3. OIDC (Authentik)
+    # Issuer: https://auth.dominiksiejak.pl/application/o/openbao/
+    # Client id/secret from tofu output → 1Password → Secret openbao-oidc
+
+    CLIENT_ID="$(kubectl get secret openbao-oidc -n openbao -o jsonpath='{.data.client-id}' | base64 -d)"
+    CLIENT_SECRET="$(kubectl get secret openbao-oidc -n openbao -o jsonpath='{.data.client-secret}' | base64 -d)"
+
+    kubectl exec -n openbao openbao-0 -- bao auth enable oidc
+    kubectl exec -n openbao openbao-0 -- bao write auth/oidc/config \
+      oidc_discovery_url="https://auth.dominiksiejak.pl/application/o/openbao/" \
+      oidc_client_id="$CLIENT_ID" \
+      oidc_client_secret="$CLIENT_SECRET" \
+      default_role="admin"
+
+    kubectl exec -n openbao openbao-0 -- bao policy write admin - <<'EOF'
+    path "*" {
+      capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+    }
+    EOF
+
+    kubectl exec -n openbao openbao-0 -- bao write auth/oidc/role/admin \
+      bound_audiences="$CLIENT_ID" \
+      allowed_redirect_uris="https://openbao.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback" \
+      user_claim="sub" \
+      groups_claim="groups" \
+      policies="admin" \
+      oidc_scopes="openid,profile,email"

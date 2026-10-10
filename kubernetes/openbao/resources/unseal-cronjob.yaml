@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: openbao-unseal
+  namespace: openbao
+  labels:
+    app.kubernetes.io/name: openbao-unseal
+    app.kubernetes.io/part-of: openbao
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: openbao-unseal
+  namespace: openbao
+  labels:
+    app.kubernetes.io/name: openbao-unseal
+    app.kubernetes.io/part-of: openbao
+spec:
+  schedule: "*/2 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: openbao-unseal
+            app.kubernetes.io/part-of: openbao
+        spec:
+          serviceAccountName: openbao-unseal
+          restartPolicy: OnFailure
+          priorityClassName: homelab-low
+          tolerations:
+            - key: node-role.kubernetes.io/control-plane
+              operator: Exists
+              effect: NoSchedule
+          containers:
+            - name: unseal
+              image: quay.io/openbao/openbao:2.7.1
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: BAO_ADDR
+                  value: http://openbao.openbao.svc:8200
+                - name: UNSEAL_KEY_1
+                  valueFrom:
+                    secretKeyRef:
+                      name: openbao-unseal
+                      key: unseal-key-1
+                      optional: true
+                - name: UNSEAL_KEY_2
+                  valueFrom:
+                    secretKeyRef:
+                      name: openbao-unseal
+                      key: unseal-key-2
+                      optional: true
+                - name: UNSEAL_KEY_3
+                  valueFrom:
+                    secretKeyRef:
+                      name: openbao-unseal
+                      key: unseal-key-3
+                      optional: true
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  status_json="$(bao status -format=json 2>/dev/null || true)"
+                  if [ -z "$status_json" ]; then
+                    echo "openbao not ready; skip"
+                    exit 0
+                  fi
+                  case "$status_json" in
+                    *"\"initialized\":false"*|*"\"initialized\": false"*)
+                      echo "not initialized; skip"
+                      exit 0
+                      ;;
+                  esac
+                  case "$status_json" in
+                    *"\"sealed\":false"*|*"\"sealed\": false"*)
+                      echo "already unsealed"
+                      exit 0
+                      ;;
+                  esac
+                  if [ -z "${UNSEAL_KEY_1:-}" ] || [ -z "${UNSEAL_KEY_2:-}" ] || [ -z "${UNSEAL_KEY_3:-}" ]; then
+                    echo "sealed but unseal keys missing; waiting for ExternalSecret"
+                    exit 0
+                  fi
+                  bao operator unseal "$UNSEAL_KEY_1"
+                  bao operator unseal "$UNSEAL_KEY_2"
+                  bao operator unseal "$UNSEAL_KEY_3"
+                  bao status
