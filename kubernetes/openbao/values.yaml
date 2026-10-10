@@ -44,6 +44,11 @@ server:
     storageClass: local-path
   authDelegator:
     enabled: true
+  # Treat sealed/uninitialized as Ready so Argo sync waves and Services work
+  # before the one-shot init + Shamir unseal CronJob finish.
+  readinessProbe:
+    enabled: true
+    path: /v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204
   standalone:
     enabled: false
   ha:
