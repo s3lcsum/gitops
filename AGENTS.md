@@ -30,7 +30,7 @@ Root `Makefile` only has `help`. Do not add `serve` / `build` / `lint` / `test` 
 - Argo CD self Application (`resources/application.yaml`) ignores `argocd-secret` `.data` because ESO merges the OIDC client secret. Empty `group:` on that ignore is dropped by the API and never converges — leave group unset.
 - Bootstrap (only when Argo is down): `make -C kubernetes/argocd bootstrap`. Context `k8s@lake`, chart `argo-cd` `10.9.6`.
 
-Kustomize-only (no `values.yaml`): adguard, authentik, calibre, cloudflared, coredns, external-dns, gitea, grafana-synthetic-agent, hass, homepage, mediabox, monitoring, n8n, netbox, unifi, watchyourlan, wealthfolio. Gatus is gone. Do not add `application-gatus.yaml` back unless `kubernetes/gatus` exists.
+Kustomize-only (no `values.yaml`): adguard, authentik, calibre, cloudflared, coredns, error-pages, external-dns, gitea, grafana-synthetic-agent, hass, homepage, mediabox, monitoring, n8n, netbox, unifi, watchyourlan, wealthfolio. Gatus is gone. Do not add `application-gatus.yaml` back unless `kubernetes/gatus` exists.
 
 ## Scheduling and edge
 

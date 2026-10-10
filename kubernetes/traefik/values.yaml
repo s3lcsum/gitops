@@ -78,6 +78,9 @@ ports:
     http:
       tls:
         enabled: true
+      # Global 4xx/5xx bodies → error-pages (ns-name@kubernetescrd).
+      middlewares:
+        - error-pages-error-pages@kubernetescrd
     forwardedHeaders:
       trustedIPs:
         - 10.244.0.0/16
