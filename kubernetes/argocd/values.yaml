@@ -88,6 +88,9 @@ configs:
       - http://localhost:8080
       - http://localhost:8085
     admin.enabled: false
+    # Local API account for Cursor/OpenCode argocd-mcp (password lives in
+    # argocd-secret accounts.cursor-mcp.password — not in git).
+    accounts.cursor-mcp: apiKey, login
     # Built-in ExternalSecret health is Degraded/Progressing when 1Password
     # has no item. Argo then fails the sync hook and retries forever.
     # ESO still retries on its own. A missing item must not block the app.
@@ -109,6 +112,7 @@ configs:
   rbac:
     policy.csv: |
       g, admins, role:admin
+      g, cursor-mcp, role:admin
   params:
     # Traefik-k8s terminates TLS. Server stays HTTP.
     server.insecure: true
