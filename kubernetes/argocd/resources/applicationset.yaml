@@ -103,13 +103,16 @@ spec:
           kind: MutatingWebhookConfiguration
           jqPathExpressions:
             - .webhooks[]?.clientConfig.caBundle
-            # Kyverno renames mutate.kyverno.svc-fail → -ignore while up.
-            - .webhooks[]?.name
+            # Do NOT ignore .webhooks[]?.name — RespectIgnoreDifferences strips
+            # the strategic-merge key and ComparisonError's with
+            # "does not contain declared merge key: name".
+            # Kyverno Fail↔Ignore churn while the controller is up.
+            - .webhooks[]?.failurePolicy
         - group: admissionregistration.k8s.io
           kind: ValidatingWebhookConfiguration
           jqPathExpressions:
             - .webhooks[]?.clientConfig.caBundle
-            - .webhooks[]?.name
+            - .webhooks[]?.failurePolicy
         # Kyverno drops controller-gen annotations and sets conversion.strategy
         # on policies.kyverno.io CRDs after install. Status already ignored.
         - group: apiextensions.k8s.io
@@ -120,14 +123,11 @@ spec:
         automated:
           prune: true
           selfHeal: true
-        # SSA off. Helm charts (cert-manager, kyverno, CNPG, external-secrets)
-        # omit webhook .name. Argo v3.5.3 auto-uses structured-merge diff when
-        # ServerSideApply is on, before ignoreDifferences → ComparisonError:
-        # "does not contain declared merge key: name"
-        # "duplicate entries for key [name=""]".
-        # ServerSideDiff alone was not enough; SSA must stay off too.
+        # ServerSideDiff stays off — SSD dry-run hits the same webhook merge
+        # bugs on some chart versions. SSA apply is fine.
         syncOptions:
           - CreateNamespace=true
+          - ServerSideApply=true
           - RespectIgnoreDifferences=true
   # No kustomization.yaml → directory source would apply values.yaml as a manifest.
   # Drop that source. Apps that have the file keep the template's third source.
@@ -180,12 +180,12 @@ spec:
           kind: MutatingWebhookConfiguration
           jqPathExpressions:
             - .webhooks[]?.clientConfig.caBundle
-            - .webhooks[]?.name
+            - .webhooks[]?.failurePolicy
         - group: admissionregistration.k8s.io
           kind: ValidatingWebhookConfiguration
           jqPathExpressions:
             - .webhooks[]?.clientConfig.caBundle
-            - .webhooks[]?.name
+            - .webhooks[]?.failurePolicy
         - group: apiextensions.k8s.io
           kind: CustomResourceDefinition
           jqPathExpressions:

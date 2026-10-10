@@ -12,7 +12,9 @@ metadata:
   annotations:
     admissions.enforcer/disabled: "true"
 webhooks:
-  - name: mutate.kyverno.svc-fail
+  # Names match live while admission controller is up (svc-ignore).
+  # Ignoring .webhooks[]?.name breaks Argo merge-key diffs — keep names aligned.
+  - name: mutate.kyverno.svc-ignore
     failurePolicy: Ignore
     admissionReviewVersions:
       - v1
@@ -24,7 +26,7 @@ webhooks:
       service:
         name: kyverno-svc
         namespace: kyverno
-        path: /mutate/fail
+        path: /mutate/ignore
         port: 443
     rules:
       - apiGroups: ["*"]
@@ -42,7 +44,7 @@ metadata:
   annotations:
     admissions.enforcer/disabled: "true"
 webhooks:
-  - name: validate.kyverno.svc-fail
+  - name: validate.kyverno.svc-ignore
     failurePolicy: Ignore
     admissionReviewVersions:
       - v1
@@ -53,7 +55,7 @@ webhooks:
       service:
         name: kyverno-svc
         namespace: kyverno
-        path: /validate/fail
+        path: /validate/ignore
         port: 443
     rules:
       - apiGroups: ["*"]
@@ -61,7 +63,7 @@ webhooks:
         operations: ["CREATE", "UPDATE", "DELETE", "CONNECT"]
         resources: ["*/*"]
         scope: "*"
-  - name: vpol.validate.kyverno.svc-fail
+  - name: vpol.validate.kyverno.svc-ignore
     failurePolicy: Ignore
     admissionReviewVersions:
       - v1
