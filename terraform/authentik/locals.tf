@@ -28,6 +28,14 @@ locals {
       icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/n8n.svg"
       redirect_uris = ["https://n8n.dominiksiejak.pl/rest/oauth2-credential/callback"]
     }
+    openbao = {
+      name       = "OpenBao"
+      launch_url = "https://openbao.dominiksiejak.pl"
+      icon_url   = "https://raw.githubusercontent.com/openbao/artwork/refs/heads/main/color/openbao-color.svg"
+      redirect_uris = [
+        "https://openbao.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
+      ]
+    }
     seerr = {
       name          = "Seerr"
       launch_url    = "https://seerr.dominiksiejak.pl/sso/OID/start/authentik"

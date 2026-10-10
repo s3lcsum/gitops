@@ -1,5 +1,9 @@
 # Changelog
 
+### 10.10.2026
+
+**OpenBao Phase 1.** `kubernetes/openbao` deploys OpenBao (Raft×1) at `openbao.dominiksiejak.pl` with Authentik OIDC and Shamir unseal keys from 1Password. `ClusterSecretStore/openbao` is ready for later cutover; live ExternalSecrets still use `onepassword`.
+
 ### 29.09.2026
 
 **Left Portainer. The lab is Kubernetes.**

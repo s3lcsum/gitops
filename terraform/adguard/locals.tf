@@ -28,6 +28,7 @@ locals {
     "n8n.dominiksiejak.pl"              = "192.168.89.252"
     "nas.dominiksiejak.pl"              = "192.168.89.252"
     "netbox.dominiksiejak.pl"           = "192.168.89.252"
+    "openbao.dominiksiejak.pl"          = "192.168.89.252"
     "portainer.dominiksiejak.pl"        = "192.168.89.253"
     "profilarr.dominiksiejak.pl"        = "192.168.89.252"
     "prowlarr.dominiksiejak.pl"         = "192.168.89.252"
