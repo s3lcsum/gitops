@@ -20,6 +20,15 @@ data:
            ttl 30
         }
         prometheus :9153
+        # Short LAN hostnames for in-cluster scrapers (instance=vibe:65002).
+        # FQDNs still go to AdGuard via forward.
+        hosts {
+           192.168.89.200 vibe
+           192.168.89.201 vibe-k8s
+           192.168.89.252 k8s
+           192.168.89.254 lake
+           fallthrough
+        }
         # Prefer AdGuard (LAN rewrites); then RouterOS DNS; then Cloudflare.
         forward . 192.168.89.252 192.168.89.1 1.1.1.1 {
            policy sequential

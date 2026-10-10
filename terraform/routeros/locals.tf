@@ -11,10 +11,13 @@ locals {
   }
 
   dns = {
-    domain = "home"
+    # DHCP option 15 — clients append this for short names (vibe → vibe.dominiksiejak.pl).
+    # Prefer AdGuard (LAN rewrites); RouterOS as fallback. RouterOS recursive upstream is
+    # set separately on routeros_dns.main (1.1.1.1 / 9.9.9.9).
+    domain = "dominiksiejak.pl"
     servers = [
-      "1.1.1.1",
-      "9.9.9.9",
+      "192.168.89.252",
+      "192.168.89.1",
     ]
   }
 

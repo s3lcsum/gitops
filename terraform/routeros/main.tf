@@ -37,9 +37,10 @@ resource "routeros_dns" "main" {
   max_udp_packet_size         = 4096
   query_server_timeout        = "2s"
   query_total_timeout         = "10s"
-  servers                     = local.dns.servers
-  verify_doh_cert             = false
-  vrf                         = "main"
+  # Upstream for RouterOS recursive lookups (AdGuard sits in front for LAN clients).
+  servers         = ["1.1.1.1", "9.9.9.9"]
+  verify_doh_cert = false
+  vrf             = "main"
 }
 
 resource "routeros_system_ntp_client" "test" {

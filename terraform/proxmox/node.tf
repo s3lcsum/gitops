@@ -1,8 +1,8 @@
 resource "proxmox_virtual_environment_dns" "lake" {
   node_name = local.node_name
-  domain    = "home"
+  domain    = "dominiksiejak.pl"
   servers = [
-    "192.168.89.253",
+    "192.168.89.252",
     "192.168.89.1",
   ]
 }

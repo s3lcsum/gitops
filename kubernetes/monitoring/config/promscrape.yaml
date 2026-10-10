@@ -7,45 +7,32 @@ scrape_configs:
       - targets:
           - victoria-metrics.monitoring.svc:8428
 
-  - job_name: postgres-exporter
-    static_configs:
-      - targets:
-          - postgres-exporter:9187
-
   # hostNetwork DaemonSet. Metrics listen on every node :9100.
   # Do not scrape traefik:9100 — chart disables the main Service (service.enabled: false).
+  # Scrape by IP (cluster DNS search breaks short names). Relabel instance for Grafana.
   - job_name: traefik
     static_configs:
       - targets:
           - 192.168.89.252:9100
           - 192.168.89.201:9100
-
-  # WatchYourLAN is hostNetwork on the lake node.
-  - job_name: "watchyourlan"
-    static_configs:
-      - targets:
-          - "192.168.89.252:8840"
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: 192\.168\.89\.252:9100
+        target_label: instance
+        replacement: k8s:9100
+      - source_labels: [__address__]
+        regex: 192\.168\.89\.201:9100
+        target_label: instance
+        replacement: vibe-k8s:9100
 
   - job_name: "authentik"
     static_configs:
       - targets:
           - "192.168.89.252:9300"
     metrics_path: /metrics
-
-  - job_name: "proxmox"
-    static_configs:
-      - targets:
-          - "pve-exporter:9221"
-    metrics_path: /pve
-    params:
-      module: [default]
-      target: ["proxmox.dominiksiejak.pl"]
-
-  - job_name: "lake"
-    static_configs:
-      - targets:
-          - "192.168.89.254:9100"
-    # Proxmox VE host (Debian 13 trixie)
+    relabel_configs:
+      - target_label: instance
+        replacement: k8s:9300
 
   - job_name: "vibe"
     static_configs:
@@ -53,6 +40,9 @@ scrape_configs:
           - "192.168.89.200:9100"
     # MacBook Pro dev machine (en5 USB Ethernet, static IP)
     # Wi-Fi fallback: 192.168.89.130:9100 (DHCP, may change)
+    relabel_configs:
+      - target_label: instance
+        replacement: vibe:9100
 
   - job_name: "vibe-ismc"
     static_configs:
@@ -60,6 +50,9 @@ scrape_configs:
           - "192.168.89.200:65002"
     # iSMC + SMART exporter on vibe (LaunchAgent tech.skowronski.ismc-exporter)
     # Feeds dashboard ismc-vibe (temps, fans, power, NVMe SMART).
+    relabel_configs:
+      - target_label: instance
+        replacement: vibe:65002
 
   # Kubernetes Views dashboards expect label cluster on these series.
   - job_name: kube-state-metrics
@@ -91,6 +84,11 @@ scrape_configs:
         target_label: node
       - target_label: cluster
         replacement: homelab
+    # Keep CPU, working-set RAM, and volume/fs usage (drop the rest of cAdvisor).
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: container_cpu_usage_seconds_total|container_memory_working_set_bytes|container_fs_usage_bytes|container_fs_limit_bytes
+        action: keep
 
   - job_name: node-exporter
     scrape_interval: 30s
@@ -128,50 +126,20 @@ scrape_configs:
       - targets:
           - n8n.n8n.svc:5678
 
-  - job_name: blackbox-netbox
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
+  # WatchYourLAN hostNetwork on lake (:8840). PROMETHEUS_ENABLE=true → /metrics.
+  - job_name: watchyourlan
+    scrape_interval: 60s
+    metrics_path: /metrics
     static_configs:
       - targets:
-          - "https://netbox.dominiksiejak.pl"
+          - "192.168.89.252:8840"
     relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-auth
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://auth.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-proxmox
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://proxmox.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
+      - target_label: instance
+        replacement: k8s:8840
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: watch_your_lan_up
+        action: keep
 
   # MKTXP talks to RouterOS API at 192.168.89.1:8728. Not router.dominiksiejak.pl.
   - job_name: mktxp
@@ -180,148 +148,39 @@ scrape_configs:
       - targets:
           - mktxp.monitoring.svc:49090
 
-  - job_name: blackbox-router
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
+  # Synology NAS via snmp-exporter (disk / hrStorage / storageIO).
+  # Walk is large — keep scrape_timeout under interval.
+  - job_name: synology
+    scrape_interval: 120s
+    scrape_timeout: 90s
     static_configs:
       - targets:
-          - "https://router.dominiksiejak.pl"
+          - "192.168.89.240"
+    params:
+      module: [synology]
+      auth: [public]
+    metrics_path: /snmp
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
+        replacement: snmp-exporter.monitoring.svc:9116
+    # Disk usage + health; drop high-churn SMART attr dumps if present.
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: hrStorage.+|disk(Status|Temperature|Name|Model|Type|HealthStatus|BadSector|RemainLife)|storageIO.+
+        action: keep
 
-  - job_name: blackbox-nas
+  # Critical HTTP probes only. Media stack → scraparr; WAN/login → Synthetic Monitoring.
+  - job_name: blackbox-auth
     metrics_path: /probe
     params:
       module: [http_2xx]
     static_configs:
       - targets:
-          - "https://nas.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-jellyfin
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://jellyfin.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-seerr
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://seerr.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-radarr
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://radarr.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-sonarr
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://sonarr.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-qbittorrent
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://qbittorrent.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-sabnzbd
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://sabnzbd.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-n8n
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://n8n.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-git
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://git.dominiksiejak.pl"
+          - "https://auth.dominiksiejak.pl"
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -345,13 +204,13 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter.monitoring.svc:9115
 
-  - job_name: blackbox-zigbee2mqtt-wifi
+  - job_name: blackbox-traefik
     metrics_path: /probe
     params:
       module: [http_2xx]
     static_configs:
       - targets:
-          - "https://zigbee2mqtt-wifi.dominiksiejak.pl"
+          - "https://traefik.dominiksiejak.pl"
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -360,13 +219,13 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter.monitoring.svc:9115
 
-  - job_name: blackbox-zigbee2mqtt-usb
+  - job_name: blackbox-nas
     metrics_path: /probe
     params:
       module: [http_2xx]
     static_configs:
       - targets:
-          - "https://zigbee2mqtt-usb.dominiksiejak.pl"
+          - "https://nas.dominiksiejak.pl"
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -375,58 +234,13 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter.monitoring.svc:9115
 
-  - job_name: blackbox-hass-timemachine
+  - job_name: blackbox-router
     metrics_path: /probe
     params:
       module: [http_2xx]
     static_configs:
       - targets:
-          - "https://hass-timemachine.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-metrics
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://metrics.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-lan
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://lan.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-zigbee-bridge
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://zigbee-bridge.dominiksiejak.pl"
+          - "https://router.dominiksiejak.pl"
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -450,178 +264,13 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter.monitoring.svc:9115
 
-  - job_name: blackbox-bazarr
+  - job_name: blackbox-jellyfin
     metrics_path: /probe
     params:
       module: [http_2xx]
     static_configs:
       - targets:
-          - "https://bazarr.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-calibre-api
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://calibre-api.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-calibre-gui
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://calibre-gui.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-homepage
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://homepage.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-profilarr
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://profilarr.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-traefik
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://traefik.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: synology
-    static_configs:
-      - targets:
-          - "192.168.89.240"
-    params:
-      module: [synology]
-      auth: [public]
-    metrics_path: /snmp
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: snmp-exporter.monitoring.svc:9116
-  - job_name: blackbox-wealthfolio
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://wealthfolio.dominiksiejak.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-google
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://google.com"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-inpost
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://inpost.pl"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-easypack24
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://easypack24.net"
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter.monitoring.svc:9115
-
-  - job_name: blackbox-usertesting
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-          - "https://www.usertesting.com"
+          - "https://jellyfin.dominiksiejak.pl"
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

@@ -33,8 +33,8 @@ resource "proxmox_virtual_environment_container" "k8s" {
     hostname = "k8s"
 
     dns {
-      domain  = "home"
-      servers = ["192.168.89.253", "192.168.89.1"]
+      domain  = "dominiksiejak.pl"
+      servers = ["192.168.89.252", "192.168.89.1"]
     }
 
     ip_config {
