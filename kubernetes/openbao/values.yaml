@@ -17,6 +17,8 @@ csi:
 
 server:
   enabled: true
+  # Chart default OnDelete leaves sealed pods stuck on old probes/config.
+  updateStrategyType: RollingUpdate
   priorityClassName: homelab-critical
   extraLabels:
     app.kubernetes.io/part-of: openbao
