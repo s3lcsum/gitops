@@ -53,7 +53,7 @@ spec:
             - --no-collector.softnet
             - --no-collector.sockstat
             - --no-collector.netstat
-            - --no-collector.cooling
+            - --no-collector.thermal_zone
             - --no-collector.edac
             - --no-collector.dmi
             - --no-collector.selinux
