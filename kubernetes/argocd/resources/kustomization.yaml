@@ -2,26 +2,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - application.yaml
-  - application-adguard.yaml
-  - application-authentik.yaml
-  - application-calibre.yaml
-  - application-cloudflared.yaml
-  - application-error-pages.yaml
-  - application-gitea.yaml
-  - application-grafana-synthetic-agent.yaml
-  - application-mediabox.yaml
-  - application-monitoring.yaml
-  - application-n8n.yaml
-  - application-netbox.yaml
-  - application-unifi.yaml
-  - application-watchyourlan.yaml
-  - application-coredns.yaml
-  - application-external-dns.yaml
-  - application-hass.yaml
-  - application-homepage.yaml
-  - application-wealthfolio.yaml
   - application-sure.yaml
-  - applicationset.yaml
+  - applicationset-networking.yaml
+  - applicationset-platform.yaml
+  - applicationset-workloads.yaml
   - externalsecret-oidc.yaml
   - externalsecret-repo-creds.yaml
   - ingressroute.yaml

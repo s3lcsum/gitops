@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: kubernetes
+  name: kubernetes-networking
   namespace: argocd
   labels:
-    app.kubernetes.io/name: kubernetes
+    app.kubernetes.io/name: kubernetes-networking
     app.kubernetes.io/part-of: argocd
 spec:
   goTemplate: true
-  # Drop child Applications when their values.yaml leaves the repo.
+  # Drop child Applications when their discoverable files leave the repo.
   syncPolicy:
     applicationsSync: sync
   generators:
@@ -22,47 +22,37 @@ spec:
               repoURL: https://github.com/s3lcsum/gitops.git
               revision: main
               files:
-                - path: kubernetes/*/values.yaml
-                - path: kubernetes/argocd/values.yaml
-                  exclude: true
+                - path: kubernetes/networking/*/values.yaml
               values:
-                appName: '{{index .path.segments 1}}'
+                appName: '{{index .path.segments 2}}'
           - git:
               repoURL: https://github.com/s3lcsum/gitops.git
               revision: main
               files:
-                - path: kubernetes/*/kustomization.yaml
+                - path: kubernetes/networking/*/kustomization.yaml
               values:
-                appName: '{{index .path.segments 1}}'
+                appName: '{{index .path.segments 2}}'
+    # Kustomize-only apps (no values.yaml). Exclude Helm apps that also
+    # have kustomization.yaml so Application names stay unique.
+    - git:
+        repoURL: https://github.com/s3lcsum/gitops.git
+        revision: main
+        files:
+          - path: kubernetes/networking/*/kustomization.yaml
+          - path: kubernetes/networking/traefik/kustomization.yaml
+            exclude: true
   template:
     metadata:
-      name: "{{index .path.segments 1}}"
+      name: "{{index .path.segments 2}}"
       namespace: argocd
       labels:
-        app.kubernetes.io/name: "{{index .path.segments 1}}"
-        app.kubernetes.io/part-of: kubernetes
+        app.kubernetes.io/name: "{{index .path.segments 2}}"
+        app.kubernetes.io/part-of: networking
     spec:
       project: default
-      sources:
-        - repoURL: "{{.repoURL}}"
-          chart: "{{.chart}}"
-          targetRevision: "{{.version}}"
-          helm:
-            releaseName: "{{index .path.segments 1}}"
-            # values.yaml carries repoURL/chart/version for this generator.
-            # cert-manager's schema rejects those keys.
-            skipSchemaValidation: true
-            valueFiles:
-              - "$values/kubernetes/{{index .path.segments 1}}/values.yaml"
-        - repoURL: https://github.com/s3lcsum/gitops.git
-          targetRevision: main
-          ref: values
-        - repoURL: https://github.com/s3lcsum/gitops.git
-          targetRevision: main
-          path: "kubernetes/{{index .path.segments 1}}"
       destination:
         server: https://kubernetes.default.svc
-        namespace: "{{index .path.segments 1}}"
+        namespace: "{{index .path.segments 2}}"
       # Flannel cannot emit pod labels. Kyverno adds them on apply.
       # Ignore the injected keys so selfHeal does not strip them and roll the pods.
       ignoreDifferences:
@@ -119,6 +109,31 @@ spec:
           kind: CustomResourceDefinition
           jqPathExpressions:
             - .spec.conversion.strategy
+  # Helm apps get multi-source + no ServerSideDiff.
+  # Kustomize-only apps get single source + ServerSideDiff.
+  # Helm without kustomization.yaml drops the directory source.
+  templatePatch: |
+    {{- if .repoURL }}
+    spec:
+      sources:
+        - repoURL: {{ .repoURL | quote }}
+          chart: {{ .chart | quote }}
+          targetRevision: {{ .version | quote }}
+          helm:
+            releaseName: {{ index .path.segments 2 | quote }}
+            # values.yaml carries repoURL/chart/version for this generator.
+            # cert-manager's schema rejects those keys.
+            skipSchemaValidation: true
+            valueFiles:
+              - {{ printf "$values/kubernetes/%s/%s/values.yaml" (index .path.segments 1) (index .path.segments 2) | quote }}
+        - repoURL: https://github.com/s3lcsum/gitops.git
+          targetRevision: main
+          ref: values
+        {{- if eq (printf "%v" (index . "kind")) "Kustomization" }}
+        - repoURL: https://github.com/s3lcsum/gitops.git
+          targetRevision: main
+          path: {{ printf "kubernetes/%s/%s" (index .path.segments 1) (index .path.segments 2) | quote }}
+        {{- end }}
       syncPolicy:
         automated:
           prune: true
@@ -129,67 +144,18 @@ spec:
           - CreateNamespace=true
           - ServerSideApply=true
           - RespectIgnoreDifferences=true
-  # No kustomization.yaml → directory source would apply values.yaml as a manifest.
-  # Drop that source. Apps that have the file keep the template's third source.
-  templatePatch: |
-    {{- if ne (printf "%v" (index . "kind")) "Kustomization" }}
-    spec:
-      sources:
-        - repoURL: {{ .repoURL | quote }}
-          chart: {{ .chart | quote }}
-          targetRevision: {{ .version | quote }}
-          helm:
-            releaseName: {{ index .path.segments 1 | quote }}
-            skipSchemaValidation: true
-            valueFiles:
-              - {{ printf "$values/kubernetes/%s/values.yaml" (index .path.segments 1) | quote }}
-        - repoURL: https://github.com/s3lcsum/gitops.git
-          targetRevision: main
-          ref: values
-      ignoreDifferences:
-        - group: apps
-          kind: DaemonSet
-          name: kube-flannel-ds
-          namespace: flannel
-          jsonPointers:
-            - /spec/template/metadata/labels/app.kubernetes.io~1name
-            - /spec/template/metadata/labels/app.kubernetes.io~1instance
-            - /spec/template/metadata/labels/app.kubernetes.io~1part-of
-            - /spec/template/metadata/labels/app.kubernetes.io~1managed-by
-        - group: apps
-          kind: DaemonSet
-          jqPathExpressions:
-            - .spec.template.metadata.labels."app.kubernetes.io/name"
-            - .spec.template.metadata.labels."app.kubernetes.io/instance"
-            - .spec.template.metadata.labels."app.kubernetes.io/part-of"
-            - .spec.template.metadata.labels."app.kubernetes.io/managed-by"
-            # Chart emits `annotations:` with no keys (null). SSA then wipes
-            # deprecated.daemonset.template.generation. Ignore the whole map.
-            - .metadata.annotations
-        - group: discovery.k8s.io
-          kind: EndpointSlice
-          jqPathExpressions:
-            - .endpoints[]?.conditions
-        - group: apiextensions.k8s.io
-          kind: CustomResourceDefinition
-          jqPathExpressions:
-            - .metadata.annotations
-            - .spec.conversion
-            - .status
-        - group: admissionregistration.k8s.io
-          kind: MutatingWebhookConfiguration
-          jqPathExpressions:
-            - .webhooks[]?.clientConfig.caBundle
-            - .webhooks[]?.failurePolicy
-        - group: admissionregistration.k8s.io
-          kind: ValidatingWebhookConfiguration
-          jqPathExpressions:
-            - .webhooks[]?.clientConfig.caBundle
-            - .webhooks[]?.failurePolicy
-        - group: apiextensions.k8s.io
-          kind: CustomResourceDefinition
-          jqPathExpressions:
-            - .spec.conversion.strategy
     {{- else }}
-    {}
+    spec:
+      source:
+        repoURL: https://github.com/s3lcsum/gitops.git
+        targetRevision: main
+        path: {{ printf "kubernetes/%s/%s" (index .path.segments 1) (index .path.segments 2) | quote }}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - ServerSideDiff=true
     {{- end }}

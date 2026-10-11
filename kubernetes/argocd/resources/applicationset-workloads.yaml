@@ -1,0 +1,139 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: kubernetes-workloads
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: kubernetes-workloads
+    app.kubernetes.io/part-of: argocd
+spec:
+  goTemplate: true
+  # Drop child Applications when their discoverable files leave the repo.
+  syncPolicy:
+    applicationsSync: sync
+  generators:
+    # Kustomize-only apps (no values.yaml). Exclude Helm apps that also
+    # have kustomization.yaml so Application names stay unique.
+    - git:
+        repoURL: https://github.com/s3lcsum/gitops.git
+        revision: main
+        files:
+          - path: kubernetes/workloads/*/kustomization.yaml
+  template:
+    metadata:
+      name: "{{index .path.segments 2}}"
+      namespace: argocd
+      labels:
+        app.kubernetes.io/name: "{{index .path.segments 2}}"
+        app.kubernetes.io/part-of: workloads
+    spec:
+      project: default
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{index .path.segments 2}}"
+      # Flannel cannot emit pod labels. Kyverno adds them on apply.
+      # Ignore the injected keys so selfHeal does not strip them and roll the pods.
+      ignoreDifferences:
+        - group: apps
+          kind: DaemonSet
+          name: kube-flannel-ds
+          namespace: flannel
+          jsonPointers:
+            - /spec/template/metadata/labels/app.kubernetes.io~1name
+            - /spec/template/metadata/labels/app.kubernetes.io~1instance
+            - /spec/template/metadata/labels/app.kubernetes.io~1part-of
+            - /spec/template/metadata/labels/app.kubernetes.io~1managed-by
+        # Same injection on every other DaemonSet (Traefik hostNetwork).
+        - group: apps
+          kind: DaemonSet
+          jqPathExpressions:
+            - .spec.template.metadata.labels."app.kubernetes.io/name"
+            - .spec.template.metadata.labels."app.kubernetes.io/instance"
+            - .spec.template.metadata.labels."app.kubernetes.io/part-of"
+            - .spec.template.metadata.labels."app.kubernetes.io/managed-by"
+            # Chart emits `annotations:` with no keys (null). SSA then wipes
+            # deprecated.daemonset.template.generation, which kube-controller
+            # writes and Helm never emits. Key-only ignore does not stop that.
+            - .metadata.annotations
+        # Endpoint controller defaults conditions to {}. Git omits it.
+        - group: discovery.k8s.io
+          kind: EndpointSlice
+          jqPathExpressions:
+            - .endpoints[]?.conditions
+        # Kyverno rewrites its own CRDs and admission webhooks after install.
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          jqPathExpressions:
+            - .metadata.annotations
+            - .spec.conversion
+            - .status
+        - group: admissionregistration.k8s.io
+          kind: MutatingWebhookConfiguration
+          jqPathExpressions:
+            - .webhooks[]?.clientConfig.caBundle
+            # Do NOT ignore .webhooks[]?.name — RespectIgnoreDifferences strips
+            # the strategic-merge key and ComparisonError's with
+            # "does not contain declared merge key: name".
+            # Kyverno Fail↔Ignore churn while the controller is up.
+            - .webhooks[]?.failurePolicy
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          jqPathExpressions:
+            - .webhooks[]?.clientConfig.caBundle
+            - .webhooks[]?.failurePolicy
+        # Kyverno drops controller-gen annotations and sets conversion.strategy
+        # on policies.kyverno.io CRDs after install. Status already ignored.
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          jqPathExpressions:
+            - .spec.conversion.strategy
+  # Helm apps get multi-source + no ServerSideDiff.
+  # Kustomize-only apps get single source + ServerSideDiff.
+  # Helm without kustomization.yaml drops the directory source.
+  templatePatch: |
+    {{- if .repoURL }}
+    spec:
+      sources:
+        - repoURL: {{ .repoURL | quote }}
+          chart: {{ .chart | quote }}
+          targetRevision: {{ .version | quote }}
+          helm:
+            releaseName: {{ index .path.segments 2 | quote }}
+            # values.yaml carries repoURL/chart/version for this generator.
+            # cert-manager's schema rejects those keys.
+            skipSchemaValidation: true
+            valueFiles:
+              - {{ printf "$values/kubernetes/%s/%s/values.yaml" (index .path.segments 1) (index .path.segments 2) | quote }}
+        - repoURL: https://github.com/s3lcsum/gitops.git
+          targetRevision: main
+          ref: values
+        {{- if eq (printf "%v" (index . "kind")) "Kustomization" }}
+        - repoURL: https://github.com/s3lcsum/gitops.git
+          targetRevision: main
+          path: {{ printf "kubernetes/%s/%s" (index .path.segments 1) (index .path.segments 2) | quote }}
+        {{- end }}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        # ServerSideDiff stays off — SSD dry-run hits the same webhook merge
+        # bugs on some chart versions. SSA apply is fine.
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - RespectIgnoreDifferences=true
+    {{- else }}
+    spec:
+      source:
+        repoURL: https://github.com/s3lcsum/gitops.git
+        targetRevision: main
+        path: {{ printf "kubernetes/%s/%s" (index .path.segments 1) (index .path.segments 2) | quote }}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - ServerSideDiff=true
+    {{- end }}

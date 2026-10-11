@@ -50,14 +50,14 @@ Most of the lab runs on a single kubeadm node and is reconciled by Argo CD. Open
 | remote | WireGuard on the router, Tailscale if that path dies | `terraform/routeros/wireguard.tf` |
 | compute | Proxmox VE, LXC | lake-1 (always), edge-1 (mostly off) |
 | kubernetes | kubeadm, Flannel host-gw, Argo CD | `kubernetes/` |
-| edge | Traefik-k8s, CrowdSec, Authentik | `kubernetes/traefik/` |
-| identity | Authentik OAuth / SAML / LDAP | `kubernetes/authentik/` + `terraform/authentik/` |
-| dns | AdGuard Home → RouterOS → 1.1.1.1 | `kubernetes/adguard/` + `terraform/adguard/` |
-| wifi | UniFi U7 Lite, WLANs as code | `kubernetes/unifi/` + `terraform/unifi/` |
+| edge | Traefik-k8s, CrowdSec, Authentik | `kubernetes/networking/traefik/` |
+| identity | Authentik OAuth / SAML / LDAP | `kubernetes/platform/authentik/` + `terraform/authentik/` |
+| dns | AdGuard Home → RouterOS → 1.1.1.1 | `kubernetes/networking/adguard/` + `terraform/adguard/` |
+| wifi | UniFi U7 Lite, WLANs as code | `kubernetes/workloads/unifi/` + `terraform/unifi/` |
 | router | MikroTik hAP ac3 | `terraform/routeros/` |
-| data | CloudNativePG + NAS | `kubernetes/cloudnative-pg/` |
-| secrets | 1Password → External Secrets | `kubernetes/*/resources/externalsecret-*.yaml` |
-| monitoring | VictoriaMetrics, Grafana Cloud | `kubernetes/monitoring/` + `terraform/grafana/` |
+| data | CloudNativePG + NAS | `kubernetes/platform/cloudnative-pg/` |
+| secrets | 1Password → External Secrets | `kubernetes/**/resources/externalsecret-*.yaml` |
+| monitoring | VictoriaMetrics, Grafana Cloud | `kubernetes/platform/monitoring/` + `terraform/grafana/` |
 
 ## 🖥️ hardware
 
