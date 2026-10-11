@@ -93,7 +93,7 @@ spec:
           effect: NoSchedule
       initContainers:
         - name: db-prepare
-          image: ghcr.io/we-promise/sure:stable@sha256:3fa144f747427b1ffd666b80907c0b555db1dde156901ed7a979b420284016ee
+          image: ghcr.io/we-promise/sure:stable@sha256:cd6706f544cd5f9b299a586d719776cf2595b483ea1f1a396137da0d23eafb20
           command: ["bash", "-lc"]
           args:
             - |
@@ -117,7 +117,7 @@ spec:
               value: redis://sure-redis:6379/1
       containers:
         - name: sure
-          image: ghcr.io/we-promise/sure:stable@sha256:3fa144f747427b1ffd666b80907c0b555db1dde156901ed7a979b420284016ee
+          image: ghcr.io/we-promise/sure:stable@sha256:cd6706f544cd5f9b299a586d719776cf2595b483ea1f1a396137da0d23eafb20
           envFrom:
             - secretRef:
                 name: sure
@@ -227,7 +227,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: sure-worker
-          image: ghcr.io/we-promise/sure:stable@sha256:3fa144f747427b1ffd666b80907c0b555db1dde156901ed7a979b420284016ee
+          image: ghcr.io/we-promise/sure:stable@sha256:cd6706f544cd5f9b299a586d719776cf2595b483ea1f1a396137da0d23eafb20
           command: ["bash", "-lc"]
           args:
             - bundle exec sidekiq
