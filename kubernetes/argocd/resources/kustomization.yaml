@@ -20,6 +20,7 @@ resources:
   - application-hass.yaml
   - application-homepage.yaml
   - application-wealthfolio.yaml
+  - application-sure.yaml
   - applicationset.yaml
   - externalsecret-oidc.yaml
   - externalsecret-repo-creds.yaml

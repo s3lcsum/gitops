@@ -58,6 +58,14 @@ locals {
         "https://wealthfolio.dominiksiejak.pl/api/v1/auth/oidc/callback",
       ]
     }
+    sure = {
+      name       = "Sure"
+      launch_url = "https://sure.dominiksiejak.pl"
+      icon_url   = "https://sure.am/favicon.ico"
+      redirect_uris = [
+        "https://sure.dominiksiejak.pl/auth/openid_connect/callback",
+      ]
+    }
     synology = {
       name       = "Synology DSM"
       launch_url = "https://nas.dominiksiejak.pl"
@@ -324,6 +332,7 @@ locals {
     "seerr",
     "n8n",
     "netbox",
+    "sure",
     "synology",
     "victoriametrics",
     "watchyourlan",

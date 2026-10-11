@@ -13,7 +13,7 @@ Deploy self-hosted [Sure](https://sure.am) (OSS personal finance, Rails + Sideki
 | Topic | Choice |
 |-------|--------|
 | Packaging | Kustomize-only (Netbox-shaped), not official Helm chart |
-| Tree | `kubernetes/workloads/sure/` — discovered by `applicationset-workloads` (`kubernetes/workloads/*/kustomization.yaml`) |
+| Tree | `kubernetes/sure/` — Argo Application `application-sure.yaml` (Kustomize-only pattern) (listed in `kubernetes/argocd/resources/kustomization.yaml`) |
 | Host | `sure.dominiksiejak.pl` |
 | Auth class | `native-oidc` (CrowdSec + secure-headers only; no Traefik forward-auth) |
 | IdP | Authentik OIDC via env `OIDC_*`; callback `/auth/openid_connect/callback` |
@@ -46,9 +46,9 @@ Authentik (auth.dominiksiejak.pl)
 
 ## Components
 
-### `kubernetes/workloads/sure/`
+### `kubernetes/sure/`
 
-No separate `application-*.yaml`. Workloads ApplicationSet creates Application `sure` when `kustomization.yaml` exists.
+Application CR: `kubernetes/argocd/resources/application-sure.yaml` (must stay listed in argocd `kustomization.yaml`).
 
 | File | Purpose |
 |------|---------|

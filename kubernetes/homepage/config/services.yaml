@@ -138,6 +138,11 @@
         href: https://wealthfolio.dominiksiejak.pl
         description: Personal finance
 
+    - Sure:
+        icon: https://sure.am/favicon.ico
+        href: https://sure.dominiksiejak.pl
+        description: Personal finance
+
 - Automation:
     - Home Assistant:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant.png

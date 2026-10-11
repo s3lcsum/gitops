@@ -1,0 +1,28 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: sure-user
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  cluster:
+    name: postgres
+  name: sure_user
+  login: true
+  databaseRoleReclaimPolicy: delete
+  passwordSecret:
+    name: sure-user
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: sure
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  name: sure_production
+  owner: sure_user
+  cluster:
+    name: postgres
