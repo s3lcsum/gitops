@@ -3,7 +3,7 @@
 # and must not be deleted:
 #   101: apparmor unconfined, empty cap.drop, cgroup2 devices allow a,
 #        mount.auto proc:rw sys:rw, bind /dev/kmsg and /dev/net/tun
-# CT 100 (portainer, 192.168.89.253) is gone. Do not recreate it.
+# CT 100 (portainer) is gone. Do not recreate it. .253 is QEMU VM 102 (vms.tf).
 
 resource "proxmox_virtual_environment_container" "k8s" {
   node_name = local.node_name
