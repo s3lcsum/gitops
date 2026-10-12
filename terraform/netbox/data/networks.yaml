@@ -55,11 +55,11 @@ ip_addresses:
     status: active
     description: Proxmox LXC CT101 — kubeadm control plane, Traefik/AdGuard/HA hostNetwork
 
-  portainer-retired:
+  k8s-vm:
     address: 192.168.89.253/24
     site: lake
-    status: reserved
-    description: Former Portainer LXC — host down; do not reassign
+    status: active
+    description: Proxmox QEMU VM102 — fresh kubeadm control plane (dual-run beside CT101 .252)
 
   proxmox:
     address: 192.168.89.254/24

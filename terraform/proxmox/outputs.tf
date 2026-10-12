@@ -10,3 +10,12 @@ output "containers" {
     }
   }
 }
+
+output "vms" {
+  value = {
+    k8s = {
+      vm_id = proxmox_virtual_environment_vm.k8s.vm_id
+      ipv4  = "192.168.89.253/24"
+    }
+  }
+}

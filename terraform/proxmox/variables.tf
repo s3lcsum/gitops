@@ -45,3 +45,8 @@ variable "proxmox_openid_issuer_url" {
   type        = string
   default     = "https://auth.dominiksiejak.pl/application/o/proxmox/"
 }
+
+variable "k8s_vm_ssh_public_keys" {
+  description = "SSH public keys for cloud-init on the k8s QEMU guest (debian user)"
+  type        = list(string)
+}
