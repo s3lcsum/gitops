@@ -78,6 +78,7 @@ terraform/routeros/generated/
 
 # MCP config with live API tokens
 .mcp.json
+.cursor/mcp.json
 
 # OpenCode config with embedded secrets (tokens inline for MCPs)
 .opencode/opencode.json
