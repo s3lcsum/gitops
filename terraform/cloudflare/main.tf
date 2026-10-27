@@ -25,6 +25,10 @@ resource "cloudflare_ruleset" "country_allowlist" {
         "(http.host eq \"n8n.dominiksiejak.pl\" and (starts_with(http.request.uri.path, \"/webhook/messenger\") or starts_with(http.request.uri.path, \"/webhook/toggl-time-entry\") or starts_with(http.request.uri.path, \"/webhook/focus-work\") or starts_with(http.request.uri.path, \"/webhook/authentik-login\")))",
         "(http.host eq \"auth.dominiksiejak.pl\" and starts_with(http.request.uri.path, \"/application/o/\"))",
         "http.host in {\"dominiksiejak.pl\" \"www.dominiksiejak.pl\"}",
+        # hass is accessed remotely (phone app, travel). Auth is not relied on
+        # here: HA has its own login and the tunnel connector enforces an
+        # Access JWT (origin_request.access.required in the tunnel config).
+        "http.host eq \"hass.dominiksiejak.pl\"",
         "(http.host eq \"auth.dominiksiejak.pl\" and ip.src in {${join(" ", local.grafana_cloud_us_egress)}})",
         # Public Grafana Synthetic Monitoring probes (EU/US/APAC). Country
         # allowlist is PL/DE/ES only; probe source countries are not in that set.
