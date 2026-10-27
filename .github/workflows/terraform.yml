@@ -12,7 +12,6 @@ on:
           - backblaze
           - cloudflare
           - gcp
-          - gitea
           - grafana
           - netbox
           - routeros

@@ -8,10 +8,6 @@ locals {
       username = "watchyourlan_user"
       database = "watchyourlan_db"
     }
-    gitea = {
-      username = "gitea_user"
-      database = "gitea_db"
-    }
     authentik = {
       username = "authentik_user"
       database = "authentik_db"

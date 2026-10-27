@@ -119,15 +119,6 @@
         description: VPN mesh
 
 - Data:
-    - Gitea:
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/gitea.png
-        href: https://git.dominiksiejak.pl
-        description: Git hosting
-        widget:
-          type: gitea
-          url: http://gitea.gitea.svc:3000
-          key: "{{HOMEPAGE_VAR_GITEA_TOKEN}}"
-
     - NetBox:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/netbox.png
         href: https://netbox.dominiksiejak.pl

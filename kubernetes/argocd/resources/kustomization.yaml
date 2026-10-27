@@ -6,7 +6,6 @@ resources:
   - application-authentik.yaml
   - application-calibre.yaml
   - application-cloudflared.yaml
-  - application-gitea.yaml
   - application-grafana-synthetic-agent.yaml
   - application-mediabox.yaml
   - application-monitoring.yaml
