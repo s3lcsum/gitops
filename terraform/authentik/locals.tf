@@ -76,20 +76,6 @@ locals {
         "https://192.168.89.240:5001",
       ]
     }
-    gitea = {
-      name       = "Gitea"
-      launch_url = "https://git.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/gitea.svg"
-      # Gitea callback path segment must match the authentication source *name* in Gitea (here: authentik).
-      redirect_uris = ["https://git.dominiksiejak.pl/user/oauth2/authentik/callback"]
-      mapping       = <<-EOF
-        if request.user.ak_groups.filter(name="admins").exists():
-            return {"gitea": "admin"}
-        elif request.user.ak_groups.filter(name="users").exists():
-            return {"gitea": "user"}
-        return {"gitea": "public"}
-      EOF
-    }
     # Public + PKCE: Grafana Cloud's token call comes from US and is blocked by
     # the Cloudflare country WAF. A public client does not send client_secret.
     grafana-cloud = {
@@ -326,7 +312,6 @@ locals {
   #───────────────────────────────────────────────────────────────────────────────
 
   user_accessible_apps = toset([
-    "gitea",
     "grafana",
     "grafana-cloud",
     "seerr",
