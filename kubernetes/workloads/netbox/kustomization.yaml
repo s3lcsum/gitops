@@ -6,5 +6,6 @@ resources:
   - resources/nfs.yaml
   - resources/configmap-api-token-peppers.yaml
   - resources/externalsecret.yaml
+  - resources/database.yaml
   - resources/deployment.yaml
   - resources/ingressroute.yaml

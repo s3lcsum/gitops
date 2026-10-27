@@ -1,0 +1,64 @@
+# 1Password vault Servers, item netbox (DB_USER / DB_PASSWORD / DB_NAME fields).
+# Role secret mirrors the sure-user pattern: ESO copy in cloudnative-pg ns so
+# the CNPG DatabaseRole can't read across namespaces.
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: netbox-user
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  refreshPolicy: OnChange
+  refreshInterval: 0s
+  secretStoreRef:
+    name: onepassword
+    kind: ClusterSecretStore
+  target:
+    name: netbox-user
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      type: kubernetes.io/basic-auth
+      metadata:
+        labels: {}
+        annotations:
+          argocd.argoproj.io/sync-options: Prune=false
+      data:
+        username: netbox_user
+        password: "{{ .password }}"
+  data:
+    - secretKey: password
+      remoteRef:
+        key: netbox/DB_PASSWORD
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: netbox-user
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  cluster:
+    name: postgres
+  name: netbox_user
+  login: true
+  databaseRoleReclaimPolicy: delete
+  passwordSecret:
+    name: netbox-user
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: netbox-db
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  name: netbox_db
+  owner: netbox_user
+  cluster:
+    name: postgres
