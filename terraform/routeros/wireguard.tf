@@ -4,6 +4,7 @@ resource "wireguard_asymmetric_key" "server" {
 resource "routeros_interface_wireguard" "default" {
   name        = "wg0"
   listen_port = var.wireguard_listen_port
+  private_key = wireguard_asymmetric_key.server.private_key
 }
 
 resource "wireguard_asymmetric_key" "peers" {
@@ -27,8 +28,8 @@ data "wireguard_config_document" "peers" {
   addresses   = [each.value]
   private_key = wireguard_asymmetric_key.peers[each.key].private_key
 
-  post_up  = ["/bin/sh -c 'IP=$$(/usr/bin/dig +short +time=2 +tries=2 dns.dominiksiejak.pl @1.1.1.1 | /usr/bin/head -1); [ -n \"$$IP\" ] && /sbin/route -q add -host $$IP -interface %i || true'"]
-  pre_down = ["/bin/sh -c 'IP=$$(/usr/bin/dig +short +time=2 +tries=2 dns.dominiksiejak.pl @1.1.1.1 | /usr/bin/head -1); [ -n \"$$IP\" ] && /sbin/route -q delete -host $$IP -interface %i || true'"]
+  post_up  = ["/bin/sh -c 'IP=$(/usr/bin/dig +short +time=2 +tries=2 dns.dominiksiejak.pl @1.1.1.1 | /usr/bin/head -1); [ -n \"$IP\" ] && /sbin/route -q add -host $IP -interface %i || true'"]
+  pre_down = ["/bin/sh -c 'IP=$(/usr/bin/dig +short +time=2 +tries=2 dns.dominiksiejak.pl @1.1.1.1 | /usr/bin/head -1); [ -n \"$IP\" ] && /sbin/route -q delete -host $IP -interface %i || true'"]
 
   peer {
     public_key = wireguard_asymmetric_key.server.public_key
