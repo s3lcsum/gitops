@@ -125,7 +125,7 @@ spec:
             - name: SELF_HOSTED
               value: "true"
             - name: ONBOARDING_STATE
-              value: open
+              value: closed
             - name: RAILS_ASSUME_SSL
               value: "true"
             - name: RAILS_FORCE_SSL
@@ -238,7 +238,7 @@ spec:
             - name: SELF_HOSTED
               value: "true"
             - name: ONBOARDING_STATE
-              value: open
+              value: closed
             - name: RAILS_ASSUME_SSL
               value: "true"
             - name: RAILS_FORCE_SSL
