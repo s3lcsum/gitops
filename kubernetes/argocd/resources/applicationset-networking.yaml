@@ -77,6 +77,13 @@ spec:
             # deprecated.daemonset.template.generation, which kube-controller
             # writes and Helm never emits. Key-only ignore does not stop that.
             - .metadata.annotations
+        # wan-ip CronJob patches this at runtime when the ISP changes the public IP.
+        # Git holds the seed value only; do not let selfHeal revert it.
+        - kind: ConfigMap
+          name: wan-ip
+          namespace: external-dns
+          jsonPointers:
+            - /data/ip
         # Endpoint controller defaults conditions to {}. Git omits it.
         - group: discovery.k8s.io
           kind: EndpointSlice
@@ -158,4 +165,5 @@ spec:
           - CreateNamespace=true
           - ServerSideApply=true
           - ServerSideDiff=true
+          - RespectIgnoreDifferences=true
     {{- end }}
