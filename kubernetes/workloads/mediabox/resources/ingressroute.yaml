@@ -37,6 +37,8 @@ spec:
           namespace: traefik
         - name: secure-headers
           namespace: traefik
+        - name: authentik
+          namespace: traefik
       services:
         - name: gluetun
           port: 8085
@@ -57,6 +59,8 @@ spec:
         - name: crowdsec-bouncer
           namespace: traefik
         - name: secure-headers
+          namespace: traefik
+        - name: authentik
           namespace: traefik
       services:
         - name: prowlarr
@@ -79,6 +83,8 @@ spec:
           namespace: traefik
         - name: secure-headers
           namespace: traefik
+        - name: authentik
+          namespace: traefik
       services:
         - name: radarr
           port: 7878
@@ -100,6 +106,8 @@ spec:
           namespace: traefik
         - name: secure-headers
           namespace: traefik
+        - name: authentik
+          namespace: traefik
       services:
         - name: sonarr
           port: 8989
@@ -120,6 +128,8 @@ spec:
         - name: crowdsec-bouncer
           namespace: traefik
         - name: secure-headers
+          namespace: traefik
+        - name: authentik
           namespace: traefik
       services:
         - name: bazarr
@@ -183,6 +193,8 @@ spec:
         - name: crowdsec-bouncer
           namespace: traefik
         - name: secure-headers
+          namespace: traefik
+        - name: authentik
           namespace: traefik
       services:
         - name: profilarr

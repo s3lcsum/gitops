@@ -254,6 +254,56 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/qbittorrent.png"
       skip_path_regex = ""
     }
+    # *arr: no native OIDC and the apps trust Traefik's node IP as local, so Traefik
+    # forward-auth is the gate. forward_single: outpost only auths; Traefik proxies.
+    bazarr = {
+      name            = "Bazarr"
+      external_host   = "https://bazarr.dominiksiejak.pl"
+      internal_host   = "http://bazarr.mediabox.svc:6767"
+      launch_url      = "https://bazarr.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/bazarr.svg"
+      skip_path_regex = ""
+    }
+    profilarr = {
+      name            = "Profilarr"
+      external_host   = "https://profilarr.dominiksiejak.pl"
+      internal_host   = "http://profilarr.mediabox.svc:6868"
+      launch_url      = "https://profilarr.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/profilarr.svg"
+      skip_path_regex = ""
+    }
+    prowlarr = {
+      name            = "Prowlarr"
+      external_host   = "https://prowlarr.dominiksiejak.pl"
+      internal_host   = "http://prowlarr.mediabox.svc:9696"
+      launch_url      = "https://prowlarr.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/prowlarr.svg"
+      skip_path_regex = ""
+    }
+    radarr = {
+      name            = "Radarr"
+      external_host   = "https://radarr.dominiksiejak.pl"
+      internal_host   = "http://radarr.mediabox.svc:7878"
+      launch_url      = "https://radarr.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/radarr.svg"
+      skip_path_regex = ""
+    }
+    sabnzbd = {
+      name            = "SABnzbd"
+      external_host   = "https://sabnzbd.dominiksiejak.pl"
+      internal_host   = "http://gluetun.mediabox.svc:8085"
+      launch_url      = "https://sabnzbd.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sabnzbd.svg"
+      skip_path_regex = ""
+    }
+    sonarr = {
+      name            = "Sonarr"
+      external_host   = "https://sonarr.dominiksiejak.pl"
+      internal_host   = "http://sonarr.mediabox.svc:8989"
+      launch_url      = "https://sonarr.dominiksiejak.pl"
+      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sonarr.svg"
+      skip_path_regex = ""
+    }
   }
 
   #───────────────────────────────────────────────────────────────────────────────
@@ -268,42 +318,10 @@ locals {
       launch_url = "https://unifi.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/unifi.svg"
     }
-    # *arr classified native-oidc but no OIDC client is configured in this repo.
-    # Tiles only — do not add oauth2 entries until each app has a real callback.
-    bazarr = {
-      name       = "Bazarr"
-      launch_url = "https://bazarr.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/bazarr.svg"
-    }
     jellyfin = {
       name       = "Jellyfin"
       launch_url = "https://jellyfin.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyfin.svg"
-    }
-    profilarr = {
-      name       = "Profilarr"
-      launch_url = "https://profilarr.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/profilarr.svg"
-    }
-    prowlarr = {
-      name       = "Prowlarr"
-      launch_url = "https://prowlarr.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/prowlarr.svg"
-    }
-    radarr = {
-      name       = "Radarr"
-      launch_url = "https://radarr.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/radarr.svg"
-    }
-    sabnzbd = {
-      name       = "SABnzbd"
-      launch_url = "https://sabnzbd.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sabnzbd.svg"
-    }
-    sonarr = {
-      name       = "Sonarr"
-      launch_url = "https://sonarr.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sonarr.svg"
     }
   }
 
