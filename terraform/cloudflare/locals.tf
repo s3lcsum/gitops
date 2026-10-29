@@ -1,9 +1,9 @@
 locals {
-  # Hosts Grafana Cloud public probes may hit. Tunnel already routes these
-  # to Traefik. WAF country rule still blocks probe source countries.
+  # Hosts Grafana Cloud public probes may hit on health paths. Tunnel already
+  # routes these to Traefik. hass is deliberately absent: it stays fully behind
+  # the country allowlist (see kubernetes/platform/grafana-synthetic-agent/checks/hass-geo.js).
   synthetic_probe_hosts = [
     "auth.dominiksiejak.pl",
-    "hass.dominiksiejak.pl",
     "n8n.dominiksiejak.pl",
   ]
 
