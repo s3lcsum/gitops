@@ -9,10 +9,16 @@ resource "b2_bucket" "backup_buckets" {
     managed_by = "terraform"
   })
 
-  lifecycle_rules {
-    file_name_prefix              = try(each.value.file_name_prefix, "*")
-    days_from_hiding_to_deleting  = try(each.value.days_from_hiding_to_deleting, 30)
-    days_from_uploading_to_hiding = try(each.value.days_from_uploading_to_hiding, 30)
+  # Opt-in only. B2 prefixes are literal (no globs) and an empty prefix would
+  # hide + purge every backup, including the last full one. Set both days_*
+  # keys on a bucket in locals.tf to enable expiry deliberately.
+  dynamic "lifecycle_rules" {
+    for_each = can(each.value.days_from_uploading_to_hiding) ? [each.value] : []
+    content {
+      file_name_prefix              = try(lifecycle_rules.value.file_name_prefix, "")
+      days_from_hiding_to_deleting  = lifecycle_rules.value.days_from_hiding_to_deleting
+      days_from_uploading_to_hiding = lifecycle_rules.value.days_from_uploading_to_hiding
+    }
   }
 }
 
