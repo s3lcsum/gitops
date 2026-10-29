@@ -15,8 +15,11 @@ spec:
   background: true
   emitWarning: false
   validationFailureAction: Audit
+  # Node.spec.taints has no strategic-merge key, so patchStrategicMerge would
+  # replace the whole list and drop kubelet/controller taints (unreachable,
+  # not-ready, cordon). Use JSON6902 add, split by whether the list exists.
   rules:
-    - name: taint-non-control-plane
+    - name: taint-non-control-plane-no-taints
       match:
         any:
           - resources:
@@ -29,10 +32,45 @@ spec:
                 matchExpressions:
                   - key: node-role.kubernetes.io/control-plane
                     operator: Exists
+      preconditions:
+        all:
+          - key: "{{ length(request.object.spec.taints || `[]`) }}"
+            operator: Equals
+            value: 0
       mutate:
-        patchStrategicMerge:
-          spec:
-            taints:
+        patchesJson6902: |-
+          - op: add
+            path: /spec/taints
+            value:
               - key: homelab.dominiksiejak.pl/worker
                 value: "true"
                 effect: PreferNoSchedule
+    - name: taint-non-control-plane-append
+      match:
+        any:
+          - resources:
+              kinds:
+                - Node
+      exclude:
+        any:
+          - resources:
+              selector:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: Exists
+      preconditions:
+        all:
+          - key: "{{ length(request.object.spec.taints || `[]`) }}"
+            operator: GreaterThan
+            value: 0
+          - key: "{{ length(request.object.spec.taints[?key=='homelab.dominiksiejak.pl/worker'] || `[]`) }}"
+            operator: Equals
+            value: 0
+      mutate:
+        patchesJson6902: |-
+          - op: add
+            path: /spec/taints/-
+            value:
+              key: homelab.dominiksiejak.pl/worker
+              value: "true"
+              effect: PreferNoSchedule
