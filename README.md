@@ -95,7 +95,6 @@ Argo CD parents everything under `kubernetes/`. A directory with `values.yaml` (
 | [Argo CD](https://argo-cd.readthedocs.io/) | This repo, applied to itself. |
 | [Calibre](https://github.com/kovidgoyal/calibre) | Books. |
 | [CloudNativePG](https://cloudnative-pg.io/) | Shared Postgres. |
-| [Gitea](https://github.com/go-gitea/gitea) | Git. |
 | [Headlamp](https://headlamp.dev/) | Kubernetes UI. Admins only. |
 | [Home Assistant](https://www.home-assistant.io/) | Home, MQTT, Zigbee. |
 | [Homepage](https://gethomepage.dev/) | The dashboard. |
@@ -120,7 +119,7 @@ Portainer is gone. Apps run on Kubernetes. Databases live on CloudNativePG.
 │   └── <app>/           one directory per app
 ├── terraform/           OpenTofu. State in GCS, prefix gitops-<module>.
 │   ├── authentik/  adguard/  routeros/  unifi/  cloudflare/
-│   ├── grafana/  netbox/  gcp/  gitea/  backblaze/
+│   ├── grafana/  netbox/  gcp/  backblaze/
 │   └── base.Makefile
 ├── scripts/             auth_classification.yaml
 └── .github/workflows/   manual tofu plan/apply over WireGuard

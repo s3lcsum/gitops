@@ -26,7 +26,6 @@ authentik|5 * * * *|1
 backblaze|10 * * * *|0
 cloudflare|15 * * * *|1
 gcp|20 * * * *|0
-gitea|25 * * * *|0
 grafana|30 * * * *|0
 netbox|35 * * * *|0
 proxmox|40 * * * *|0

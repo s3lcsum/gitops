@@ -29,7 +29,7 @@ Still needs your paste (not auto-filled):
 | `b2_application_key_id` / `b2_application_key` | New Backblaze keys (local tfvars is also `REPLACE_ME`) |
 | `GOOGLE_CREDENTIALS` | GCP SA JSON (Terrakube ENV) |
 
-Already filled from 1P / local tfvars: `adguard_*`, `netbox_*` (from `Servers/netbox` `TF_API_TOKEN`), `gitea_*`, `unifi_*`, `gcp_project_id`.
+Already filled from 1P / local tfvars: `adguard_*`, `netbox_*` (from `Servers/netbox` `TF_API_TOKEN`), `unifi_*`, `gcp_project_id`.
 
 ## Enable
 
@@ -50,7 +50,7 @@ Already filled from 1P / local tfvars: `adguard_*`, `netbox_*` (from `Servers/ne
    | `gcp` | failed | only `gcp_project_id` — add `GOOGLE_CREDENTIALS` ENV |
    | `backblaze` | failed | keys set but `bad_auth_token` — rotate |
    | `netbox` | failed | `Invalid v1 token` — rotate |
-   | `gitea` / `unifi` | failed | vars present — re-run Plan after deps OK |
+   | `unifi` | failed | vars present — re-run Plan after deps OK |
 
    Source values from each module’s local `defaults.auto.tfvars` / 1Password into Terrakube workspace **TERRAFORM** (and **ENV** for GCP) vars. Confirm with a manual **Plan** job per workspace.
 
@@ -74,7 +74,6 @@ Already filled from 1P / local tfvars: `adguard_*`, `netbox_*` (from `Servers/ne
 | backblaze | `10 * * * *` |
 | cloudflare | `15 * * * *` |
 | gcp | `20 * * * *` |
-| gitea | `25 * * * *` |
 | grafana | `30 * * * *` |
 | netbox | `35 * * * *` |
 | proxmox | `40 * * * *` |

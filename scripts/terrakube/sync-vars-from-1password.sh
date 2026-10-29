@@ -54,7 +54,6 @@ WS_KEYS = {
   "backblaze": [("b2_application_key_id", "TERRAFORM"), ("b2_application_key", "TERRAFORM")],
   "gcp": [("gcp_project_id", "TERRAFORM"), ("GOOGLE_CREDENTIALS", "ENV")],
   "netbox": [("netbox_url", "TERRAFORM"), ("netbox_api_token", "TERRAFORM")],
-  "gitea": [("gitea_username", "TERRAFORM"), ("gitea_password", "TERRAFORM"), ("github_token", "TERRAFORM")],
   "unifi": [
     ("unifi_username", "TERRAFORM"),
     ("unifi_password", "TERRAFORM"),

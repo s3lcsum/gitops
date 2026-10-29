@@ -42,4 +42,4 @@ metadata:
 value: -100
 preemptionPolicy: Never
 globalDefault: false
-description: Yields under pressure. Never preempts. Authentik outposts, Zigbee2MQTT + HA, postgres/MQTT consumers, mediabox *arr, probes, Bazarr, UniFi, Calibre, wealthfolio, Gitea, Headlamp, Homepage.
+description: Yields under pressure. Never preempts. Authentik outposts, Zigbee2MQTT + HA, postgres/MQTT consumers, mediabox *arr, probes, Bazarr, UniFi, Calibre, wealthfolio, Headlamp, Homepage.
