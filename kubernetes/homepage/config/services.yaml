@@ -176,7 +176,7 @@
         description: Torrent client
         widget:
           type: qbittorrent
-          url: http://gluetun.mediabox.svc:8080
+          url: http://qbittorrent.mediabox.svc
           username: "{{HOMEPAGE_VAR_QBT_USER}}"
           password: "{{HOMEPAGE_VAR_QBT_PASS}}"
 
@@ -186,7 +186,7 @@
         description: Usenet downloader
         widget:
           type: sabnzbd
-          url: http://gluetun.mediabox.svc:8085
+          url: http://sabnzbd.mediabox.svc
           key: "{{HOMEPAGE_VAR_SABNZBD_KEY}}"
 
     - Prowlarr:
@@ -205,7 +205,7 @@
         description: Movie automation
         widget:
           type: radarr
-          url: http://radarr.mediabox.svc:7878
+          url: http://radarr.mediabox.svc
           key: "{{HOMEPAGE_VAR_RADARR_KEY}}"
 
     - Sonarr:
@@ -214,7 +214,7 @@
         description: Series automation
         widget:
           type: sonarr
-          url: http://sonarr.mediabox.svc:8989
+          url: http://sonarr.mediabox.svc
           key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
 
     - Bazarr:
@@ -223,7 +223,7 @@
         description: Subtitle management
         widget:
           type: bazarr
-          url: http://bazarr.mediabox.svc:6767
+          url: http://bazarr.mediabox.svc
           username: "{{HOMEPAGE_VAR_BAZARR_USER}}"
           key: "{{HOMEPAGE_VAR_BAZARR_KEY}}"
 
@@ -233,7 +233,7 @@
         description: Media streaming
         widget:
           type: jellyfin
-          url: http://jellyfin.mediabox.svc:8096
+          url: http://jellyfin.mediabox.svc
           key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
 
     - Seerr:

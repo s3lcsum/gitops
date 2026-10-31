@@ -77,7 +77,7 @@ spec:
     app.kubernetes.io/name: flaresolverr
   ports:
     - name: http
-      port: 8191
+      port: 80
       targetPort: http
 ---
 apiVersion: apps/v1
@@ -121,7 +121,7 @@ spec:
               value: "0"
             - name: TZ
               value: Europe/Warsaw
-            # Short ClusterDNS hosts (prowlarr:9696) fail HostFiltering without this.
+            # ASPNETCORE_ALLOWEDHOSTS is ignored by Servarr; AllowedHosts lives in config.xml.
             - name: ASPNETCORE_ALLOWEDHOSTS
               value: "*"
           ports:
@@ -166,7 +166,7 @@ spec:
     app.kubernetes.io/name: prowlarr
   ports:
     - name: http
-      port: 9696
+      port: 80
       targetPort: http
 ---
 apiVersion: apps/v1
@@ -207,7 +207,7 @@ spec:
               value: "0"
             - name: TZ
               value: Europe/Warsaw
-            # Short ClusterDNS hosts (radarr:7878) fail HostFiltering without this.
+            # ASPNETCORE_ALLOWEDHOSTS is ignored by Servarr; AllowedHosts lives in config.xml.
             - name: ASPNETCORE_ALLOWEDHOSTS
               value: "*"
           ports:
@@ -262,7 +262,7 @@ spec:
     app.kubernetes.io/name: radarr
   ports:
     - name: http
-      port: 7878
+      port: 80
       targetPort: http
 ---
 apiVersion: apps/v1
@@ -303,7 +303,7 @@ spec:
               value: "0"
             - name: TZ
               value: Europe/Warsaw
-            # Short ClusterDNS hosts (sonarr:8989) fail HostFiltering without this.
+            # ASPNETCORE_ALLOWEDHOSTS is ignored by Servarr; AllowedHosts lives in config.xml.
             - name: ASPNETCORE_ALLOWEDHOSTS
               value: "*"
           ports:
@@ -358,7 +358,7 @@ spec:
     app.kubernetes.io/name: sonarr
   ports:
     - name: http
-      port: 8989
+      port: 80
       targetPort: http
 ---
 apiVersion: apps/v1
@@ -451,7 +451,7 @@ spec:
     app.kubernetes.io/name: bazarr
   ports:
     - name: http
-      port: 6767
+      port: 80
       targetPort: http
 ---
 apiVersion: apps/v1
@@ -544,7 +544,7 @@ spec:
     app.kubernetes.io/name: jellyfin
   ports:
     - name: http
-      port: 8096
+      port: 80
       targetPort: http
 ---
 apiVersion: apps/v1
@@ -629,7 +629,7 @@ spec:
     app.kubernetes.io/name: seerr
   ports:
     - name: http
-      port: 5055
+      port: 80
       targetPort: http
 ---
 apiVersion: apps/v1
@@ -714,7 +714,7 @@ spec:
     app.kubernetes.io/name: profilarr
   ports:
     - name: http
-      port: 6868
+      port: 80
       targetPort: http
 ---
 apiVersion: apps/v1
@@ -795,5 +795,5 @@ spec:
     app.kubernetes.io/name: scraparr
   ports:
     - name: http
-      port: 7100
+      port: 80
       targetPort: http
