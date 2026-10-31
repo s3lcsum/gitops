@@ -36,6 +36,8 @@ data:
     #   kubectl exec -n openbao openbao-0 -- env BAO_TOKEN=$ROOT_TOKEN bao ...
     #   BAO_ADDR=https://openbao.dominiksiejak.pl BAO_TOKEN=$ROOT_TOKEN bao ...
     # Never put the root private key in git, commits or tofu state. Only CA PEMs leave this host.
+    # Note: `csr=@/tmp/x.csr` / `certificate=@...` resolve on the machine running bao. When piping
+    # through `kubectl exec`, pass the content instead: `csr="$(cat /tmp/x.csr)"`.
 
     # --- root ---
     bao secrets enable -path=pki_root pki
@@ -49,6 +51,8 @@ data:
       crl_distribution_points="https://openbao.dominiksiejak.pl/v1/pki_root/crl"
 
     # Store /tmp/homelab-root-ca.crt in 1Password (Servers/openbao field root-ca-pem). Install on test device later.
+    # 1Password Servers/openbao fields (CA certs only, never keys):
+    #   root-ca-pem, servers-int-ca-pem, clients-int-ca-pem
 
     # --- server intermediate ---
     bao secrets enable -path=pki_int_servers pki
@@ -87,6 +91,9 @@ data:
     bao read -field=certificate pki_int_clients/cert/ca | openssl x509 -noout -subject -dates
     # Expected: root CN "Dominik Siejak Homelab Root CA", notAfter ~10y; intermediates ~5y;
     # intermediates chain to root (openssl verify -CAfile root.crt int.crt -> OK).
+
+    # Applied 2026-10-31 (mounts pki_root, pki_int_servers, pki_int_clients; max_lease_ttl
+    # 315360000s / 157680000s / 157680000s; both intermediates verify OK against root).
 
     # After the Task 2 roles exist, day-2 identities must not use
     # pki_root/root/sign-intermediate except break-glass (pki-operator / root).
