@@ -13,59 +13,20 @@ data:
     ## 1. Init (once)
     kubectl exec -n openbao openbao-0 -- bao operator init -key-shares=5 -key-threshold=3
 
-    Store unseal-key-1..3 (any 3 of 5 shares) and root token in 1Password Servers/openbao.
+    Store unseal-key-1..3 (any 3 of 5 shares) and root-token in 1Password Servers/openbao.
     Force-sync:
       kubectl annotate externalsecret openbao-unseal -n openbao force-sync=$(date +%s) --overwrite
 
-    ## 2. KV + Kubernetes auth
-    kubectl exec -n openbao openbao-0 -- bao login
-    kubectl exec -n openbao openbao-0 -- bao secrets enable -path=secret kv-v2
-    kubectl exec -n openbao openbao-0 -- bao auth enable kubernetes
+    ## 2. AppRole chicken-egg (once, root token)
+    # Full commands: docs/superpowers/plans/2026-10-31-openbao-tofu-auth.md Task 3
+    # Result: 1Password fields approle-role-id / approle-secret-id
+    # Also store oidc-client-id / oidc-client-secret (Authentik OpenBao app).
 
-    kubectl exec -n openbao openbao-0 -- sh -c 'bao write auth/kubernetes/config \
-      kubernetes_host=https://kubernetes.default.svc:443 \
-      kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
-      token_reviewer_jwt=@/var/run/secrets/kubernetes.io/serviceaccount/token'
+    ## 3. Day-2 config
+    # terraform/openbao (Terrakube workspace openbao) owns:
+    #   KV secret/, policies, OIDC default_role=admin, kubernetes eso-openbao, approle terraform
+    # Local: copy defaults.auto.tfvars.example → defaults.auto.tfvars (gitignored)
+    # UI: method oidc/, leave Role blank (do not type Default)
 
-    kubectl exec -n openbao openbao-0 -- bao policy write eso - <<'EOF'
-    path "secret/data/*" {
-      capabilities = ["read", "list"]
-    }
-    path "secret/metadata/*" {
-      capabilities = ["read", "list"]
-    }
-    EOF
-
-    kubectl exec -n openbao openbao-0 -- bao write auth/kubernetes/role/eso-openbao \
-      bound_service_account_names=eso-openbao \
-      bound_service_account_namespaces=external-secrets \
-      policies=eso \
-      ttl=1h
-
-    ## 3. OIDC (Authentik)
-    # Issuer: https://auth.dominiksiejak.pl/application/o/openbao/
-    # Client id/secret from tofu output → 1Password → Secret openbao-oidc
-
-    CLIENT_ID="$(kubectl get secret openbao-oidc -n openbao -o jsonpath='{.data.client-id}' | base64 -d)"
-    CLIENT_SECRET="$(kubectl get secret openbao-oidc -n openbao -o jsonpath='{.data.client-secret}' | base64 -d)"
-
-    kubectl exec -n openbao openbao-0 -- bao auth enable oidc
-    kubectl exec -n openbao openbao-0 -- bao write auth/oidc/config \
-      oidc_discovery_url="https://auth.dominiksiejak.pl/application/o/openbao/" \
-      oidc_client_id="$CLIENT_ID" \
-      oidc_client_secret="$CLIENT_SECRET" \
-      default_role="admin"
-
-    kubectl exec -n openbao openbao-0 -- bao policy write admin - <<'EOF'
-    path "*" {
-      capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-    }
-    EOF
-
-    kubectl exec -n openbao openbao-0 -- bao write auth/oidc/role/admin \
-      bound_audiences="$CLIENT_ID" \
-      allowed_redirect_uris="https://openbao.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback" \
-      user_claim="sub" \
-      groups_claim="groups" \
-      policies="admin" \
-      oidc_scopes="openid,profile,email"
+    ## 4. Break-glass
+    # root-token in 1Password; prefer OIDC UI or AppRole tofu thereafter
