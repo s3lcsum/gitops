@@ -4,12 +4,14 @@ resources:
   - resources/certificate.yaml
   - resources/tlsstore.yaml
   - resources/externalsecret-crowdsec.yaml
+  - resources/externalsecret-opencode-upstream.yaml
   - resources/servers-transports.yaml
   - resources/backends/kube-apiserver.yaml
   - resources/backends/lan-nas.yaml
   - resources/backends/lan-router.yaml
   - resources/backends/lan-proxmox.yaml
   - resources/backends/lan-zigbee-bridge.yaml
+  - resources/backends/lan-opencode.yaml
   - resources/middlewares/authentik.yaml
   - resources/middlewares/secure-headers.yaml
   - resources/middlewares/lan-only.yaml
@@ -17,5 +19,6 @@ resources:
   - resources/routes/dashboard.yaml
   - resources/routes/lan-native-oidc.yaml
   - resources/routes/lan-zigbee-bridge.yaml
+  - resources/routes/lan-opencode.yaml
   - resources/routes/kube-apiserver.yaml
   - resources/routes/ldap.yaml

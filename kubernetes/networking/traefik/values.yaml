@@ -123,6 +123,19 @@ providers:
     enabled: false
   kubernetesGateway:
     enabled: false
+  # Upstream Basic for OpenCode. Traefik expands env at load time, not Helm,
+  # so the credential never lands in git or the ConfigMap.
+  # IngressRoute refs opencode-upstream-basic@file.
+  file:
+    enabled: true
+    watch: true
+    content:
+      http:
+        middlewares:
+          opencode-upstream-basic:
+            headers:
+              customRequestHeaders:
+                Authorization: 'Basic {{ env "OPENCODE_UPSTREAM_BASIC" }}'
 gateway:
   enabled: false
 ingressRoute:
@@ -144,6 +157,15 @@ env:
       secretKeyRef:
         name: crowdsec-lapi
         key: CROWDSEC_API_KEY
+  - name: OPENCODE_UPSTREAM_BASIC
+    valueFrom:
+      secretKeyRef:
+        name: opencode-upstream-basic
+        key: OPENCODE_UPSTREAM_BASIC
+        # ESO owns the Secret. Missing it must not crashloop all of ingress —
+        # only the opencode @file middleware fails to load.
+        # Rotation: env does not hot-reload, roll the DaemonSet after ESO syncs.
+        optional: true
 tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists

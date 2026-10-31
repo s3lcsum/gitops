@@ -1,0 +1,33 @@
+# OpenCode on vibe — Traefik-k8s → 192.168.89.200:4096.
+# Auth class: forward-auth (Authentik). Upstream Basic injected by
+# opencode-upstream-auth@file so the browser never sees OpenCode's prompt.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: lan-opencode
+  namespace: traefik
+  annotations:
+    # The `@file` middleware only exists after the chart change in values.yaml
+    # (providers.file) has rolled the DaemonSet. Wave 1 makes Argo wait for
+    # that rollout's health, otherwise the router briefly refs a missing
+    # middleware.
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`opencode.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+        - name: secure-headers
+        - name: authentik
+        # File-provider middleware (values.yaml providers.file); expands
+        # OPENCODE_UPSTREAM_BASIC from Secret/opencode-upstream-basic.
+        - name: opencode-upstream-basic@file
+      services:
+        - name: lan-opencode
+          port: 4096
+          scheme: http
+          passHostHeader: true
+  tls: {}
