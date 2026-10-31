@@ -135,6 +135,41 @@ resource "authentik_policy_binding" "recovery_skip_identification_if_restored" {
 }
 
 #───────────────────────────────────────────────────────────────────────────────
+# Passwordless (passkey) authentication
+#───────────────────────────────────────────────────────────────────────────────
+
+resource "authentik_flow" "passwordless" {
+  name               = "authentication-passwordless"
+  title              = "Sign in with a passkey"
+  slug               = "authentication-passwordless"
+  designation        = "authentication"
+  authentication     = "require_unauthenticated"
+  policy_engine_mode = "any"
+}
+
+resource "authentik_stage_authenticator_validate" "passwordless_webauthn" {
+  name                       = "passwordless-webauthn"
+  device_classes             = ["webauthn"]
+  not_configured_action      = "deny"
+  webauthn_user_verification = "required"
+}
+
+resource "authentik_stage_user_login" "passwordless_login" {
+  name = "passwordless-login"
+}
+
+resource "authentik_flow_stage_binding" "passwordless" {
+  for_each = {
+    webauthn = { stage = authentik_stage_authenticator_validate.passwordless_webauthn.id, order = 10 }
+    login    = { stage = authentik_stage_user_login.passwordless_login.id, order = 100 }
+  }
+
+  target = authentik_flow.passwordless.uuid
+  stage  = each.value.stage
+  order  = each.value.order
+}
+
+#───────────────────────────────────────────────────────────────────────────────
 # Invitation / Enrollment Flow
 #───────────────────────────────────────────────────────────────────────────────
 
