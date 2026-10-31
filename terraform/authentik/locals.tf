@@ -37,10 +37,13 @@ locals {
       ]
     }
     seerr = {
-      name          = "Seerr"
-      launch_url    = "https://seerr.dominiksiejak.pl/sso/OID/start/authentik"
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyseerr.svg"
-      redirect_uris = ["https://seerr.dominiksiejak.pl/login?provider=authentik&callback=true"]
+      name       = "Seerr"
+      launch_url = "https://seerr.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyseerr.svg"
+      redirect_uris = [
+        "https://seerr.dominiksiejak.pl/login",
+        "https://seerr.dominiksiejak.pl/profile/settings/linked-accounts",
+      ]
     }
     homeassistant = {
       name       = "Home Assistant"
