@@ -30,3 +30,63 @@ data:
 
     ## 4. Break-glass
     # root-token in 1Password; prefer OIDC UI or AppRole tofu thereafter
+
+    ## 5. PKI bootstrap (once)
+    # Root + two intermediates. Run with the root token, either in-cluster or against the API:
+    #   kubectl exec -n openbao openbao-0 -- env BAO_TOKEN=$ROOT_TOKEN bao ...
+    #   BAO_ADDR=https://openbao.dominiksiejak.pl BAO_TOKEN=$ROOT_TOKEN bao ...
+    # Never put the root private key in git, commits or tofu state. Only CA PEMs leave this host.
+
+    # --- root ---
+    bao secrets enable -path=pki_root pki
+    bao secrets tune -max-lease-ttl=87600h pki_root
+    bao write -field=certificate pki_root/root/generate/internal \
+      common_name="Dominik Siejak Homelab Root CA" \
+      organization="dominiksiejak.pl" \
+      ttl=87600h > /tmp/homelab-root-ca.crt
+    bao write pki_root/config/urls \
+      issuing_certificates="https://openbao.dominiksiejak.pl/v1/pki_root/ca" \
+      crl_distribution_points="https://openbao.dominiksiejak.pl/v1/pki_root/crl"
+
+    # Store /tmp/homelab-root-ca.crt in 1Password (Servers/openbao field root-ca-pem). Install on test device later.
+
+    # --- server intermediate ---
+    bao secrets enable -path=pki_int_servers pki
+    bao secrets tune -max-lease-ttl=43800h pki_int_servers
+    bao write -format=json pki_int_servers/intermediate/generate/internal \
+      common_name="Dominik Siejak Homelab Servers Intermediate" \
+      organization="dominiksiejak.pl" \
+      ttl=43800h | jq -r '.data.csr' > /tmp/servers.csr
+    bao write -format=json pki_root/root/sign-intermediate csr=@/tmp/servers.csr \
+      format=pem_bundle ttl=43800h | jq -r '.data.certificate' > /tmp/servers-int.crt
+    bao write pki_int_servers/intermediate/set-signed certificate=@/tmp/servers-int.crt
+    bao write pki_int_servers/config/urls \
+      issuing_certificates="https://openbao.dominiksiejak.pl/v1/pki_int_servers/ca" \
+      crl_distribution_points="https://openbao.dominiksiejak.pl/v1/pki_int_servers/crl"
+
+    # --- client intermediate ---
+    bao secrets enable -path=pki_int_clients pki
+    bao secrets tune -max-lease-ttl=43800h pki_int_clients
+    bao write -format=json pki_int_clients/intermediate/generate/internal \
+      common_name="Dominik Siejak Homelab Clients Intermediate" \
+      organization="dominiksiejak.pl" \
+      ttl=43800h | jq -r '.data.csr' > /tmp/clients.csr
+    bao write -format=json pki_root/root/sign-intermediate csr=@/tmp/clients.csr \
+      format=pem_bundle ttl=43800h | jq -r '.data.certificate' > /tmp/clients-int.crt
+    bao write pki_int_clients/intermediate/set-signed certificate=@/tmp/clients-int.crt
+    bao write pki_int_clients/config/urls \
+      issuing_certificates="https://openbao.dominiksiejak.pl/v1/pki_int_clients/ca" \
+      crl_distribution_points="https://openbao.dominiksiejak.pl/v1/pki_int_clients/crl"
+
+    # Store clients-int (and optionally servers-int) PEM in 1Password for Traefik/Cloudflare.
+    # shred local key material copies that are not CA-only PEMs.
+
+    # --- verify ---
+    bao read -field=certificate pki_root/cert/ca | openssl x509 -noout -subject -dates
+    bao read -field=certificate pki_int_servers/cert/ca | openssl x509 -noout -subject -dates
+    bao read -field=certificate pki_int_clients/cert/ca | openssl x509 -noout -subject -dates
+    # Expected: root CN "Dominik Siejak Homelab Root CA", notAfter ~10y; intermediates ~5y;
+    # intermediates chain to root (openssl verify -CAfile root.crt int.crt -> OK).
+
+    # After the Task 2 roles exist, day-2 identities must not use
+    # pki_root/root/sign-intermediate except break-glass (pki-operator / root).
