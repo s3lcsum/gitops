@@ -1,7 +1,7 @@
 # MKTXP scrapes RouterOS API and serves Prometheus metrics for VictoriaMetrics.
-# Grafana Cloud reads VictoriaMetrics (terraform/grafana datasource uid victoria-metrics).
-# 1Password item: Servers / mktxp. Tag: ArgoCD External Secrets Operator
-# Fields: username, password. RouterOS user needs policy api,read.
+# Grafana Cloud reads VictoriaMetrics (tofu/grafana datasource uid victoria-metrics).
+# OpenBao secret/k8s/mktxp. Fields: username, password.
+# RouterOS user needs policy api,read.
 # Do not point hostname at https://router.dominiksiejak.pl — that path is WebFig
 # behind Authentik. API is plain HTTP on 192.168.89.1:8728.
 apiVersion: external-secrets.io/v1
@@ -18,7 +18,7 @@ spec:
   refreshPolicy: OnChange
   refreshInterval: 0s
   secretStoreRef:
-    name: onepassword
+    name: openbao
     kind: ClusterSecretStore
   target:
     name: mktxp
@@ -162,10 +162,12 @@ spec:
   data:
     - secretKey: username
       remoteRef:
-        key: mktxp/username
+        key: k8s/mktxp
+        property: username
     - secretKey: password
       remoteRef:
-        key: mktxp/password
+        key: k8s/mktxp
+        property: password
 ---
 apiVersion: apps/v1
 kind: Deployment

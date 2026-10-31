@@ -1,4 +1,4 @@
-# 1Password vault Servers, item netbox (DB_USER / DB_PASSWORD / DB_NAME fields).
+# OpenBao secret/k8s/netbox (DB_USER / DB_PASSWORD / DB_NAME fields).
 # Role secret mirrors the sure-user pattern: ESO copy in cloudnative-pg ns so
 # the CNPG DatabaseRole can't read across namespaces.
 ---
@@ -13,7 +13,7 @@ spec:
   refreshPolicy: OnChange
   refreshInterval: 0s
   secretStoreRef:
-    name: onepassword
+    name: openbao
     kind: ClusterSecretStore
   target:
     name: netbox-user
@@ -32,7 +32,8 @@ spec:
   data:
     - secretKey: password
       remoteRef:
-        key: netbox/DB_PASSWORD
+        key: k8s/netbox
+        property: DB_PASSWORD
 ---
 apiVersion: postgresql.cnpg.io/v1
 kind: DatabaseRole
