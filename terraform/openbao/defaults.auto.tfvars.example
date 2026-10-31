@@ -1,0 +1,5 @@
+vault_addr         = "https://openbao.dominiksiejak.pl"
+approle_role_id    = "from-1password"
+approle_secret_id  = "from-1password"
+oidc_client_id     = "from-1password"
+oidc_client_secret = "from-1password"
