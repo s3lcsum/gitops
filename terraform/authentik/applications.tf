@@ -30,6 +30,12 @@ resource "authentik_property_mapping_provider_scope" "argocd_groups" {
   expression = "return [g.name for g in request.user.ak_groups.all()]"
 }
 
+resource "authentik_property_mapping_provider_scope" "openbao_groups" {
+  name       = "openbao-groups"
+  scope_name = "groups"
+  expression = "return [g.name for g in request.user.ak_groups.all()]"
+}
+
 # Dex OIDC connector maps this claim onto Terrakube teams.
 # Terrakube security.adminGroup is `admins` (Authentik). Older deploys used
 # TERRAKUBE_ADMIN — emit both while that config may still be live.
@@ -68,6 +74,7 @@ resource "authentik_provider_oauth2" "oauth2" {
     lookup(each.value, "mapping", null) != null ? [authentik_property_mapping_provider_scope.custom_claims[each.key].id] : [],
     each.key == "calibre-web-automated" ? [authentik_property_mapping_provider_scope.calibre_web_groups.id] : [],
     each.key == "argocd" ? [authentik_property_mapping_provider_scope.argocd_groups.id] : [],
+    each.key == "openbao" ? [authentik_property_mapping_provider_scope.openbao_groups.id] : [],
     each.key == "terrakube" ? [authentik_property_mapping_provider_scope.terrakube_groups.id] : [],
   )
 
