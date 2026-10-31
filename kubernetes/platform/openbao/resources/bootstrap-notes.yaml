@@ -22,11 +22,15 @@ data:
     # Result: 1Password fields approle-role-id / approle-secret-id
     # Also store oidc-client-id / oidc-client-secret (Authentik OpenBao app).
 
-    ## 3. Day-2 config
-    # terraform/openbao (Terrakube workspace openbao) owns:
+    ## 3. App secrets
+    # ESO reads secret/k8s/<item> via ClusterSecretStore/openbao (policy eso-read).
+    # Do not put unseal shares or the 1Password SA token under k8s/.
+
+    ## 4. Day-2 config
+    # tofu/openbao (GCS prefix gitops-openbao) owns:
     #   KV secret/, policies, OIDC default_role=admin, kubernetes eso-openbao, approle terraform
-    # Local: copy defaults.auto.tfvars.example → defaults.auto.tfvars (gitignored)
+    # Local: AppRole files ~/.config/openbao/{role_id,secret_id}; secrets in KV secret/terraform_env/openbao
     # UI: method oidc/, leave Role blank (do not type Default)
 
-    ## 4. Break-glass
+    ## 5. Break-glass
     # root-token in 1Password; prefer OIDC UI or AppRole tofu thereafter

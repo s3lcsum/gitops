@@ -1,4 +1,6 @@
-# Round-robin force-sync for onepassword ExternalSecrets.
+# Round-robin force-sync for ExternalSecrets still on ClusterSecretStore/onepassword
+# (OpenBao unseal, OpenBao OIDC, 1Password bootstrap, plus any not-yet-flipped app secrets).
+# Flipped app secrets live on ClusterSecretStore/openbao and are not in this loop.
 # ESO has no refresh offset; OnChange + this CronJob ≈ 1 ES / hour → under SA hourly quota.
 # Manual: kubectl annotate externalsecret NAME -n NS force-sync=$(date +%s) --overwrite
 apiVersion: v1
