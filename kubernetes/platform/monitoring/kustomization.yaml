@@ -13,3 +13,4 @@ resources:
   - resources/node-exporter.yaml
   - resources/victoria-metrics-rbac.yaml
   - resources/mktxp.yaml
+  - resources/externalsecret-victoria-metrics.yaml

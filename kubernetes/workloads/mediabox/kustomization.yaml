@@ -6,4 +6,7 @@ resources:
   - resources/nfs.yaml
   - resources/gluetun.yaml
   - resources/apps.yaml
+  - resources/externalsecret-gluetun.yaml
+  - resources/externalsecret-scraparr.yaml
+  - resources/externalsecret-jellyfin-sso.yaml
   - resources/ingressroute.yaml

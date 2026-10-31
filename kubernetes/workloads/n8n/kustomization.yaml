@@ -5,4 +5,5 @@ resources:
   - resources/namespace.yaml
   - resources/nfs.yaml
   - resources/deployment.yaml
+  - resources/externalsecret.yaml
   - resources/ingressroute.yaml
