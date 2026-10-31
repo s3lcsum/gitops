@@ -21,14 +21,11 @@ spec:
         app.kubernetes.io/part-of: mediabox
         app.kubernetes.io/managed-by: argocd
     spec:
-      # hostPath / NFS config lives on lake; AI affinity pinned vibe → FailedMount 29h.
+      # Chromium on vibe (PreferNoSchedule soft-prefer is not enough vs lake).
+      # nas-bind RWX — Synology must allow vibe (.201).
       priorityClassName: homelab-low
-      tolerations:
-        - key: node-role.kubernetes.io/control-plane
-          operator: Exists
-          effect: NoSchedule
       nodeSelector:
-        kubernetes.io/hostname: k8s
+        kubernetes.io/hostname: vibe
       containers:
         - name: flaresolverr
           image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
