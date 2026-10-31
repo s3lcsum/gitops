@@ -1,8 +1,7 @@
 # ApplicationSet chart pin.
 repoURL: https://charts.jetstack.io
 chart: cert-manager
-version: v1.21.2
-
+version: v1.21.3
 # Overrides for jetstack/cert-manager v1.21.2.
 # DNS-01 for *.dominiksiejak.pl lives in resources/. Traefik no longer runs an ACME client
 # for that name.

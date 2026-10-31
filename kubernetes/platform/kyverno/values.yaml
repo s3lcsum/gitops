@@ -1,8 +1,7 @@
 # ApplicationSet chart pin.
 repoURL: https://kyverno.github.io/kyverno/
 chart: kyverno
-version: 3.9.1
-
+version: 3.9.2
 # Overrides for kyverno/kyverno 3.9.1 (appVersion v1.19.1).
 # Single-node kubeadm (lake): one replica per controller + control-plane toleration.
 crds:

@@ -1,8 +1,7 @@
 # ApplicationSet chart pin.
 repoURL: https://argoproj.github.io/argo-helm
 chart: argo-rollouts
-version: 2.43.5
-
+version: 2.43.8
 # Overrides for argo/argo-rollouts 2.43.5 (appVersion v1.10.0).
 # Single-node kubeadm (lake): one controller replica + control-plane toleration.
 installCRDs: true

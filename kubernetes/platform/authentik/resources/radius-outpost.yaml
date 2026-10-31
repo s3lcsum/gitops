@@ -75,7 +75,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: radius
-          image: ghcr.io/goauthentik/radius:2026.8.3
+          image: ghcr.io/goauthentik/radius:2026.8.5
           envFrom:
             - secretRef:
                 name: authentik-radius-outpost

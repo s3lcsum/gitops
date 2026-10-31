@@ -85,7 +85,7 @@ spec:
           containers:
             - name: refresh
               # Alpine is cached on nodes (wan-ip). Install matching kubectl each run.
-              image: public.ecr.aws/docker/library/alpine:3.22
+              image: public.ecr.aws/docker/library/alpine:3.24
               imagePullPolicy: IfNotPresent
               command: ["/bin/sh", "-c"]
               args:

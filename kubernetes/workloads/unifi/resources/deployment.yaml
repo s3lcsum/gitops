@@ -41,7 +41,7 @@ spec:
                     values: ["k8s"]
       containers:
         - name: unifi-db
-          image: public.ecr.aws/docker/library/mongo:7.0.40
+          image: public.ecr.aws/docker/library/mongo:7.0.45
           envFrom:
             - secretRef:
                 name: unifi
@@ -68,7 +68,7 @@ spec:
               cpu: 50m
               memory: 256Mi
         - name: unifi
-          image: lscr.io/linuxserver/unifi-network-application:10.6.106
+          image: lscr.io/linuxserver/unifi-network-application:10.6.109
           envFrom:
             - secretRef:
                 name: unifi

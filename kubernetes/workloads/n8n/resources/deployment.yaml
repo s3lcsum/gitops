@@ -32,7 +32,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: n8n
-          image: ghcr.io/n8n-io/n8n:2.41.6
+          image: ghcr.io/n8n-io/n8n:3.0.1
           envFrom:
             - secretRef:
                 name: n8n

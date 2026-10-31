@@ -1,8 +1,7 @@
 # ApplicationSet chart pin.
 repoURL: https://kubernetes-sigs.github.io/headlamp
 chart: headlamp
-version: 0.45.0
-
+version: 0.46.0
 # Overrides for headlamp 0.45.0.
 # Traefik IngressRoute owns the edge. Authentik forward-auth is the login.
 # unsafeUseServiceAccountToken skips Headlamp's token paste: every user who

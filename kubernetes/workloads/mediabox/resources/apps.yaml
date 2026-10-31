@@ -113,7 +113,7 @@ spec:
         kubernetes.io/hostname: k8s
       containers:
         - name: prowlarr
-          image: lscr.io/linuxserver/prowlarr:2.6.5
+          image: lscr.io/linuxserver/prowlarr:2.7.0
           env:
             - name: PUID
               value: "0"
@@ -484,7 +484,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: jellyfin
-          image: ghcr.io/linuxserver/jellyfin:12.1ubu2604-ls50
+          image: ghcr.io/linuxserver/jellyfin:12.4ubu2604-ls57
           env:
             - name: PUID
               value: "0"
@@ -577,7 +577,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: seerr
-          image: ghcr.io/seerr-team/seerr:v3.4.1
+          image: ghcr.io/seerr-team/seerr:v3.5.1
           env:
             - name: PUID
               value: "0"
@@ -662,7 +662,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: profilarr
-          image: ghcr.io/dictionarry-hub/profilarr:2.2.0
+          image: ghcr.io/dictionarry-hub/profilarr:2.3.1
           env:
             - name: PUID
               value: "0"

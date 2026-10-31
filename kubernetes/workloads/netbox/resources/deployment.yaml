@@ -28,7 +28,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: valkey
-          image: ghcr.io/valkey-io/valkey:9.1.2
+          image: ghcr.io/valkey-io/valkey:9.1.3
           ports:
             - name: redis
               containerPort: 6379
@@ -91,7 +91,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: netbox
-          image: ghcr.io/netbox-community/netbox:v4.7.1
+          image: ghcr.io/netbox-community/netbox:v4.7.4
           envFrom:
             - secretRef:
                 name: netbox
@@ -195,7 +195,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: netbox-worker
-          image: ghcr.io/netbox-community/netbox:v4.7.1
+          image: ghcr.io/netbox-community/netbox:v4.7.4
           command:
             - /opt/netbox/venv/bin/python
             - /opt/netbox/netbox/manage.py

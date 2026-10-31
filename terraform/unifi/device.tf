@@ -24,10 +24,12 @@ resource "unifi_device" "u7_lite" {
   # "default" = indoor; "on" forces outdoor power/DFS profile.
   outdoor_mode_override = "default"
 
-  # LED: "on" | "off" | "default" (follow site setting).
-  led_override                  = "off"
-  led_override_color            = "#0000ff"
-  led_override_color_brightness = 100
+  # LED: override "on" | "off" | "default" (follow site setting).
+  led = {
+    override   = "off"
+    color      = "#0000ff"
+    brightness = 100
+  }
 
   # Which UniFi LAN object this AP is attached to (Default network).
   mgmt_network_id = data.unifi_network.lan.id
@@ -83,15 +85,9 @@ resource "unifi_device" "u7_lite" {
     ignore_changes = [
       # Provider-computed / N/A on UAP (switch/LCM/PoE/STP/phone)
       bandsteering_mode,
-      lcm_brightness,
-      lcm_brightness_override,
-      lcm_idle_timeout,
-      lcm_idle_timeout_override,
-      lcm_night_mode_begins,
-      lcm_night_mode_ends,
+      lcm,
       poe_mode,
-      stp_priority,
-      stp_version,
+      stp,
       volume,
       x_baresip_password,
       # DHCP-learned ip/gateway/dns under config_network (client lease details)

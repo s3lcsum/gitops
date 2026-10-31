@@ -95,7 +95,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: ldap
-          image: ghcr.io/goauthentik/ldap:2026.8.3
+          image: ghcr.io/goauthentik/ldap:2026.8.5
           envFrom:
             - secretRef:
                 name: authentik-ldap-outpost

@@ -1,7 +1,7 @@
 # ApplicationSet chart pin.
 repoURL: https://traefik.github.io/charts
 chart: traefik
-version: 41.6.1
+version: 42.2.0
 
 # Overrides for Traefik Helm 41.6.1 (app v3.7.13).
 # hostNetwork owns :80/:443 after Cilium Gateway is down.
@@ -12,7 +12,7 @@ image:
   # Avoid docker.io rate limits; Traefik also publishes to GHCR.
   registry: ghcr.io
   repository: traefik/traefik
-  tag: v3.7.13
+  tag: v3.7.17
 # Chart already sets name, instance, and managed-by. Not part of the selector.
 commonLabels:
   app.kubernetes.io/part-of: traefik

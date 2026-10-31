@@ -62,7 +62,7 @@ spec:
             - until mosquitto_sub -h mosquitto.hass.svc -p 1883 -u "$MQTT_USER" -P "$MQTT_PASSWORD" -t '$SYS/broker/uptime' -C 1 -W 3; do sleep 2; done
       containers:
         - name: zigbee2mqtt
-          image: ghcr.io/koenkk/zigbee2mqtt:2.14.1
+          image: ghcr.io/koenkk/zigbee2mqtt:2.14.2
           env:
             - name: TZ
               value: Europe/Warsaw

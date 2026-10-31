@@ -20,8 +20,10 @@ resource "unifi_wlan" "hass" {
   network_id    = data.unifi_network.lan.id
   user_group_id = local.user_group_id # Default user group (controller built-in)
   # Broadcast on every AP in "All APs" group
-  ap_group_ids  = [data.unifi_ap_group.all.id]
-  ap_group_mode = "all"
+  ap_group = {
+    ids  = [data.unifi_ap_group.all.id]
+    mode = "all"
+  }
 
   # 0 = no periodic GTK rekey. Hourly rekey drops sleepy IoT stations.
   group_rekey = 0
@@ -42,8 +44,7 @@ resource "unifi_wlan" "hass" {
       uapsd,                # unscheduled APSD power-save
       proxy_arp,            # AP answers ARP for clients
       fast_roaming_enabled, # 802.11r
-      wpa3_support,
-      wpa3_transition,
+      wpa3,
       mac_filter,    # allow/deny list block
       passphrase_wo, # provider write-only twin of passphrase
     ]
@@ -64,8 +65,10 @@ resource "unifi_wlan" "raval" {
 
   network_id    = data.unifi_network.lan.id
   user_group_id = local.user_group_id
-  ap_group_ids  = [data.unifi_ap_group.all.id]
-  ap_group_mode = "all"
+  ap_group = {
+    ids  = [data.unifi_ap_group.all.id]
+    mode = "all"
+  }
 
   # 0 = no periodic GTK rekey (live value)
   group_rekey = 0
@@ -84,8 +87,7 @@ resource "unifi_wlan" "raval" {
       uapsd,
       proxy_arp,
       fast_roaming_enabled,
-      wpa3_support,
-      wpa3_transition,
+      wpa3,
       mac_filter,
       passphrase_wo,
       minrate_setting_preference,

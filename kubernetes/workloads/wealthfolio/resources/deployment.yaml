@@ -32,7 +32,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: wealthfolio
-          image: mirror.gcr.io/wealthfolio/wealthfolio:3.8
+          image: mirror.gcr.io/wealthfolio/wealthfolio:3.11.0
           envFrom:
             - secretRef:
                 name: wealthfolio

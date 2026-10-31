@@ -33,7 +33,7 @@ spec:
       data:
         # 2.0.3 treats any missing key as stale and rewrites the file in place.
         # Secret mount is read-only — EROFS aborts load, HTTP stays up, no RouterOS metrics.
-        # Every key from the image sample must be present. Keep in sync with ghcr.io/akpw/mktxp:2.0.3.
+        # Every key from the image sample must be present. Keep in sync with ghcr.io/akpw/mktxp:2.1.0.
         mktxp.conf: |
           [Router]
               hostname = 192.168.89.1
@@ -197,7 +197,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: mktxp
-          image: ghcr.io/akpw/mktxp:2.0.3
+          image: ghcr.io/akpw/mktxp:2.1.0
           ports:
             - name: http
               containerPort: 49090
