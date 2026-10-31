@@ -39,6 +39,8 @@ spec:
           envFrom:
             - secretRef:
                 name: authentik
+            - secretRef:
+                name: authentik-email
           env:
             - name: AUTHENTIK_ERROR_REPORTING__ENABLED
               value: "true"
@@ -136,6 +138,8 @@ spec:
           envFrom:
             - secretRef:
                 name: authentik
+            - secretRef:
+                name: authentik-email
           env:
             - name: AUTHENTIK_ERROR_REPORTING__ENABLED
               value: "true"
