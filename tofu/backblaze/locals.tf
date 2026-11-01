@@ -20,6 +20,14 @@ locals {
       instance = "lake-1"
       purpose  = "backups"
     },
+    # Weekly pg_dumpall of the shared CNPG cluster (kubernetes/platform/
+    # cloudnative-pg/resources/dump-b2-cronjob.yaml). Logical, so it restores
+    # without the NAS WAL archive.
+    {
+      app      = "postgres"
+      instance = "lake-1"
+      purpose  = "backups"
+    },
   ]
 
   bucket_map = {

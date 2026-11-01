@@ -1,0 +1,189 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mediabox-subtitle-policy
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+data:
+  bazarr-profile-items.json: |
+    [
+      {"id": 1, "language": "en", "audio_exclude": "False", "audio_only_include": "False", "hi": "False", "forced": "False"},
+      {"id": 2, "language": "en", "audio_exclude": "False", "audio_only_include": "False", "hi": "True", "forced": "False"},
+      {"id": 3, "language": "pl", "audio_exclude": "False", "audio_only_include": "False", "hi": "False", "forced": "False"},
+      {"id": 4, "language": "pl", "audio_exclude": "False", "audio_only_include": "False", "hi": "True", "forced": "False"},
+      {"id": 5, "language": "es", "audio_exclude": "False", "audio_only_include": "False", "hi": "False", "forced": "False"},
+      {"id": 6, "language": "es", "audio_exclude": "False", "audio_only_include": "False", "hi": "True", "forced": "False"}
+    ]
+  apply-bazarr-subtitles.sh: |
+    #!/bin/sh
+    set -eu
+    DB=/config/db/bazarr.db
+    ITEMS_FILE=/policy/bazarr-profile-items.json
+    if [ ! -f "$DB" ] || [ ! -f "$ITEMS_FILE" ]; then
+      echo "bazarr subtitle policy: skip (db or policy missing)"
+      exit 0
+    fi
+    ITEMS=$(tr -d '\n' <"$ITEMS_FILE" | sed "s/'/''/g")
+    sqlite3 "$DB" <<EOF
+    UPDATE table_settings_languages SET enabled=0;
+    UPDATE table_settings_languages SET enabled=1 WHERE code2 IN ('en','pl','es');
+    UPDATE table_languages_profiles
+      SET name='EN PL ES (+CC)', items='${ITEMS}'
+      WHERE profileId=3;
+    EOF
+    if [ -f /config/config/config.yaml ]; then
+      sed -i 's/^  hi_fallback: .*/  hi_fallback: true/' /config/config/config.yaml
+      sed -i 's/^  single_language: .*/  single_language: false/' /config/config/config.yaml
+      sed -i 's/^  serie_default_profile: .*/  serie_default_profile: 3/' /config/config/config.yaml
+      sed -i 's/^  movie_default_profile: .*/  movie_default_profile: 3/' /config/config/config.yaml
+      sed -i 's/^  default_und_audio_lang: .*/  default_und_audio_lang: en/' /config/config/config.yaml
+      sed -i 's/^  parse_embedded_audio_track: .*/  parse_embedded_audio_track: true/' /config/config/config.yaml
+      sed -i 's/^  use_original_language: .*/  use_original_language: true/' /config/config/config.yaml
+      sed -i 's/^  auto_use_original_language: .*/  auto_use_original_language: true/' /config/config/config.yaml
+    fi
+    echo "bazarr playback policy: applied (subs + audio: original/en/pl/ja/es via detection)"
+  apply-jellyfin-subtitles.sh: |
+    #!/bin/sh
+    set -eu
+    DB=/config/data/data/jellyfin.db
+    if [ ! -f "$DB" ]; then
+      echo "jellyfin subtitle policy: skip (db missing)"
+      exit 0
+    fi
+    # Subtitles: Always=1; primary eng (pol/spa via client). Audio: OriginalLanguage + default track;
+    # Jellyfin has no multi-lang audio fallback list (eng/pl/jpn/spa) without a plugin.
+    sqlite3 "$DB" <<'EOF'
+    UPDATE Users
+      SET SubtitleMode=1,
+          RememberSubtitleSelections=1,
+          SubtitleLanguagePreference='eng',
+          PlayDefaultAudioTrack=1,
+          RememberAudioSelections=1,
+          AudioLanguagePreference='OriginalLanguage';
+    EOF
+    echo "jellyfin playback policy: applied (subs always-on; audio original-first)"
+  prune-external-subtitles.sh: |
+    #!/bin/sh
+    # Delete sidecar subs whose language tag is not en/pl/es (+ hi/sdh/cc variants).
+    # Skips paths without a parseable lang tag and excludes books/k8s trees.
+    set -eu
+    ROOT="${SUBTITLE_ROOT:-/library}"
+    DRY_RUN="${SUBTITLE_PRUNE_DRY_RUN:-false}"
+    norm_lang() {
+      case "$(echo "$1" | tr '[:upper:]' '[:lower:]')" in
+        en|eng|en-us|en-gb) echo en ;;
+        pl|pol) echo pl ;;
+        es|spa|es-es|es-mx) echo es ;;
+        *) echo "x" ;;
+      esac
+    }
+    should_skip_path() {
+      case "$1" in
+        *"/k8s/"*|*"/books/"*) return 0 ;;
+        *) return 1 ;;
+      esac
+    }
+    parse_lang_from_name() {
+      base=$(basename "$1")
+      ext=${base##*.}
+      case "$(echo "$ext" | tr '[:upper:]' '[:lower:]')" in
+        srt|ass|ssa|vtt|sup|sub) ;;
+        *) return 1 ;;
+      esac
+      stem=${base%.*}
+      case "$(echo "$stem" | tr '[:upper:]' '[:lower:]')" in
+        *.hi|*.sdh|*.cc|*.forced|*.full|*.default) stem=${stem%.*} ;;
+      esac
+      lang=${stem##*.}
+      case "$lang" in
+        [a-zA-Z][a-zA-Z]) ;;
+        [a-zA-Z][a-zA-Z][a-zA-Z]) ;;
+        [a-zA-Z][a-zA-Z]-[a-zA-Z][a-zA-Z]) ;;
+        *) return 1 ;;
+      esac
+      echo "$lang"
+    }
+    remove_file() {
+      f=$1
+      if [ "$DRY_RUN" = "true" ]; then
+        echo "dry-run delete: $f"
+      else
+        rm -f "$f"
+        echo "deleted: $f"
+      fi
+    }
+    [ -d "$ROOT" ] || { echo "prune-external: missing $ROOT"; exit 0; }
+    find "$ROOT" -type f \( \
+      -iname '*.srt' -o -iname '*.ass' -o -iname '*.ssa' -o \
+      -iname '*.vtt' -o -iname '*.sup' -o -iname '*.sub' \
+    \) | while read -r f; do
+      if should_skip_path "$f"; then
+        continue
+      fi
+      lang=$(parse_lang_from_name "$f") || continue
+      if [ "$(norm_lang "$lang")" != "x" ]; then
+        continue
+      fi
+      remove_file "$f"
+      base=${f%.*}
+      if [ -f "${base}.idx" ]; then
+        remove_file "${base}.idx"
+      fi
+    done
+    echo "prune-external: finished (dry_run=$DRY_RUN)"
+  prune-embedded-subtitles.sh: |
+    #!/bin/sh
+    # Remux MKV files to drop embedded subtitle tracks outside en/pl/es.
+    set -eu
+    ROOT="${SUBTITLE_ROOT:-/library}"
+    DRY_RUN="${SUBTITLE_PRUNE_DRY_RUN:-false}"
+    [ "${PRUNE_EMBEDDED:-false}" = "true" ] || { echo "prune-embedded: disabled"; exit 0; }
+    command -v mkvmerge >/dev/null || { echo "prune-embedded: mkvmerge missing"; exit 1; }
+    command -v jq >/dev/null || { echo "prune-embedded: jq missing"; exit 1; }
+    should_skip_path() {
+      case "$1" in
+        *"/k8s/"*|*"/books/"*) return 0 ;;
+        *) return 1 ;;
+      esac
+    }
+    [ -d "$ROOT" ] || { echo "prune-embedded: missing $ROOT"; exit 0; }
+    find "$ROOT" -type f -iname '*.mkv' | while read -r f; do
+      if should_skip_path "$f"; then
+        continue
+      fi
+      meta=$(mkvmerge -J "$f")
+      total=$(echo "$meta" | jq '[.tracks[] | select(.type=="subtitles")] | length')
+      [ "$total" -eq 0 ] && continue
+      keep_ids=$(echo "$meta" | jq -r '
+        [.tracks[]
+          | select(.type=="subtitles")
+          | . as $t
+          | ($t.properties.language // "und" | ascii_downcase) as $l
+          | select($l == "eng" or $l == "en" or $l == "pol" or $l == "pl" or $l == "spa" or $l == "es")
+          | $t.id
+        ] | join(",")')
+      keep_count=$(echo "$meta" | jq '
+        [.tracks[]
+          | select(.type=="subtitles")
+          | (.properties.language // "und" | ascii_downcase) as $l
+          | select($l == "eng" or $l == "en" or $l == "pol" or $l == "pl" or $l == "spa" or $l == "es")
+        ] | length')
+      unwanted=$((total - keep_count))
+      [ "$unwanted" -eq 0 ] && continue
+      tmp="${f}.subtitle-prune.tmp.mkv"
+      if [ "$DRY_RUN" = "true" ]; then
+        echo "dry-run remux: $f keep=[${keep_ids:-}] drop=$unwanted"
+        continue
+      fi
+      if [ -n "$keep_ids" ]; then
+        # shellcheck disable=SC2086
+        mkvmerge -o "$tmp" --subtitle-tracks $keep_ids "$f" >/dev/null
+      else
+        mkvmerge -o "$tmp" --no-subtitles "$f" >/dev/null
+      fi
+      mv "$tmp" "$f"
+      echo "remuxed: $f (kept subs: ${keep_ids:-none})"
+    done
+    echo "prune-embedded: finished (dry_run=$DRY_RUN)"

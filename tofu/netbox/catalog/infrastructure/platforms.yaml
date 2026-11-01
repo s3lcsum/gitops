@@ -1,0 +1,11 @@
+platforms:
+  linux:
+    name: Linux
+    slug: linux
+  debian:
+    name: Debian
+    slug: debian
+    manufacturer: generic
+  container:
+    name: Container (OCI)
+    slug: container-oci

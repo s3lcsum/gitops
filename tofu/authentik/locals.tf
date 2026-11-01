@@ -32,15 +32,35 @@ locals {
         "https://bao.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
       ]
     }
-    # K0lin SSO plugin (no native Jellyfin OIDC). Provider name in the plugin
-    # config MUST be `authentik` to match this redirect path segment.
+    # aussierk/jellyfin-plugin-oidc (OIDC + RBAC). Two things this plugin needs
+    # from the provider, both set below in applications.tf:
+    #   - claims in the ID token (it reads the role claim from there first)
+    #   - a stable `sub` (accounts are keyed on it, not on the username)
+    #
+    # Provider ID in the plugin config MUST be `authentik` to match the
+    # redirect path segment. Role Claim Path = `groups`, supplied by the default
+    # `profile` scope, so Role Mapping names in the plugin are the Authentik
+    # group names it already has: `admins` and `users`.
     jellyfin = {
       name       = "Jellyfin"
-      launch_url = "https://jellyfin.dominiksiejak.pl/sso/OID/start/authentik"
+      launch_url = "https://jellyfin.dominiksiejak.pl/sso/OIDC/Start/authentik"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyfin.svg"
       redirect_uris = [
+        # New plugin (aussierk). Path is fixed by the plugin:
+        # {base}/sso/OIDC/Callback/{providerId}
+        "https://jellyfin.dominiksiejak.pl/sso/OIDC/Callback/authentik",
+        # Transitional: old K0lin SSO-Auth plugin. Drop once the pod no longer
+        # mounts SSO-Auth.xml.
         "https://jellyfin.dominiksiejak.pl/sso/OID/redirect/authentik",
       ]
+      # Stable subject. The guide says "based on the user's username", but that
+      # makes `sub` change on a rename and orphans the Jellyfin account; the
+      # plugin's identity map is deliberately keyed on `sub` for this reason.
+      sub_mode = "user_uuid"
+      # OIDC Back-Channel Logout 1.0 endpoint the plugin exposes. Authentik
+      # POSTs a signed logout_token here so an Authentik logout ends the
+      # Jellyfin session too.
+      logout_uri = "https://jellyfin.dominiksiejak.pl/sso/OIDC/BackchannelLogout/authentik"
     }
     seerr = {
       name       = "Seerr"
@@ -332,6 +352,15 @@ locals {
   #───────────────────────────────────────────────────────────────────────────────
   # Access Control
   #───────────────────────────────────────────────────────────────────────────────
+
+  # Jellyfin RBAC groups (aussierk/jellyfin-plugin-oidc). Keys are the exact
+  # authentik group names that land in the `groups` claim; the plugin's Role
+  # Mappings match on these strings verbatim.
+  jellyfin_groups = {
+    "jellyfin-admins" = "Full admin, all libraries."
+    "jellyfin-users"  = "Standard access: playback, remote access, transcoding."
+    "jellyfin-kids"   = "Restricted: kids library only, parental rating capped."
+  }
 
   # Retired (do not re-add): self-hosted grafana.dominiksiejak.pl OAuth, hermes OAuth.
   # Grafana is Grafana Cloud only (oauth2 slug grafana-cloud). Orphan Authentik apps → delete in UI.

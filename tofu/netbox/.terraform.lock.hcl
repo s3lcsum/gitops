@@ -23,3 +23,10 @@ provider "registry.opentofu.org/e-breuninger/netbox" {
     "zh:fdb1258840c1472f6de7027c5b6a2c60fac79024bd473225ae01ffa5bcea2480",
   ]
 }
+
+provider "registry.opentofu.org/hashicorp/vault" {
+  version = "5.13.0"
+  hashes = [
+    "h1:q60nZyZ5GjsZ4CDOPWE43Kov9PqYfbGeRF0VQ9InP+w=",
+  ]
+}

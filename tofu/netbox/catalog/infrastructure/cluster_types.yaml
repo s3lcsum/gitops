@@ -1,0 +1,5 @@
+cluster_types:
+  kubernetes:
+    name: Kubernetes
+    slug: kubernetes
+    description: kubeadm cluster (Flannel host-gw)

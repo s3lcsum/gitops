@@ -36,7 +36,12 @@ resource "authentik_property_mapping_provider_scope" "openbao_groups" {
   expression = "return [g.name for g in request.user.ak_groups.all()]"
 }
 
-# Jellyfin SSO plugin RoleClaim=groups → AdminRoles/Roles match Authentik group names.
+# Jellyfin SSO plugins RoleClaim=groups → AdminRoles/Roles match Authentik group names.
+#
+# `profile` (a default scope) already emits `groups`, so aussierk/jellyfin-plugin-oidc
+# gets what it needs with scopes `openid profile email`. This extra `groups` scope is
+# for the older K0lin SSO-Auth plugin, whose config requests the `groups` scope
+# explicitly. Remove it once SSO-Auth.xml is gone.
 resource "authentik_property_mapping_provider_scope" "jellyfin_groups" {
   name       = "jellyfin-groups"
   scope_name = "groups"
@@ -71,6 +76,21 @@ resource "authentik_provider_oauth2" "oauth2" {
     each.key == "openbao" ? [authentik_property_mapping_provider_scope.openbao_groups.id] : [],
     each.key == "jellyfin" ? [authentik_property_mapping_provider_scope.jellyfin_groups.id] : [],
   )
+
+  # aussierk/jellyfin-plugin-oidc reads the role claim from the ID token first,
+  # then the access token, then userinfo. Default is already true; pinned
+  # explicitly so a provider-level change can't silently break the RBAC claim.
+  include_claims_in_id_token = true
+
+  # Account identity in the plugin is keyed on `sub`. Per-provider issuer is
+  # what the plugin's discovery pinning expects (iss = .../application/o/<slug>/).
+  issuer_mode = "per_provider"
+  sub_mode    = lookup(each.value, "sub_mode", "hashed_user_id")
+
+  # Back-channel logout: authentik POSTs a signed logout_token on session end.
+  # logout_uri is only set for apps that expose the OIDC back-channel endpoint;
+  # null elsewhere. logout_method defaults to `backchannel`.
+  logout_uri = lookup(each.value, "logout_uri", null)
 
   allowed_redirect_uris = [
     for uri in each.value.redirect_uris : {
@@ -149,4 +169,19 @@ resource "authentik_policy_binding" "user_access" {
   target = each.value
   group  = authentik_group.users.id
   order  = 1
+}
+
+# Jellyfin app access for the RBAC groups. Authentik authorizes the app before
+# the plugin ever sees a token, so a user in `jellyfin-users` but not in `users`
+# would be denied at the Authentik consent step. Bind each jellyfin-* group to
+# the Jellyfin application only.
+resource "authentik_policy_binding" "jellyfin_rbac_access" {
+  for_each = {
+    for name, group in authentik_group.jellyfin : name => group.id
+    if contains(keys(local.all_app_uuids), "jellyfin")
+  }
+
+  target = local.all_app_uuids["jellyfin"]
+  group  = each.value
+  order  = 2
 }

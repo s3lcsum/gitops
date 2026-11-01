@@ -41,7 +41,7 @@ subjects:
     name: external-dns-adguard
     namespace: external-dns
 ---
-# dry-run stays on until logs list the expected dnsrewrite set.
+# dnsrewrite rules for each IngressRoute Host(); classic tofu rewrites stay for non-route names.
 # AdGuard is hostNetwork on the lake node (:3000), not the dead Portainer host.
 apiVersion: apps/v1
 kind: Deployment
@@ -99,7 +99,6 @@ spec:
             - --managed-record-types=TXT
             - --provider=webhook
             - --default-targets=192.168.89.252
-            - --dry-run
           env:
             - name: EXTERNAL_DNS_WEBHOOK_URL
               value: http://127.0.0.1:8888
@@ -147,7 +146,7 @@ spec:
             - name: LOG_LEVEL
               value: info
             - name: DRY_RUN
-              value: "true"
+              value: "false"
           ports:
             - name: webhook
               containerPort: 8888

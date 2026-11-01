@@ -1,3 +1,8 @@
+output "zone_id" {
+  description = "Cloudflare zone ID for dominiksiejak.pl"
+  value       = cloudflare_zone.main.id
+}
+
 output "tunnel_id" {
   description = "Cloudflare Tunnel UUID"
   value       = cloudflare_zero_trust_tunnel_cloudflared.Lake.id

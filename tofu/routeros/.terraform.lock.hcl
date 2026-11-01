@@ -1,6 +1,13 @@
 # This file is maintained automatically by "tofu init".
 # Manual edits may be lost in future updates.
 
+provider "registry.opentofu.org/hashicorp/vault" {
+  version = "5.13.0"
+  hashes = [
+    "h1:q60nZyZ5GjsZ4CDOPWE43Kov9PqYfbGeRF0VQ9InP+w=",
+  ]
+}
+
 provider "registry.opentofu.org/ojford/wireguard" {
   version     = "0.4.1+2"
   constraints = "0.4.1+2"

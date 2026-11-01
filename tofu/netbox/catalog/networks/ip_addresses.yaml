@@ -1,0 +1,56 @@
+# WireGuard / overlay addresses only. LAN host IPs live on catalog/inventory/devices.yaml
+# (ip_address) so each address is tied to one device object.
+ip_addresses:
+  wg-atom-1:
+    address: 192.168.200.10/24
+    site: lake
+    status: active
+    description: WireGuard peer atom-1
+
+  wg-dsiejak-macbook:
+    address: 192.168.200.20/24
+    site: lake
+    status: active
+    description: WireGuard peer dsiejak-macbook
+
+  wg-dsiejak-iphone:
+    address: 192.168.200.21/24
+    site: lake
+    status: active
+    description: WireGuard peer dsiejak-iphone
+
+  wg-dsiejak-ipad:
+    address: 192.168.200.23/24
+    site: lake
+    status: active
+    description: WireGuard peer dsiejak-ipad
+
+  wg-dsiejak-xgimi:
+    address: 192.168.200.24/24
+    site: lake
+    status: active
+    description: WireGuard peer dsiejak-xgimi
+
+  wg-jsiejak-iphone:
+    address: 192.168.200.31/24
+    site: lake
+    status: active
+    description: WireGuard peer jsiejak-iphone
+
+  wg-jsiejak-macbook:
+    address: 192.168.200.32/24
+    site: lake
+    status: active
+    description: WireGuard peer jsiejak-macbook
+
+  wg-micrus:
+    address: 192.168.200.40/24
+    site: lake
+    status: active
+    description: WireGuard peer micrus (Mikrus VPS / Firebird)
+
+  wg-github-actions:
+    address: 192.168.200.254/24
+    site: lake
+    status: active
+    description: WireGuard peer github-actions (CI)

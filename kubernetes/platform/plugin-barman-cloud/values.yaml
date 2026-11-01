@@ -1,0 +1,25 @@
+# ApplicationSet chart pin.
+repoURL: https://cloudnative-pg.github.io/charts
+chart: plugin-barman-cloud
+version: 0.8.1
+
+# The plugin must live in the CloudNativePG operator's namespace
+# (cloudnative-pg) so the operator discovers its Service. The Argo
+# Application / Helm release name only supplies the directory name.
+# Chart needs cert-manager for the operator<->plugin mTLS pair.
+namespaceOverride: cloudnative-pg
+
+# Backup path only. Losing the plugin never stops Postgres serving, so it
+# sits below the cluster: local-path PVC + Postgres stay homelab-critical.
+# Explicit class because unset (0) would outrank homelab-low.
+priorityClassName: homelab-low
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
+  limits:
+    memory: 256Mi

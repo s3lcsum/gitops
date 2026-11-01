@@ -37,3 +37,10 @@ provider "registry.opentofu.org/hashicorp/google" {
     "zh:f4c7f54f29597788faa2cb53d5ea3b74ad79882e2d1a7267ef90fbb7f216c39a",
   ]
 }
+
+provider "registry.opentofu.org/hashicorp/vault" {
+  version = "5.13.0"
+  hashes = [
+    "h1:q60nZyZ5GjsZ4CDOPWE43Kov9PqYfbGeRF0VQ9InP+w=",
+  ]
+}

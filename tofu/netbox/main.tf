@@ -1,20 +1,8 @@
-# Load all YAML data files
-locals {
-  # Load YAML data
-  infrastructure = yamldecode(file("${path.module}/data/infrastructure.yaml"))
-  inventory      = yamldecode(file("${path.module}/data/inventory.yaml"))
-  networks       = yamldecode(file("${path.module}/data/networks.yaml"))
-
-  # Create lookup maps for fast references
-  sites         = local.infrastructure.sites
-  locations     = local.infrastructure.locations
-  manufacturers = local.infrastructure.manufacturers
-  device_types  = local.infrastructure.device_types
-  device_roles  = local.infrastructure.device_roles
-
-  # Tags
-  common_tags = ["homelab", "infrastructure"]
-}
+# NetBox objects driven by YAML under catalog/.
+#   catalog/infrastructure/ — sites, locations, manufacturers, device_types, device_roles,
+#                             cluster_types, clusters, platforms
+#   catalog/inventory/      — devices, virtual_machines_*.yaml
+#   catalog/networks/       — prefixes, ip_addresses (overlay; LAN IPs on devices)
 
 # VM role tag for virtual machine device roles
 resource "netbox_tag" "vm_role" {
@@ -23,7 +11,6 @@ resource "netbox_tag" "vm_role" {
   tags = ["infrastructure"]
 }
 
-# Create tags from sites
 resource "netbox_tag" "site_tags" {
   for_each = local.sites
 
@@ -36,7 +23,6 @@ resource "netbox_tag" "site_tags" {
   ]
 }
 
-# Create tags for device types
 resource "netbox_tag" "role_tags" {
   for_each = local.device_roles
 
@@ -49,7 +35,6 @@ resource "netbox_tag" "role_tags" {
   ]
 }
 
-# Create tags for datacenter locations
 resource "netbox_tag" "location_tags" {
   for_each = local.locations
 
@@ -62,7 +47,6 @@ resource "netbox_tag" "location_tags" {
   ]
 }
 
-# Create manufacturers
 resource "netbox_manufacturer" "manufacturers" {
   for_each = local.manufacturers
 
@@ -70,7 +54,6 @@ resource "netbox_manufacturer" "manufacturers" {
   slug = each.value.slug
 }
 
-# Create device types
 resource "netbox_device_type" "device_types" {
   for_each = local.device_types
 
@@ -80,7 +63,6 @@ resource "netbox_device_type" "device_types" {
   u_height        = each.value.u_height
 }
 
-# Create device roles
 resource "netbox_device_role" "device_roles" {
   for_each = local.device_roles
 
@@ -93,7 +75,6 @@ resource "netbox_device_role" "device_roles" {
   tags = each.value.vm_role ? [netbox_tag.vm_role.name] : ["infrastructure"]
 }
 
-# Create sites
 resource "netbox_site" "sites" {
   for_each = local.sites
 
@@ -105,7 +86,6 @@ resource "netbox_site" "sites" {
   tags = local.common_tags
 }
 
-# Create locations
 resource "netbox_location" "locations" {
   for_each = local.locations
 
@@ -117,9 +97,8 @@ resource "netbox_location" "locations" {
   tags = local.common_tags
 }
 
-# Create network prefixes
 resource "netbox_prefix" "prefixes" {
-  for_each = local.networks.prefixes
+  for_each = local.prefixes
 
   prefix      = each.value.prefix
   site_id     = netbox_site.sites[each.value.site].id
@@ -130,29 +109,28 @@ resource "netbox_prefix" "prefixes" {
   tags = concat(local.common_tags, [netbox_tag.site_tags[each.value.site].name])
 }
 
-# Create devices
 resource "netbox_device" "devices" {
-  for_each = local.inventory.devices
+  for_each = local.devices
 
   name           = each.value.name
   device_type_id = netbox_device_type.device_types[each.value.device_type].id
   role_id        = netbox_device_role.device_roles[each.value.role].id
   site_id        = netbox_site.sites[each.value.site].id
-  location_id    = contains(each.value, "location") ? netbox_location.locations[each.value.location].id : null
-  status         = contains(each.value, "status") ? each.value.status : "active"
+  location_id    = try(each.value.location, null) != null ? netbox_location.locations[each.value.location].id : null
+  cluster_id     = try(each.value.cluster, null) != null ? netbox_cluster.clusters[each.value.cluster].id : null
+  status         = try(each.value.status, "active")
 
   tags = concat(
     local.common_tags,
     [netbox_tag.site_tags[each.value.site].name],
-    contains(each.value, "location") ? [netbox_tag.location_tags[each.value.location].name] : []
+    try(each.value.location, null) != null ? [netbox_tag.location_tags[each.value.location].name] : []
   )
 
-  description = contains(each.value, "description") ? each.value.description : "${each.value.name} - ${netbox_device_type.device_types[each.value.device_type].model}"
+  description = try(each.value.description, "${each.value.name} - ${netbox_device_type.device_types[each.value.device_type].model}")
 }
 
-# Static / reserved addresses from data/networks.yaml
 resource "netbox_ip_address" "static" {
-  for_each = local.networks.ip_addresses
+  for_each = local.ip_addresses
 
   ip_address  = each.value.address
   status      = each.value.status
@@ -161,16 +139,15 @@ resource "netbox_ip_address" "static" {
   tags = concat(local.common_tags, [netbox_tag.site_tags[each.value.site].name])
 }
 
-# Optional per-device IPs from inventory (empty today; avoid duplicating networks.ip_addresses)
 resource "netbox_ip_address" "devices" {
   for_each = {
-    for key, device in local.inventory.devices : key => device
+    for key, device in local.devices : key => device
     if try(device.ip_address, null) != null
   }
 
   ip_address  = each.value.ip_address
   status      = "active"
-  description = "Static IP for ${each.key}"
+  description = try(each.value.description, "Static IP for ${each.key}")
 
   tags = concat(
     local.common_tags,

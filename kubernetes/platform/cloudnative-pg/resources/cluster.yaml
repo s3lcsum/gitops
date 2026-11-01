@@ -39,3 +39,12 @@ spec:
     initdb:
       database: app
       owner: app
+  # WAL archiving -> NAS MinIO via the Barman Cloud plugin (ObjectStore "nas").
+  # isWALArchiver is mutually exclusive with spec.backup.barmanObjectStore, and
+  # only one plugin may claim it. This replaces the in-tree backup config, which
+  # is deprecated in CNPG 1.26 and removed in 1.32.
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: nas

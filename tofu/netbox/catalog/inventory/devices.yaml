@@ -1,0 +1,87 @@
+devices:
+  router-lake:
+    name: router-lake
+    device_type: rb5009
+    role: router
+    site: lake
+    location: proxmox-lake-1
+    status: active
+    description: MikroTik RouterOS gateway (192.168.89.1)
+    ip_address: 192.168.89.1/24
+
+  proxmox-lake-1:
+    name: lake-1
+    device_type: proxmox-node
+    role: hypervisor
+    site: lake
+    location: proxmox-lake-1
+    status: active
+    description: Proxmox VE host (CT101 + VM102)
+    ip_address: 192.168.89.254/24
+
+  nas-synology:
+    name: nas
+    device_type: ds923-plus
+    role: nas
+    site: lake
+    location: proxmox-lake-1
+    status: active
+    description: Synology NFS (192.168.89.240, /volume1/media)
+    ip_address: 192.168.89.240/24
+
+  k8s-lxc-101:
+    name: k8s-lxc
+    device_type: proxmox-lxc
+    role: kubernetes-node
+    site: lake
+    location: proxmox-lake-1
+    cluster: homelab-lake
+    status: active
+    description: Proxmox CT101 — live kubeadm control plane, Traefik/AdGuard/HA hostNetwork
+    ip_address: 192.168.89.252/24
+
+  k8s-qemu-102:
+    name: k8s-qemu
+    device_type: proxmox-qemu
+    role: kubernetes-node
+    site: lake
+    location: proxmox-lake-1
+    cluster: homelab-lake
+    status: active
+    description: Proxmox VM102 — dual-run kubeadm target beside CT101
+    ip_address: 192.168.89.253/24
+
+  vibe-mac:
+    name: vibe
+    device_type: mac-studio
+    role: workstation
+    site: lake
+    status: active
+    description: Mac host (SSH, node_exporter, Lima/k8s worker bridge)
+    ip_address: 192.168.89.200/24
+
+  vibe-k8s-worker:
+    name: vibe-k8s
+    device_type: proxmox-qemu
+    role: kubernetes-node
+    site: lake
+    cluster: homelab-lake
+    status: active
+    description: k8s worker on vibe (192.168.89.201, Traefik hostNetwork on worker)
+    ip_address: 192.168.89.201/24
+
+  atom-1:
+    name: atom-1
+    device_type: generic-server
+    role: remote-endpoint
+    site: remote
+    status: active
+    description: Remote peer (WireGuard 192.168.200.10/32); legacy Home Assistant / backup context
+
+  micrus-firebird:
+    name: micrus
+    device_type: cloud-vps
+    role: cloud-vps
+    site: remote
+    status: active
+    description: Mikrus VPS (RouterOS Firebird); WireGuard 192.168.200.40/32

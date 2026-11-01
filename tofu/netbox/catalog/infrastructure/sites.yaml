@@ -1,0 +1,9 @@
+sites:
+  lake:
+    name: Lake
+    slug: lake
+    description: Primary homelab site (Proxmox lake-1, flat 192.168.89.0/24 LAN)
+  remote:
+    name: Remote
+    slug: remote
+    description: Off-LAN peers (WireGuard-only or VPS endpoints)

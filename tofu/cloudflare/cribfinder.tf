@@ -1,8 +1,8 @@
 # Cribfinder is an OpenNext Next.js app on Cloudflare Workers (not Pages).
 # Git deploys stay with Workers Builds / wrangler; this module adopts the
-# Worker identity, custom hostname, and KV namespaces. Catalog contents
-# (catalog:v1) are owned by the app / wrangler kv put — not tofu — so a
-# listings dump never lands in this public repo.
+# Worker identity, custom hostname, and the production listings KV namespace.
+# Catalog contents (catalog:v1) are owned by the app / wrangler kv put — not
+# tofu — so a listings dump never lands in this public repo.
 #
 # There is no cloudflare_pages_project named cribfinder — only the Hugo
 # personal site uses Pages. Public URL is the Workers custom domain below.
@@ -22,11 +22,6 @@ import {
 import {
   to = cloudflare_workers_kv_namespace.cribfinder_listings
   id = "${local.cfg.cloudflare_account_id}/f06e75fdbeec4759b8ecc6b06caab698"
-}
-
-import {
-  to = cloudflare_workers_kv_namespace.cribfinder_listings_preview
-  id = "${local.cfg.cloudflare_account_id}/6cac3a35c6f946029984175423bc8cd1"
 }
 
 resource "cloudflare_worker" "cribfinder" {
@@ -49,9 +44,4 @@ resource "cloudflare_workers_custom_domain" "cribfinder" {
 resource "cloudflare_workers_kv_namespace" "cribfinder_listings" {
   account_id = local.cfg.cloudflare_account_id
   title      = "cribfinder-listings"
-}
-
-resource "cloudflare_workers_kv_namespace" "cribfinder_listings_preview" {
-  account_id = local.cfg.cloudflare_account_id
-  title      = "cribfinder-listings-preview"
 }

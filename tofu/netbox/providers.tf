@@ -11,5 +11,9 @@ terraform {
 
 provider "netbox" {
   server_url = local.secret.netbox_url
-  api_token  = local.secret.netbox_api_token
+  # TF_API_TOKEN is the live NetBox v2 token; netbox_api_token in KV often drifts.
+  api_token = coalesce(
+    try(local.secret.TF_API_TOKEN, null),
+    try(local.secret.netbox_api_token, null),
+  )
 }

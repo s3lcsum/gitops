@@ -386,6 +386,18 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+      initContainers:
+        - name: apply-subtitle-policy
+          image: alpine:3.21
+          command:
+            - /bin/sh
+            - -c
+            - apk add --no-cache sqlite >/dev/null && /bin/sh /policy/apply-bazarr-subtitles.sh
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: subtitle-policy
+              mountPath: /policy
       containers:
         - name: bazarr
           image: lscr.io/linuxserver/bazarr:1.6.2
@@ -426,6 +438,10 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: mediabox-bazarr
+        - name: subtitle-policy
+          configMap:
+            name: mediabox-subtitle-policy
+            defaultMode: 0444
         - name: local-media
           persistentVolumeClaim:
             claimName: mediabox-local-media
@@ -479,6 +495,18 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+      initContainers:
+        - name: apply-subtitle-policy
+          image: alpine:3.21
+          command:
+            - /bin/sh
+            - -c
+            - apk add --no-cache sqlite >/dev/null && /bin/sh /policy/apply-jellyfin-subtitles.sh
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: subtitle-policy
+              mountPath: /policy
       containers:
         - name: jellyfin
           image: ghcr.io/linuxserver/jellyfin:12.4ubu2604-ls57
@@ -519,6 +547,10 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: mediabox-jellyfin
+        - name: subtitle-policy
+          configMap:
+            name: mediabox-subtitle-policy
+            defaultMode: 0444
         - name: local-media
           persistentVolumeClaim:
             claimName: mediabox-local-media

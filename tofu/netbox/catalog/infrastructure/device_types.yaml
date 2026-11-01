@@ -1,0 +1,41 @@
+device_types:
+  rb5009:
+    model: RB5009UG+S+
+    slug: rb5009ug-s-plus
+    manufacturer: mikrotik
+    u_height: 1
+  ds923-plus:
+    model: DS923+
+    slug: ds923-plus
+    manufacturer: synology
+    u_height: 1
+  proxmox-node:
+    model: Proxmox VE Node
+    slug: proxmox-ve-node
+    manufacturer: proxmox
+    u_height: 2
+  proxmox-lxc:
+    model: Proxmox LXC
+    slug: proxmox-lxc
+    manufacturer: proxmox
+    u_height: 0
+  proxmox-qemu:
+    model: Proxmox QEMU VM
+    slug: proxmox-qemu
+    manufacturer: proxmox
+    u_height: 0
+  mac-studio:
+    model: Mac (Apple Silicon)
+    slug: mac-apple-silicon
+    manufacturer: apple
+    u_height: 0
+  generic-server:
+    model: Generic Server
+    slug: generic-server
+    manufacturer: generic
+    u_height: 1
+  cloud-vps:
+    model: Cloud VPS
+    slug: cloud-vps
+    manufacturer: generic
+    u_height: 0

@@ -2,3 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - resources/cluster.yaml
+  # WAL + daily base backups -> NAS MinIO (Barman Cloud plugin).
+  - resources/objectstore-nas.yaml
+  - resources/scheduledbackup-daily.yaml
+  # Weekly logical cold copy -> Backblaze B2 (self-contained, survives NAS loss).
+  - resources/dump-b2-cronjob.yaml

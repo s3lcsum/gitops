@@ -69,8 +69,27 @@ def kv_get(token: str, logical: str) -> dict[str, str]:
     return dict(out.get('data', {}).get('data', {}))
 
 
+def normalize_kv(data: dict) -> dict[str, str]:
+    """Vault KV v2 + hashicorp/vault provider: every value must be a string."""
+    out: dict[str, str] = {}
+    for k, v in data.items():
+        if k.startswith('__'):
+            continue
+        if isinstance(v, str):
+            out[k] = v
+        elif isinstance(v, (dict, list)):
+            out[k] = json.dumps(v)
+        elif isinstance(v, bool):
+            out[k] = 'true' if v else 'false'
+        elif isinstance(v, (int, float)):
+            out[k] = str(v)
+        else:
+            out[k] = str(v)
+    return out
+
+
 def kv_put(token: str, logical: str, data: dict[str, str]) -> None:
-    api(token, 'POST', f"secret/data/{logical}", {'data': data})
+    api(token, 'POST', f"secret/data/{logical}", {'data': normalize_kv(data)})
 
 
 def kv_delete(token: str, logical: str) -> None:

@@ -1,0 +1,72 @@
+# Removes subtitle files/tracks outside en/pl/es on the shared library NFS.
+# External sidecars: deleted by language tag in the filename.
+# Embedded (MKV): remuxed with mkvmerge to keep only en/pl/es subtitle tracks.
+# Set SUBTITLE_PRUNE_DRY_RUN=true on the CronJob to preview without changes.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mediabox-subtitle-prune
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: mediabox-subtitle-prune
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  schedule: "0 4 * * 0"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 86400
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: mediabox-subtitle-prune
+            app.kubernetes.io/part-of: mediabox
+        spec:
+          priorityClassName: homelab-low
+          restartPolicy: Never
+          tolerations:
+            - key: node-role.kubernetes.io/control-plane
+              operator: Exists
+              effect: NoSchedule
+          containers:
+            - name: prune
+              image: alpine:3.21
+              env:
+                - name: SUBTITLE_ROOT
+                  value: /library
+                - name: SUBTITLE_PRUNE_DRY_RUN
+                  value: "false"
+                - name: PRUNE_EMBEDDED
+                  value: "true"
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  apk add --no-cache mkvtoolnix jq >/dev/null
+                  /bin/sh /policy/prune-external-subtitles.sh
+                  /bin/sh /policy/prune-embedded-subtitles.sh
+              volumeMounts:
+                - name: library
+                  mountPath: /library
+                - name: policy
+                  mountPath: /policy
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: "2"
+                  memory: 2Gi
+          volumes:
+            - name: library
+              persistentVolumeClaim:
+                claimName: mediabox-library
+            - name: policy
+              configMap:
+                name: mediabox-subtitle-policy
+                defaultMode: 0444

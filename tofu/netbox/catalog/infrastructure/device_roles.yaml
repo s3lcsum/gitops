@@ -1,0 +1,49 @@
+device_roles:
+  router:
+    name: Router
+    slug: router
+    description: LAN/WAN routing and firewall
+    color_hex: "e74c3c"
+    vm_role: false
+  hypervisor:
+    name: Hypervisor
+    slug: hypervisor
+    description: Proxmox VE host
+    color_hex: "9b59b6"
+    vm_role: false
+  nas:
+    name: NAS
+    slug: nas
+    description: Network-attached storage
+    color_hex: "3498db"
+    vm_role: false
+  kubernetes-node:
+    name: Kubernetes Node
+    slug: kubernetes-node
+    description: kubeadm node (control plane or worker)
+    color_hex: "326ce5"
+    vm_role: true
+  workstation:
+    name: Workstation
+    slug: workstation
+    description: Interactive Mac / dev host
+    color_hex: "95a5a6"
+    vm_role: false
+  application:
+    name: Application
+    slug: application
+    description: Workload running on Kubernetes (Deployment/StatefulSet/DaemonSet)
+    color_hex: "2ecc71"
+    vm_role: true
+  remote-endpoint:
+    name: Remote Endpoint
+    slug: remote-endpoint
+    description: Off-LAN system reachable via WireGuard or public Internet
+    color_hex: "f39c12"
+    vm_role: false
+  cloud-vps:
+    name: Cloud VPS
+    slug: cloud-vps
+    description: VPS outside the LAN (overlay or routed)
+    color_hex: "1abc9c"
+    vm_role: false

@@ -1,0 +1,226 @@
+# User-facing workloads (homepage + AGENTS.md)
+virtual_machines:
+  homepage:
+    name: homepage
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: homepage
+    description: gethomepage dashboard (services.yaml source of truth)
+
+  netbox-app:
+    name: netbox
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: netbox
+    description: NetBox DCIM app (this catalog feeds tofu/netbox)
+
+  n8n:
+    name: n8n
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: n8n
+    description: Workflow automation (RouterOS WAN allowlist webhook)
+
+  hass:
+    name: home-assistant
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: hass
+    description: Home Assistant hostNetwork on k8s LXC (.252)
+
+  mosquitto:
+    name: mosquitto
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: hass
+    description: MQTT broker (LAN password auth; in-cluster hass.svc)
+
+  zigbee2mqtt-usb:
+    name: zigbee2mqtt-usb
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: hass
+    description: Zigbee coordinator /dev/ttyUSB0 on lake node
+
+  zigbee2mqtt-wifi:
+    name: zigbee2mqtt-wifi
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: hass
+    description: WiFi coordinator (hostPath /var/lib/hass/zigbee2mqtt-wifi)
+
+  hass-timemachine:
+    name: hass-timemachine
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: hass
+    description: HA config snapshot sidecar
+
+  unifi:
+    name: unifi
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: unifi
+    description: UniFi Network Application hostNetwork inform :8080
+
+  watchyourlan:
+    name: watchyourlan
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: watchyourlan
+    description: LAN discovery hostNetwork :8840
+
+  wealthfolio:
+    name: wealthfolio
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: wealthfolio
+    description: Personal finance app
+
+  sure:
+    name: sure
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: sure
+    description: Home inventory / insurance (kustomize-only Argo app)
+
+  mediabox-vpn:
+    name: mediabox-vpn
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: mediabox
+    description: Gluetun + qBittorrent + SABnzbd single pod (VPN egress)
+
+  jellyfin:
+    name: jellyfin
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: mediabox
+    description: Media server (software transcode, no GPU)
+
+  radarr:
+    name: radarr
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: mediabox
+    description: Movie automation
+
+  sonarr:
+    name: sonarr
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: mediabox
+    description: Series automation
+
+  prowlarr:
+    name: prowlarr
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: mediabox
+    description: Indexer manager
+
+  profilarr:
+    name: profilarr
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: mediabox
+    description: Quality profile sync
+
+  bazarr:
+    name: bazarr
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: mediabox
+    description: Subtitle management
+
+  seerr:
+    name: seerr
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: mediabox
+    description: Jellyfin request portal (Overseerr fork)
+
+  scraparr:
+    name: scraparr
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: mediabox
+    description: Sonarr/Radarr release metrics exporter
+
+  flaresolverr:
+    name: flaresolverr
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: mediabox
+    description: Cloudflare bypass proxy (pinned to vibe worker node)
+
+  calibre-web:
+    name: calibre-web
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: calibre
+    description: Calibre library UI (NFS books)
+
+  calibre-gui:
+    name: calibre-gui
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: calibre
+    description: Calibre desktop via KasmVNC
+
+  calibre-api:
+    name: calibre-api
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: calibre
+    description: Calibre OPDS / content API

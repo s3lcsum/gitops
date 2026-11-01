@@ -1,0 +1,16 @@
+manufacturers:
+  mikrotik:
+    name: MikroTik
+    slug: mikrotik
+  synology:
+    name: Synology
+    slug: synology
+  proxmox:
+    name: Proxmox
+    slug: proxmox
+  apple:
+    name: Apple
+    slug: apple
+  generic:
+    name: Generic
+    slug: generic

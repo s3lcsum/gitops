@@ -1,0 +1,248 @@
+# Weekly cold logical backup of the whole shared cluster -> Backblaze B2.
+#
+# Why a dump and not a Barman base backup: Barman base backups are physical and
+# need the WAL stream that sits with them. The plugin supports exactly one
+# ObjectStore per Cluster (the one referenced by spec.plugins), so a second
+# Barman target on B2 would hold base backups with no WAL -> unrestorable.
+# pg_dumpall is self-contained: one gzip file restores with psql on any host,
+# even if the NAS, the cluster and the plugin are all gone.
+#
+# Scope: all databases + roles (pg_dumpall), so authentik/n8n/netbox/hass/sure
+# and the canary `app` DB all come back in one restore.
+#
+# Ordering is enforced by using an initContainer for the dump: init containers
+# finish before main containers start, so the upload never races the dump.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: postgres-backup-b2
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    app.kubernetes.io/name: postgres-backup
+    app.kubernetes.io/part-of: cloudnative-pg
+    app.kubernetes.io/managed-by: argocd
+spec:
+  refreshPolicy: OnChange
+  refreshInterval: 0s
+  secretStoreRef:
+    name: openbao
+    kind: ClusterSecretStore
+  target:
+    name: postgres-backup-b2
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      metadata:
+        labels: {}
+        annotations:
+          argocd.argoproj.io/sync-options: Prune=false
+  # OpenBao secret/cnpg-backup, B2 fields. Values come from
+  # `make -C tofu/backblaze show-config` (bucket + app key for
+  # dominiksiejak-postgres-lake-1-backups).
+  data:
+    - secretKey: B2_ACCESS_KEY_ID
+      remoteRef:
+        key: cnpg-backup
+        property: b2-access-key-id
+    - secretKey: B2_SECRET_ACCESS_KEY
+      remoteRef:
+        key: cnpg-backup
+        property: b2-secret-access-key
+    - secretKey: B2_REGION
+      remoteRef:
+        key: cnpg-backup
+        property: b2-region
+    - secretKey: B2_ENDPOINT
+      remoteRef:
+        key: cnpg-backup
+        property: b2-endpoint
+    - secretKey: B2_BUCKET
+      remoteRef:
+        key: cnpg-backup
+        property: b2-bucket
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-dump-b2
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+  labels:
+    app.kubernetes.io/name: postgres-backup
+    app.kubernetes.io/part-of: cloudnative-pg
+    app.kubernetes.io/managed-by: argocd
+spec:
+  # Sunday 04:10 UTC. Deliberately not on the hour, and two hours after the
+  # nightly Barman base backup so the two never contend for the NAS.
+  schedule: "10 4 * * 0"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      # A hung dump must not pin an emptyDir + pod forever.
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: postgres-backup
+            app.kubernetes.io/part-of: cloudnative-pg
+            app.kubernetes.io/managed-by: argocd
+        spec:
+          # Backup-only workload: never preempts Postgres or an app.
+          priorityClassName: homelab-low
+          restartPolicy: Never
+          tolerations:
+            - key: node-role.kubernetes.io/control-plane
+              operator: Exists
+              effect: NoSchedule
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 26
+            runAsGroup: 26
+            fsGroup: 26
+            seccompProfile:
+              type: RuntimeDefault
+          initContainers:
+            - name: dump
+              image: ghcr.io/cloudnative-pg/postgresql:18.6-system-trixie
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  ts="$(date -u +%Y%m%dT%H%M%SZ)"
+                  out="/dump/postgres-${ts}.sql.gz"
+                  # verify-full against the CNPG CA: postgres-rw's serving cert
+                  # carries postgres-rw.cloudnative-pg.svc as a SAN.
+                  # Role passwords are included on purpose: a DR restore must
+                  # come back usable (authentik/n8n/netbox/hass/sure all auth
+                  # against these roles). The bucket is private and the object
+                  # never leaves B2, so this is not a git-secret exposure.
+                  pg_dumpall \
+                    --dbname="postgresql://${PGUSER}@${PGHOST}:${PGPORT}/postgres?sslmode=verify-full&sslrootcert=/certs/ca.crt" \
+                    | gzip -9 > "${out}"
+                  echo "dumped $(stat -c %s "${out}") bytes -> ${out}"
+              env:
+                - name: HOME
+                  value: /tmp
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-superuser
+                      key: username
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-superuser
+                      key: password
+                - name: PGHOST
+                  value: postgres-rw.cloudnative-pg.svc
+                - name: PGPORT
+                  value: "5432"
+              volumeMounts:
+                - name: dump
+                  mountPath: /dump
+                - name: ca
+                  mountPath: /certs
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  memory: 512Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                readOnlyRootFilesystem: true
+          containers:
+            - name: upload
+              # rclone handles B2's S3 API without a vendor CLI.
+              image: rclone/rclone:1.75
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  rclone copy /dump "b2:${B2_BUCKET}/postgres" \
+                    --include "*.sql.gz" \
+                    --s3-chunk-size 32M \
+                    --transfers 2 \
+                    --log-level INFO
+                  echo "uploaded to b2:${B2_BUCKET}/postgres"
+              env:
+                # readOnlyRootFilesystem + non-root: give rclone a writable
+                # HOME, otherwise it fails creating its config/cache dirs.
+                - name: HOME
+                  value: /tmp
+                - name: XDG_CONFIG_HOME
+                  value: /tmp/rclone-config
+                # rclone backend config via env -> no rclone.conf on disk.
+                # B2's S3 endpoint is region-scoped (eu-central-003), so the
+                # region must match the bucket or SigV4 is rejected.
+                - name: RCLONE_CONFIG_B2_TYPE
+                  value: s3
+                - name: RCLONE_CONFIG_B2_PROVIDER
+                  value: Other
+                - name: RCLONE_CONFIG_B2_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-b2
+                      key: B2_ACCESS_KEY_ID
+                - name: RCLONE_CONFIG_B2_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-b2
+                      key: B2_SECRET_ACCESS_KEY
+                - name: RCLONE_CONFIG_B2_REGION
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-b2
+                      key: B2_REGION
+                - name: RCLONE_CONFIG_B2_ENDPOINT
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-b2
+                      key: B2_ENDPOINT
+                - name: B2_BUCKET
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-backup-b2
+                      key: B2_BUCKET
+              volumeMounts:
+                - name: dump
+                  mountPath: /dump
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  memory: 256Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                readOnlyRootFilesystem: true
+          volumes:
+            - name: dump
+              emptyDir:
+                medium: ""
+            - name: tmp
+              emptyDir:
+                medium: ""
+            - name: ca
+              secret:
+                secretName: postgres-ca
+                items:
+                  - key: ca.crt
+                    path: ca.crt

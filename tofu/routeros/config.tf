@@ -1,6 +1,6 @@
 # Non-secret defaults. Secrets: local.secret (ephemeral from OpenBao).
-# wireguard_peers feeds for_each on regular resources, so it cannot be
-# ephemeral — it lives here.
+# OpenBao KV values must be strings only (int/map in secret/routeros breaks
+# vault_kv_secret_v2). wireguard_* stays here — feeds for_each on resources.
 locals {
   cfg = {
     wireguard_endpoint    = "vpn.dominiksiejak.pl"

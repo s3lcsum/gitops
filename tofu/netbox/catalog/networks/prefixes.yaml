@@ -1,0 +1,22 @@
+# Homelab prefixes — keep in sync with tofu/routeros, kubernetes/flannel, AGENTS.md.
+prefixes:
+  lan-ipv4:
+    prefix: 192.168.89.0/24
+    site: lake
+    description: Primary LAN — DHCP (.100-.199 via RouterOS), Wi‑Fi, servers, NAS, IoT (flat L2)
+    is_pool: true
+    status: active
+
+  wireguard-ipv4:
+    prefix: 192.168.200.0/24
+    site: lake
+    description: WireGuard overlay (vpn.dominiksiejak.pl:51820) — peers; CI github-actions .254/32
+    is_pool: false
+    status: active
+
+  k8s-pods-ipv4:
+    prefix: 10.244.0.0/16
+    site: lake
+    description: Flannel host-gw pod CIDR (matches kubernetes/flannel values)
+    is_pool: false
+    status: active

@@ -42,7 +42,7 @@ subjects:
     namespace: external-dns
 ---
 # Official shape: no command override. Image entrypoint is /ko-app/external-dns.
-# dry-run stays on until logs list the expected A set, then drop --dry-run.
+# Per-host A only (no zone wildcard). WAN target from ConfigMap wan-ip.
 # No cloud LB, so --default-targets fills CRD endpoints that omit targets.
 # $(WAN_IP) is Kubernetes env expansion, not a shell. Chart quoting would
 # leave it literal, so this instance is not the Helm release.
@@ -101,9 +101,9 @@ spec:
             - --managed-record-types=A
             - --managed-record-types=TXT
             - --provider=cloudflare
+            - --cloudflare-proxied=false
             - --cloudflare-dns-records-per-page=5000
             - --default-targets=$(WAN_IP)
-            - --dry-run
           env:
             - name: WAN_IP
               valueFrom:

@@ -2,7 +2,8 @@
 # Destinations live in Workers KV (LINKS / links:v1). The Worker script is
 # deployed with wrangler (shorturl.js + shorturl.wrangler.jsonc); terraform
 # adopts the Worker identity, custom hostname, namespace, and public catalog.
-# Do not put phone numbers or other PII in shorturl-links.json.
+# Public redirect catalog only (no secrets). Contact shortcuts (email, telegram,
+# whatsapp) are intentional; do not add private numbers or tokens here.
 
 import {
   to = cloudflare_worker.shorturl

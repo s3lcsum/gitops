@@ -1,0 +1,199 @@
+# Kubernetes platform + edge (namespace matches Argo app where possible)
+virtual_machines:
+  traefik:
+    name: traefik
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: traefik
+    description: Traefik hostNetwork DaemonSet (WAN :80/:443 on lake nodes)
+
+  adguard:
+    name: adguard
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: adguard
+    description: AdGuard Home hostNetwork (:53, :3000 on k8s LXC)
+
+  coredns:
+    name: coredns
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: kube-system
+    description: CoreDNS upstream chain AdGuard → RouterOS → 1.1.1.1
+
+  external-dns:
+    name: external-dns
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: external-dns
+    description: Cloudflare + AdGuard DNS record sync
+
+  cloudflared:
+    name: cloudflared
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: cloudflared
+    description: Cloudflare Tunnel + Access path (not WAN substitute)
+
+  cert-manager:
+    name: cert-manager
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: cert-manager
+    description: Public ACME + OpenBao internal CA issuers
+
+  trust-manager:
+    name: trust-manager
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: cert-manager
+    description: trust-manager bundle distribution
+
+  external-secrets:
+    name: external-secrets
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: external-secrets
+    description: ESO ClusterSecretStore openbao + 1Password bootstrap
+
+  kyverno:
+    name: kyverno
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: kyverno
+    description: Policy engine (Flannel pod labels, webhook failurePolicy Ignore)
+
+  flannel:
+    name: flannel
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: flannel
+    description: CNI host-gw overlay
+
+  openbao:
+    name: openbao
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: openbao
+    description: OpenBao HA + KMS unseal (secrets backend for ESO/tofu)
+
+  argocd:
+    name: argocd
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: argocd
+    description: GitOps control plane (ApplicationSet helm + kustomize)
+
+  argo-rollouts:
+    name: argo-rollouts
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: argo-rollouts
+    description: Progressive delivery controller
+
+  policy-reporter:
+    name: policy-reporter
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: policy-reporter
+    description: Kyverno policy report UI
+
+  headlamp:
+    name: headlamp
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: headlamp
+    description: Kubernetes UI (Authentik-gated cluster-admin)
+
+  authentik:
+    name: authentik
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: authentik
+    description: SSO IdP hostNetwork :9000 (forward-auth + OIDC apps)
+
+  monitoring:
+    name: monitoring
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: monitoring
+    description: VictoriaMetrics + agents (remote_write → Grafana Cloud)
+
+  grafana-synthetic-agent:
+    name: grafana-synthetic-agent
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: grafana-synthetic-agent
+    description: Grafana Cloud synthetic probes
+
+  cloudnative-pg:
+    name: postgres
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: cloudnative-pg
+    description: CloudNativePG cluster postgres (RW postgres-rw.cloudnative-pg.svc)
+
+  nfs-provisioner:
+    name: nfs-provisioner
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: nfs
+    description: nfs-subdir-external-provisioner (dynamic class nfs, not default)
+
+  local-path-provisioner:
+    name: local-path-provisioner
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: local-path-storage
+    description: local-path StorageClass (CNPG + many PVCs)
+
+  metrics-server:
+    name: metrics-server
+    cluster: homelab-lake
+    site: lake
+    role: application
+    platform: container
+    namespace: kube-system
+    description: Kubernetes metrics API

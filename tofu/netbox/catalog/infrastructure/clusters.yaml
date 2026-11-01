@@ -1,0 +1,6 @@
+clusters:
+  homelab-lake:
+    name: homelab-lake
+    cluster_type: kubernetes
+    site: lake
+    description: Live cluster on CT101 (.252) + worker vibe (.201); VM102 (.253) dual-run target

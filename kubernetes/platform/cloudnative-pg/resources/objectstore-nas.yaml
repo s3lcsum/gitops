@@ -1,0 +1,107 @@
+# WAL archive + daily base backups for Cluster/postgres -> NAS MinIO.
+#
+# Plugin path, not in-tree .spec.backup.barmanObjectStore: the in-tree Barman
+# integration is deprecated in CloudNativePG 1.26 and removed in 1.32, so
+# anything written against it is dead on arrival at the next operator bump.
+#
+# ObjectStore lives beside the Cluster (same namespace) because the plugin
+# resolves barmanObjectName inside the cluster's namespace.
+#
+# Credentials: Secret postgres-backup-nas-s3, created by ExternalSecret from
+# OpenBao secret/cnpg-backup (fields nas-access-key / nas-secret-key).
+# Requires a MinIO service account created out of band on the NAS; see
+# resources/externalsecret-nas-s3.yaml for the exact keys the plugin reads.
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: nas
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  labels:
+    app.kubernetes.io/name: postgres-backup
+    app.kubernetes.io/part-of: cloudnative-pg
+    app.kubernetes.io/managed-by: argocd
+spec:
+  configuration:
+    # One prefix per cluster so a second Cluster cannot collide on serverName.
+    destinationPath: s3://cnpg-backups/postgres
+    endpointURL: http://192.168.89.240:9000
+    # NAS MinIO speaks plain HTTP on the LAN. Region is only a signing scope;
+    # MinIO ignores it, but the SigV4 signer requires a non-empty value.
+    s3Credentials:
+      accessKeyId:
+        name: postgres-backup-nas-s3
+        key: ACCESS_KEY_ID
+      secretAccessKey:
+        name: postgres-backup-nas-s3
+        key: ACCESS_SECRET_KEY
+      region:
+        name: postgres-backup-nas-s3
+        key: REGION
+    wal:
+      # zstd beats gzip on both ratio and CPU for WAL segments.
+      compression: zstd
+      maxParallel: 2
+    data:
+      # Base-backup compression has no zstd option in this CRD (only gzip,
+      # bzip2, lz4, snappy). lz4 keeps the daily job cheap on the NAS CPU.
+      compression: lz4
+      jobs: 2
+  # 14 days of PITR from the NAS. The NAS is the fast-recovery target; B2
+  # carries the long-tail cold copy (weekly dump, 120d lifecycle).
+  retentionPolicy: "14d"
+  instanceSidecarConfiguration:
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        memory: 256Mi
+---
+# Credentials for the ObjectStore above. OpenBao secret/cnpg-backup:
+#   nas-access-key-id, nas-secret-access-key, nas-region
+# Created out of band because the MinIO service account has to exist on the
+# NAS first (no NAS Terraform provider in this repo yet).
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: postgres-backup-nas-s3
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  labels:
+    app.kubernetes.io/name: postgres-backup
+    app.kubernetes.io/part-of: cloudnative-pg
+    app.kubernetes.io/managed-by: argocd
+spec:
+  refreshPolicy: OnChange
+  refreshInterval: 0s
+  secretStoreRef:
+    name: openbao
+    kind: ClusterSecretStore
+  target:
+    name: postgres-backup-nas-s3
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      metadata:
+        labels: {}
+        annotations:
+          # ObjectStore data must survive an Argo prune of this directory or
+          # the plugin loses the only copy of the WAL credentials.
+          argocd.argoproj.io/sync-options: Prune=false
+  data:
+    - secretKey: ACCESS_KEY_ID
+      remoteRef:
+        key: cnpg-backup
+        property: nas-access-key-id
+    - secretKey: ACCESS_SECRET_KEY
+      remoteRef:
+        key: cnpg-backup
+        property: nas-secret-access-key
+    - secretKey: REGION
+      remoteRef:
+        key: cnpg-backup
+        property: nas-region

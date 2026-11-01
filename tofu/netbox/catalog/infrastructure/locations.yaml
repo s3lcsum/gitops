@@ -1,0 +1,6 @@
+locations:
+  proxmox-lake-1:
+    name: Proxmox lake-1
+    slug: proxmox-lake-1
+    description: Proxmox node hosting CT101/VM102 and NAS-adjacent services
+    site: lake
