@@ -2,13 +2,13 @@
 # AppRole: ~/.config/openbao/role_id and ~/.config/openbao/secret_id
 # GCP ADC for state. No tfvars.
 
-.PHONY: help plan apply clean
+.PHONY: help auth plan apply clean
 .DEFAULT_GOAL := help
 
 ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 TG_FILTER ?= --filter='!./adguard' --filter='!./proxmox' --filter='!./postgres'
-# Units at same DAG depth (e.g. after openbao: 5 roots). Override: TG_PARALLELISM=3
-TG_PARALLELISM ?= 5
+# Units at same DAG depth run in parallel (openbao first, then e.g. gcp + authentik + …).
+TG_PARALLELISM ?= 10
 # Shared provider downloads across units + caches. Disable: TG_OPTS=
 TG_OPTS ?= --parallelism $(TG_PARALLELISM) --provider-cache
 # Per-module OpenTofu resource concurrency (plan/apply). Override: TOFU_PARALLELISM=20
@@ -35,8 +35,16 @@ apply: ## Apply all active modules, or one when MODULE=name
 	@if [ -n "$(MODULE)" ]; then \
 		cd "$(ROOT)/$(MODULE)" && terragrunt run --non-interactive $(TG_OPTS) -- apply -auto-approve $(TOFU_ARGS); \
 	else \
-		cd "$(ROOT)" && terragrunt run --all --non-interactive $(TG_FILTER) $(TG_OPTS) -- apply $(TOFU_ARGS); \
+		cd "$(ROOT)" && terragrunt run --all --non-interactive $(TG_FILTER) $(TG_OPTS) -- apply -auto-approve $(TOFU_ARGS); \
 	fi
+
+auth: ## Write ~/.config/openbao AppRole files from OPENBAO_APPROLE_* env (CI or local)
+	@set -euo pipefail; \
+	test -n "$${OPENBAO_APPROLE_ROLE_ID:-}" && test -n "$${OPENBAO_APPROLE_SECRET_ID:-}"; \
+	umask 077; mkdir -p "$${HOME}/.config/openbao"; \
+	printf '%s' "$$OPENBAO_APPROLE_ROLE_ID" > "$${HOME}/.config/openbao/role_id"; \
+	printf '%s' "$$OPENBAO_APPROLE_SECRET_ID" > "$${HOME}/.config/openbao/secret_id"; \
+	chmod 600 "$${HOME}/.config/openbao/role_id" "$${HOME}/.config/openbao/secret_id"
 
 clean: ## Drop Terragrunt caches
 	@find "$(ROOT)" -type d -name .terragrunt-cache -prune -exec rm -rf {} +

@@ -1,0 +1,45 @@
+name: OpenTofu CI image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ci/opentofu/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  TOFU_VERSION: "1.12.5"
+  TG_VERSION: "1.2.1"
+  IMAGE_NAME: ghcr.io/s3lcsum/gitops/opentofu-ci
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ci/opentofu
+          file: ci/opentofu/Dockerfile
+          push: true
+          build-args: |
+            TOFU_VERSION=${{ env.TOFU_VERSION }}
+            TG_VERSION=${{ env.TG_VERSION }}
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.TOFU_VERSION }}-${{ env.TG_VERSION }}
+            ${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

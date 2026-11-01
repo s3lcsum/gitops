@@ -1,0 +1,55 @@
+name: OpenTofu
+
+# Full stack apply (make apply). Parallelism: TG_PARALLELISM modules at once, TOFU_PARALLELISM per module.
+
+on:
+  push:
+    branches: [main]
+    paths: ["tofu/**"]
+  workflow_dispatch:
+
+concurrency:
+  group: wireguard-peer-github-actions
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write
+  packages: read
+
+env:
+  TG_PARALLELISM: "10"
+  TOFU_PARALLELISM: "10"
+
+jobs:
+  tofu:
+    runs-on: ${{ vars.TOFU_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 90
+    container:
+      image: ghcr.io/s3lcsum/gitops/opentofu-ci:1.12.5-1.2.1
+      options: --cap-add=NET_ADMIN --device /dev/net/tun
+    defaults:
+      run:
+        working-directory: tofu
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/wireguard
+        if: vars.TOFU_RUNNER == ''
+        with:
+          private-key: ${{ secrets.WIREGUARD_PRIVATE_KEY }}
+          public-key: ${{ secrets.WIREGUARD_PUBLIC_KEY }}
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: OpenBao AppRole
+        env:
+          OPENBAO_APPROLE_ROLE_ID: ${{ secrets.OPENBAO_APPROLE_ROLE_ID }}
+          OPENBAO_APPROLE_SECRET_ID: ${{ secrets.OPENBAO_APPROLE_SECRET_ID }}
+        run: make auth
+
+      - name: Apply
+        run: make apply

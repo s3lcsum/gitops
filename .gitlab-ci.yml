@@ -1,0 +1,2 @@
+# OpenTofu CI runs on GitHub Actions (.github/workflows/opentofu.yml).
+# GitLab: mirror the same steps or run make plan/apply from a LAN runner with AppRole + ADC.

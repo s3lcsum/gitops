@@ -46,17 +46,13 @@ resource "google_storage_bucket_iam_member" "terraform_state_sa" {
 }
 
 ########################################################
-# GitHub Actions OpenTofu CI (JSON key → GH secret GCP_SA_KEY)
+# OpenTofu CI — keyless via Workload Identity Federation (see tofu/gcp/wif_cicd.tf)
 ########################################################
 resource "google_service_account" "github_actions_tofu" {
   account_id   = "github-actions-tofu"
-  display_name = "GitHub Actions OpenTofu CI"
-  description  = "CI runner for plan/apply against GCS tfstate (key exported to GitHub Actions secret)"
+  display_name = "OpenTofu CI (GitHub + GitLab WIF)"
+  description  = "Keyless CI: GCS tfstate + OpenBao GCP auth JWT (Workload Identity Federation)"
   project      = local.cfg.gcp_project_id
-}
-
-resource "google_service_account_key" "github_actions_tofu" {
-  service_account_id = google_service_account.github_actions_tofu.name
 }
 
 resource "google_storage_bucket_iam_member" "github_actions_tofu_state" {

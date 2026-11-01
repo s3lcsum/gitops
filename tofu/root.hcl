@@ -35,20 +35,23 @@ remote_state {
   }
 }
 
-# AppRole: ~/.config/openbao/{role_id,secret_id}
-# KV: secret/<module> on mount secret — ESO + tofu (flat keys; nested = JSON objects).
+# AppRole: ~/.config/openbao/{role_id,secret_id} when VAULT_TOKEN is unset (local + CI).
 generate "vault" {
   path      = "vault_env.tf"
   if_exists = "overwrite_terragrunt"
   contents  = <<-EOF
     provider "vault" {
       address = "https://bao.dominiksiejak.pl"
+      token   = length(trimspace("${get_env("VAULT_TOKEN", "")}")) > 0 ? trimspace("${get_env("VAULT_TOKEN", "")}") : null
 
-      auth_login {
-        path = "auth/approle/login"
-        parameters = {
-          role_id   = trimspace(file("$${pathexpand("~/.config/openbao/role_id")}"))
-          secret_id = trimspace(file("$${pathexpand("~/.config/openbao/secret_id")}"))
+      dynamic "auth_login" {
+        for_each = length(trimspace("${get_env("VAULT_TOKEN", "")}")) == 0 ? [1] : []
+        content {
+          path = "auth/approle/login"
+          parameters = {
+            role_id   = trimspace(file("$${pathexpand("~/.config/openbao/role_id")}"))
+            secret_id = trimspace(file("$${pathexpand("~/.config/openbao/secret_id")}"))
+          }
         }
       }
     }

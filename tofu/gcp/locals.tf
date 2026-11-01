@@ -5,6 +5,8 @@ locals {
   # APIs required for service accounts + state storage.
   required_apis = [
     "iam.googleapis.com",
+    "iamcredentials.googleapis.com",
     "storage.googleapis.com",
+    "sts.googleapis.com",
   ]
 }
