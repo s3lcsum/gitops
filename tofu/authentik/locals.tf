@@ -67,6 +67,27 @@ locals {
         "https://seerr.dominiksiejak.pl/profile/settings/linked-accounts",
       ]
     }
+    # Servarr native OIDC (Radarr v7 / Sonarr v5 develop). Callback path is fixed
+    # by ASP.NET Core. Set OidcAuthority to applications.<slug>.issuer_uri after
+    # apply; remove Traefik forward-auth on the IngressRoute once config.xml uses Oidc.
+    radarr = {
+      name       = "Radarr"
+      launch_url = "https://radarr.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/radarr.svg"
+      redirect_uris = [
+        "https://radarr.dominiksiejak.pl/signin-oidc",
+      ]
+      sub_mode = "user_uuid"
+    }
+    sonarr = {
+      name       = "Sonarr"
+      launch_url = "https://sonarr.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sonarr.svg"
+      redirect_uris = [
+        "https://sonarr.dominiksiejak.pl/signin-oidc",
+      ]
+      sub_mode = "user_uuid"
+    }
     homeassistant = {
       name       = "Home Assistant"
       launch_url = "https://hass.dominiksiejak.pl"
@@ -271,8 +292,7 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/qbittorrent.png"
       skip_path_regex = ""
     }
-    # *arr: no native OIDC and the apps trust Traefik's node IP as local, so Traefik
-    # forward-auth is the gate. forward_single: outpost only auths; Traefik proxies.
+    # *arr without native OIDC: Traefik forward-auth via proxy provider.
     bazarr = {
       name            = "Bazarr"
       external_host   = "https://bazarr.dominiksiejak.pl"
@@ -297,28 +317,12 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/prowlarr.svg"
       skip_path_regex = ""
     }
-    radarr = {
-      name            = "Radarr"
-      external_host   = "https://radarr.dominiksiejak.pl"
-      internal_host   = "http://radarr.mediabox.svc:7878"
-      launch_url      = "https://radarr.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/radarr.svg"
-      skip_path_regex = ""
-    }
     sabnzbd = {
       name            = "SABnzbd"
       external_host   = "https://sabnzbd.dominiksiejak.pl"
       internal_host   = "http://gluetun.mediabox.svc:8085"
       launch_url      = "https://sabnzbd.dominiksiejak.pl"
       icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sabnzbd.svg"
-      skip_path_regex = ""
-    }
-    sonarr = {
-      name            = "Sonarr"
-      external_host   = "https://sonarr.dominiksiejak.pl"
-      internal_host   = "http://sonarr.mediabox.svc:8989"
-      launch_url      = "https://sonarr.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sonarr.svg"
       skip_path_regex = ""
     }
   }
