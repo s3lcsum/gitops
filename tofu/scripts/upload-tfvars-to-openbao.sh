@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One-shot: push each module's defaults.auto.tfvars to
 # secret/<module> field tfvars (raw HCL), mount secret.
-# Expects VAULT_ADDR + VAULT_TOKEN already set (make upload → with-bao.sh).
+# Expects VAULT_ADDR + VAULT_TOKEN already set (AppRole or token login).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

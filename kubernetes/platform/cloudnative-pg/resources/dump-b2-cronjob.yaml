@@ -40,7 +40,7 @@ spec:
         annotations:
           argocd.argoproj.io/sync-options: Prune=false
   # OpenBao secret/cnpg-backup, B2 fields. Values come from
-  # `make -C tofu/backblaze show-config` (bucket + app key for
+  # OpenBao `secret/cnpg-backup` / `tofu/backblaze` outputs (bucket + app key for
   # dominiksiejak-postgres-lake-1-backups).
   data:
     - secretKey: B2_ACCESS_KEY_ID

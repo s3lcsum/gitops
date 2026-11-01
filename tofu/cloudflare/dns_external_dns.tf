@@ -5,4 +5,4 @@
 # Do not recreate *.dominiksiejak.pl. That wildcard sent every
 # <garbage>.dominiksiejak.pl (including DHCP search-domain retries) to Traefik.
 # Delete the live record once before or right after enabling external-dns sync:
-#   make -C tofu/cloudflare delete-apex-wildcard-dns CF_API_TOKEN=…
+#   Delete legacy *.dominiksiejak.pl A in Cloudflare (Zone DNS Edit) if present.

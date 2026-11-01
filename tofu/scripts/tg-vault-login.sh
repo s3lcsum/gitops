@@ -2,7 +2,7 @@
 # AppRole login against OpenBao (Vault-compatible API).
 # Prefers `bao` CLI; falls back to `vault` (same HTTP API).
 # Required env: VAULT_ADDR, VAULT_ROLE_ID, VAULT_SECRET_ID
-# Prints export lines for: eval "$(make -C tofu tg-login)"
+# Prints export lines for: eval "$(tofu/scripts/tg-vault-login.sh)"
 set -euo pipefail
 
 : "${VAULT_ADDR:?set VAULT_ADDR (e.g. https://openbao.dominiksiejak.pl)}"

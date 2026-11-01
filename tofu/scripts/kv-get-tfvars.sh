@@ -16,6 +16,6 @@ else
 fi
 
 if ! "${CLI[@]}" kv get -field=tfvars -mount=secret "${module}"; then
-  echo "missing secret/${module} (field tfvars). Upload: make -C tofu tg-upload" >&2
+  echo "missing secret/${module} (field tfvars). Populate OpenBao KV secret/${module}." >&2
   exit 1
 fi
