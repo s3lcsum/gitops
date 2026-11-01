@@ -10,16 +10,16 @@ resources:
 configMapGenerator:
   - name: authentik-email-templates
     files:
-      - email/base.html=resources/email-templates/email/base.html
-      - email/password_reset.html=resources/email-templates/email/password_reset.html
-      - email/password_reset.txt=resources/email-templates/email/password_reset.txt
-      - email/welcome.html=resources/email-templates/email/welcome.html
-      - email/welcome.txt=resources/email-templates/email/welcome.txt
-      - email/account_confirmation.html=resources/email-templates/email/account_confirmation.html
-      - email/account_confirmation.txt=resources/email-templates/email/account_confirmation.txt
-      - email/event_notification.html=resources/email-templates/email/event_notification.html
-      - email/event_notification.txt=resources/email-templates/email/event_notification.txt
-      - email/invitation.html=resources/email-templates/email/invitation.html
-      - email/invitation.txt=resources/email-templates/email/invitation.txt
-      - email/email_otp.html=resources/email-templates/email/email_otp.html
-      - email/email_otp.txt=resources/email-templates/email/email_otp.txt
+      - resources/email-templates/email/base.html
+      - resources/email-templates/email/password_reset.html
+      - resources/email-templates/email/password_reset.txt
+      - resources/email-templates/email/welcome.html
+      - resources/email-templates/email/welcome.txt
+      - resources/email-templates/email/account_confirmation.html
+      - resources/email-templates/email/account_confirmation.txt
+      - resources/email-templates/email/event_notification.html
+      - resources/email-templates/email/event_notification.txt
+      - resources/email-templates/email/invitation.html
+      - resources/email-templates/email/invitation.txt
+      - resources/email-templates/email/email_otp.html
+      - resources/email-templates/email/email_otp.txt
