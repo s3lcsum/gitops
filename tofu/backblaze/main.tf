@@ -4,10 +4,15 @@ resource "b2_bucket" "backup_buckets" {
   bucket_name = each.key
   bucket_type = "allPrivate"
 
-  bucket_info = merge(each.value, {
-    domain     = "dominiksiejak"
-    managed_by = "terraform"
-  })
+  # Lifecycle keys are expiry config, not bucket metadata — keep them out of
+  # bucket_info so the bucket's info map stays descriptive.
+  bucket_info = merge(
+    { for k, v in each.value : k => v if !contains(keys(local.lifecycle_keys), k) },
+    {
+      domain     = "dominiksiejak"
+      managed_by = "terraform"
+    }
+  )
 
   # Opt-in only. B2 prefixes are literal (no globs) and an empty prefix would
   # hide + purge every backup, including the last full one. Set both days_*
