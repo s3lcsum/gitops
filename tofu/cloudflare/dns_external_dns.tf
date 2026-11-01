@@ -1,6 +1,8 @@
-# Public DNS for Traefik IngressRoute Host() names is owned by external-dns
-# (kubernetes/networking/external-dns): Cloudflare A → WAN IP (ConfigMap wan-ip),
-# AdGuard dnsrewrite → 192.168.89.252.
+# Public DNS for most Traefik IngressRoute Host() names: external-dns-cloudflare (A → WAN),
+# external-dns-adguard (dnsrewrite → 192.168.89.252).
+#
+# auth / hass / n8n: tunnel-only — proxied CNAME + ingress in this module (tunnel_apps).
+# external-dns excludes them so it does not fight those records or split-horizon rewrites.
 #
 # Do not recreate *.dominiksiejak.pl. That wildcard sent every
 # <garbage>.dominiksiejak.pl (including DHCP search-domain retries) to Traefik.

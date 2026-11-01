@@ -43,7 +43,7 @@ subjects:
 ---
 # dnsrewrite rules for each IngressRoute Host(); classic tofu rewrites stay for non-route names.
 # AdGuard is hostNetwork on the lake node (:3000), not the dead Portainer host.
-# auth/hass/n8n: no split-horizon — LAN uses public A (external-dns-cloudflare), same as WAN.
+# auth/hass/n8n: tunnel-only (tofu/cloudflare tunnel_apps) — no AdGuard dnsrewrite.
 apiVersion: apps/v1
 kind: Deployment
 metadata:

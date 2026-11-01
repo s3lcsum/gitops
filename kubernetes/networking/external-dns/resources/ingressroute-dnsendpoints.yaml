@@ -59,6 +59,11 @@ data:
     DOMAIN = os.environ.get("DOMAIN", "dominiksiejak.pl")
     NS = os.environ["POD_NAMESPACE"]
     INTERVAL = int(os.environ.get("INTERVAL", "30"))
+    EXCLUDE = {
+        h.strip()
+        for h in os.environ.get("EXCLUDE_HOSTS", "").split(",")
+        if h.strip()
+    }
     MANAGED = "app.kubernetes.io/managed-by=ingressroute-dnsendpoints"
     HOST = re.compile(r"Host\(`([^`]+)`\)")
     TOKEN = open("/var/run/secrets/kubernetes.io/serviceaccount/token").read()
@@ -92,6 +97,8 @@ data:
         for item in body.get("items", []):
             for route in item.get("spec", {}).get("routes", []):
                 for name in HOST.findall(route.get("match") or ""):
+                    if name in EXCLUDE:
+                        continue
                     if name == DOMAIN or name.endswith("." + DOMAIN):
                         found[name] = True
         return sorted(found)
@@ -202,6 +209,8 @@ spec:
               value: dominiksiejak.pl
             - name: INTERVAL
               value: "30"
+            - name: EXCLUDE_HOSTS
+              value: auth.dominiksiejak.pl,hass.dominiksiejak.pl,n8n.dominiksiejak.pl
           volumeMounts:
             - name: script
               mountPath: /opt/bridge

@@ -43,6 +43,7 @@ subjects:
 ---
 # Official shape: no command override. Image entrypoint is /ko-app/external-dns.
 # Per-host A only (no zone wildcard). WAN target from ConfigMap wan-ip.
+# auth/hass/n8n: tunnel-only (tofu/cloudflare CNAME) — excluded below.
 # No cloud LB, so --default-targets fills CRD endpoints that omit targets.
 # $(WAN_IP) is Kubernetes env expansion, not a shell. Chart quoting would
 # leave it literal, so this instance is not the Helm release.
@@ -98,6 +99,9 @@ spec:
             - --txt-owner-id=k8s-cf
             - --txt-prefix=_external-dns.
             - --domain-filter=dominiksiejak.pl
+            - --exclude-domains=auth.dominiksiejak.pl
+            - --exclude-domains=hass.dominiksiejak.pl
+            - --exclude-domains=n8n.dominiksiejak.pl
             - --managed-record-types=A
             - --managed-record-types=TXT
             - --provider=cloudflare

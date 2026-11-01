@@ -5,11 +5,15 @@ locals {
     zone_name             = "dominiksiejak.pl"
     tunnel_name           = "homelab"
     tunnel_team_name      = "dominiksiejak"
-    # Traefik-backed hosts: A @ WAN (external-dns-cloudflare) + dnsrewrite @ .252
-    # (external-dns-adguard). Do not duplicate as tunnel CNAMEs here.
+    # tunnel_apps: Zero Trust ingress + proxied CNAME (tofu). https:// → Access JWT + HTTPS origin.
+    # auth/hass/n8n: tunnel-only (excluded from external-dns in kubernetes/networking/external-dns).
+    # Other Traefik IngressRoute hosts: WAN A (external-dns-cloudflare) + dnsrewrite @ .252 (adguard).
     tunnel_apps = {
       "homeassistant-atom.dominiksiejak.pl" = ""
       "dns.dominiksiejak.pl"                = ""
+      "auth.dominiksiejak.pl"               = "https://traefik"
+      "hass.dominiksiejak.pl"               = "https://traefik"
+      "n8n.dominiksiejak.pl"                = "https://traefik"
     }
   }
 }
