@@ -1,0 +1,4 @@
+.wrangler/
+
+# Listings catalog is KV-only (PII); never commit a dump.
+cribfinder-catalog.json

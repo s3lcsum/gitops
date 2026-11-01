@@ -1,0 +1,166 @@
+resource "random_password" "oauth2_client_secrets" {
+  for_each = local.oauth2_applications
+
+  length  = 40
+  special = false
+}
+
+resource "authentik_property_mapping_provider_scope" "custom_claims" {
+  for_each = {
+    for k, v in local.oauth2_applications : k => v
+    if lookup(v, "mapping", null) != null
+  }
+
+  name       = "${each.key}-custom-claims"
+  scope_name = each.key
+  expression = each.value.mapping
+}
+
+# Provides the `groups` claim to CWA (calibre-web-automated) so it can auto-assign
+# the admin role based on Authentik group membership (admin group = "admins").
+resource "authentik_property_mapping_provider_scope" "calibre_web_groups" {
+  name       = "calibre-web-automated-groups"
+  scope_name = "groups"
+  expression = "return [g.name for g in request.user.ak_groups.all()]"
+}
+
+resource "authentik_property_mapping_provider_scope" "argocd_groups" {
+  name       = "argocd-groups"
+  scope_name = "groups"
+  expression = "return [g.name for g in request.user.ak_groups.all()]"
+}
+
+resource "authentik_property_mapping_provider_scope" "openbao_groups" {
+  name       = "openbao-groups"
+  scope_name = "groups"
+  expression = "return [g.name for g in request.user.ak_groups.all()]"
+}
+
+# Jellyfin SSO plugin RoleClaim=groups → AdminRoles/Roles match Authentik group names.
+resource "authentik_property_mapping_provider_scope" "jellyfin_groups" {
+  name       = "jellyfin-groups"
+  scope_name = "groups"
+  expression = "return [g.name for g in request.user.ak_groups.all()]"
+}
+
+# Dex OIDC connector maps this claim onto Terrakube teams.
+# Terrakube security.adminGroup is `admins` (Authentik). Older deploys used
+# TERRAKUBE_ADMIN — emit both while that config may still be live.
+resource "authentik_property_mapping_provider_scope" "terrakube_groups" {
+  name       = "terrakube-groups"
+  scope_name = "groups"
+  # One-liner — Authentik eval can choke on multi-line mutate; keep claim = real groups
+  # plus TERRAKUBE_ADMIN for older Terrakube deploys still using that adminGroup.
+  expression = <<-EOT
+  return [g.name for g in request.user.ak_groups.all()] + (["TERRAKUBE_ADMIN"] if request.user.ak_groups.filter(name="admins").exists() else [])
+  EOT
+}
+
+resource "authentik_provider_oauth2" "oauth2" {
+  for_each = local.oauth2_applications
+
+  name               = each.value.name
+  client_id          = each.key
+  client_type        = lookup(each.value, "client_type", "confidential")
+  client_secret      = random_password.oauth2_client_secrets[each.key].result
+  authorization_flow = data.authentik_flow.default-authorization-flow.id
+  invalidation_flow  = data.authentik_flow.default-invalidation-flow.id
+  signing_key        = data.authentik_certificate_key_pair.generated.id
+
+  # Grant types the provider is allowed to use. Without "authorization_code"
+  # Authentik rejects the authorization request ("The request is otherwise
+  # malformed"), so an explicit list is required rather than relying on a
+  # possibly-empty default.
+  grant_types = [
+    "authorization_code",
+    "refresh_token",
+  ]
+
+  property_mappings = concat(
+    data.authentik_property_mapping_provider_scope.oauth2_scopes.ids,
+    lookup(each.value, "mapping", null) != null ? [authentik_property_mapping_provider_scope.custom_claims[each.key].id] : [],
+    each.key == "calibre-web-automated" ? [authentik_property_mapping_provider_scope.calibre_web_groups.id] : [],
+    each.key == "argocd" ? [authentik_property_mapping_provider_scope.argocd_groups.id] : [],
+    each.key == "openbao" ? [authentik_property_mapping_provider_scope.openbao_groups.id] : [],
+    each.key == "jellyfin" ? [authentik_property_mapping_provider_scope.jellyfin_groups.id] : [],
+    each.key == "terrakube" ? [authentik_property_mapping_provider_scope.terrakube_groups.id] : [],
+  )
+
+  allowed_redirect_uris = [
+    for uri in each.value.redirect_uris : {
+      matching_mode     = "strict"
+      redirect_uri_type = "authorization"
+      url               = uri
+    }
+  ]
+}
+
+resource "authentik_application" "oauth2" {
+  for_each = local.oauth2_applications
+
+  name              = each.value.name
+  slug              = each.key
+  protocol_provider = authentik_provider_oauth2.oauth2[each.key].id
+  meta_icon         = each.value.icon_url
+  meta_launch_url   = each.value.launch_url
+}
+
+resource "authentik_provider_proxy" "proxy" {
+  for_each = local.proxy_applications
+
+  name               = each.value.name
+  authorization_flow = data.authentik_flow.default-authorization-flow.id
+  invalidation_flow  = data.authentik_flow.default-invalidation-flow.id
+  external_host      = each.value.external_host
+  internal_host      = each.value.internal_host
+  mode               = "forward_single"
+  skip_path_regex    = each.value.skip_path_regex
+}
+
+resource "authentik_application" "proxy" {
+  for_each = local.proxy_applications
+
+  name              = each.value.name
+  slug              = each.key
+  protocol_provider = authentik_provider_proxy.proxy[each.key].id
+  meta_icon         = each.value.icon_url
+  meta_launch_url   = each.value.launch_url
+}
+
+resource "authentik_application" "dashboard" {
+  for_each = local.dashboard_applications
+
+  name            = each.value.name
+  slug            = each.key
+  meta_icon       = each.value.icon_url
+  meta_launch_url = each.value.launch_url
+}
+
+locals {
+  # Intersect config keys with resources in state so evaluation succeeds when config and state drift
+  # (e.g. dashboard apps renamed or not yet applied).
+  all_app_uuids = merge(
+    { for k in setintersection(keys(local.oauth2_applications), keys(authentik_application.oauth2)) : k => authentik_application.oauth2[k].uuid },
+    { for k in setintersection(keys(local.proxy_applications), keys(authentik_application.proxy)) : k => authentik_application.proxy[k].uuid },
+    { for k in setintersection(keys(local.dashboard_applications), keys(authentik_application.dashboard)) : k => authentik_application.dashboard[k].uuid },
+  )
+}
+
+resource "authentik_policy_binding" "admin_access" {
+  for_each = local.all_app_uuids
+
+  target = each.value
+  group  = authentik_group.admins.id
+  order  = 0
+}
+
+resource "authentik_policy_binding" "user_access" {
+  for_each = {
+    for app in local.user_accessible_apps : app => local.all_app_uuids[app]
+    if contains(keys(local.all_app_uuids), app)
+  }
+
+  target = each.value
+  group  = authentik_group.users.id
+  order  = 1
+}

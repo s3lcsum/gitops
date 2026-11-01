@@ -1,7 +1,7 @@
 variable "vault_addr" {
   type        = string
   description = "OpenBao API address (HTTPS)."
-  default     = "https://openbao.dominiksiejak.pl"
+  default     = "https://bao.dominiksiejak.pl"
 }
 
 variable "approle_role_id" {

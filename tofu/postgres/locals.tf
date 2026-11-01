@@ -1,0 +1,32 @@
+locals {
+  application_config = {
+    n8n = {
+      username = "n8n_user"
+      database = "n8n_db"
+    }
+    watchyourlan = {
+      username = "watchyourlan_user"
+      database = "watchyourlan_db"
+    }
+    authentik = {
+      username = "authentik_user"
+      database = "authentik_db"
+    }
+    netbox = {
+      username = "netbox_user"
+      database = "netbox_db"
+    }
+    gatus = {
+      username = "gatus_user"
+      database = "gatus_db"
+    }
+    hass = {
+      username = "hass_user"
+      database = "homeassistant" # HA requires this exact name; don't rename to hass_db
+    }
+    bookarr = {
+      username = "rreading_glasses"
+      database = "bookarr_db"
+    }
+  }
+}

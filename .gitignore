@@ -1,6 +1,9 @@
 # Local .terraform directories
 **/.terraform/
 
+# Terragrunt caches (regenerated per unit)
+**/.terragrunt-cache/
+
 .DS_store
 
 # .tfstate files

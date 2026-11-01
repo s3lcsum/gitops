@@ -20,7 +20,7 @@ resource "vault_jwt_auth_backend_role" "admin" {
   groups_claim = "groups"
   oidc_scopes  = ["openid", "profile", "email", "groups"]
   allowed_redirect_uris = [
-    "https://openbao.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
+    "https://bao.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
   ]
   bound_audiences = [var.oidc_client_id]
 }

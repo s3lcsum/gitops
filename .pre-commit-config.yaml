@@ -24,15 +24,20 @@ repos:
       - id: pretty-format-json
         exclude: ^(kubernetes/.*/n8n/workflows/|kubernetes/.*/monitoring/config/grafana-provisioning/dashboards/|kubernetes/.*/charts/)
 
-  # OpenTofu-specific hooks: formatting and validation
+  # OpenTofu-specific hooks: formatting and validation.
+  # tofu/<module> are Terragrunt units: providers/local.secret come from a
+  # generated vault_env.tf, so they cannot validate standalone. Validate with
+  # `cd tofu/<module> && terragrunt run -- validate`.
   - repo: https://github.com/tofuutils/pre-commit-opentofu
     rev: v2.4.2
     hooks:
       - id: tofu_fmt
       - id: tofu_validate
+        exclude: ^(tofu|terraform/postgres)/
 
   # Terraform linters and security scanners (compatible with OpenTofu configs)
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.108.1
     hooks:
       - id: terraform_tflint
+        exclude: ^tofu/

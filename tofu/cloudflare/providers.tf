@@ -1,0 +1,18 @@
+terraform {
+  required_version = ">= 1.11.5"
+
+  required_providers {
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "5.28.1"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.9.1"
+    }
+  }
+}
+
+provider "cloudflare" {
+  api_token = local.secret.cloudflare_api_token
+}
