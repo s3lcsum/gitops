@@ -1,6 +1,17 @@
 # ApplicationSet chart pin for trust-manager (CA bundle distribution).
 # cert-manager issues the leaves; trust-manager publishes the CA everywhere so
 # pods can verify each other over HTTPS without shipping a PEM in git.
+#
+# Runs in its own `trust-manager` namespace (ApplicationSet destination =
+# kubernetes/platform/trust-manager). app.trust.namespace stays cert-manager
+# because that is where Bundle sources live (homelab-ca, homelab-ca-root),
+# and the controller only reads Secrets from there.
+#
+# Do not also `helm install` this chart by hand: the ClusterRole and
+# ClusterRoleBinding are cluster-scoped and single-named, so a second release
+# flips their subjects to the other namespace and the controller loses
+# namespace/secret/configmap list rights. It then crashloops with
+# "timed out waiting for cache to be synced".
 repoURL: https://charts.jetstack.io
 chart: trust-manager
 version: v0.26.0
@@ -11,12 +22,10 @@ global:
   priorityClassName: homelab-critical
   commonLabels:
     app.kubernetes.io/part-of: cert-manager
-# Chart default. Set explicitly so the trust source namespace is obvious.
+# Trust source namespace only — not where the pod runs.
 app:
   trust:
     namespace: cert-manager
-  # Webhook TLS: chart creates its own selfSigned Issuer + Certificate using
-  # cert-manager (app.webhook.tls.helmCert.enabled defaults to false).
 resources:
   requests:
     cpu: 10m
