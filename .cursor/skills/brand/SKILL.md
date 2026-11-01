@@ -62,7 +62,7 @@ When branding a service (Authentik, Jellyfin, Homepage, NAS UI, etc.):
 
 ## Authentik / tofu hint
 
-Update `tofu/authentik/brand.tf` — hosted under `https://auth.dominiksiejak.pl/media/public/slab/` (`logo-horizontal-dark.png`, `mark-icon.png`). K8s ConfigMap `authentik-brand-assets` + server init copies to `/media/public/slab/`.
+Update `tofu/authentik/brand.tf` — brand fields use **relative** paths under `media/public/` (e.g. `slab/logo-horizontal-dark.png`). K8s ConfigMap `authentik-brand-assets` + server init copies to `/media/public/slab/`. Email HTML uses raw GitHub URLs (Authentik `/media/public/*` is not public in 2025.12+).
 
 ## OpenCode / Cursor UI
 

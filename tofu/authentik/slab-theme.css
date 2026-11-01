@@ -1,4 +1,4 @@
-/* SLAB homelab theme for Authentik — tokens from brand/tokens.json (light) */
+/* HomeLab Authentik — brand/tokens.json (flows + UI; scoped so dark mode does not break /if/user/) */
 :root {
   --ak-accent: #5442ae;
   --pf-global--primary-color--100: #5442ae;
@@ -6,22 +6,31 @@
   --pf-global--primary-color--400: #7e4efc;
   --pf-global--link--Color: #5442ae;
   --pf-global--link--Color--hover: #44337a;
-  --ak-flow-background: url(https://auth.dominiksiejak.pl/media/public/slab/slabi-flow-lilac.jpg) !important;
+  --ak-flow-background: none !important;
+  --pf-c-login__main--BackgroundColor: #f9f8fd;
+  --pf-v5-c-login__main--BackgroundColor: #f9f8fd;
+}
+
+.pf-c-background-image {
+  display: none !important;
 }
 
 .pf-c-login,
-.ak-flow-container {
-  background-size: cover !important;
-  background-position: center center !important;
-  background-repeat: no-repeat !important;
+.ak-flow-container,
+ak-flow-executor {
+  background-color: #ede8f8 !important;
+  background-image: none !important;
 }
 
-.pf-c-login {
-  --pf-c-login__main--BackgroundColor: #14101c;
+.pf-c-login__main,
+.pf-v5-c-login__main {
+  background-color: #f9f8fd !important;
+  box-shadow: 0 12px 40px rgba(68, 51, 122, 0.12);
 }
 
-.pf-c-login__main {
-  background-color: #f9f8fd;
+.pf-c-login__main-header,
+.pf-v5-c-login__main-header {
+  background-color: #f9f8fd !important;
 }
 
 .pf-c-button.pf-m-primary {
@@ -30,4 +39,153 @@
 
 .pf-c-button.pf-m-primary:hover {
   background-color: #44337a;
+}
+
+/* Login / flow copy on light card */
+.pf-c-login__main h1,
+.pf-v5-c-login__main h1,
+.pf-c-login__main .pf-c-title,
+.pf-c-login__main .pf-v5-c-title,
+ak-flow-executor h1,
+ak-stage-identification h1,
+ak-stage-password h1 {
+  color: #2a1f3d !important;
+}
+
+ak-flow-executor label,
+ak-flow-executor .pf-c-form__label,
+ak-flow-executor .pf-v5-c-form__label,
+ak-stage-identification label,
+ak-stage-password label {
+  color: #44337a !important;
+}
+
+ak-flow-executor p,
+ak-flow-executor .pf-c-login__main-body,
+ak-flow-executor span:not(.pf-c-button__text):not(.pf-c-form__label-text) {
+  color: #6b5e80 !important;
+}
+
+/* Logged-in UI: Authentik uses light cards on dark chrome — never inherit flow light text */
+@media (prefers-color-scheme: dark) {
+  .pf-c-card,
+  .pf-v5-c-card,
+  .pf-c-page__main-section,
+  .pf-c-page__main,
+  ak-user-settings,
+  ak-user-settings-form {
+    --pf-global--Color--100: #2a1f3d;
+    --pf-global--Color--200: #44337a;
+    --pf-global--Color--300: #6b5e80;
+  }
+
+  .pf-c-card .pf-c-title,
+  .pf-c-card .pf-v5-c-title,
+  .pf-c-card h1,
+  .pf-c-card h2,
+  .pf-c-card .pf-c-form__label,
+  .pf-c-card .pf-v5-c-form__label,
+  .pf-c-card .pf-c-form__label-text,
+  .pf-c-card .pf-v5-c-form__label-text,
+  .pf-c-page__main-section .pf-c-title,
+  .pf-c-page__main-section .pf-v5-c-title,
+  .pf-c-page__main-section .pf-c-form__label-text,
+  ak-user-settings .pf-c-title,
+  ak-user-settings h1,
+  ak-user-settings-form .pf-c-form__label-text {
+    color: #2a1f3d !important;
+  }
+
+  .pf-c-card .pf-c-form-control,
+  .pf-c-card input,
+  .pf-c-card select,
+  .pf-c-card textarea {
+    color: #2a1f3d !important;
+  }
+}
+
+[data-theme="dark"] .pf-c-card,
+[data-theme="dark"] .pf-v5-c-card,
+[data-theme="dark"] .pf-c-page__main-section,
+[data-theme="dark"] ak-user-settings,
+[data-theme="dark"] ak-user-settings-form {
+  --pf-global--Color--100: #2a1f3d;
+  --pf-global--Color--200: #44337a;
+  --pf-global--Color--300: #6b5e80;
+}
+
+[data-theme="dark"] .pf-c-card .pf-c-title,
+[data-theme="dark"] .pf-c-card .pf-v5-c-title,
+[data-theme="dark"] .pf-c-card h1,
+[data-theme="dark"] .pf-c-card h2,
+[data-theme="dark"] .pf-c-card .pf-c-form__label-text,
+[data-theme="dark"] .pf-c-page__main-section .pf-c-title,
+[data-theme="dark"] ak-user-settings .pf-c-title,
+[data-theme="dark"] ak-user-settings-form .pf-c-form__label-text {
+  color: #2a1f3d !important;
+}
+
+/* Browser dark: login flow only (do not set :root text tokens — breaks User settings) */
+@media (prefers-color-scheme: dark) {
+  .pf-c-login,
+  .ak-flow-container,
+  ak-flow-executor {
+    background-color: #14101c !important;
+  }
+
+  .pf-c-login__main,
+  .pf-v5-c-login__main,
+  .pf-c-login__main-header,
+  .pf-v5-c-login__main-header {
+    background-color: #221a32 !important;
+    --pf-c-login__main--BackgroundColor: #221a32;
+    --pf-v5-c-login__main--BackgroundColor: #221a32;
+  }
+
+  .pf-c-login__main h1,
+  .pf-v5-c-login__main h1,
+  .pf-c-login__main-header h1,
+  .pf-v5-c-login__main-header h1,
+  .pf-c-login__main .pf-c-title,
+  .pf-c-login__main .pf-v5-c-title,
+  ak-flow-executor h1,
+  ak-stage-identification h1,
+  ak-stage-password h1 {
+    color: #f2ecfa !important;
+  }
+
+  ak-flow-executor label,
+  ak-flow-executor .pf-c-form__label,
+  ak-flow-executor .pf-v5-c-form__label,
+  ak-stage-identification label,
+  ak-stage-password label {
+    color: #c9a8f0 !important;
+  }
+
+  ak-flow-executor p,
+  ak-flow-executor .pf-c-login__main-body,
+  ak-flow-executor span:not(.pf-c-button__text):not(.pf-c-form__label-text) {
+    color: #a98fd4 !important;
+  }
+}
+
+[data-theme="dark"] .pf-c-login,
+[data-theme="dark"] .ak-flow-container,
+[data-theme="dark"] ak-flow-executor {
+  background-color: #14101c !important;
+}
+
+[data-theme="dark"] .pf-c-login__main,
+[data-theme="dark"] .pf-v5-c-login__main,
+[data-theme="dark"] .pf-c-login__main-header,
+[data-theme="dark"] .pf-v5-c-login__main-header {
+  background-color: #221a32 !important;
+}
+
+[data-theme="dark"] .pf-c-login__main h1,
+[data-theme="dark"] .pf-v5-c-login__main h1,
+[data-theme="dark"] ak-flow-executor h1,
+[data-theme="dark"] ak-stage-identification h1,
+[data-theme="dark"] ak-stage-password h1 {
+  color: #f2ecfa !important;
 }
