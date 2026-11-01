@@ -33,18 +33,26 @@ spec:
       securityContext:
         fsGroup: 1000
       initContainers:
-        - name: email-templates
+        - name: boot-assets
           image: busybox:1.36.1
           command:
             - sh
             - -c
-            - mkdir -p /templates/email && cp /src/* /templates/email/
+            - |
+              mkdir -p /templates/email /media/public/slab
+              cp /email-src/* /templates/email/
+              cp /brand-src/* /media/public/slab/
           volumeMounts:
             - name: email-templates-source
-              mountPath: /src
+              mountPath: /email-src
+              readOnly: true
+            - name: brand-assets-source
+              mountPath: /brand-src
               readOnly: true
             - name: templates
               mountPath: /templates
+            - name: media
+              mountPath: /media
       containers:
         - name: server
           image: ghcr.io/goauthentik/server:2026.8.5
@@ -92,6 +100,9 @@ spec:
         - name: email-templates-source
           configMap:
             name: authentik-email-templates
+        - name: brand-assets-source
+          configMap:
+            name: authentik-brand-assets
         - name: certs
           persistentVolumeClaim:
             claimName: authentik-certs

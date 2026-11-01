@@ -23,3 +23,7 @@ configMapGenerator:
       - resources/email-templates/email/invitation.txt
       - resources/email-templates/email/email_otp.html
       - resources/email-templates/email/email_otp.txt
+  - name: authentik-brand-assets
+    files:
+      - resources/brand-assets/logo-horizontal-dark.png
+      - resources/brand-assets/mark-icon.png

@@ -1,0 +1,58 @@
+/* SLAB design tokens — import in apps, dashboards, Authentik custom CSS */
+:root {
+  --slab-phi: 1.6180339887;
+
+  --slab-bg: #f9f8fd;
+  --slab-surface: #ede8f8;
+  --slab-text: #2a1f3d;
+  --slab-text-muted: #6b5e80;
+  --slab-brand: #5442ae;
+  --slab-brand-deep: #44337a;
+  --slab-brand-bright: #7e4efc;
+  --slab-brand-subtle: #7a4fb8;
+  --slab-glow: #cbb8f0;
+
+  --slab-success: #3d9a6a;
+  --slab-warning: #c9922e;
+  --slab-danger: #c44b5e;
+
+  --slab-mascot-fur: #c8b6e8;
+  --slab-mascot-collar: #6b46a8;
+  --slab-mascot-tail: #d4a0ff;
+
+  --slab-font-ui: Inter, "Segoe UI", system-ui, sans-serif;
+  --slab-radius: calc(8px * var(--slab-phi));
+  --slab-space-1: 8px;
+  --slab-space-2: calc(var(--slab-space-1) * var(--slab-phi));
+  --slab-space-3: calc(var(--slab-space-2) * var(--slab-phi));
+}
+
+[data-slab-theme="dark"],
+.slab-dark {
+  --slab-bg: #14101c;
+  --slab-surface: #221a32;
+  --slab-text: #f2ecfa;
+  --slab-text-muted: #a98fd4;
+  --slab-brand: #c9a8f0;
+  --slab-brand-deep: #9d72dc;
+  --slab-brand-bright: #e8d4ff;
+  --slab-brand-subtle: #d4bcf5;
+  --slab-glow: #6a3fa8;
+}
+
+.slab-card {
+  background: var(--slab-surface);
+  color: var(--slab-text);
+  border-radius: var(--slab-radius);
+  padding: var(--slab-space-2);
+}
+
+.slab-btn-primary {
+  background: var(--slab-brand);
+  color: var(--slab-bg);
+  border: none;
+  border-radius: calc(var(--slab-radius) / var(--slab-phi));
+  padding: var(--slab-space-1) var(--slab-space-2);
+  font-family: var(--slab-font-ui);
+  font-weight: 600;
+}

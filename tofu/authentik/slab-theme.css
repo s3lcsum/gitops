@@ -1,0 +1,26 @@
+/* SLAB homelab theme for Authentik — tokens from brand/tokens.json (light) */
+:root {
+  --ak-accent: #5442ae;
+  --pf-global--primary-color--100: #5442ae;
+  --pf-global--primary-color--200: #44337a;
+  --pf-global--primary-color--400: #7e4efc;
+  --pf-global--link--Color: #5442ae;
+  --pf-global--link--Color--hover: #44337a;
+  --ak-flow-background: url(https://auth.dominiksiejak.pl/media/public/slab/logo-horizontal-dark.png) !important;
+}
+
+.pf-c-login {
+  --pf-c-login__main--BackgroundColor: #14101c;
+}
+
+.pf-c-login__main {
+  background-color: #f9f8fd;
+}
+
+.pf-c-button.pf-m-primary {
+  background-color: #5442ae;
+}
+
+.pf-c-button.pf-m-primary:hover {
+  background-color: #44337a;
+}

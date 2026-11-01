@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3840 2160" role="img" aria-label="SLAB wallpaper light">
+  <title>SLAB wallpaper light</title>
+  <defs>
+    <radialGradient id="glow" cx="78%" cy="22%" r="45%">
+      <stop offset="0%" stop-color="#CBB8F0" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#F7F6FA" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F7F6FA"/>
+      <stop offset="100%" stop-color="#E8E0F5"/>
+    </linearGradient>
+  </defs>
+  <rect width="3840" height="2160" fill="url(#floor)"/>
+  <rect width="3840" height="2160" fill="url(#glow)"/>
+  <g opacity="0.06" transform="translate(2920 180) scale(8)">
+    <path d="M44 12 H22 L14 20 V28 L22 36 H42 L50 44 V52 L42 60 H20" fill="none" stroke="#5B2D91" stroke-width="10"/>
+    <circle cx="44" cy="12" r="5" fill="#5B2D91"/>
+    <circle cx="20" cy="60" r="5" fill="#5B2D91"/>
+  </g>
+  <text x="160" y="320" fill="#6A3FA8" font-family="'Segoe UI', system-ui, sans-serif" font-size="120" font-weight="700" letter-spacing="6">SLAB</text>
+  <text x="160" y="420" fill="#7A4FB8" font-family="'Segoe UI', system-ui, sans-serif" font-size="36" font-weight="500" letter-spacing="12">dominiksiejak.pl</text>
+</svg>

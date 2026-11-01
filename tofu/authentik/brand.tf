@@ -1,10 +1,11 @@
 resource "authentik_brand" "default" {
   domain                           = "authentik-default"
   default                          = true
-  branding_title                   = "authentik"
-  branding_logo                    = "/static/dist/assets/icons/icon_left_brand.svg"
-  branding_favicon                 = "/static/dist/assets/icons/icon.png"
-  branding_default_flow_background = "/static/dist/assets/images/flow_background.jpg"
+  branding_title                   = "SLAB"
+  branding_logo                    = "${local.slab_brand_url}/logo-horizontal-dark.png"
+  branding_favicon                 = "${local.slab_brand_url}/mark-icon.png"
+  branding_default_flow_background = "${local.slab_brand_url}/logo-horizontal-dark.png"
+  branding_custom_css              = file("${path.module}/slab-theme.css")
 
   flow_authentication = "366025e6-d668-4a7f-9c51-0a79f07e329d"
   flow_invalidation   = "a9cd8df5-123f-42fc-a5e6-1cdc00204c3e"

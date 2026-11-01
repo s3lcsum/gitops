@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     viewBox="0 0 1920 480" role="img" aria-label="SLAB banner">
+  <title>SLAB wide banner</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#F7F6FA"/>
+      <stop offset="100%" stop-color="#EDE8F8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="480" fill="url(#bg)"/>
+  <image xlink:href="../png/lockup-horizontal-1200.png" x="80" y="40" height="400"
+         preserveAspectRatio="xMidYMid meet"/>
+</svg>

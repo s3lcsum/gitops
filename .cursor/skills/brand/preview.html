@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" data-slab-theme="light">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>SLAB brand preview</title>
+  <link rel="stylesheet" href="tokens.css"/>
+  <style>
+    body { margin: 0; font-family: var(--slab-font-ui); background: var(--slab-bg); color: var(--slab-text); line-height: 1.5; }
+    header { padding: var(--slab-space-3); border-bottom: 1px solid color-mix(in srgb, var(--slab-brand) 20%, transparent); }
+    h1 { margin: 0 0 var(--slab-space-1); font-size: 1.625rem; }
+    .grid { display: grid; gap: var(--slab-space-2); padding: var(--slab-space-3); grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .swatch-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .swatch { width: 72px; height: 72px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--slab-text) 12%, transparent); font-size: 10px; padding: 4px; display: flex; align-items: end; justify-content: center; text-align: center; }
+    img { max-width: 100%; border-radius: var(--slab-radius); background: var(--slab-surface); }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .note { font-size: 0.9rem; color: var(--slab-text-muted); margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SLAB · dominiksiejak.pl</h1>
+    <p>Production assets = <strong>your JPG/PNG exports</strong>. SVG wrappers embed those rasters until a hand-traced vector pass.</p>
+    <button type="button" class="slab-btn-primary" id="themeBtn">Toggle dark theme</button>
+  </header>
+  <main class="grid">
+    <section class="slab-card">
+      <h2>Authentik + email (dark band)</h2>
+      <div style="background:#14101C;padding:16px;border-radius:12px;">
+        <img src="assets/png/logo-horizontal-dark.png" alt="SLAB horizontal dark"/>
+      </div>
+      <div class="row" style="margin-top:12px;background:#14101C;padding:12px;border-radius:12px;">
+        <img src="assets/png/mark-icon.png" width="64" alt="Mark icon"/>
+      </div>
+      <p class="note">Hosted at <code>auth…/media/public/slab/</code> — see <code>tofu/authentik/brand.tf</code>.</p>
+    </section>
+    <section class="slab-card">
+      <h2>Lockup (light source)</h2>
+      <img src="assets/logo-horizontal-light.jpg" alt="SLAB full logo"/>
+      <p class="note">Light UI — <code>logo-horizontal-light.jpg</code> or legacy <code>lockup-horizontal-1200.png</code>.</p>
+    </section>
+    <section class="slab-card">
+      <h2>Mark only (Concept 01)</h2>
+      <div class="row">
+        <img src="assets/png/mark-128.png" width="128" alt="Mark 128"/>
+        <img src="assets/png/mark-64.png" width="64" alt="Mark 64"/>
+        <img src="assets/png/mark-32.png" width="32" alt="Mark 32"/>
+      </div>
+      <p class="note">Favicon / OIDC — <code>png/mark-32.png</code> … <code>mark-512.png</code>.</p>
+    </section>
+    <section class="slab-card">
+      <h2>Mark at 512</h2>
+      <img src="assets/png/mark-512.png" width="256" alt="Mark 512"/>
+      <p class="note">Square tiles: use this on <code>#F9F8FD</code> — no separate app-icon set.</p>
+    </section>
+    <section class="slab-card">
+      <h2>Slabi</h2>
+      <img src="assets/mascot-reference/slabi-whippet-hero.png" alt="Slabi hero"/>
+      <img src="assets/mascot-reference/slabi-whippet-pose-sheet.jpg" alt="Slabi poses"/>
+    </section>
+    <section class="slab-card">
+      <h2>Tokens</h2>
+      <div class="swatch-row">
+        <div class="swatch" style="background:#F9F8FD">bg</div>
+        <div class="swatch" style="background:#5442AE;color:#fff">mark</div>
+        <div class="swatch" style="background:#7E4EFC">fold</div>
+        <div class="swatch" style="background:#C8B6E8">Slabi</div>
+      </div>
+    </section>
+  </main>
+  <script>
+    document.getElementById("themeBtn").addEventListener("click", () => {
+      const r = document.documentElement;
+      r.setAttribute("data-slab-theme", r.getAttribute("data-slab-theme") === "dark" ? "light" : "dark");
+    });
+  </script>
+</body>
+</html>
