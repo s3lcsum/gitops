@@ -10,6 +10,8 @@ spec:
     - match: Host(`auth.dominiksiejak.pl`)
       kind: Rule
       middlewares:
+        - name: cf-real-client-ip
+          namespace: traefik
         - name: crowdsec-bouncer
           namespace: traefik
         - name: secure-headers

@@ -130,6 +130,9 @@ experimental:
     crowdsec-bouncer-traefik-plugin:
       moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
       version: v1.4.4
+    traefik-real-ip:
+      moduleName: github.com/zekihan/traefik-real-ip
+      version: v0.2.0
 # LAPI key Secret (ESO) — plugin reads file path from Middleware CR.
 volumes:
   - name: crowdsec-lapi

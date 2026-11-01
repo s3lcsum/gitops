@@ -1,0 +1,20 @@
+# cloudflared → Traefik often leaves X-Forwarded-For at a Cloudflare anycast hop
+# (e.g. 104.28.x). Authentik uses rightmost XFF → WAN allowlist whitelists CF, not
+# the user. Normalize to Cf-Connecting-Ip before auth (and any route that chains this).
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: cf-real-client-ip
+  namespace: traefik
+spec:
+  plugin:
+    traefik-real-ip:
+      thrustLocal: true
+      thrustCloudFlare: true
+      trustedIPs:
+        - 10.244.0.0/16
+        - 127.0.0.0/8
+        - 192.168.89.0/24
+      logLevel: info
+      denyUntrusted: false
+      xForwardedForMode: replace
