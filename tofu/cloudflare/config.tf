@@ -3,8 +3,9 @@ locals {
   cfg = {
     cloudflare_account_id = "e092ee6780d8a561afd1530702c0fd6a"
     zone_name             = "dominiksiejak.pl"
-    tunnel_name           = "homelab"
-    tunnel_team_name      = "dominiksiejak"
+    # IPv6 compatibility off in main.tf (cloudflare_zone_setting.ipv6) — DC has no public v6.
+    tunnel_name      = "homelab"
+    tunnel_team_name = "dominiksiejak"
     # tunnel_apps: Zero Trust ingress + proxied CNAME (tofu). https:// → Access JWT + HTTPS origin.
     # auth/hass/n8n: tunnel-only (excluded from external-dns in kubernetes/networking/external-dns).
     # Other Traefik IngressRoute hosts: WAN A (external-dns-cloudflare) + dnsrewrite @ .252 (adguard).

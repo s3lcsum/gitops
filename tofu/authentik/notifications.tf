@@ -18,17 +18,45 @@ EOF
 resource "authentik_property_mapping_notification" "webhook_body" {
   name       = "n8n-firewall-webhook-body"
   expression = <<-EOF
+import ipaddress
+
+def public_ipv4(value):
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text or ":" in text:
+        return None
+    try:
+        addr = ipaddress.ip_address(text)
+    except ValueError:
+        return None
+    if not isinstance(addr, ipaddress.IPv4Address):
+        return None
+    if (
+        addr.is_private
+        or addr.is_loopback
+        or addr.is_link_local
+        or addr.is_multicast
+        or addr.is_reserved
+        or addr.is_unspecified
+    ):
+        return None
+    if addr in ipaddress.ip_network("100.64.0.0/10"):
+        return None
+    return str(addr)
+
 event = notification.event
 if event is None:
     return {"action": None, "client_ip": None, "user": None, "event": {}}
 user = event.user or {}
+client_ip = public_ipv4(event.client_ip)
 return {
     "action": event.action,
-    "client_ip": event.client_ip,
+    "client_ip": client_ip,
     "user": user,
     "event": {
         "action": event.action,
-        "client_ip": event.client_ip,
+        "client_ip": client_ip,
         "user": user,
     },
 }

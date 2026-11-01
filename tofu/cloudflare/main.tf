@@ -6,6 +6,15 @@ resource "cloudflare_zone" "main" {
   type = "full"
 }
 
+# Origin + WAN edge are IPv4-only. Turn off CF IPv6 compatibility so proxied
+# hostnames stop advertising auto AAAA and clients connect to CF over IPv4;
+# CF-Connecting-IP / XFF then carry real client IPv4 (WAN allowlist, Authentik).
+resource "cloudflare_zone_setting" "ipv6" {
+  zone_id    = cloudflare_zone.main.id
+  setting_id = "ipv6"
+  value      = "off"
+}
+
 # Zone-wide WAF rule: block requests from countries other than PL, DE, ES.
 # Grafana Cloud (prod-us-central-0) token + userinfo calls come from US, so
 # those egress IPs skip the country rule instead of opening all of US.

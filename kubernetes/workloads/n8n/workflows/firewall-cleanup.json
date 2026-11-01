@@ -137,7 +137,7 @@
       "id": "filter-expired",
       "name": "Filter Expired",
       "parameters": {
-        "jsCode": "const listName = 'allowed-wan';\nconst now = Date.now();\nconst entries = $input.all().map(i => i.json);\n\nconst expired = entries\n  .filter(e => {\n    if (e.list !== listName) return false;\n    const m = (e.comment || '').match(/^ttl:(\\d+)$/);\n    return m && Number(m[1]) < now;\n  })\n  .map(e => ({\n    json: {\n      id: e['.id'],\n      address: e.address,\n      comment: e.comment\n    }\n  }));\n\nreturn expired;",
+        "jsCode": "const listName = 'allowed-wan';\nconst now = Date.now();\nconst entries = $input.all().map(i => i.json);\nconst ipv4Re = /^(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)$/;\n\nconst expired = entries\n  .filter(e => {\n    if (e.list !== listName) return false;\n    const m = (e.comment || '').match(/^ttl:(\\d+)$/);\n    if (!m) return false;\n    const ttlExpired = Number(m[1]) < now;\n    const addr = String(e.address || '');\n    const badTtlShape = addr.includes(':') || !ipv4Re.test(addr);\n    return ttlExpired || badTtlShape;\n  })\n  .map(e => ({\n    json: {\n      id: e['.id'],\n      address: e.address,\n      comment: e.comment\n    }\n  }));\n\nreturn expired;",
         "mode": "runOnceForAllItems"
       },
       "position": [
