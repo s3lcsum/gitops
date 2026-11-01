@@ -53,9 +53,10 @@ resource "authentik_policy_expression" "recovery_skip_if_restored" {
 }
 
 resource "authentik_stage_authenticator_validate" "recovery_mfa" {
-  name                  = "recovery-mfa"
-  device_classes        = ["webauthn", "totp", "static"]
-  not_configured_action = "deny"
+  name           = "recovery-mfa"
+  device_classes = ["webauthn", "totp", "static"]
+  # skip: no MFA enrolled → email link is enough; enrolled users must still verify
+  not_configured_action = "skip"
 }
 
 # Stage 3 – Prompt for the new password
