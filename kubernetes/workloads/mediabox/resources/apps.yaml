@@ -491,6 +491,8 @@ spec:
         app.kubernetes.io/managed-by: argocd
     spec:
       priorityClassName: homelab-high
+      securityContext:
+        supplementalGroups: [44, 109, 993, 1000]
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -507,6 +509,19 @@ spec:
               mountPath: /config
             - name: subtitle-policy
               mountPath: /policy
+        - name: apply-encoding-policy
+          image: alpine:3.21
+          command:
+            - /bin/sh
+            - -c
+            - /bin/sh /encoding-policy/apply-jellyfin-encoding.sh
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: dri
+              mountPath: /dev/dri
+            - name: encoding-policy
+              mountPath: /encoding-policy
       containers:
         - name: jellyfin
           image: ghcr.io/linuxserver/jellyfin:12.4ubu2604-ls57
@@ -532,6 +547,8 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
+            - name: dri
+              mountPath: /dev/dri
             - name: local-media
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
@@ -541,15 +558,23 @@ spec:
               cpu: 50m
               memory: 512Mi
             limits:
-              cpu: "2"
+              cpu: "4"
               memory: 4Gi
       volumes:
         - name: config
           persistentVolumeClaim:
             claimName: mediabox-jellyfin
+        - name: dri
+          hostPath:
+            path: /dev/dri
+            type: Directory
         - name: subtitle-policy
           configMap:
             name: mediabox-subtitle-policy
+            defaultMode: 0444
+        - name: encoding-policy
+          configMap:
+            name: mediabox-jellyfin-encoding
             defaultMode: 0444
         - name: local-media
           persistentVolumeClaim:
