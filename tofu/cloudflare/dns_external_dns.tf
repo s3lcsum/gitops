@@ -2,7 +2,11 @@
 # external-dns-adguard (dnsrewrite → 192.168.89.252).
 #
 # auth / hass / n8n: tunnel-only — proxied CNAME + ingress in this module (tunnel_apps).
-# external-dns excludes them so it does not fight those records or split-horizon rewrites.
+# ingressroute-dnsendpoints omits DNSEndpoints for them; external-dns-cloudflare sync drops WAN A.
+# external-dns-adguard --exclude-domains keeps AdGuard from split-horizon rewrites.
+#
+# Apply order: sync kubernetes/networking/external-dns (wait for WAN A removal), then
+# `make apply MODULE=cloudflare`. Tofu CNAME create fails while external-dns A records exist.
 #
 # Do not recreate *.dominiksiejak.pl. That wildcard sent every
 # <garbage>.dominiksiejak.pl (including DHCP search-domain retries) to Traefik.
