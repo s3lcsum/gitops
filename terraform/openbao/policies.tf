@@ -30,3 +30,41 @@ resource "vault_policy" "terraform" {
     }
   EOT
 }
+
+resource "vault_policy" "pki_cert_manager" {
+  name = "pki-cert-manager"
+
+  policy = <<-EOT
+    path "pki_int_servers/sign/server-dns" {
+      capabilities = ["create", "update"]
+    }
+    path "pki_int_servers/issue/server-dns" {
+      capabilities = ["create", "update"]
+    }
+    path "pki_int_servers/ca" {
+      capabilities = ["read"]
+    }
+    path "pki_int_servers/ca_chain" {
+      capabilities = ["read"]
+    }
+  EOT
+}
+
+resource "vault_policy" "pki_operator" {
+  name = "pki-operator"
+
+  policy = <<-EOT
+    path "pki_int_servers/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "pki_int_clients/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    path "pki_root/cert/*" {
+      capabilities = ["read", "list"]
+    }
+    path "pki_root/ca" {
+      capabilities = ["read"]
+    }
+  EOT
+}
