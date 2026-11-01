@@ -149,7 +149,7 @@ scrape_configs:
         regex: watch_your_lan_up
         action: keep
 
-  # MKTXP talks to RouterOS API at 192.168.89.1:8728. Not router.dominiksiejak.pl.
+  # MKTXP talks to RouterOS API at 192.168.89.1:8729. Not router.dominiksiejak.pl.
   - job_name: mktxp
     scrape_interval: 60s
     static_configs:

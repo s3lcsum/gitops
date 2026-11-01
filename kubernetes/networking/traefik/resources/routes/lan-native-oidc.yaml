@@ -26,8 +26,9 @@ spec:
         - name: secure-headers
       services:
         - name: lan-router
-          port: 80
-          scheme: http
+          port: 443
+          scheme: https
+          serversTransport: portainer-insecure
           passHostHeader: true
     - match: Host(`proxmox.dominiksiejak.pl`)
       kind: Rule

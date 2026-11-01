@@ -59,6 +59,9 @@ spec:
               value: crypto
             - name: db_postgresdb_host
               value: postgres-rw.cloudnative-pg.svc
+            # RouterOS www-ssl uses an OpenBao-issued cert (192.168.89.1 IP SAN).
+            - name: NODE_EXTRA_CA_CERTS
+              value: /etc/ssl/homelab/ca-certificates.crt
           ports:
             - name: http
               containerPort: 5678
@@ -71,10 +74,16 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /home/node/.n8n
+            - name: homelab-ca
+              mountPath: /etc/ssl/homelab
+              readOnly: true
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: n8n-data
+        - name: homelab-ca
+          configMap:
+            name: homelab-ca
 ---
 apiVersion: v1
 kind: Service

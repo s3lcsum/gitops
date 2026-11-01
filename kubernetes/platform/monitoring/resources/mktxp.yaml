@@ -3,7 +3,8 @@
 # OpenBao secret/mktxp. Fields: username, password.
 # RouterOS user needs policy api,read.
 # Do not point hostname at https://router.dominiksiejak.pl — that path is WebFig
-# behind Authentik. API is plain HTTP on 192.168.89.1:8728.
+# behind Authentik. API is api-ssl on 192.168.89.1:8729 (OpenBao-issued cert,
+# verified against ConfigMap homelab-ca mounted at /etc/ssl/homelab).
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
@@ -37,16 +38,16 @@ spec:
         mktxp.conf: |
           [Router]
               hostname = 192.168.89.1
-              port = 8728
+              port = 8729
               username = {{ .username }}
               password = {{ .password }}
               credentials_file = ""
               custom_labels = None
-              use_ssl = False
+              use_ssl = True
               no_ssl_certificate = False
-              ssl_certificate_verify = False
+              ssl_certificate_verify = True
               ssl_check_hostname = True
-              ssl_ca_file = ""
+              ssl_ca_file = /etc/ssl/homelab/ca-certificates.crt
               plaintext_login = True
               enabled = True
               module_only = False
@@ -212,6 +213,9 @@ spec:
             - name: config
               mountPath: /etc/mktxp
               readOnly: true
+            - name: homelab-ca
+              mountPath: /etc/ssl/homelab
+              readOnly: true
           resources:
             requests:
               cpu: 25m
@@ -223,6 +227,9 @@ spec:
         - name: config
           secret:
             secretName: mktxp
+        - name: homelab-ca
+          configMap:
+            name: homelab-ca
 ---
 apiVersion: v1
 kind: Service
