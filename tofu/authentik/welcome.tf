@@ -19,6 +19,9 @@ if not user or user.type != "internal":
     return False
 if not user.email:
     return False
+attrs = user.attributes if isinstance(user.attributes, dict) else {}
+if attrs.get("welcome_email") is False:
+    return False
 local_part = user.email.split("@", 1)[0]
 if user.email.endswith("@dominiksiejak.pl") and local_part in ("null", "test", "noreply"):
     return False

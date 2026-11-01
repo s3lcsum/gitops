@@ -66,66 +66,35 @@ ak-flow-executor span:not(.pf-c-button__text):not(.pf-c-form__label-text) {
   color: #6b5e80 !important;
 }
 
-/* Logged-in UI: Authentik uses light cards on dark chrome — never inherit flow light text */
+/* User settings: light form panels inside dark chrome — labels only */
 @media (prefers-color-scheme: dark) {
-  .pf-c-card,
-  .pf-v5-c-card,
-  .pf-c-page__main-section,
-  .pf-c-page__main,
-  ak-user-settings,
-  ak-user-settings-form {
+  ak-user-settings-form .pf-c-card,
+  ak-user-settings-form .pf-v5-c-card {
     --pf-global--Color--100: #2a1f3d;
     --pf-global--Color--200: #44337a;
-    --pf-global--Color--300: #6b5e80;
   }
 
-  .pf-c-card .pf-c-title,
-  .pf-c-card .pf-v5-c-title,
-  .pf-c-card h1,
-  .pf-c-card h2,
-  .pf-c-card .pf-c-form__label,
-  .pf-c-card .pf-v5-c-form__label,
-  .pf-c-card .pf-c-form__label-text,
-  .pf-c-card .pf-v5-c-form__label-text,
-  .pf-c-page__main-section .pf-c-title,
-  .pf-c-page__main-section .pf-v5-c-title,
-  .pf-c-page__main-section .pf-c-form__label-text,
-  ak-user-settings .pf-c-title,
-  ak-user-settings h1,
-  ak-user-settings-form .pf-c-form__label-text {
-    color: #2a1f3d !important;
-  }
-
-  .pf-c-card .pf-c-form-control,
-  .pf-c-card input,
-  .pf-c-card select,
-  .pf-c-card textarea {
+  ak-user-settings-form .pf-c-card .pf-c-title,
+  ak-user-settings-form .pf-c-card .pf-c-form__label-text,
+  ak-user-settings-form .pf-c-card h1,
+  ak-user-settings-form .pf-c-card h2 {
     color: #2a1f3d !important;
   }
 }
 
-[data-theme="dark"] .pf-c-card,
-[data-theme="dark"] .pf-v5-c-card,
-[data-theme="dark"] .pf-c-page__main-section,
-[data-theme="dark"] ak-user-settings,
-[data-theme="dark"] ak-user-settings-form {
+[data-theme="dark"] ak-user-settings-form .pf-c-card,
+[data-theme="dark"] ak-user-settings-form .pf-v5-c-card {
   --pf-global--Color--100: #2a1f3d;
   --pf-global--Color--200: #44337a;
-  --pf-global--Color--300: #6b5e80;
 }
 
-[data-theme="dark"] .pf-c-card .pf-c-title,
-[data-theme="dark"] .pf-c-card .pf-v5-c-title,
-[data-theme="dark"] .pf-c-card h1,
-[data-theme="dark"] .pf-c-card h2,
-[data-theme="dark"] .pf-c-card .pf-c-form__label-text,
-[data-theme="dark"] .pf-c-page__main-section .pf-c-title,
-[data-theme="dark"] ak-user-settings .pf-c-title,
-[data-theme="dark"] ak-user-settings-form .pf-c-form__label-text {
+[data-theme="dark"] ak-user-settings-form .pf-c-card .pf-c-title,
+[data-theme="dark"] ak-user-settings-form .pf-c-card .pf-c-form__label-text,
+[data-theme="dark"] ak-user-settings-form .pf-c-card h1,
+[data-theme="dark"] ak-user-settings-form .pf-c-card h2 {
   color: #2a1f3d !important;
 }
 
-/* Browser dark: login flow only (do not set :root text tokens — breaks User settings) */
 @media (prefers-color-scheme: dark) {
   .pf-c-login,
   .ak-flow-container,

@@ -6,6 +6,7 @@ locals {
     # jellyfin_role: "admins" | "users" | "kids" -> puts the user in
     # jellyfin-<role> (see local.jellyfin_groups in locals.tf). Omit or null for
     # no Jellyfin access; the plugin is fail-closed, so such a user is denied.
+    # welcome_email = false skips the welcome / recovery mail on tofu create (see welcome.tf).
     users = {
       s3lcsum = {
         name          = "Dominik Siejak"
@@ -35,6 +36,12 @@ locals {
       as = {
         name          = "Andrzej Siejak"
         email         = "andrzej.siejak@post.pl"
+        jellyfin_role = "users"
+      }
+      wkrzywonos = {
+        name          = "Wiktoria Krzywonos"
+        email         = "wiktoriakrzywonos6@gmail.com"
+        welcome_email = false
         jellyfin_role = "users"
       }
     }

@@ -7,15 +7,6 @@ resource "authentik_brand" "default" {
   branding_default_flow_background = ""
   branding_custom_css              = file("${path.module}/slab-theme.css")
 
-  # Light login card — PatternFly text palette must match (see slab-theme.css).
-  attributes = jsonencode({
-    settings = {
-      theme = {
-        base = "light"
-      }
-    }
-  })
-
   flow_authentication = "366025e6-d668-4a7f-9c51-0a79f07e329d"
   flow_invalidation   = "a9cd8df5-123f-42fc-a5e6-1cdc00204c3e"
   flow_recovery       = authentik_flow.recovery.uuid

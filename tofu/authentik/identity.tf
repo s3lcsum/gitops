@@ -30,6 +30,12 @@ resource "authentik_group" "jellyfin" {
 # The old variables.tf object type supplied optional() defaults (is_admin=false,
 # is_active=true, sshPublicKey=[]). local.cfg.users is a plain map, so the
 # defaults are applied here with try().
+
+moved {
+  from = authentik_user.users["wiktoriakrzywonos6"]
+  to   = authentik_user.users["wkrzywonos"]
+}
+
 resource "authentik_user" "users" {
   for_each = local.cfg.users
 
@@ -47,9 +53,10 @@ resource "authentik_user" "users" {
       authentik_group.jellyfin["jellyfin-${role}"].id
     if role != null]
   )
-  attributes = jsonencode({
-    sshPublicKey = try(each.value.sshPublicKey, [])
-  })
+  attributes = jsonencode(merge(
+    { sshPublicKey = try(each.value.sshPublicKey, []) },
+    try(each.value.welcome_email, true) ? {} : { welcome_email = false },
+  ))
 }
 
 resource "authentik_user" "service_accounts" {
