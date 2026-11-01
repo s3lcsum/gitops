@@ -26,10 +26,10 @@ locals {
     }
     openbao = {
       name       = "OpenBao"
-      launch_url = "https://openbao.dominiksiejak.pl"
+      launch_url = "https://bao.dominiksiejak.pl"
       icon_url   = "https://raw.githubusercontent.com/openbao/artwork/refs/heads/main/color/openbao-color.svg"
       redirect_uris = [
-        "https://openbao.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
+        "https://bao.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
       ]
     }
     # K0lin SSO plugin (no native Jellyfin OIDC). Provider name in the plugin
@@ -135,16 +135,6 @@ locals {
         "https://argocd.dominiksiejak.pl/auth/callback",
         "http://localhost:8080/auth/callback",
         "http://localhost:8085/auth/callback",
-      ]
-    }
-    # Dex OIDC connector. Callback is the API host, not the UI.
-    # Client id must match security.dexClientId (terrakube).
-    terrakube = {
-      name       = "Terrakube"
-      launch_url = "https://terrakube.dominiksiejak.pl"
-      icon_url   = "https://avatars.githubusercontent.com/u/80990539"
-      redirect_uris = [
-        "https://terrakube-api.dominiksiejak.pl/dex/callback",
       ]
     }
   }

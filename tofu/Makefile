@@ -2,7 +2,7 @@
 # AppRole: ~/.config/openbao/role_id and ~/.config/openbao/secret_id
 # GCP ADC for state. No tfvars.
 
-.PHONY: help plan apply plan-module apply-module clean
+.PHONY: help plan apply clean
 .DEFAULT_GOAL := help
 
 ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
@@ -15,19 +15,19 @@ help: ## Show targets
 	@echo "Secrets:        OpenBao KV secret/terraform_env/<module> → local.env (provider)"
 	@echo "No tfvars. Nested values = JSON strings in KV."
 
-plan: ## Plan all active modules
-	@cd "$(ROOT)" && terragrunt run --all --non-interactive $(TG_FILTER) -- plan
+plan: ## Plan all active modules, or one when MODULE=name
+	@if [ -n "$(MODULE)" ]; then \
+		cd "$(ROOT)/$(MODULE)" && terragrunt run --non-interactive -- plan; \
+	else \
+		cd "$(ROOT)" && terragrunt run --all --non-interactive $(TG_FILTER) -- plan; \
+	fi
 
-apply: ## Apply all active modules (auto-approve)
-	@cd "$(ROOT)" && terragrunt run --all --non-interactive $(TG_FILTER) -- apply
-
-plan-module: ## Plan one unit (MODULE=name)
-	@test -n "$(MODULE)" || { echo "Usage: make plan-module MODULE=authentik"; exit 1; }
-	@cd "$(ROOT)/$(MODULE)" && terragrunt run --non-interactive -- plan
-
-apply-module: ## Apply one unit (MODULE=name)
-	@test -n "$(MODULE)" || { echo "Usage: make apply-module MODULE=authentik"; exit 1; }
-	@cd "$(ROOT)/$(MODULE)" && terragrunt run --non-interactive -- apply -auto-approve
+apply: ## Apply all active modules, or one when MODULE=name
+	@if [ -n "$(MODULE)" ]; then \
+		cd "$(ROOT)/$(MODULE)" && terragrunt run --non-interactive -- apply -auto-approve; \
+	else \
+		cd "$(ROOT)" && terragrunt run --all --non-interactive $(TG_FILTER) -- apply; \
+	fi
 
 clean: ## Drop Terragrunt caches
 	@find "$(ROOT)" -type d -name .terragrunt-cache -prune -exec rm -rf {} +

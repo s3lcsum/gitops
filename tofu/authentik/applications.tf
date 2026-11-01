@@ -43,19 +43,6 @@ resource "authentik_property_mapping_provider_scope" "jellyfin_groups" {
   expression = "return [g.name for g in request.user.ak_groups.all()]"
 }
 
-# Dex OIDC connector maps this claim onto Terrakube teams.
-# Terrakube security.adminGroup is `admins` (Authentik). Older deploys used
-# TERRAKUBE_ADMIN — emit both while that config may still be live.
-resource "authentik_property_mapping_provider_scope" "terrakube_groups" {
-  name       = "terrakube-groups"
-  scope_name = "groups"
-  # One-liner — Authentik eval can choke on multi-line mutate; keep claim = real groups
-  # plus TERRAKUBE_ADMIN for older Terrakube deploys still using that adminGroup.
-  expression = <<-EOT
-  return [g.name for g in request.user.ak_groups.all()] + (["TERRAKUBE_ADMIN"] if request.user.ak_groups.filter(name="admins").exists() else [])
-  EOT
-}
-
 resource "authentik_provider_oauth2" "oauth2" {
   for_each = local.oauth2_applications
 
@@ -83,7 +70,6 @@ resource "authentik_provider_oauth2" "oauth2" {
     each.key == "argocd" ? [authentik_property_mapping_provider_scope.argocd_groups.id] : [],
     each.key == "openbao" ? [authentik_property_mapping_provider_scope.openbao_groups.id] : [],
     each.key == "jellyfin" ? [authentik_property_mapping_provider_scope.jellyfin_groups.id] : [],
-    each.key == "terrakube" ? [authentik_property_mapping_provider_scope.terrakube_groups.id] : [],
   )
 
   allowed_redirect_uris = [
