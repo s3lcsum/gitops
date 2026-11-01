@@ -122,7 +122,10 @@ spec:
     configMap:
       key: ca-certificates.crt
     # PKCS#12 truststore for JVM / Java clients that want a keystore.
+    # password is written out explicitly: the CRD defaults it to "" and Argo
+    # reports the Bundle OutOfSync forever if git omits the field.
     additionalFormats:
       pkcs12:
         key: ca-bundle.p12
+        password: ""
         profile: Modern2023
