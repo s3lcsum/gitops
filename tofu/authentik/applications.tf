@@ -166,18 +166,3 @@ resource "authentik_policy_binding" "user_access" {
   group  = authentik_group.users.id
   order  = 1
 }
-
-# Jellyfin app access for the RBAC groups. Authentik authorizes the app before
-# the plugin ever sees a token, so a user in `jellyfin-users` but not in `users`
-# would be denied at the Authentik consent step. Bind each jellyfin-* group to
-# the Jellyfin application only.
-resource "authentik_policy_binding" "jellyfin_rbac_access" {
-  for_each = {
-    for name, group in authentik_group.jellyfin : name => group.id
-    if contains(keys(local.all_app_uuids), "jellyfin")
-  }
-
-  target = local.all_app_uuids["jellyfin"]
-  group  = each.value
-  order  = 2
-}

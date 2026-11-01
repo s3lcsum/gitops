@@ -349,29 +349,18 @@ locals {
   # Access Control
   #───────────────────────────────────────────────────────────────────────────────
 
-  # Jellyfin RBAC groups (aussierk/jellyfin-plugin-oidc). Keys are the exact
-  # authentik group names that land in the `groups` claim; the plugin's Role
-  # Mappings match on these strings verbatim.
-  jellyfin_groups = {
-    "jellyfin-admins" = "Full admin, all libraries."
-    "jellyfin-users"  = "Standard access: playback, remote access, transcoding."
-    "jellyfin-kids"   = "Restricted: kids library only, parental rating capped."
-  }
+  # Jellyfin OIDC plugin maps Role Claim `groups` to Authentik group names `admins` and `users`.
 
-  # Retired OAuth/proxy slugs (not in this map): grafana, hermes, gatus, portainer, dozzle.
-  # Grafana is Grafana Cloud only (oauth2 slug grafana-cloud).
-
-  user_accessible_apps = toset([
-    "grafana-cloud",
+  # Authentik user-library tiles for members of group `users` (family / brand tier).
+  # Admins still get every app via admin_access.
+  brand_user_apps = toset([
+    "calibre-web-automated",
+    "homeassistant",
     "jellyfin",
     "seerr",
-    "n8n",
-    "netbox",
     "sure",
     "synology",
-    "victoriametrics",
-    "watchyourlan",
-    "zigbee2mqtt-wifi",
-    "zigbee2mqtt-usb",
   ])
+
+  user_accessible_apps = local.brand_user_apps
 }
