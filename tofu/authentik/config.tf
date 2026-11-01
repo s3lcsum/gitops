@@ -30,12 +30,7 @@ locals {
       oliwkasiejak = {
         name          = "Oliwia Siejak"
         email         = "oliwka.siejak@gmail.com"
-        jellyfin_role = "users"
-      }
-      testing = {
-        name          = "Automated Testing"
-        email         = "test@dominiksiejak.pl"
-        jellyfin_role = "users"
+        jellyfin_role = "kids"
       }
       as = {
         name          = "Andrzej Siejak"

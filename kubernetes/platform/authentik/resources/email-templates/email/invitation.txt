@@ -1,0 +1,7 @@
+{% trans "You're invited" %}
+
+{% blocktrans %}You have been invited to join {{ host }}.{% endblocktrans %}
+
+{{ url }}
+
+auth.dominiksiejak.pl

@@ -46,12 +46,8 @@ locals {
       launch_url = "https://jellyfin.dominiksiejak.pl/sso/OIDC/Start/authentik"
       icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyfin.svg"
       redirect_uris = [
-        # New plugin (aussierk). Path is fixed by the plugin:
-        # {base}/sso/OIDC/Callback/{providerId}
+        # aussierk/jellyfin-plugin-oidc — path fixed by plugin ({providerId}=authentik)
         "https://jellyfin.dominiksiejak.pl/sso/OIDC/Callback/authentik",
-        # Transitional: old K0lin SSO-Auth plugin. Drop once the pod no longer
-        # mounts SSO-Auth.xml.
-        "https://jellyfin.dominiksiejak.pl/sso/OID/redirect/authentik",
       ]
       # Stable subject. The guide says "based on the user's username", but that
       # makes `sub` change on a rename and orphans the Jellyfin account; the
@@ -362,8 +358,8 @@ locals {
     "jellyfin-kids"   = "Restricted: kids library only, parental rating capped."
   }
 
-  # Retired (do not re-add): self-hosted grafana.dominiksiejak.pl OAuth, hermes OAuth.
-  # Grafana is Grafana Cloud only (oauth2 slug grafana-cloud). Orphan Authentik apps → delete in UI.
+  # Retired OAuth/proxy slugs (not in this map): grafana, hermes, gatus, portainer, dozzle.
+  # Grafana is Grafana Cloud only (oauth2 slug grafana-cloud).
 
   user_accessible_apps = toset([
     "grafana-cloud",

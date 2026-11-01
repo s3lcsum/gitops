@@ -1,0 +1,7 @@
+{% trans "Confirm your account" %}
+
+{% trans "Open this link to activate your account:" %}
+
+{{ url }}
+
+auth.dominiksiejak.pl

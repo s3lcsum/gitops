@@ -1,0 +1,7 @@
+{{ title }}
+
+{{ body }}
+
+{% if link %}{{ link.label }}: {{ link.target }}{% endif %}
+
+auth.dominiksiejak.pl

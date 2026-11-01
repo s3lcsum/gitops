@@ -36,12 +36,8 @@ resource "authentik_property_mapping_provider_scope" "openbao_groups" {
   expression = "return [g.name for g in request.user.ak_groups.all()]"
 }
 
-# Jellyfin SSO plugins RoleClaim=groups → AdminRoles/Roles match Authentik group names.
-#
-# `profile` (a default scope) already emits `groups`, so aussierk/jellyfin-plugin-oidc
-# gets what it needs with scopes `openid profile email`. This extra `groups` scope is
-# for the older K0lin SSO-Auth plugin, whose config requests the `groups` scope
-# explicitly. Remove it once SSO-Auth.xml is gone.
+# Extra `groups` scope for legacy SSO-Auth.xml (still mounted on Jellyfin). The aussierk
+# plugin uses `openid profile email` only. Drop this mapping when SSO-Auth.xml is removed.
 resource "authentik_property_mapping_provider_scope" "jellyfin_groups" {
   name       = "jellyfin-groups"
   scope_name = "groups"

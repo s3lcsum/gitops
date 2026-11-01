@@ -41,7 +41,7 @@ resource "authentik_stage_email" "recovery_email" {
   use_global_settings      = true
   template                 = "email/password_reset.html"
   token_expiry             = "minutes=30"
-  subject                  = "Password reset request"
+  subject                  = "Reset your password"
   activate_user_on_success = true
 }
 
