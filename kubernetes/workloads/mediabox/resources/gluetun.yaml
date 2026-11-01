@@ -29,6 +29,26 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+      # Built-in servers.json in the image goes stale; UPDATER_PERIOD only runs after
+      # the tunnel is up, so refresh Nord server IPs before VPN starts.
+      initContainers:
+        - name: gluetun-servers-update
+          image: ghcr.io/qdm12/gluetun:v3.41.3
+          args:
+            - update
+            - -enduser
+            - -providers
+            - nordvpn
+          volumeMounts:
+            - name: gluetun-data
+              mountPath: /gluetun
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
       containers:
         - name: gluetun
           image: ghcr.io/qdm12/gluetun:v3.41.3
@@ -41,6 +61,12 @@ spec:
           env:
             - name: FIREWALL_INPUT_PORTS
               value: "8080,8085"
+            - name: UPDATER_PERIOD
+              value: 480h
+            - name: UPDATER_VPN_SERVICE_PROVIDERS
+              value: nordvpn
+            - name: UPDATER_PREFER_DIRECT_DOWNLOAD
+              value: "yes"
           readinessProbe:
             exec:
               command: ["nc", "-z", "localhost", "8000"]
@@ -51,6 +77,8 @@ spec:
             periodSeconds: 5
             failureThreshold: 30
           volumeMounts:
+            - name: gluetun-data
+              mountPath: /gluetun
             - name: tun
               mountPath: /dev/net/tun
             - name: shm
@@ -109,6 +137,8 @@ spec:
               cpu: "2"
               memory: 2Gi
       volumes:
+        - name: gluetun-data
+          emptyDir: {}
         - name: tun
           hostPath:
             path: /dev/net/tun
