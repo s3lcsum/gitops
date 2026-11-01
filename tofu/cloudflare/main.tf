@@ -229,7 +229,26 @@ resource "cloudflare_dns_record" "spf_mail" {
   zone_id = cloudflare_zone.main.id
   name    = "mail.dominiksiejak.pl"
   type    = "TXT"
-  content = "\"v=spf1 include:_spf.mx.cloudflare.net ~all\""
+  # Zoho SMTP outbound + Cloudflare Email Routing inbound (MX on mail.*).
+  content = "\"v=spf1 include:zoho.eu include:one.zoho.eu include:_spf.mx.cloudflare.net ~all\""
+  ttl     = 1
+}
+
+resource "cloudflare_dns_record" "dmarc_mail" {
+  zone_id = cloudflare_zone.main.id
+  name    = "_dmarc.mail.dominiksiejak.pl"
+  type    = "TXT"
+  content = "\"v=DMARC1; p=none; adkim=s; aspf=s; rua=mailto:root@mail.dominiksiejak.pl\""
+  ttl     = 1
+}
+
+resource "cloudflare_dns_record" "zoho_dkim" {
+  count = local.cfg.zoho_dkim_txt != "" ? 1 : 0
+
+  zone_id = cloudflare_zone.main.id
+  name    = "${local.cfg.zoho_dkim_selector}._domainkey.mail.dominiksiejak.pl"
+  type    = "TXT"
+  content = "\"${local.cfg.zoho_dkim_txt}\""
   ttl     = 1
 }
 

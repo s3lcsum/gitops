@@ -15,5 +15,10 @@ locals {
       "hass.dominiksiejak.pl"               = "https://traefik"
       "n8n.dominiksiejak.pl"                = "https://traefik"
     }
+    # Zoho Mail EU (smtp.zoho.eu) signs mail.dominiksiejak.pl — Authentik recovery, etc.
+    # Admin Console → Domains → mail.dominiksiejak.pl → Email Configuration → DKIM:
+    # copy TXT value (v=DKIM1; …) here, then apply and Enable the selector in Zoho.
+    zoho_dkim_selector = "zmail"
+    zoho_dkim_txt      = ""
   }
 }
