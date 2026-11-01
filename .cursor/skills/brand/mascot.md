@@ -35,7 +35,7 @@ Status pages (Gatus, Homepage, Grafana annotations): prefer **2D icon** later; u
 
 | Service | Mark | Mascot |
 |---------|------|--------|
-| Authentik | Horizontal logo on light bg | Optional wave on login side panel |
+| Authentik | Horizontal logo on light bg | **Flow bg:** `jpg/slabi-flow-lilac.jpg` (Slabi whippet, lilac) |
 | Jellyfin | Square icon + title | Server pose splash |
 | NAS / MinIO | S icon only | Paw-on-server pose |
 | Argo CD | S favicon | Deploying pose in docs |

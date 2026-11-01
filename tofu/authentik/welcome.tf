@@ -26,7 +26,7 @@ if user.email.endswith("@dominiksiejak.pl") and local_part in ("null", "test", "
 recovery_url = "https://${local.cfg.authentik_domain}/if/flow/${authentik_flow.recovery.slug}/"
 ak_send_email(
     user.email,
-    "Welcome — set your password",
+    "${local.email_subject_brand} — welcome, set your password",
     template="email/welcome.html",
     context={
         "user": user,

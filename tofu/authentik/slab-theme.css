@@ -6,7 +6,14 @@
   --pf-global--primary-color--400: #7e4efc;
   --pf-global--link--Color: #5442ae;
   --pf-global--link--Color--hover: #44337a;
-  --ak-flow-background: url(https://auth.dominiksiejak.pl/media/public/slab/logo-horizontal-dark.png) !important;
+  --ak-flow-background: url(https://auth.dominiksiejak.pl/media/public/slab/slabi-flow-lilac.jpg) !important;
+}
+
+.pf-c-login,
+.ak-flow-container {
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
 }
 
 .pf-c-login {

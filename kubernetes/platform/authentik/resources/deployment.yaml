@@ -69,6 +69,9 @@ spec:
               value: 127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,fe80::/10,::1/128
             - name: AUTHENTIK_POSTGRESQL__HOST
               value: postgres-rw.cloudnative-pg.svc
+            # Overrides OpenBao AUTHENTIK_EMAIL__FROM (bare root@… shows as "root" in Gmail).
+            - name: AUTHENTIK_EMAIL__FROM
+              value: "HomeLab Authentik <root@mail.dominiksiejak.pl>"
           ports:
             - name: http
               containerPort: 9000
@@ -182,6 +185,8 @@ spec:
               value: info
             - name: AUTHENTIK_POSTGRESQL__HOST
               value: postgres-rw.cloudnative-pg.svc
+            - name: AUTHENTIK_EMAIL__FROM
+              value: "HomeLab Authentik <root@mail.dominiksiejak.pl>"
           volumeMounts:
             - name: media
               mountPath: /media

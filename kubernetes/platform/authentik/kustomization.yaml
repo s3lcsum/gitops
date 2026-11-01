@@ -27,3 +27,4 @@ configMapGenerator:
     files:
       - resources/brand-assets/logo-horizontal-dark.png
       - resources/brand-assets/mark-icon.png
+      - resources/brand-assets/slabi-flow-lilac.jpg
