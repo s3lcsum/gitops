@@ -524,6 +524,9 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
+            - name: nas
+              mountPath: /media/intros
+              subPath: intros
       volumes:
         - name: config
           persistentVolumeClaim:
