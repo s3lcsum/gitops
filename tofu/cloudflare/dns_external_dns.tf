@@ -3,7 +3,7 @@
 #
 # auth / hass / n8n: tunnel-only — proxied CNAME + ingress in this module (tunnel_apps).
 # ingressroute-dnsendpoints omits DNSEndpoints for them; external-dns-cloudflare sync drops WAN A.
-# external-dns-adguard --exclude-domains keeps AdGuard from split-horizon rewrites.
+# external-dns-adguard sync drops stale $dnsrewrite when DNSEndpoints are omitted (no --exclude-domains).
 #
 # Apply order: sync kubernetes/networking/external-dns (wait for WAN A removal), then
 # `make apply MODULE=cloudflare`. Tofu CNAME create fails while external-dns A records exist.
