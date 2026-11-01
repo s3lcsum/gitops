@@ -101,7 +101,7 @@ spec:
             - --managed-record-types=A
             - --managed-record-types=TXT
             - --provider=cloudflare
-            - --cloudflare-proxied=false
+            - --no-cloudflare-proxied
             - --cloudflare-dns-records-per-page=5000
             - --default-targets=$(WAN_IP)
           env:
