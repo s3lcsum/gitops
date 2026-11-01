@@ -9,6 +9,7 @@ Public repo. LAN topology and hostnames are intentional. Do not privatize them. 
 - Local plan/apply: from `tofu/`, `make plan` / `make apply` (all active units), or `make plan MODULE=authentik` / `make apply MODULE=authentik`. GCP ADC for state. `openbao` runs first in the DAG; re-apply `openbao` after authentik if the OpenBao OAuth client secret changed.
 - `required_version = ">= 1.11.5"`. Pin providers to exact versions, never `~>`.
 - `tofu/routeros`: `make -C tofu/routeros wg-qrconf PEER_NAME=…` / `wg-genkey` (WireGuard ops). Only module Makefile left; plan/apply via `make -C tofu plan MODULE=…`.
+- RouterOS management is HTTPS only: `www-ssl` :443 and `api-ssl` :8729 use an OpenBao-issued cert (`CN=router-lan`, IP SAN `192.168.89.1`, 1y TTL, no auto-renew). Plain `www`/`api` are disabled or being retired; the unencrypted listeners must not come back. Renew yearly with `tofu/routeros/scripts/renew-router-cert.sh` (`--dry-run` to test) before the cert expires (first: **2027-11-01**). Consumers (Traefik `lan-router`, n8n, mktxp) trust the `homelab-ca` ConfigMap; Traefik uses `portainer-insecure`.
 - Retired: `terraform/` tree, Terrakube, `.github/workflows/terraform.yml`. Do not resurrect them.
 - Pre-commit: `tofu_fmt`, `tofu_validate`, `terraform_tflint`. YAML hook skips `kubernetes/*/templates|charts|resources`. Terragrunt units under `tofu/` are excluded from standalone validate/tflint (generated `vault_env.tf`).
 
