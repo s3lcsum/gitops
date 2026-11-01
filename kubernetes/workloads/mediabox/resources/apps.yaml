@@ -487,6 +487,21 @@ spec:
               mountPath: /dev/dri
             - name: encoding-policy
               mountPath: /encoding-policy
+        - name: fix-intros-permissions
+          image: alpine:3.21
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              mkdir -p /media/intros
+              chmod 777 /media/intros
+              find /media/intros -type d -exec chmod 777 {} +
+              find /media/intros -type f -exec chmod 666 {} +
+          volumeMounts:
+            - name: nas
+              mountPath: /media/intros
+              subPath: intros
       containers:
         - name: jellyfin
           image: ghcr.io/linuxserver/jellyfin:12.4ubu2604-ls57

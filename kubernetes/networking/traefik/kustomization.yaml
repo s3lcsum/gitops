@@ -10,7 +10,6 @@ resources:
   - resources/backends/lan-nas.yaml
   - resources/backends/lan-router.yaml
   - resources/backends/lan-proxmox.yaml
-  - resources/backends/lan-zigbee-bridge.yaml
   - resources/backends/lan-opencode.yaml
   - resources/middlewares/authentik.yaml
   - resources/middlewares/secure-headers.yaml
@@ -19,6 +18,5 @@ resources:
   - resources/middlewares/cf-real-client-ip.yaml
   - resources/routes/dashboard.yaml
   - resources/routes/lan-native-oidc.yaml
-  - resources/routes/lan-zigbee-bridge.yaml
   - resources/routes/lan-opencode.yaml
   - resources/routes/kube-apiserver.yaml

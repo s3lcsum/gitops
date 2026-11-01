@@ -140,11 +140,6 @@
           url: https://hass.dominiksiejak.pl
           key: "{{HOMEPAGE_VAR_HASS_TOKEN}}"
 
-    - Zigbee Bridge:
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/zigbee2mqtt.png
-        href: https://zigbee-bridge.dominiksiejak.pl
-        description: Zigbee coordinator
-
     - Zigbee2MQTT (WiFi):
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/zigbee2mqtt.png
         href: https://zigbee2mqtt-wifi.dominiksiejak.pl

@@ -230,14 +230,6 @@ locals {
       # DoH only — /control is the admin API and must stay Authentik-gated.
       skip_path_regex = "^/dns-query.*"
     }
-    zigbee-bridge = {
-      name            = "Zigbee Bridge"
-      external_host   = "https://zigbee-bridge.dominiksiejak.pl"
-      internal_host   = "http://lan-zigbee-bridge.traefik.svc:80"
-      launch_url      = "https://zigbee-bridge.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zigbee2mqtt.svg"
-      skip_path_regex = ""
-    }
     # Traefik forward-auth + upstream Basic inject (OPENCODE_SERVER_PASSWORD).
     # Browser never sees OpenCode Basic — edge gate is Authentik.
     opencode = {
