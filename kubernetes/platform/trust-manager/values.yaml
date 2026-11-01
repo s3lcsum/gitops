@@ -1,0 +1,27 @@
+# ApplicationSet chart pin for trust-manager (CA bundle distribution).
+# cert-manager issues the leaves; trust-manager publishes the CA everywhere so
+# pods can verify each other over HTTPS without shipping a PEM in git.
+repoURL: https://charts.jetstack.io
+chart: trust-manager
+version: v0.26.0
+crds:
+  enabled: true
+  keep: true
+global:
+  priorityClassName: homelab-critical
+  commonLabels:
+    app.kubernetes.io/part-of: cert-manager
+# Chart default. Set explicitly so the trust source namespace is obvious.
+app:
+  trust:
+    namespace: cert-manager
+  # Webhook TLS: chart creates its own selfSigned Issuer + Certificate using
+  # cert-manager (app.webhook.tls.helmCert.enabled defaults to false).
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule

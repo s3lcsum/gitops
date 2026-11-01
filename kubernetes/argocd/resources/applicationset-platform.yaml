@@ -57,8 +57,6 @@ spec:
             exclude: true
           - path: kubernetes/platform/policy-reporter/kustomization.yaml
             exclude: true
-          - path: kubernetes/platform/terrakube/kustomization.yaml
-            exclude: true
   template:
     metadata:
       name: "{{index .path.segments 2}}"

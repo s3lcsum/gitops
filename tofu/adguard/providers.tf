@@ -11,8 +11,8 @@ terraform {
 
 provider "adguard" {
   host     = local.cfg.adguard_host
-  username = local.cfg.adguard_username
-  password = local.secret.adguard_password
+  username = local.secret.username
+  password = local.secret.password
   scheme   = "http"
   insecure = false
   timeout  = 10

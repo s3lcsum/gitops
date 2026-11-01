@@ -39,3 +39,10 @@ provider "registry.opentofu.org/grafana/grafana" {
     "zh:fa924256b36a8f4e5c687a82a4b327541390761987b7bd8183f1b7030b3b3b4d",
   ]
 }
+
+provider "registry.opentofu.org/hashicorp/vault" {
+  version = "5.13.0"
+  hashes = [
+    "h1:q60nZyZ5GjsZ4CDOPWE43Kov9PqYfbGeRF0VQ9InP+w=",
+  ]
+}

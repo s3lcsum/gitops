@@ -3,8 +3,8 @@ resource "vault_jwt_auth_backend" "oidc" {
   type                          = "oidc"
   oidc_discovery_url            = "https://auth.dominiksiejak.pl/application/o/openbao/"
   oidc_client_id                = local.cfg.oidc_client_id
-  oidc_client_secret_wo         = local.secret.oidc_client_secret
-  oidc_client_secret_wo_version = 1
+  oidc_client_secret_wo         = local.oidc_client_secret
+  oidc_client_secret_wo_version = local.oidc_client_secret_wo_version
   default_role                  = "admin"
   tune {
     listing_visibility = "unauth"

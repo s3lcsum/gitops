@@ -7,5 +7,5 @@ data "terraform_remote_state" "authentik" {
 }
 
 data "grafana_oncall_user" "pager" {
-  username = local.cfg.oncall_username
+  username = coalesce(try(local.secret.oncall_username, null), local.cfg.oncall_username)
 }

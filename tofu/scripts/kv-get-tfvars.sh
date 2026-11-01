@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Print secret/terraform_env/<module> field tfvars to stdout.
+# Print secret/<module> field tfvars to stdout (mount secret).
 # Prefers bao; falls back to vault (OpenBao = Vault API).
 set -euo pipefail
 module="${1:?module name}"
@@ -15,7 +15,7 @@ else
   exit 1
 fi
 
-if ! "${CLI[@]}" kv get -field=tfvars -mount=secret "terraform_env/${module}"; then
-  echo "missing secret/terraform_env/${module} (field tfvars). Upload: make -C tofu tg-upload" >&2
+if ! "${CLI[@]}" kv get -field=tfvars -mount=secret "${module}"; then
+  echo "missing secret/${module} (field tfvars). Upload: make -C tofu tg-upload" >&2
   exit 1
 fi

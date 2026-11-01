@@ -53,6 +53,27 @@ resource "vault_pki_secret_backend_role" "server_dns" {
   client_flag        = false
 }
 
+# Internal cluster TLS: cert-manager mints one wildcard per namespace
+# (*.<ns>.svc.cluster.local). Both EKUs so pods can serve and present mTLS.
+resource "vault_pki_secret_backend_role" "server_internal" {
+  backend                     = vault_mount.pki_int_servers.path
+  name                        = "server-internal"
+  ttl                         = "720h"
+  max_ttl                     = "2160h"
+  allow_any_name              = false
+  enforce_hostnames           = false
+  require_cn                  = false # cert-manager signs CSRs with SANs only
+  allow_bare_domains          = true
+  allow_subdomains            = true
+  allow_wildcard_certificates = true
+  allow_ip_sans               = false
+  allowed_domains             = ["svc", "svc.cluster.local", "pod.cluster.local", "cluster.local", "dominiksiejak.pl"]
+  key_type                    = "ec"
+  key_bits                    = 256
+  server_flag                 = true
+  client_flag                 = true
+}
+
 resource "vault_pki_secret_backend_role" "client_device" {
   backend        = vault_mount.pki_int_clients.path
   name           = "client-device"

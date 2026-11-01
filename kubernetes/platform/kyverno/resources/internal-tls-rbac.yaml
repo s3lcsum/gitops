@@ -1,0 +1,40 @@
+# Background controller must be able to create/patch the Certificates that
+# internal-tls-wildcard generates. Without this the policy is rejected at
+# admission with "requires permissions create,patch,update,delete".
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno-internal-tls
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+rules:
+  - apiGroups:
+      - cert-manager.io
+    resources:
+      - certificates
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kyverno-internal-tls
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kyverno-internal-tls
+subjects:
+  - kind: ServiceAccount
+    name: kyverno-background-controller
+    namespace: kyverno
+  - kind: ServiceAccount
+    name: kyverno-admission-controller
+    namespace: kyverno

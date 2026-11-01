@@ -4,22 +4,20 @@ Public repo. LAN topology and hostnames are intentional. Do not privatize them. 
 
 ## Commands
 
-- OpenTofu, not Terraform. Pin: `1.12.5` (`terraform/.opentofu-version`). Each module `Makefile` includes `terraform/base.Makefile`.
-- Plan/apply ownership: **Terrakube** org `HomeLab` (UI apply; VCS plan on PR). One workspace per `terraform/<module>` dir. Remote backend hostname `terrakube-api.dominiksiejak.pl`.
-- Local CLI: `tofu login terrakube-api.dominiksiejak.pl` (or Terrakube PAT in `~/.terraform.d/credentials.tfrc.json`). From `terraform/<module>/`: `make check` then remote `tofu plan` / UI apply. Extra flags: `TOFU_ARGS`.
+- OpenTofu, not Terraform. Pin: `1.12.5` (`tofu/.opentofu-version`). Infrastructure modules live under `tofu/<module>/` with Terragrunt (`tofu/root.hcl`, `terragrunt.hcl` per unit).
+- State: GCS bucket `dominiksiejak-gitops-tfstate`, prefix `gitops-<module>`. Secrets: OpenBao KV mount `secret`, path `<module>` (AppRole `~/.config/openbao/{role_id,secret_id}`). No committed `*.tfvars`.
+- Local plan/apply: from `tofu/`, `make plan` / `make apply` (all active units), or `make plan MODULE=authentik` / `make apply MODULE=authentik`. GCP ADC for state. `openbao` runs first in the DAG; re-apply `openbao` after authentik if the OpenBao OAuth client secret changed.
 - `required_version = ">= 1.11.5"`. Pin providers to exact versions, never `~>`.
-- Workspace secrets live in Terrakube vars (sourced from local `defaults.auto.tfvars` / 1Password). Do not commit `*.tfvars`.
-- `terraform/portainer` is gone. `terraform/postgres` targeted compose Postgres on the old Portainer LXC. Do not plan or apply `terraform/postgres`. Do not SSH to `portainer`. Do not recreate the portainer module. Leave its GCS backend alone.
-- `terraform/gcp`: `make state-rm-legacy` drops retired resources from state (includes Vault KMS). Does not delete them in GCP. Executor needs GCP credentials as workspace ENV.
-- `terraform/cloudflare`: `make show-token` prints the tunnel token.
-- Retired: `.github/workflows/terraform.yml` (GHA WireGuard tofu). Do not resurrect it.
-- Pre-commit: `tofu_fmt`, `tofu_validate`, `terraform_tflint`. YAML hook skips `kubernetes/*/templates|charts|resources`.
+- `tofu/gcp`: `make -C tofu/gcp state-rm-legacy` drops retired resources from state (includes Vault KMS). Does not delete them in GCP.
+- `tofu/cloudflare`: module Makefile `show-token` prints the tunnel token when present.
+- Retired: `terraform/` tree, Terrakube, `.github/workflows/terraform.yml`. Do not resurrect them.
+- Pre-commit: `tofu_fmt`, `tofu_validate`, `terraform_tflint`. YAML hook skips `kubernetes/*/templates|charts|resources`. Terragrunt units under `tofu/` are excluded from standalone validate/tflint (generated `vault_env.tf`).
 
 Root `Makefile` only has `help`. Do not add `serve` / `build` / `lint` / `test` / `consistency` back until `mkdocs.yml` and `scripts/check-consistency.py` exist.
 
 ## Layout
 
-- `kubernetes/` is the workload tree. `terraform/` is OpenTofu (Authentik apps, AdGuard rewrites, RouterOS, UniFi WLAN, Cloudflare, Grafana Cloud, NetBox objects, GCP, compose Postgres users).
+- `kubernetes/` is the workload tree. `tofu/` is OpenTofu + Terragrunt (Authentik apps, AdGuard rewrites, RouterOS, UniFi WLAN, Cloudflare, Grafana Cloud, NetBox objects, GCP, OpenBao, Proxmox, Backblaze).
 - Two Argo patterns. Do not mix them.
   - Helm ApplicationSet (`kubernetes/argocd/resources/applicationset.yaml`): a dir with `values.yaml` whose top keys are `repoURL` / `chart` / `version`. `argocd` is excluded. Auto-sync, selfHeal, prune. `cert-manager` schema rejects those pin keys — the Application sets `skipSchemaValidation: true`. Do not remove it.
   - Kustomize-only apps have no `values.yaml`, so they are not in the ApplicationSet. Each is `kubernetes/argocd/resources/application-<name>.yaml`, and that file must be listed in `resources/kustomization.yaml`. Missing either → Argo never creates the Application.
@@ -38,12 +36,12 @@ Kustomize-only (no `values.yaml`): adguard, authentik, calibre, cloudflared, cor
 - Traefik-k8s is a hostNetwork DaemonSet (`:80/:443` on every node). Public WAN arrives at `192.168.89.252`. Per-app IngressRoutes live in `kubernetes/<app>/resources/` in that app's namespace. Middleware refs need `namespace: traefik`. TLS comes from the Traefik default `TLSStore`.
 - Three ingress paths. Do not collapse them. WAN is firewalled (`allowed-wan` → Traefik-k8s on `.252`). WireGuard (`vpn.dominiksiejak.pl:51820`, overlay `192.168.200.0/24`) lands peers on the LAN. Cloudflare Tunnel + Access is a separate WAF path, not a substitute for either.
 - Auth class per host: `scripts/auth_classification.yaml` (`forward-auth` | `native-oidc` | `public` | `lan-only`). The checker that failed on unclassified hosts is gone; still add the host when adding a route.
-- AdGuard rewrites are `terraform/adguard` `adguard_rewrite` (`rewrites.tf`). Do not add `adguard_user_rules` — one resource replaces the whole custom-rule list, including external-dns `$dnsrewrite` rules. When external-dns owns a name, delete it from the terraform map.
+- AdGuard rewrites are `tofu/adguard` `adguard_rewrite` (`rewrites.tf`). Do not add `adguard_user_rules` — one resource replaces the whole custom-rule list, including external-dns `$dnsrewrite` rules. When external-dns owns a name, delete it from the tofu map.
 
 ## Data and secrets
 
 - App DB on CloudNativePG: add `Database` / `DatabaseRole` with `metadata.namespace: cloudnative-pg` (same ns as `Cluster/postgres`). RW host `postgres-rw.cloudnative-pg.svc`. Example: `kubernetes/hass/resources/database.yaml`. Cluster is `local-path`, 8Gi, `instances: 1`, pinned to the control plane. No Barman / `ScheduledBackup` — do not assume bucket backups exist. Compose Postgres on `.253` is gone; do not add users there.
-- K8s app secrets: OpenBao KV `secret/k8s/<item>` via ExternalSecrets (`ClusterSecretStore/openbao`, SA `eso-openbao`). 1Password remains for OpenBao unseal + OpenBao OIDC UI client + `ClusterSecretStore/onepassword` bootstrap (`external-secrets/onepassword`), plus `jellyfin` (no 1Password item; OIDC client secret still unset). Day-2 OpenBao API config still `tofu/openbao`.
+- App + tofu secrets: OpenBao KV mount `secret`, path `<item>` (e.g. `secret/data/adguard`) via ExternalSecrets and Terragrunt. Exceptions: `sure-user`, `openbao/unseal-key-*`, `openbao/oidc-*`, `k8s-external-secrets/credential` (1Password bootstrap). 1Password remains for OpenBao unseal + OpenBao OIDC UI client + `ClusterSecretStore/onepassword` bootstrap (`external-secrets/onepassword`), plus `jellyfin` (no 1Password item; OIDC client secret still unset). Day-2 OpenBao API config still `tofu/openbao`.
 - New app data: static NFS PV+PVC (`storageClassName: nas-bind`, server `192.168.89.240`, `nfsvers=4.1`, reclaim `Retain`) pointed at the existing export path. Do not use hostPath `/mnt/nas-media` for app data — that bind exists only on the `k8s` LXC and pins the pod. Dynamic StorageClass `nfs` (`nfs-subdir-external-provisioner` `4.0.18`) creates a new subdir under `/volume1/media/k8s` and is not the default; do not use it for trees that already exist. Synology NFS clients today are `192.168.89.252` and `192.168.89.254`; add `192.168.89.253` (QEMU) before VM workloads mount, or the mount fails. Do not mount `/dev/dri` — the k8s LXC has the directory without `card0` / `renderD128`.
 
 ## Gotchas
@@ -54,7 +52,7 @@ Kustomize-only (no `values.yaml`): adguard, authentik, calibre, cloudflared, cor
 - Mediabox: Gluetun, qBittorrent, and SABnzbd share one pod so downloads stay on the VPN. `/dev/net/tun` must exist on the lake node. Library is hostPath `/mnt/nas-media`. Jellyfin has no GPU — software transcode only.
 - Headlamp: `unsafeUseServiceAccountToken` plus `clusterRoleName: cluster-admin`. Anyone who passes Authentik is cluster-admin. Keep the Authentik app out of `user_accessible_apps`.
 - n8n: `N8N_BLOCK_ENV_ACCESS_IN_NODE=true` — do not read `$env` from Code nodes. `N8N_SSRF_ALLOWED_IP_RANGES` is `192.168.89.1/32,192.168.89.200/32`. RouterOS API must be `http://192.168.89.1/rest`, not `https://router.dominiksiejak.pl`. Login → WAN allowlist workflow is `kubernetes/n8n/workflows/authentik-login-firewall.json` (credential `wan-allowlist`, header `x-webhook-secret`). After authentik apply, copy `tofu output -raw webhook_secret` into that credential. IPv4 only.
-- No Grafana in the cluster. Dashboards live in Grafana Cloud (`terraform/grafana`, stack `dreewniak.grafana.net`). Apply the Authentik `grafana-cloud` OAuth app first. Needs a `glsa_` token in `defaults.auto.tfvars`. Do not recreate `grafana.dominiksiejak.pl`.
+- No Grafana in the cluster. Dashboards live in Grafana Cloud (`tofu/grafana`, stack `dreewniak.grafana.net`). Apply the Authentik `grafana-cloud` OAuth app first. Grafana Cloud API token lives in OpenBao `secret/grafana`. Do not recreate `grafana.dominiksiejak.pl`.
 - Calibre books are `/mnt/nas-media/books`.
-- Dual-run: LXC CT `101` at `192.168.89.252` (live cluster) + QEMU VM `102` at `192.168.89.253` (fresh kubeadm target). Hostname both `k8s`. Spec: `docs/superpowers/specs/2026-10-12-k8s-lxc-to-vm-design.md`. Do not recreate Portainer / `stacks/` / compose Traefik / CrowdSec LAPI on `.253` — `crowdsec-bouncer` stays disabled until a live LAPI exists. RADIUS outpost is manual on `.252` (`kubernetes/authentik/resources/radius-outpost.yaml`); do not point it back at `docker-local`.
+- Dual-run: LXC CT `101` at `192.168.89.252` (live cluster) + QEMU VM `102` at `192.168.89.253` (fresh kubeadm target). Hostname both `k8s`. Spec: `docs/superpowers/specs/2026-10-12-k8s-lxc-to-vm-design.md`. Do not recreate Portainer / `stacks/` / compose Traefik / CrowdSec LAPI on `.253` — `crowdsec-bouncer` stays disabled until a live LAPI exists.
 - OpenCode MCP lives in `.opencode/opencode.json` (gitignored). Copy from `.opencode/opencode.json.example`. Tokens are `{env:HA_URL}`, `{env:HA_TOKEN}`, `{env:N8N_API_KEY}`, `{env:ARGOCD_API_TOKEN}` — do not inline them. OpenCode interpolates `{env:VAR}` only, not `${env:VAR}`. Argo CD MCP is `argocd-mcp` stdio against `https://argocd.dominiksiejak.pl`. n8n URLs are `https://n8n.dominiksiejak.pl`. Kubernetes MCP is `kubernetes-mcp-server` pinned to context `k8s@lake` via `.opencode/kubeconfig-k8s-lake` (one context, generated, gitignored). Do not point it at `k8s.dominiksiejak.pl`. Cloudflare goes through the global Composio MCP, not `mcp.cloudflare.com`. Do not add a Docker MCP. Do not point it at `ssh://portainer`.

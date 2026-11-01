@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # One-shot: push each module's defaults.auto.tfvars to
-# secret/terraform_env/<module> field tfvars (raw HCL).
+# secret/<module> field tfvars (raw HCL), mount secret.
 # Expects VAULT_ADDR + VAULT_TOKEN already set (make upload → with-bao.sh).
 set -euo pipefail
 
@@ -31,8 +31,8 @@ for m in "${modules[@]}"; do
     skipped=$((skipped + 1))
     continue
   fi
-  echo "put secret/terraform_env/${m} (tfvars from ${src})"
-  "${CLI[@]}" kv put -mount=secret "terraform_env/${m}" "tfvars=@${src}"
+  echo "put secret/${m} (tfvars from ${src})"
+  "${CLI[@]}" kv put -mount=secret "${m}" "tfvars=@${src}"
   uploaded=$((uploaded + 1))
 done
 

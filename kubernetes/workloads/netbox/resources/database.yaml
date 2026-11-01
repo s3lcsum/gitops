@@ -1,4 +1,4 @@
-# OpenBao secret/k8s/netbox (DB_USER / DB_PASSWORD / DB_NAME fields).
+# OpenBao secret/netbox (DB_USER / DB_PASSWORD / DB_NAME fields).
 # Role secret mirrors the sure-user pattern: ESO copy in cloudnative-pg ns so
 # the CNPG DatabaseRole can't read across namespaces.
 ---
@@ -32,7 +32,7 @@ spec:
   data:
     - secretKey: password
       remoteRef:
-        key: k8s/netbox
+        key: netbox
         property: DB_PASSWORD
 ---
 apiVersion: postgresql.cnpg.io/v1

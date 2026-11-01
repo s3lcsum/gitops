@@ -33,7 +33,7 @@ repos:
     hooks:
       - id: tofu_fmt
       - id: tofu_validate
-        exclude: ^(tofu|terraform/postgres)/
+        exclude: ^tofu/
 
   # Terraform linters and security scanners (compatible with OpenTofu configs)
   - repo: https://github.com/antonbabenko/pre-commit-terraform

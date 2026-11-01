@@ -333,8 +333,10 @@ locals {
   # Access Control
   #───────────────────────────────────────────────────────────────────────────────
 
+  # Retired (do not re-add): self-hosted grafana.dominiksiejak.pl OAuth, hermes OAuth.
+  # Grafana is Grafana Cloud only (oauth2 slug grafana-cloud). Orphan Authentik apps → delete in UI.
+
   user_accessible_apps = toset([
-    "grafana",
     "grafana-cloud",
     "jellyfin",
     "seerr",

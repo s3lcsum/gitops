@@ -1,4 +1,0 @@
-proxmox_api_token_id         = "root@pam!terraform"
-proxmox_api_token_secret     = "from-1password"
-proxmox_openid_client_secret = "from-1password"
-k8s_vm_ssh_public_keys       = ["ssh-ed25519 AAAA... comment"]

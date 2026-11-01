@@ -1,6 +1,6 @@
 # MKTXP scrapes RouterOS API and serves Prometheus metrics for VictoriaMetrics.
 # Grafana Cloud reads VictoriaMetrics (tofu/grafana datasource uid victoria-metrics).
-# OpenBao secret/k8s/mktxp. Fields: username, password.
+# OpenBao secret/mktxp. Fields: username, password.
 # RouterOS user needs policy api,read.
 # Do not point hostname at https://router.dominiksiejak.pl — that path is WebFig
 # behind Authentik. API is plain HTTP on 192.168.89.1:8728.
@@ -162,11 +162,11 @@ spec:
   data:
     - secretKey: username
       remoteRef:
-        key: k8s/mktxp
+        key: mktxp
         property: username
     - secretKey: password
       remoteRef:
-        key: k8s/mktxp
+        key: mktxp
         property: password
 ---
 apiVersion: apps/v1

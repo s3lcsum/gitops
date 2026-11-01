@@ -18,6 +18,13 @@ resource "vault_policy" "eso_read" {
     path "secret/metadata/*" {
       capabilities = ["read", "list"]
     }
+    # CA PEMs only. ESO distributes the trust bundle; it must never mint leaves.
+    path "pki_root/cert/ca" {
+      capabilities = ["read"]
+    }
+    path "pki_int_servers/cert/ca" {
+      capabilities = ["read"]
+    }
   EOT
 }
 
@@ -39,6 +46,12 @@ resource "vault_policy" "pki_cert_manager" {
       capabilities = ["create", "update"]
     }
     path "pki_int_servers/issue/server-dns" {
+      capabilities = ["create", "update"]
+    }
+    path "pki_int_servers/sign/server-internal" {
+      capabilities = ["create", "update"]
+    }
+    path "pki_int_servers/issue/server-internal" {
       capabilities = ["create", "update"]
     }
     path "pki_int_servers/ca" {

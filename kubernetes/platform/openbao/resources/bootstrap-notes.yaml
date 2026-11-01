@@ -23,13 +23,13 @@ data:
     # Also store oidc-client-id / oidc-client-secret (Authentik OpenBao app).
 
     ## 3. App secrets
-    # ESO reads secret/k8s/<item> via ClusterSecretStore/openbao (policy eso-read).
-    # Do not put unseal shares or the 1Password SA token under k8s/.
+    # ESO reads secret/<item> via ClusterSecretStore/openbao (policy eso-read).
+    # Do not put unseal shares or the 1Password SA token in bootstrap-only paths.
 
     ## 4. Day-2 config
     # tofu/openbao (GCS prefix gitops-openbao) owns:
     #   KV secret/, policies, OIDC default_role=admin, kubernetes eso-openbao, approle terraform
-    # Local: AppRole files ~/.config/openbao/{role_id,secret_id}; secrets in KV secret/terraform_env/openbao
+    # Local: AppRole files ~/.config/openbao/{role_id,secret_id}; module secrets in KV secret/<module>
     # UI: method oidc/, leave Role blank (do not type Default)
 
     ## 5. Break-glass
@@ -38,7 +38,7 @@ data:
     ## 5. PKI bootstrap (once)
     # Root + two intermediates. Run with the root token, either in-cluster or against the API:
     #   kubectl exec -n openbao openbao-0 -- env BAO_TOKEN=$ROOT_TOKEN bao ...
-    #   BAO_ADDR=https://openbao.dominiksiejak.pl BAO_TOKEN=$ROOT_TOKEN bao ...
+    #   BAO_ADDR=https://bao.dominiksiejak.pl BAO_TOKEN=$ROOT_TOKEN bao ...
     # Never put the root private key in git, commits or tofu state. Only CA PEMs leave this host.
     # Note: `csr=@/tmp/x.csr` / `certificate=@...` resolve on the machine running bao. When piping
     # through `kubectl exec`, pass the content instead: `csr="$(cat /tmp/x.csr)"`.
@@ -51,8 +51,8 @@ data:
       organization="dominiksiejak.pl" \
       ttl=87600h > /tmp/homelab-root-ca.crt
     bao write pki_root/config/urls \
-      issuing_certificates="https://openbao.dominiksiejak.pl/v1/pki_root/ca" \
-      crl_distribution_points="https://openbao.dominiksiejak.pl/v1/pki_root/crl"
+      issuing_certificates="https://bao.dominiksiejak.pl/v1/pki_root/ca" \
+      crl_distribution_points="https://bao.dominiksiejak.pl/v1/pki_root/crl"
 
     # Store /tmp/homelab-root-ca.crt in 1Password (Servers/openbao field root-ca-pem). Install on test device later.
     # 1Password Servers/openbao fields (CA certs only, never keys):
@@ -69,8 +69,8 @@ data:
       format=pem_bundle ttl=43800h | jq -r '.data.certificate' > /tmp/servers-int.crt
     bao write pki_int_servers/intermediate/set-signed certificate=@/tmp/servers-int.crt
     bao write pki_int_servers/config/urls \
-      issuing_certificates="https://openbao.dominiksiejak.pl/v1/pki_int_servers/ca" \
-      crl_distribution_points="https://openbao.dominiksiejak.pl/v1/pki_int_servers/crl"
+      issuing_certificates="https://bao.dominiksiejak.pl/v1/pki_int_servers/ca" \
+      crl_distribution_points="https://bao.dominiksiejak.pl/v1/pki_int_servers/crl"
 
     # --- client intermediate ---
     bao secrets enable -path=pki_int_clients pki
@@ -83,8 +83,8 @@ data:
       format=pem_bundle ttl=43800h | jq -r '.data.certificate' > /tmp/clients-int.crt
     bao write pki_int_clients/intermediate/set-signed certificate=@/tmp/clients-int.crt
     bao write pki_int_clients/config/urls \
-      issuing_certificates="https://openbao.dominiksiejak.pl/v1/pki_int_clients/ca" \
-      crl_distribution_points="https://openbao.dominiksiejak.pl/v1/pki_int_clients/crl"
+      issuing_certificates="https://bao.dominiksiejak.pl/v1/pki_int_clients/ca" \
+      crl_distribution_points="https://bao.dominiksiejak.pl/v1/pki_int_clients/crl"
 
     # Store clients-int (and optionally servers-int) PEM in 1Password for Traefik/Cloudflare.
     # shred local key material copies that are not CA-only PEMs.

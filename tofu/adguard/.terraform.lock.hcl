@@ -34,3 +34,10 @@ provider "registry.opentofu.org/gmichels/adguard" {
     "zh:f809ab383cca0a5f83072981c64208cbd7fa67e986a86ee02dd2c82333221e32",
   ]
 }
+
+provider "registry.opentofu.org/hashicorp/vault" {
+  version = "5.13.0"
+  hashes = [
+    "h1:q60nZyZ5GjsZ4CDOPWE43Kov9PqYfbGeRF0VQ9InP+w=",
+  ]
+}

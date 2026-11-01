@@ -1,0 +1,54 @@
+# Private PKI issuer for in-cluster TLS. Signs from pki_int_servers/server-internal,
+# so every leaf chains to "Dominik Siejak Homelab Servers Intermediate" -> homelab root.
+# Auth is a projected SA token (serviceAccountRef), never a static SA-token Secret.
+# OpenBao side: tofu/openbao (k8s auth role cert-manager -> policy pki-cert-manager).
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: openbao-internal
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  vault:
+    path: pki_int_servers/sign/server-internal
+    server: https://bao.dominiksiejak.pl
+    auth:
+      kubernetes:
+        role: cert-manager
+        mountPath: /v1/auth/kubernetes
+        serviceAccountRef:
+          name: cert-manager
+---
+# cert-manager must be allowed to mint its own bound token for the Vault issuer.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cert-manager-openbao-token
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts/token
+    resourceNames:
+      - cert-manager
+    verbs:
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-manager-openbao-token
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-manager-openbao-token
+subjects:
+  - kind: ServiceAccount
+    name: cert-manager
+    namespace: cert-manager

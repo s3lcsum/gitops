@@ -28,7 +28,7 @@ metadata:
 value: 100000
 preemptionPolicy: PreemptLowerPriority
 globalDefault: false
-description: Identity (Authentik server), DNS filter consumers' deps (MQTT, netbox-redis, terrakube minio/valkey), Jellyfin, n8n. Dependents stay lower.
+description: Identity (Authentik server), DNS filter consumers' deps (MQTT, netbox-redis), Jellyfin, n8n. Dependents stay lower.
 ---
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass

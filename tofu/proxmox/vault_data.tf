@@ -2,7 +2,7 @@
 # Provider creds stay in local.secret (ephemeral, vault_env.tf).
 data "vault_kv_secret_v2" "module_env" {
   mount = "secret"
-  name  = "terraform_env/proxmox"
+  name  = "proxmox"
 }
 
 locals {

@@ -14,12 +14,6 @@ output "irm_integration_link" {
   sensitive   = true
 }
 
-output "terrakube_drift_oncall_webhook_url" {
-  description = "Grafana OnCall formatted_webhook URL for Terrakube drift-enforce alerts"
-  value       = grafana_oncall_integration.terrakube_drift.link
-  sensitive   = true
-}
-
 output "monitoring_folder_uid" {
   description = "UID of the Monitoring root folder (alert rules + nested dashboard categories)"
   value       = grafana_folder.monitoring.uid

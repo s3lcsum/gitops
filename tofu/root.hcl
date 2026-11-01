@@ -5,8 +5,22 @@
 
 terraform_binary = "tofu"
 
+terraform {
+  extra_arguments "parallelism" {
+    commands = [
+      "apply",
+      "plan",
+      "destroy",
+    ]
+    arguments = [
+      "-parallelism=${get_env("TOFU_PARALLELISM", "15")}",
+    ]
+  }
+}
+
 locals {
-  module_name = basename(get_terragrunt_dir())
+  module_name   = basename(get_terragrunt_dir())
+  vault_kv_name = local.module_name
 }
 
 remote_state {
@@ -22,7 +36,7 @@ remote_state {
 }
 
 # AppRole: ~/.config/openbao/{role_id,secret_id}
-# KV: secret/terraform_env/<module> flat keys; nested maps/lists = native JSON objects.
+# KV: secret/<module> on mount secret — ESO + tofu (flat keys; nested = JSON objects).
 generate "vault" {
   path      = "vault_env.tf"
   if_exists = "overwrite_terragrunt"
@@ -41,7 +55,7 @@ generate "vault" {
 
     ephemeral "vault_kv_secret_v2" "module_env" {
       mount = "secret"
-      name  = "terraform_env/${local.module_name}"
+      name  = "${local.vault_kv_name}"
     }
 
     locals {

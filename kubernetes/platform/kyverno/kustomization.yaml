@@ -7,4 +7,7 @@ resources:
   - resources/add-recommended-labels.yaml
   - resources/add-recommended-labels-rbac.yaml
   - resources/add-recommended-labels-existing.yaml
+  - resources/internal-tls-rbac.yaml
+  - resources/strip-generate-provenance.yaml
+  - resources/internal-tls-wildcard.yaml
   - resources/worker-overflow-taint.yaml

@@ -1,0 +1,128 @@
+# CA distribution for in-cluster TLS.
+# OpenBao PKI is the source of truth: ESO pulls the CA chain into a Secret,
+# trust-manager fans it out as a ConfigMap to every namespace.
+# Apps mount homelab-ca (ConfigMap, key ca-certificates.crt) and verify peers.
+# Target object is named after the Bundle, so the ConfigMap is `homelab-ca`.
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: openbao-pki
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  provider:
+    vault:
+      server: http://openbao.openbao.svc:8200
+      path: pki_int_servers
+      version: v1
+      auth:
+        kubernetes:
+          mountPath: kubernetes
+          role: eso-openbao
+          serviceAccountRef:
+            name: eso-openbao
+            namespace: external-secrets
+---
+# Root + servers intermediate. Both, so consumers can build a full chain
+# without a second lookup. Backed by policy eso-read (tofu/openbao).
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: homelab-ca
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: openbao-pki
+    kind: ClusterSecretStore
+  target:
+    name: homelab-ca
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      metadata:
+        labels: {}
+        annotations:
+          argocd.argoproj.io/sync-options: Prune=false
+  data:
+    - secretKey: servers-int-ca.crt
+      remoteRef:
+        key: cert/ca
+        property: certificate
+---
+# Root CA lives on its own mount, so it needs a second store.
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: openbao-pki-root
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  provider:
+    vault:
+      server: http://openbao.openbao.svc:8200
+      path: pki_root
+      version: v1
+      auth:
+        kubernetes:
+          mountPath: kubernetes
+          role: eso-openbao
+          serviceAccountRef:
+            name: eso-openbao
+            namespace: external-secrets
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: homelab-ca-root
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: openbao-pki-root
+    kind: ClusterSecretStore
+  target:
+    name: homelab-ca-root
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      metadata:
+        labels: {}
+        annotations:
+          argocd.argoproj.io/sync-options: Prune=false
+  data:
+    - secretKey: root-ca.crt
+      remoteRef:
+        key: cert/ca
+        property: certificate
+---
+# Fanned out to every namespace as ConfigMap/homelab-ca-bundle.
+# Only the trust chain is published — never a private key.
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: homelab-ca
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  sources:
+    - secret:
+        name: homelab-ca-root
+        key: root-ca.crt
+    - secret:
+        name: homelab-ca
+        key: servers-int-ca.crt
+  target:
+    configMap:
+      key: ca-certificates.crt
+    # PKCS#12 truststore for JVM / Java clients that want a keystore.
+    additionalFormats:
+      pkcs12:
+        key: ca-bundle.p12
+        profile: Modern2023

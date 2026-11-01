@@ -1,7 +1,6 @@
-# Non-secret defaults. Secrets: local.secret (ephemeral from OpenBao).
+# Non-secret defaults. Credentials: OpenBao KV secret/adguard (mount secret).
 locals {
   cfg = {
-    adguard_host     = "192.168.89.252:3000"
-    adguard_username = "dsiejak"
+    adguard_host = "192.168.89.252:3000"
   }
 }
