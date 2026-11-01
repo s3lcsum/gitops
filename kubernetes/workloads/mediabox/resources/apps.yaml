@@ -457,7 +457,7 @@ spec:
     spec:
       priorityClassName: homelab-high
       securityContext:
-        supplementalGroups: [44, 109, 993, 1000]
+        supplementalGroups: [44, 992, 109, 993, 1000]
       tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
@@ -497,6 +497,12 @@ spec:
               value: "0"
             - name: TZ
               value: Europe/Warsaw
+            - name: LIBVA_DRIVERS_PATH
+              value: /usr/lib/jellyfin-ffmpeg/lib/dri
+            - name: LIBVA_DRIVER_NAME
+              value: iHD
+          securityContext:
+            privileged: true
           ports:
             - name: http
               containerPort: 8096
