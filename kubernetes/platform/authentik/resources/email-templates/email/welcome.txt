@@ -1,9 +1,9 @@
-{% blocktrans with name=user.name %}Welcome, {{ name }}!{% endblocktrans %}
+Welcome, {{ user.name }}!
 
-{% blocktrans %}Your account is ready. Set a password using this link:{% endblocktrans %}
+Your account is ready. Set a password using this link:
 
 {{ recovery_url }}
 
-{% blocktrans with email=user.email %}If prompted, use Forgot password? with {{ email }}.{% endblocktrans %}
+If prompted, use Forgot password? with {{ user.email }}.
 
-auth.dominiksiejak.pl
+https://auth.dominiksiejak.pl

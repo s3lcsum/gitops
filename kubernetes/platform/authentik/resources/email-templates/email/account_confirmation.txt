@@ -1,7 +1,7 @@
-{% trans "Confirm your account" %}
+Confirm your account
 
-{% trans "Open this link to activate your account:" %}
+Open this link to activate your account:
 
 {{ url }}
 
-auth.dominiksiejak.pl
+https://auth.dominiksiejak.pl

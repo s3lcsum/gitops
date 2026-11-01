@@ -1,5 +1,5 @@
-{% blocktrans with username=user.username %}Hi {{ username }}, your sign-in code:{% endblocktrans %}
+Hi {{ user.username }}, your sign-in code:
 
 {{ token }}
 
-auth.dominiksiejak.pl
+https://auth.dominiksiejak.pl
