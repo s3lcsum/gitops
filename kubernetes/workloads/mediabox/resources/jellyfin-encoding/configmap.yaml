@@ -13,7 +13,7 @@ data:
     # device (requires Proxmox CT device passthrough for card0 + renderD128).
     set -eu
     OUT=/config/encoding.xml
-    POLICY=/policy
+    POLICY="${JELLYFIN_ENCODING_POLICY_DIR:-/encoding-policy}"
     if [ ! -d /config ]; then
       echo "jellyfin encoding: skip (no config dir)"
       exit 0
