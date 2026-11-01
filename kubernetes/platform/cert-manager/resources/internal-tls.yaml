@@ -1,0 +1,851 @@
+# Wildcard internal TLS, one leaf per application namespace.
+#
+# SANs: *.<ns>.svc, *.<ns>.svc.cluster.local, *.<ns>.pod.cluster.local
+# A wildcard matches exactly one label, so each namespace needs its own leaf;
+# *.<ns>.svc.cluster.local covers postgres-rw.<ns>.svc.cluster.local etc.
+#
+# Secret `internal-tls` (kubernetes.io/tls) is what pods mount. The issuing CA
+# chain is available in every namespace as ConfigMap `homelab-ca`
+# (key ca-certificates.crt) — see openbao-ca.yaml.
+#
+# Issuer openbao-internal -> OpenBao pki_int_servers/server-internal.
+# Declarative, not Kyverno generate: Kyverno's provenance webhook rejects
+# cert-manager's CertificateRequest when the Certificate carries
+# generate.kyverno.io/* labels, which stalls issuance forever.
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: adguard
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.adguard.svc.cluster.local"
+  dnsNames:
+    - "*.adguard.svc"
+    - "*.adguard.svc.cluster.local"
+    - "*.adguard.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: argo-rollouts
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.argo-rollouts.svc.cluster.local"
+  dnsNames:
+    - "*.argo-rollouts.svc"
+    - "*.argo-rollouts.svc.cluster.local"
+    - "*.argo-rollouts.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.argocd.svc.cluster.local"
+  dnsNames:
+    - "*.argocd.svc"
+    - "*.argocd.svc.cluster.local"
+    - "*.argocd.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: authentik
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.authentik.svc.cluster.local"
+  dnsNames:
+    - "*.authentik.svc"
+    - "*.authentik.svc.cluster.local"
+    - "*.authentik.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: calibre
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.calibre.svc.cluster.local"
+  dnsNames:
+    - "*.calibre.svc"
+    - "*.calibre.svc.cluster.local"
+    - "*.calibre.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: cloudflared
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.cloudflared.svc.cluster.local"
+  dnsNames:
+    - "*.cloudflared.svc"
+    - "*.cloudflared.svc.cluster.local"
+    - "*.cloudflared.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: cloudnative-pg
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.cloudnative-pg.svc.cluster.local"
+  dnsNames:
+    - "*.cloudnative-pg.svc"
+    - "*.cloudnative-pg.svc.cluster.local"
+    - "*.cloudnative-pg.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: external-dns
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.external-dns.svc.cluster.local"
+  dnsNames:
+    - "*.external-dns.svc"
+    - "*.external-dns.svc.cluster.local"
+    - "*.external-dns.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: external-secrets
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.external-secrets.svc.cluster.local"
+  dnsNames:
+    - "*.external-secrets.svc"
+    - "*.external-secrets.svc.cluster.local"
+    - "*.external-secrets.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: flannel
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.flannel.svc.cluster.local"
+  dnsNames:
+    - "*.flannel.svc"
+    - "*.flannel.svc.cluster.local"
+    - "*.flannel.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: grafana-synthetic-agent
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.grafana-synthetic-agent.svc.cluster.local"
+  dnsNames:
+    - "*.grafana-synthetic-agent.svc"
+    - "*.grafana-synthetic-agent.svc.cluster.local"
+    - "*.grafana-synthetic-agent.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: hass
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.hass.svc.cluster.local"
+  dnsNames:
+    - "*.hass.svc"
+    - "*.hass.svc.cluster.local"
+    - "*.hass.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: headlamp
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.headlamp.svc.cluster.local"
+  dnsNames:
+    - "*.headlamp.svc"
+    - "*.headlamp.svc.cluster.local"
+    - "*.headlamp.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: homepage
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.homepage.svc.cluster.local"
+  dnsNames:
+    - "*.homepage.svc"
+    - "*.homepage.svc.cluster.local"
+    - "*.homepage.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: local-path-provisioner
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.local-path-provisioner.svc.cluster.local"
+  dnsNames:
+    - "*.local-path-provisioner.svc"
+    - "*.local-path-provisioner.svc.cluster.local"
+    - "*.local-path-provisioner.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.mediabox.svc.cluster.local"
+  dnsNames:
+    - "*.mediabox.svc"
+    - "*.mediabox.svc.cluster.local"
+    - "*.mediabox.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: metrics-server
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.metrics-server.svc.cluster.local"
+  dnsNames:
+    - "*.metrics-server.svc"
+    - "*.metrics-server.svc.cluster.local"
+    - "*.metrics-server.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.monitoring.svc.cluster.local"
+  dnsNames:
+    - "*.monitoring.svc"
+    - "*.monitoring.svc.cluster.local"
+    - "*.monitoring.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: n8n
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.n8n.svc.cluster.local"
+  dnsNames:
+    - "*.n8n.svc"
+    - "*.n8n.svc.cluster.local"
+    - "*.n8n.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: netbox
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.netbox.svc.cluster.local"
+  dnsNames:
+    - "*.netbox.svc"
+    - "*.netbox.svc.cluster.local"
+    - "*.netbox.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: nfs
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.nfs.svc.cluster.local"
+  dnsNames:
+    - "*.nfs.svc"
+    - "*.nfs.svc.cluster.local"
+    - "*.nfs.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.policy-reporter.svc.cluster.local"
+  dnsNames:
+    - "*.policy-reporter.svc"
+    - "*.policy-reporter.svc.cluster.local"
+    - "*.policy-reporter.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: sure
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.sure.svc.cluster.local"
+  dnsNames:
+    - "*.sure.svc"
+    - "*.sure.svc.cluster.local"
+    - "*.sure.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.traefik.svc.cluster.local"
+  dnsNames:
+    - "*.traefik.svc"
+    - "*.traefik.svc.cluster.local"
+    - "*.traefik.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: unifi
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.unifi.svc.cluster.local"
+  dnsNames:
+    - "*.unifi.svc"
+    - "*.unifi.svc.cluster.local"
+    - "*.unifi.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: watchyourlan
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.watchyourlan.svc.cluster.local"
+  dnsNames:
+    - "*.watchyourlan.svc"
+    - "*.watchyourlan.svc.cluster.local"
+    - "*.watchyourlan.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-wildcard-tls
+  namespace: wealthfolio
+  labels:
+    app.kubernetes.io/name: internal-wildcard-tls
+    app.kubernetes.io/part-of: internal-tls
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: internal-tls
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  commonName: "*.wealthfolio.svc.cluster.local"
+  dnsNames:
+    - "*.wealthfolio.svc"
+    - "*.wealthfolio.svc.cluster.local"
+    - "*.wealthfolio.pod.cluster.local"
+  issuerRef:
+    name: openbao-internal
+    kind: ClusterIssuer
+    group: cert-manager.io

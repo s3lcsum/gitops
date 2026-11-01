@@ -5,3 +5,4 @@ resources:
   - resources/clusterissuer.yaml
   - resources/clusterissuer-openbao.yaml
   - resources/openbao-ca.yaml
+  - resources/internal-tls.yaml

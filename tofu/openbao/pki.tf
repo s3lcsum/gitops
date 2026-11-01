@@ -18,11 +18,15 @@ resource "vault_mount" "pki_int_clients" {
 #   tofu import vault_mount.pki_int_servers pki_int_servers
 #   tofu import vault_mount.pki_int_clients pki_int_clients
 
+# ttl / max_ttl are seconds, not "2160h" strings. The Vault API stores and
+# returns seconds, so an "8760h" literal plans as a change forever.
+#   720h  = 2592000  (30d)    2160h = 7776000  (90d)    8760h = 31536000 (1y)
+
 resource "vault_pki_secret_backend_role" "server_ip" {
   backend            = vault_mount.pki_int_servers.path
   name               = "server-ip"
-  ttl                = "8760h"
-  max_ttl            = "8760h"
+  ttl                = "31536000"
+  max_ttl            = "31536000"
   allow_any_name     = true
   allow_ip_sans      = true
   require_cn         = false
@@ -40,8 +44,8 @@ resource "vault_pki_secret_backend_role" "server_ip" {
 resource "vault_pki_secret_backend_role" "server_dns" {
   backend            = vault_mount.pki_int_servers.path
   name               = "server-dns"
-  ttl                = "2160h"
-  max_ttl            = "2160h"
+  ttl                = "7776000"
+  max_ttl            = "7776000"
   allow_any_name     = false
   enforce_hostnames  = true
   allow_bare_domains = true
@@ -58,8 +62,8 @@ resource "vault_pki_secret_backend_role" "server_dns" {
 resource "vault_pki_secret_backend_role" "server_internal" {
   backend                     = vault_mount.pki_int_servers.path
   name                        = "server-internal"
-  ttl                         = "720h"
-  max_ttl                     = "2160h"
+  ttl                         = "2592000"
+  max_ttl                     = "7776000"
   allow_any_name              = false
   enforce_hostnames           = false
   require_cn                  = false # cert-manager signs CSRs with SANs only
@@ -77,8 +81,8 @@ resource "vault_pki_secret_backend_role" "server_internal" {
 resource "vault_pki_secret_backend_role" "client_device" {
   backend        = vault_mount.pki_int_clients.path
   name           = "client-device"
-  ttl            = "8760h"
-  max_ttl        = "8760h"
+  ttl            = "31536000"
+  max_ttl        = "31536000"
   allow_any_name = true
   require_cn     = true
   key_type       = "ec"
@@ -91,8 +95,8 @@ resource "vault_pki_secret_backend_role" "client_device" {
 resource "vault_pki_secret_backend_role" "client_user" {
   backend            = vault_mount.pki_int_clients.path
   name               = "client-user"
-  ttl                = "2160h"
-  max_ttl            = "2160h"
+  ttl                = "7776000"
+  max_ttl            = "7776000"
   allow_any_name     = false
   allowed_domains    = ["dominiksiejak.pl"]
   allow_bare_domains = true
