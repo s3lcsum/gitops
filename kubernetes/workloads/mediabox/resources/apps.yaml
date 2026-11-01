@@ -47,13 +47,6 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /app/data
-          resources:
-            requests:
-              cpu: 50m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 1Gi
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -136,13 +129,6 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
-          resources:
-            requests:
-              cpu: 50m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -226,13 +212,6 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
-          resources:
-            requests:
-              cpu: 50m
-              memory: 256Mi
-            limits:
-              cpu: "1"
-              memory: 1Gi
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -322,13 +301,6 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
-          resources:
-            requests:
-              cpu: 50m
-              memory: 256Mi
-            limits:
-              cpu: "1"
-              memory: 1Gi
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -427,13 +399,6 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
-          resources:
-            requests:
-              cpu: 25m
-              memory: 128Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -553,13 +518,6 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
-          resources:
-            requests:
-              cpu: 50m
-              memory: 512Mi
-            limits:
-              cpu: "4"
-              memory: 4Gi
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -656,13 +614,6 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /app/config
-          resources:
-            requests:
-              cpu: 50m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 1Gi
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -741,13 +692,6 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
-          resources:
-            requests:
-              cpu: 25m
-              memory: 256Mi
-            limits:
-              cpu: 250m
-              memory: 1Gi
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -822,13 +766,6 @@ spec:
               mountPath: /app/src/scraparr/config/config.yaml
               subPath: config.yaml
               readOnly: true
-          resources:
-            requests:
-              cpu: 25m
-              memory: 64Mi
-            limits:
-              cpu: 200m
-              memory: 256Mi
       volumes:
         - name: config
           persistentVolumeClaim:

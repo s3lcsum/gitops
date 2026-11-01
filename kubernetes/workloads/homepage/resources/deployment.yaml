@@ -80,10 +80,6 @@ spec:
               mountPath: /app/config/widgets.yaml
               subPath: widgets.yaml
               readOnly: true
-          resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
       volumes:
         - name: config
           configMap:

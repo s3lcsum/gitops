@@ -112,10 +112,6 @@ spec:
                 - "3"
             periodSeconds: 10
             timeoutSeconds: 5
-          resources:
-            requests:
-              cpu: 10m
-              memory: 32Mi
       volumes:
         # Real files. Mosquitto refuses the projected-volume symlinks for the passwd file.
         - name: src-config

@@ -36,10 +36,6 @@ spec:
             tcpSocket:
               port: redis
             periodSeconds: 15
-          resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
 ---
 apiVersion: v1
 kind: Service
@@ -124,12 +120,6 @@ spec:
               mountPath: /etc/netbox/config/api_token_peppers.py
               subPath: api_token_peppers.py
               readOnly: true
-          resources:
-            requests:
-              cpu: 50m
-              memory: 768Mi
-            limits:
-              memory: 1536Mi
       volumes:
         - name: media
           persistentVolumeClaim:
@@ -223,10 +213,6 @@ spec:
               mountPath: /etc/netbox/config/api_token_peppers.py
               subPath: api_token_peppers.py
               readOnly: true
-          resources:
-            requests:
-              cpu: 50m
-              memory: 256Mi
       volumes:
         - name: media
           persistentVolumeClaim:

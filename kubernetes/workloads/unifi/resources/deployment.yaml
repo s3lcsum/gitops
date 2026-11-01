@@ -63,10 +63,6 @@ spec:
           volumeMounts:
             - name: db
               mountPath: /data/db
-          resources:
-            requests:
-              cpu: 50m
-              memory: 256Mi
         - name: unifi
           image: lscr.io/linuxserver/unifi-network-application:10.6.109
           envFrom:
@@ -112,10 +108,6 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
-          resources:
-            requests:
-              cpu: 50m
-              memory: 512Mi
       volumes:
         - name: config
           hostPath:

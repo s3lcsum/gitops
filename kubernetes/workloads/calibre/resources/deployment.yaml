@@ -55,10 +55,6 @@ spec:
               mountPath: /config
             - name: books
               mountPath: /mnt/NAS_Shared_Media/books
-          resources:
-            requests:
-              cpu: 50m
-              memory: 512Mi
       volumes:
         - name: config
           persistentVolumeClaim:
@@ -150,10 +146,6 @@ spec:
             - name: books
               mountPath: /calibre-library
               subPath: library
-          resources:
-            requests:
-              cpu: 50m
-              memory: 256Mi
       volumes:
         - name: config
           persistentVolumeClaim:

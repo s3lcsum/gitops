@@ -71,10 +71,6 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /home/node/.n8n
-          resources:
-            requests:
-              cpu: 50m
-              memory: 256Mi
       volumes:
         - name: data
           persistentVolumeClaim:

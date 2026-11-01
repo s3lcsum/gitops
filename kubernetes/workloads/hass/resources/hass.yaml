@@ -59,12 +59,6 @@ spec:
               port: http
             periodSeconds: 30
             timeoutSeconds: 10
-          resources:
-            requests:
-              cpu: 50m
-              memory: 768Mi
-            limits:
-              memory: 1280Mi
       volumes:
         - name: config
           hostPath:
