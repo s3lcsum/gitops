@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: servarr-oidc-bootstrap
+  labels:
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+data:
+  configure-oidc.sh: |
+    #!/bin/sh
+    set -eu
+    cfg=/config/config.xml
+    if [ ! -f "$cfg" ]; then
+      exit 0
+    fi
+    set_tag() {
+      tag=$1
+      val=$2
+      if grep -q "<${tag}>" "$cfg"; then
+        sed -i "s|<${tag}>.*</${tag}>|<${tag}>${val}</${tag}>|" "$cfg"
+      fi
+    }
+    # Single Authentik user allowed by Servarr native OIDC (must match email or sub claim).
+    set_tag OidcUserIdentifier "${OIDC_USER_IDENTIFIER}"
+    # Traefik hostNetwork on lake + in-cluster clients; trust proxy for X-Forwarded-For.
+    set_tag TrustedNetworks "192.168.89.252/32,10.0.0.0/8"
+    set_tag AuthenticationRequired Enabled

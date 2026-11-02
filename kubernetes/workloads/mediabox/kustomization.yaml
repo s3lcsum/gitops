@@ -9,6 +9,7 @@ resources:
   - resources/externalsecret-gluetun.yaml
   - resources/externalsecret-scraparr.yaml
   - resources/externalsecret-jellyfin-sso.yaml
+  - resources/servarr-oidc/configmap.yaml
   - resources/subtitle-policy/configmap.yaml
   - resources/subtitle-policy/cronjob-prune.yaml
   - resources/jellyfin-encoding/configmap.yaml

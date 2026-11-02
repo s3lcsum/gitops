@@ -180,6 +180,20 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+      initContainers:
+        - name: configure-servarr-oidc
+          image: public.ecr.aws/docker/library/alpine:3.24
+          command:
+            - /bin/sh
+            - /bootstrap/configure-oidc.sh
+          env:
+            - name: OIDC_USER_IDENTIFIER
+              value: dreewniak@gmail.com
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: servarr-oidc-bootstrap
+              mountPath: /bootstrap
       containers:
         - name: radarr
           image: lscr.io/linuxserver/radarr:7.0.0-develop
@@ -216,6 +230,10 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: mediabox-radarr
+        - name: servarr-oidc-bootstrap
+          configMap:
+            name: servarr-oidc-bootstrap
+            defaultMode: 0755
         - name: local-media
           persistentVolumeClaim:
             claimName: mediabox-local-media
@@ -269,6 +287,20 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+      initContainers:
+        - name: configure-servarr-oidc
+          image: public.ecr.aws/docker/library/alpine:3.24
+          command:
+            - /bin/sh
+            - /bootstrap/configure-oidc.sh
+          env:
+            - name: OIDC_USER_IDENTIFIER
+              value: dreewniak@gmail.com
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: servarr-oidc-bootstrap
+              mountPath: /bootstrap
       containers:
         - name: sonarr
           image: lscr.io/linuxserver/sonarr:5.0.0-develop
@@ -305,6 +337,10 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: mediabox-sonarr
+        - name: servarr-oidc-bootstrap
+          configMap:
+            name: servarr-oidc-bootstrap
+            defaultMode: 0755
         - name: local-media
           persistentVolumeClaim:
             claimName: mediabox-local-media
