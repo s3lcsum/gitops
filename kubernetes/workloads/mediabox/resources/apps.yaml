@@ -187,8 +187,9 @@ spec:
             - /bin/sh
             - /bootstrap/configure-oidc.sh
           env:
+            # Must match Authentik `sub` (oauth2 sub_mode user_uuid for s3lcsum).
             - name: OIDC_USER_IDENTIFIER
-              value: dreewniak@gmail.com
+              value: df7471f2-0a94-4604-906c-d1411d74f4bf
           volumeMounts:
             - name: config
               mountPath: /config
@@ -294,8 +295,9 @@ spec:
             - /bin/sh
             - /bootstrap/configure-oidc.sh
           env:
+            # Must match Authentik `sub` (oauth2 sub_mode user_uuid for s3lcsum).
             - name: OIDC_USER_IDENTIFIER
-              value: dreewniak@gmail.com
+              value: df7471f2-0a94-4604-906c-d1411d74f4bf
           volumeMounts:
             - name: config
               mountPath: /config

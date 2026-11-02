@@ -78,6 +78,7 @@ locals {
         "https://radarr.dominiksiejak.pl/signin-oidc",
       ]
       sub_mode = "user_uuid"
+      # Servarr matches OidcUserIdentifier to the OIDC `sub` claim, not email.
     }
     sonarr = {
       name       = "Sonarr"
@@ -87,6 +88,7 @@ locals {
         "https://sonarr.dominiksiejak.pl/signin-oidc",
       ]
       sub_mode = "user_uuid"
+      # Servarr matches OidcUserIdentifier to the OIDC `sub` claim, not email.
     }
     homeassistant = {
       name       = "Home Assistant"

@@ -20,7 +20,8 @@ data:
         sed -i "s|<${tag}>.*</${tag}>|<${tag}>${val}</${tag}>|" "$cfg"
       fi
     }
-    # Single Authentik user allowed by Servarr native OIDC (must match email or sub claim).
+    # Single Authentik user allowed by Servarr native OIDC. Must equal the IdP
+    # `sub` claim (Authentik oauth2 sub_mode user_uuid), not email.
     set_tag OidcUserIdentifier "${OIDC_USER_IDENTIFIER}"
     # Traefik hostNetwork on lake + in-cluster clients; trust proxy for X-Forwarded-For.
     set_tag TrustedNetworks "192.168.89.252/32,10.0.0.0/8"
