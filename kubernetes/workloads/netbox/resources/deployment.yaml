@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/part-of: netbox
     app.kubernetes.io/managed-by: argocd
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: netbox-redis
@@ -66,7 +66,7 @@ metadata:
     app.kubernetes.io/part-of: netbox
     app.kubernetes.io/managed-by: argocd
 spec:
-  replicas: 1
+  replicas: 0
   strategy:
     type: Recreate
   selector:
@@ -166,7 +166,7 @@ metadata:
     app.kubernetes.io/part-of: netbox
     app.kubernetes.io/managed-by: argocd
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: netbox-worker

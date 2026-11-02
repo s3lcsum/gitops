@@ -571,6 +571,9 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
+            # HLS transcode segments on node disk — NFS /config was bottleneck for web playback.
+            - name: transcode-cache
+              mountPath: /config/cache/transcodes
             - name: dri
               mountPath: /dev/dri
             - name: local-media
@@ -584,6 +587,9 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: mediabox-jellyfin
+        - name: transcode-cache
+          emptyDir:
+            sizeLimit: 12Gi
         - name: dri
           hostPath:
             path: /dev/dri

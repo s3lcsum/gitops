@@ -19,10 +19,11 @@ spec:
   priorityClassName: homelab-critical
   resources:
     requests:
-      cpu: 100m
-      memory: 1Gi
+      cpu: 50m
+      memory: 512Mi
     limits:
-      memory: 2Gi
+      cpu: "2"
+      memory: 1Gi
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
