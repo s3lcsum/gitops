@@ -9,25 +9,25 @@ locals {
     proxmox = {
       name          = "Proxmox"
       launch_url    = "https://proxmox.dominiksiejak.pl"
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/proxmox.svg"
+      icon_url      = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/proxmox.svg"
       redirect_uris = ["https://proxmox.dominiksiejak.pl"]
     }
     netbox = {
       name          = "NetBox"
       launch_url    = "https://netbox.dominiksiejak.pl"
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/netbox.svg"
+      icon_url      = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/netbox.svg"
       redirect_uris = ["https://netbox.dominiksiejak.pl/oauth/complete/oidc/"]
     }
     n8n = {
       name          = "N8n"
       launch_url    = "https://n8n.dominiksiejak.pl"
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/n8n.svg"
+      icon_url      = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/n8n.svg"
       redirect_uris = ["https://n8n.dominiksiejak.pl/rest/oauth2-credential/callback"]
     }
     openbao = {
       name       = "OpenBao"
       launch_url = "https://bao.dominiksiejak.pl"
-      icon_url   = "https://raw.githubusercontent.com/openbao/artwork/refs/heads/main/color/openbao-color.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/openbao.svg"
       redirect_uris = [
         "https://bao.dominiksiejak.pl/ui/vault/auth/oidc/oidc/callback",
       ]
@@ -44,7 +44,7 @@ locals {
     jellyfin = {
       name       = "Jellyfin"
       launch_url = "https://jellyfin.dominiksiejak.pl/sso/OIDC/Start/authentik"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyfin.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyfin.svg"
       redirect_uris = [
         # aussierk/jellyfin-plugin-oidc — path fixed by plugin ({providerId}=authentik)
         "https://jellyfin.dominiksiejak.pl/sso/OIDC/Callback/authentik",
@@ -61,7 +61,7 @@ locals {
     seerr = {
       name       = "Seerr"
       launch_url = "https://seerr.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/jellyseerr.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/jellyseerr.svg"
       redirect_uris = [
         "https://seerr.dominiksiejak.pl/login",
         "https://seerr.dominiksiejak.pl/profile/settings/linked-accounts",
@@ -73,7 +73,7 @@ locals {
     radarr = {
       name       = "Radarr"
       launch_url = "https://radarr.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/radarr.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/radarr.svg"
       redirect_uris = [
         "https://radarr.dominiksiejak.pl/signin-oidc",
       ]
@@ -83,7 +83,7 @@ locals {
     sonarr = {
       name       = "Sonarr"
       launch_url = "https://sonarr.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sonarr.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sonarr.svg"
       redirect_uris = [
         "https://sonarr.dominiksiejak.pl/signin-oidc",
       ]
@@ -93,7 +93,7 @@ locals {
     homeassistant = {
       name       = "Home Assistant"
       launch_url = "https://hass.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/home-assistant.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/home-assistant.svg"
       redirect_uris = [
         "https://hass.dominiksiejak.pl/auth/openid/callback",
       ]
@@ -101,7 +101,8 @@ locals {
     wealthfolio = {
       name       = "Wealthfolio"
       launch_url = "https://wealthfolio.dominiksiejak.pl"
-      icon_url   = "https://raw.githubusercontent.com/wealthfolio/wealthfolio/main/app-icon.png"
+      # No wealthfolio asset on dashboardicons.com
+      icon_url = "https://raw.githubusercontent.com/wealthfolio/wealthfolio/main/app-icon.png"
       redirect_uris = [
         "https://wealthfolio.dominiksiejak.pl/api/v1/auth/oidc/callback",
       ]
@@ -109,7 +110,7 @@ locals {
     sure = {
       name       = "Sure"
       launch_url = "https://sure.dominiksiejak.pl"
-      icon_url   = "https://sure.am/favicon.ico"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sure.svg"
       redirect_uris = [
         "https://sure.dominiksiejak.pl/auth/openid_connect/callback",
       ]
@@ -117,7 +118,7 @@ locals {
     synology = {
       name       = "Synology DSM"
       launch_url = "https://nas.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/synology-dsm.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/synology-dsm.svg"
       redirect_uris = [
         "https://nas.dominiksiejak.pl",
         "http://192.168.89.240:5000",
@@ -129,7 +130,7 @@ locals {
     grafana-cloud = {
       name          = "Grafana Cloud"
       launch_url    = local.cfg.grafana_cloud_url
-      icon_url      = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/grafana.svg"
+      icon_url      = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/grafana.svg"
       client_type   = "public"
       redirect_uris = ["${trimsuffix(local.cfg.grafana_cloud_url, "/")}/login/generic_oauth"]
       mapping       = <<-EOF
@@ -148,7 +149,7 @@ locals {
     calibre-web-automated = {
       name       = "Calibre-Web Automated"
       launch_url = "https://calibre.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/calibre.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/calibre.svg"
       redirect_uris = [
         "https://calibre.dominiksiejak.pl/login/generic/authorized",
         "http://calibre.dominiksiejak.pl/login/generic/authorized",
@@ -159,7 +160,7 @@ locals {
     cloudflare = {
       name       = "Cloudflare"
       launch_url = "https://one.dash.cloudflare.com/"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/cloudflare.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/cloudflare.svg"
       redirect_uris = [
         "https://dominiksiejak.cloudflareaccess.com/cdn-cgi/access/callback",
       ]
@@ -188,7 +189,7 @@ locals {
       external_host   = "https://metrics.dominiksiejak.pl"
       internal_host   = "http://victoria-metrics.monitoring.svc:8428"
       launch_url      = "https://metrics.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/victoriametrics.svg"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/victoriametrics.svg"
       skip_path_regex = ""
     }
     # calibre.dominiksiejak.pl (CWA) is NOT forward-auth'd — CWA handles its own
@@ -199,7 +200,7 @@ locals {
       external_host   = "https://calibre-gui.dominiksiejak.pl"
       internal_host   = "http://calibre.calibre.svc:8080"
       launch_url      = "https://calibre-gui.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/calibre.svg"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/calibre.svg"
       skip_path_regex = ""
     }
     # Chart Service is disabled. IngressRoute uses api@internal. API entrypoint
@@ -209,7 +210,7 @@ locals {
       external_host   = "https://traefik.dominiksiejak.pl"
       internal_host   = "http://192.168.89.252:9080"
       launch_url      = "https://traefik.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/traefik.svg"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/traefik.svg"
       skip_path_regex = ""
     }
     zigbee2mqtt-wifi = {
@@ -217,7 +218,7 @@ locals {
       external_host   = "https://zigbee2mqtt-wifi.dominiksiejak.pl"
       internal_host   = "http://zigbee2mqtt-wifi.hass.svc:8080"
       launch_url      = "https://zigbee2mqtt-wifi.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zigbee2mqtt.svg"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/zigbee2mqtt.svg"
       skip_path_regex = ""
     }
     zigbee2mqtt-usb = {
@@ -225,7 +226,7 @@ locals {
       external_host   = "https://zigbee2mqtt-usb.dominiksiejak.pl"
       internal_host   = "http://zigbee2mqtt-usb.hass.svc:8080"
       launch_url      = "https://zigbee2mqtt-usb.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/zigbee2mqtt.svg"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/zigbee2mqtt.svg"
       skip_path_regex = ""
     }
     watchyourlan = {
@@ -233,7 +234,7 @@ locals {
       external_host   = "https://lan.dominiksiejak.pl"
       internal_host   = "http://watchyourlan.watchyourlan.svc:8840"
       launch_url      = "https://lan.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/watchyourlan.png"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/watchyourlan.png"
       skip_path_regex = ""
     }
     hass-timemachine = {
@@ -241,7 +242,7 @@ locals {
       external_host   = "https://hass-timemachine.dominiksiejak.pl"
       internal_host   = "http://hass-timemachine.hass.svc:54000"
       launch_url      = "https://hass-timemachine.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/home-assistant.svg"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/home-assistant.svg"
       skip_path_regex = ""
     }
     adguard = {
@@ -260,7 +261,7 @@ locals {
       external_host   = "https://code.dominiksiejak.pl"
       internal_host   = "http://lan-opencode.traefik.svc:4096"
       launch_url      = "https://code.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/opencode.png"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/opencode.svg"
       skip_path_regex = ""
     }
     # Headlamp UI (k8s Traefik IngressRoute + authentik middleware).
@@ -271,16 +272,17 @@ locals {
       external_host   = "https://headlamp.dominiksiejak.pl"
       internal_host   = "http://headlamp.headlamp.svc:80"
       launch_url      = "https://headlamp.dominiksiejak.pl"
-      icon_url        = "https://raw.githubusercontent.com/kubernetes-sigs/headlamp/v0.45.0/docs/headlamp_light.svg"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/headlamp.svg"
       skip_path_regex = ""
     }
     # Policy Reporter UI (k8s Traefik IngressRoute + authentik middleware).
     # forward_single: outpost only auths; Traefik proxies to ClusterIP.
     policy-reporter = {
-      name            = "Policy Reporter"
-      external_host   = "https://policy-reporter.dominiksiejak.pl"
-      internal_host   = "http://policy-reporter-ui.policy-reporter.svc:8080"
-      launch_url      = "https://policy-reporter.dominiksiejak.pl"
+      name          = "Policy Reporter"
+      external_host = "https://policy-reporter.dominiksiejak.pl"
+      internal_host = "http://policy-reporter-ui.policy-reporter.svc:8080"
+      launch_url    = "https://policy-reporter.dominiksiejak.pl"
+      # No policy-reporter asset; Kyverno is the closest catalog match for the UI.
       icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kyverno.svg"
       skip_path_regex = ""
     }
@@ -291,7 +293,7 @@ locals {
       external_host   = "https://qbittorrent.dominiksiejak.pl"
       internal_host   = "http://gluetun.mediabox.svc:8080"
       launch_url      = "https://qbittorrent.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/qbittorrent.png"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/qbittorrent.svg"
       skip_path_regex = ""
     }
     # *arr without native OIDC: Traefik forward-auth via proxy provider.
@@ -300,7 +302,7 @@ locals {
       external_host   = "https://bazarr.dominiksiejak.pl"
       internal_host   = "http://bazarr.mediabox.svc:6767"
       launch_url      = "https://bazarr.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/bazarr.svg"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/bazarr.svg"
       skip_path_regex = ""
     }
     profilarr = {
@@ -308,7 +310,7 @@ locals {
       external_host   = "https://profilarr.dominiksiejak.pl"
       internal_host   = "http://profilarr.mediabox.svc:6868"
       launch_url      = "https://profilarr.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/profilarr.svg"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/profilarr.svg"
       skip_path_regex = ""
     }
     prowlarr = {
@@ -316,7 +318,7 @@ locals {
       external_host   = "https://prowlarr.dominiksiejak.pl"
       internal_host   = "http://prowlarr.mediabox.svc:9696"
       launch_url      = "https://prowlarr.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/prowlarr.svg"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/prowlarr.svg"
       skip_path_regex = ""
     }
     sabnzbd = {
@@ -324,7 +326,7 @@ locals {
       external_host   = "https://sabnzbd.dominiksiejak.pl"
       internal_host   = "http://gluetun.mediabox.svc:8085"
       launch_url      = "https://sabnzbd.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/sabnzbd.svg"
+      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sabnzbd.svg"
       skip_path_regex = ""
     }
   }
@@ -339,7 +341,7 @@ locals {
     unifi = {
       name       = "UniFi"
       launch_url = "https://unifi.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/svg/unifi.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/unifi.svg"
     }
   }
 
