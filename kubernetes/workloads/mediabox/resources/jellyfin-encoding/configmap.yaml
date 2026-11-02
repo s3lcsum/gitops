@@ -40,10 +40,10 @@ data:
       <DownMixAudioBoost>2</DownMixAudioBoost>
       <DownMixStereoAlgorithm>None</DownMixStereoAlgorithm>
       <MaxMuxingQueueSize>2048</MaxMuxingQueueSize>
-      <EnableThrottling>true</EnableThrottling>
+      <EnableThrottling>false</EnableThrottling>
       <ThrottleDelaySeconds>60</ThrottleDelaySeconds>
-      <EnableSegmentDeletion>true</EnableSegmentDeletion>
-      <SegmentKeepSeconds>600</SegmentKeepSeconds>
+      <EnableSegmentDeletion>false</EnableSegmentDeletion>
+      <SegmentKeepSeconds>7200</SegmentKeepSeconds>
       <HardwareAccelerationType>vaapi</HardwareAccelerationType>
       <EncoderAppPathDisplay>/usr/lib/jellyfin-ffmpeg/ffmpeg</EncoderAppPathDisplay>
       <VaapiDevice>/dev/dri/renderD128</VaapiDevice>
@@ -97,10 +97,10 @@ data:
       <DownMixAudioBoost>2</DownMixAudioBoost>
       <DownMixStereoAlgorithm>None</DownMixStereoAlgorithm>
       <MaxMuxingQueueSize>2048</MaxMuxingQueueSize>
-      <EnableThrottling>true</EnableThrottling>
+      <EnableThrottling>false</EnableThrottling>
       <ThrottleDelaySeconds>60</ThrottleDelaySeconds>
-      <EnableSegmentDeletion>true</EnableSegmentDeletion>
-      <SegmentKeepSeconds>600</SegmentKeepSeconds>
+      <EnableSegmentDeletion>false</EnableSegmentDeletion>
+      <SegmentKeepSeconds>7200</SegmentKeepSeconds>
       <HardwareAccelerationType>none</HardwareAccelerationType>
       <EncoderAppPathDisplay>/usr/lib/jellyfin-ffmpeg/ffmpeg</EncoderAppPathDisplay>
       <VaapiDevice>/dev/dri/renderD128</VaapiDevice>
