@@ -13,5 +13,5 @@ resources:
   - resources/subtitle-policy/configmap.yaml
   - resources/subtitle-policy/cronjob-prune.yaml
   - resources/jellyfin-encoding/configmap.yaml
-  - resources/jellyfin-local-library/pvc.yaml
+  - resources/local-media/pv-pvc.yaml
   - resources/ingressroute.yaml

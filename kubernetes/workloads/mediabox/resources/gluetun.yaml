@@ -29,6 +29,8 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+      nodeSelector:
+        kubernetes.io/hostname: k8s
       # Built-in servers.json in the image goes stale; UPDATER_PERIOD only runs after
       # the tunnel is up, so refresh Nord server IPs before VPN starts.
       initContainers:

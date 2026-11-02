@@ -36,41 +36,6 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: mediabox-local-media
-  labels:
-    app.kubernetes.io/part-of: mediabox
-spec:
-  capacity:
-    storage: 500Gi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: nas-bind
-  mountOptions:
-    - nfsvers=4.1
-  nfs:
-    server: 192.168.89.240
-    path: /volume1/media/k8s/mediabox/local-media
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mediabox-local-media
-  namespace: mediabox
-  labels:
-    app.kubernetes.io/part-of: mediabox
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: nas-bind
-  volumeName: mediabox-local-media
-  resources:
-    requests:
-      storage: 500Gi
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
   name: mediabox-flaresolverr
   labels:
     app.kubernetes.io/name: flaresolverr

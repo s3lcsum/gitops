@@ -180,6 +180,8 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+      nodeSelector:
+        kubernetes.io/hostname: k8s
       initContainers:
         - name: configure-servarr-oidc
           image: public.ecr.aws/docker/library/alpine:3.24
@@ -195,6 +197,18 @@ spec:
               mountPath: /config
             - name: servarr-oidc-bootstrap
               mountPath: /bootstrap
+        - name: init-local-media-dirs
+          image: public.ecr.aws/docker/library/alpine:3.24
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              mkdir -p /mnt/LOCAL_MEDIA/tv /mnt/LOCAL_MEDIA/movies
+              chmod 777 /mnt/LOCAL_MEDIA /mnt/LOCAL_MEDIA/tv /mnt/LOCAL_MEDIA/movies
+          volumeMounts:
+            - name: local-media
+              mountPath: /mnt/LOCAL_MEDIA
       containers:
         - name: radarr
           image: lscr.io/linuxserver/radarr:7.0.0-develop
@@ -288,6 +302,8 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+      nodeSelector:
+        kubernetes.io/hostname: k8s
       initContainers:
         - name: configure-servarr-oidc
           image: public.ecr.aws/docker/library/alpine:3.24
@@ -303,6 +319,18 @@ spec:
               mountPath: /config
             - name: servarr-oidc-bootstrap
               mountPath: /bootstrap
+        - name: init-local-media-dirs
+          image: public.ecr.aws/docker/library/alpine:3.24
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              mkdir -p /mnt/LOCAL_MEDIA/tv /mnt/LOCAL_MEDIA/movies
+              chmod 777 /mnt/LOCAL_MEDIA /mnt/LOCAL_MEDIA/tv /mnt/LOCAL_MEDIA/movies
+          volumeMounts:
+            - name: local-media
+              mountPath: /mnt/LOCAL_MEDIA
       containers:
         - name: sonarr
           image: lscr.io/linuxserver/sonarr:5.0.0-develop
@@ -396,6 +424,8 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+      nodeSelector:
+        kubernetes.io/hostname: k8s
       initContainers:
         - name: apply-subtitle-policy
           image: alpine:3.21
@@ -500,6 +530,8 @@ spec:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
+      nodeSelector:
+        kubernetes.io/hostname: k8s
       initContainers:
         - name: apply-subtitle-policy
           image: alpine:3.21
@@ -540,18 +572,18 @@ spec:
             - name: nas
               mountPath: /media/intros
               subPath: intros
-        - name: init-local-library-dirs
+        - name: init-local-media-dirs
           image: alpine:3.21
           command:
             - /bin/sh
             - -c
             - |
               set -e
-              mkdir -p /mnt/local-library/tv /mnt/local-library/movies
-              chmod 777 /mnt/local-library /mnt/local-library/tv /mnt/local-library/movies
+              mkdir -p /mnt/LOCAL_MEDIA/tv /mnt/LOCAL_MEDIA/movies
+              chmod 777 /mnt/LOCAL_MEDIA /mnt/LOCAL_MEDIA/tv /mnt/LOCAL_MEDIA/movies
           volumeMounts:
-            - name: local-library
-              mountPath: /mnt/local-library
+            - name: local-media
+              mountPath: /mnt/LOCAL_MEDIA
       containers:
         - name: jellyfin
           image: ghcr.io/linuxserver/jellyfin:12.4ubu2604-ls57
@@ -592,8 +624,6 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
-            - name: local-library
-              mountPath: /mnt/local-library
             - name: nas
               mountPath: /media/intros
               subPath: intros
@@ -601,9 +631,9 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: mediabox-jellyfin
-        - name: local-library
+        - name: local-media
           persistentVolumeClaim:
-            claimName: jellyfin-local-library
+            claimName: mediabox-local-media
         - name: transcode-cache
           emptyDir:
             sizeLimit: 12Gi
@@ -619,9 +649,6 @@ spec:
           configMap:
             name: mediabox-jellyfin-encoding
             defaultMode: 0444
-        - name: local-media
-          persistentVolumeClaim:
-            claimName: mediabox-local-media
         - name: nas
           persistentVolumeClaim:
             claimName: mediabox-library

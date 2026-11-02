@@ -1,0 +1,50 @@
+# Node disk on lake (hostname k8s), NOT NAS. Same path in every mediabox pod:
+#   /mnt/LOCAL_MEDIA  →  host /var/lib/mediabox/local-media
+#
+# Sonarr/Radarr root folders: /mnt/NAS_Shared_Media/{tv,movies} (library) and
+# /mnt/LOCAL_MEDIA/{tv,movies} (hot cache). Move/organize in *arr with both roots.
+# Jellyfin: libraries on both paths. qBit/SAB: may stage under LOCAL_MEDIA if configured.
+#
+# All consumers must run on node k8s (nodeSelector). RWX hostPath static PV.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-local-media
+  labels:
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 48Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: mediabox-node-local
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - k8s
+  hostPath:
+    path: /var/lib/mediabox/local-media
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-local-media
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: mediabox-node-local
+  volumeName: mediabox-local-media
+  resources:
+    requests:
+      storage: 48Gi
