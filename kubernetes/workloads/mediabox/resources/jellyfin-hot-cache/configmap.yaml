@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jellyfin-playback-prefetch
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: jellyfin
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+data:
+  prefetch-current-and-next.sh: |
+    #!/bin/sh
+    # Sync only Continue Watching (current) + Next Up + one episode after each in-progress show.
+    set -eu
+    JELLYFIN_URL="${JELLYFIN_URL:-http://jellyfin.mediabox.svc}"
+    LIB="${LIBRARY_ROOT:-/library}"
+    HOT="${HOT_ROOT:-/hot}"
+    MAX_TOTAL="${PREFETCH_MAX_EPISODES:-8}"
+    NEXTUP_LIMIT="${PREFETCH_NEXTUP_LIMIT:-12}"
+
+    if [ -z "${JELLYFIN_API_KEY:-}" ]; then
+      echo "prefetch: JELLYFIN_API_KEY missing"
+      exit 1
+    fi
+
+    path_to_rel() {
+      p=$1
+      case "$p" in
+        /mnt/NAS_Shared_Media/*) printf '%s\n' "${p#/mnt/NAS_Shared_Media/}" ;;
+        /mnt/LOCAL_MEDIA/*) printf '%s\n' "${p#/mnt/LOCAL_MEDIA/}" ;;
+        /library/*) printf '%s\n' "${p#/library/}" ;;
+        *) return 1 ;;
+      esac
+    }
+
+    add_path() {
+      rel=$(path_to_rel "$1") || return 0
+      [ -n "$rel" ] || return 0
+      printf '%s\n' "$rel" >> /tmp/prefetch-all.txt
+    }
+
+    next_episode_path() {
+      uid=$1
+      season_id=$2
+      idx=$3
+      next_idx=$((idx + 1))
+      curl -sf "$JELLYFIN_URL/Users/$uid/Items?ParentId=$season_id&IncludeItemTypes=Episode&Fields=Path,IndexNumber&Recursive=true&Limit=200" \
+        -H "X-Emby-Token: $JELLYFIN_API_KEY" \
+        | jq -r --argjson n "$next_idx" '.Items[]? | select(.IndexNumber == $n) | .Path // empty' \
+        | head -n 1
+    }
+
+    : > /tmp/prefetch-all.txt
+    users_json=$(curl -sf "$JELLYFIN_URL/Users" -H "X-Emby-Token: $JELLYFIN_API_KEY") || {
+      echo "prefetch: GET /Users failed"
+      exit 1
+    }
+
+    echo "$users_json" | jq -r '.[] | select(.Policy.IsDisabled == false) | .Id' | while read -r uid; do
+      [ -z "$uid" ] && continue
+      resume_json=$(curl -sf "$JELLYFIN_URL/Users/$uid/Items/Resume?MediaTypes=Video&Fields=Path,Id,ParentId,IndexNumber,Type&Limit=10" \
+        -H "X-Emby-Token: $JELLYFIN_API_KEY") || continue
+      echo "$resume_json" | jq -c '.Items[]?' | while read -r item; do
+        path=$(echo "$item" | jq -r '.Path // empty')
+        [ -n "$path" ] && add_path "$path"
+        type=$(echo "$item" | jq -r '.Type // empty')
+        [ "$type" = "Episode" ] || continue
+        season=$(echo "$item" | jq -r '.ParentId // empty')
+        idx=$(echo "$item" | jq -r '.IndexNumber // empty')
+        [ -n "$season" ] && [ -n "$idx" ] || continue
+        npath=$(next_episode_path "$uid" "$season" "$idx") || true
+        [ -n "$npath" ] && add_path "$npath"
+      done
+      curl -sf "$JELLYFIN_URL/Shows/NextUp?UserId=$uid&Limit=$NEXTUP_LIMIT&Fields=Path" \
+        -H "X-Emby-Token: $JELLYFIN_API_KEY" \
+        | jq -r '.Items[]? | .Path // empty' | while read -r p; do
+        [ -n "$p" ] && add_path "$p"
+      done
+    done
+
+    sort -u /tmp/prefetch-all.txt | sed '/^$/d' | head -n "$MAX_TOTAL" > /tmp/prefetch-final.txt
+    if [ ! -s /tmp/prefetch-final.txt ]; then
+      echo "prefetch: nothing to sync (empty Resume / Next Up)"
+      exit 0
+    fi
+
+    synced=0
+    while read -r rel; do
+      src="$LIB/$rel"
+      if [ ! -f "$src" ]; then
+        echo "prefetch: skip missing $src"
+        continue
+      fi
+      dst="$HOT/$rel"
+      mkdir -p "$(dirname "$dst")"
+      rsync -a --partial "$src" "$dst"
+      base="${src%.*}"
+      dstbase="${dst%.*}"
+      for ext in srt ass vtt; do
+        [ -f "$base.$ext" ] && rsync -a --partial "$base.$ext" "$dstbase.$ext"
+      done
+      echo "prefetch: synced $rel"
+      synced=$((synced + 1))
+    done < /tmp/prefetch-final.txt
+
+    find "$HOT" -type f \( -iname '*.mkv' -o -iname '*.mp4' -o -iname '*.m4v' \) | while read -r f; do
+      rel=${f#"$HOT/"}
+      rel=${rel#/}
+      if ! grep -Fxq "$rel" /tmp/prefetch-final.txt; then
+        rm -f "$f"
+        echo "prefetch: removed stale $rel"
+      fi
+    done
+
+    echo "prefetch: done ($synced files, max $MAX_TOTAL)"

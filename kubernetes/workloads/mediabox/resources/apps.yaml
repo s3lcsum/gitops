@@ -580,6 +580,8 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
+            - name: playback-hot-cache
+              mountPath: /mnt/HOT_PLAYBACK
             - name: nas
               mountPath: /media/intros
               subPath: intros
@@ -587,6 +589,9 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: mediabox-jellyfin
+        - name: playback-hot-cache
+          persistentVolumeClaim:
+            claimName: jellyfin-playback-cache
         - name: transcode-cache
           emptyDir:
             sizeLimit: 12Gi
