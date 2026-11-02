@@ -540,6 +540,18 @@ spec:
             - name: nas
               mountPath: /media/intros
               subPath: intros
+        - name: init-local-library-dirs
+          image: alpine:3.21
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              mkdir -p /mnt/local-library/tv /mnt/local-library/movies
+              chmod 777 /mnt/local-library /mnt/local-library/tv /mnt/local-library/movies
+          volumeMounts:
+            - name: local-library
+              mountPath: /mnt/local-library
       containers:
         - name: jellyfin
           image: ghcr.io/linuxserver/jellyfin:12.4ubu2604-ls57
@@ -580,8 +592,8 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
-            - name: playback-hot-cache
-              mountPath: /mnt/HOT_PLAYBACK
+            - name: local-library
+              mountPath: /mnt/local-library
             - name: nas
               mountPath: /media/intros
               subPath: intros
@@ -589,9 +601,9 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: mediabox-jellyfin
-        - name: playback-hot-cache
+        - name: local-library
           persistentVolumeClaim:
-            claimName: jellyfin-playback-cache
+            claimName: jellyfin-local-library
         - name: transcode-cache
           emptyDir:
             sizeLimit: 12Gi

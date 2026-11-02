@@ -1,0 +1,27 @@
+# Ephemeral node-local staging for heavy titles (manual copy). RWO on k8s; lost if the pod moves off this node.
+#
+# Jellyfin (dashboard): add libraries /mnt/local-library/tv and /mnt/local-library/movies.
+# Sonarr / Radarr: keep root folders on /mnt/NAS_Shared_Media only — do not point *arr at this PVC.
+# Seerr: no change (requests still land on NAS via Sonarr/Radarr).
+#
+# Copy from NAS → local (same show folder name as Sonarr), e.g. from your workstation:
+#   kubectl --context k8s@lake -n mediabox exec deploy/jellyfin -- \
+#     rsync -a "/mnt/NAS_Shared_Media/tv/Show Name (2022) {tvdb-123}/" \
+#             "/mnt/local-library/tv/Show Name (2022) {tvdb-123}/"
+# Play the duplicate from the local Jellyfin library when you want node-disk reads.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-local-library
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: jellyfin
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 48Gi
