@@ -18,7 +18,7 @@ FROM alpine:3.21
 
 RUN set -eux; \
     apk add --no-cache \
-      bash ca-certificates curl jq git make iproute2 wireguard-tools gcompat; \
+      bash ca-certificates curl jq git make iproute2 wireguard-tools gcompat
 
 COPY --from=fetch /out/tofu /usr/local/bin/tofu
 COPY --from=fetch /out/terragrunt /usr/local/bin/terragrunt
