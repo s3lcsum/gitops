@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/part-of: sure
     app.kubernetes.io/managed-by: argocd
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: sure-redis
@@ -72,7 +72,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  replicas: 1
+  replicas: 0
   strategy:
     type: Recreate
   selector:
@@ -206,7 +206,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  replicas: 1
+  replicas: 0
   strategy:
     type: Recreate
   selector:
