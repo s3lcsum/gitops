@@ -88,6 +88,8 @@ configs:
       - http://localhost:8080
       - http://localhost:8085
     admin.enabled: false
+    # Compare desired vs live at most every 5m (default ~3m). Watches stay; less LIST churn.
+    timeout.reconciliation: 300s
     # Built-in ExternalSecret health is Degraded/Progressing when 1Password
     # has no item. Argo then fails the sync hook and retries forever.
     # ESO still retries on its own. A missing item must not block the app.

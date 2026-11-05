@@ -56,7 +56,7 @@ scrape_configs:
 
   # Kubernetes Views dashboards expect label cluster on these series.
   - job_name: kube-state-metrics
-    scrape_interval: 30s
+    scrape_interval: 300s
     metrics_path: /metrics
     static_configs:
       - targets:
@@ -66,7 +66,7 @@ scrape_configs:
         replacement: homelab
 
   - job_name: cadvisor
-    scrape_interval: 30s
+    scrape_interval: 300s
     scheme: https
     bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
     tls_config:
@@ -91,7 +91,7 @@ scrape_configs:
         action: keep
 
   - job_name: node-exporter
-    scrape_interval: 30s
+    scrape_interval: 300s
     kubernetes_sd_configs:
       - role: pod
     relabel_configs:
@@ -128,7 +128,7 @@ scrape_configs:
     metrics_path: /metrics
 
   - job_name: n8n
-    scrape_interval: 30s
+    scrape_interval: 300s
     metrics_path: /metrics
     static_configs:
       - targets:
@@ -136,7 +136,7 @@ scrape_configs:
 
   # WatchYourLAN hostNetwork on lake (:8840). PROMETHEUS_ENABLE=true → /metrics.
   - job_name: watchyourlan
-    scrape_interval: 60s
+    scrape_interval: 300s
     metrics_path: /metrics
     static_configs:
       - targets:
@@ -151,7 +151,7 @@ scrape_configs:
 
   # MKTXP talks to RouterOS API at 192.168.89.1:8729. Not router.dominiksiejak.pl.
   - job_name: mktxp
-    scrape_interval: 60s
+    scrape_interval: 300s
     static_configs:
       - targets:
           - mktxp.monitoring.svc:49090
@@ -159,7 +159,7 @@ scrape_configs:
   # Synology NAS via snmp-exporter (disk / hrStorage / storageIO).
   # Walk is large — keep scrape_timeout under interval.
   - job_name: synology
-    scrape_interval: 120s
+    scrape_interval: 300s
     scrape_timeout: 90s
     static_configs:
       - targets:

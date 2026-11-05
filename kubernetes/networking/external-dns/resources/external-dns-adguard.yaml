@@ -90,7 +90,7 @@ spec:
           image: registry.k8s.io/external-dns/external-dns:v0.24.0
           args:
             - --log-level=info
-            - --interval=1m
+            - --interval=5m
             - --source=crd
             - --policy=sync
             - --registry=txt
