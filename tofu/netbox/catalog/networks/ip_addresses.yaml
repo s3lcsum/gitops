@@ -7,6 +7,12 @@ ip_addresses:
     status: active
     description: WireGuard peer atom-1
 
+  wg-cloud-agent:
+    address: 192.168.200.11/24
+    site: lake
+    status: active
+    description: WireGuard peer cloud-agent (Cursor cloud agents)
+
   wg-dsiejak-macbook:
     address: 192.168.200.20/24
     site: lake

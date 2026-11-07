@@ -7,6 +7,7 @@ locals {
     wireguard_listen_port = "51820"
     wireguard_peers = {
       "atom-1"          = "192.168.200.10/32"
+      "cloud-agent"     = "192.168.200.11/32"
       "dsiejak-ipad"    = "192.168.200.23/32"
       "dsiejak-iphone"  = "192.168.200.21/32"
       "dsiejak-macbook" = "192.168.200.20/32"

@@ -15,13 +15,14 @@ install_macos() {
   command -v brew >/dev/null 2>&1 || { echo "brew not found; skipping macos setup"; exit 0; }
   brew list --formula helm          >/dev/null 2>&1 || brew install helm
   brew list --formula kubernetes-cli >/dev/null 2>&1 || brew install kubernetes-cli
+  brew list --formula wireguard-tools >/dev/null 2>&1 || brew install wireguard-tools
   echo "macos toolchain ready"
 }
 
 install_linux() {
   export DEBIAN_FRONTEND=noninteractive
   sudo apt-get update -qq
-  sudo apt-get install -y -qq ca-certificates curl gnupg unzip zip python3-pip pipx jq >/dev/null
+  sudo apt-get install -y -qq ca-certificates curl gnupg unzip zip python3-pip pipx jq wireguard >/dev/null
   export PATH="$HOME/.local/bin:$PATH"
 
   # uv / uvx (mkdocs material via `make serve/build/lint`)

@@ -10,7 +10,7 @@ prefixes:
   wireguard-ipv4:
     prefix: 192.168.200.0/24
     site: lake
-    description: WireGuard overlay (vpn.dominiksiejak.pl:51820) — peers; CI github-actions .254/32
+    description: WireGuard overlay (vpn.dominiksiejak.pl:51820) — peers; cloud-agent .11/32; CI github-actions .254/32
     is_pool: false
     status: active
 
