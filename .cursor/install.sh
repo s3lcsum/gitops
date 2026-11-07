@@ -3,7 +3,7 @@
 #
 # macOS : brew-based (preserves the original "vibe MacBook" path).
 # Linux : installs the real toolchain needed to work this repo from a cloud VM
-#         (OpenTofu, tflint, pre-commit, uv/uvx, kubectl, helm).
+#         (OpenTofu, Terragrunt, tflint, pre-commit, uv/uvx, kubectl, helm).
 #
 # Idempotent: every step guards on `command -v` so re-runs are cheap.
 set -euo pipefail
@@ -22,7 +22,7 @@ install_macos() {
 install_linux() {
   export DEBIAN_FRONTEND=noninteractive
   sudo apt-get update -qq
-  sudo apt-get install -y -qq ca-certificates curl gnupg unzip zip python3-pip pipx jq wireguard >/dev/null
+  sudo apt-get install -y -qq ca-certificates curl gnupg unzip zip python3-pip pipx jq wireguard iproute2 >/dev/null
   export PATH="$HOME/.local/bin:$PATH"
 
   # uv / uvx (mkdocs material via `make serve/build/lint`)
@@ -33,11 +33,23 @@ install_linux() {
   pipx ensurepath >/dev/null 2>&1 || true
   command -v pre-commit >/dev/null 2>&1 || pipx install pre-commit
 
-  # OpenTofu (pinned via terraform/.opentofu-version)
-  TOFU_VERSION="$(cat "$REPO_ROOT/terraform/.opentofu-version" 2>/dev/null || echo 1.12.5)"
+  # OpenTofu pin lives in tofu/.opentofu-version (AGENTS.md). Fallback matches the current pin.
+  if [ -f "$REPO_ROOT/tofu/.opentofu-version" ]; then
+    TOFU_VERSION="$(tr -d '[:space:]' < "$REPO_ROOT/tofu/.opentofu-version")"
+  else
+    TOFU_VERSION=1.12.5
+  fi
   command -v tofu >/dev/null 2>&1 || \
     curl -fsSL "https://github.com/opentofu/opentofu/releases/download/v${TOFU_VERSION}/tofu_${TOFU_VERSION}_linux_amd64.tar.gz" \
       | sudo tar -xz -C /usr/local/bin tofu
+
+  # Terragrunt (`make -C tofu plan`). Pinned; the Makefile calls `terragrunt run`.
+  command -v terragrunt >/dev/null 2>&1 || {
+    TG_VERSION=1.2.1
+    curl -fsSL "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o /tmp/terragrunt
+    sudo install -m 0755 /tmp/terragrunt /usr/local/bin/terragrunt
+    rm -f /tmp/terragrunt
+  }
 
   # tflint (pre-commit terraform_tflint hook)
   command -v tflint >/dev/null 2>&1 || {
@@ -64,6 +76,14 @@ install_linux() {
     sudo install -m 0755 /tmp/linux-amd64/helm /usr/local/bin/helm
     rm -rf /tmp/helm.tgz /tmp/linux-amd64
   }
+
+  # uv and pipx land in ~/.local/bin. Agent shells use the default PATH, which
+  # does not include that directory, so expose the binaries from /usr/local/bin.
+  for tool in uv uvx pre-commit; do
+    if [ -x "$HOME/.local/bin/$tool" ]; then
+      sudo ln -sfn "$HOME/.local/bin/$tool" "/usr/local/bin/$tool"
+    fi
+  done
 
   echo "linux toolchain ready"
 }
