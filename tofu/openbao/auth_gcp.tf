@@ -11,5 +11,5 @@ resource "vault_gcp_auth_backend_role" "cicd_terraform" {
   token_ttl              = 3600
   token_max_ttl          = 14400
   bound_service_accounts = [local.cfg.cicd_gcp_service_account]
-  bound_audiences        = [local.cfg.cicd_openbao_gcp_audience]
+  # IAM JWT aud is vault/<role> (see cicd_openbao_gcp_audience in config.tf); not a TF attr.
 }

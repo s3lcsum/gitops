@@ -79,8 +79,9 @@ agents/
 terraform/proxmox/generated/
 terraform/routeros/generated/
 
-# MCP config with live API tokens
+# MCP config with live API tokens (legacy paths; prefer .cursor/mcp.json + env vars)
 .mcp.json
+.cursor/.mcp.json
 
 # OpenCode config with embedded secrets (tokens inline for MCPs)
 .opencode/opencode.json

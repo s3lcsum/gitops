@@ -6,6 +6,8 @@
 # Requires external-dns-adguard out of dry-run before dropping a name that still needs LAN resolution.
 locals {
   rewrites = {
+    # WireGuard on RouterOS (wan hostname is Cloudflare A → dynamic WAN via external-dns)
+    "vpn.dominiksiejak.pl"      = "192.168.89.1"
     "lake.dominiksiejak.pl"     = "192.168.89.254"
     "vibe.dominiksiejak.pl"     = "192.168.89.200"
     "vibe-k8s.dominiksiejak.pl" = "192.168.89.201"
