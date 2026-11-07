@@ -125,6 +125,37 @@ spec:
           kind: CustomResourceDefinition
           jqPathExpressions:
             - .spec.conversion.strategy
+        # CNPG webhook + CRD defaults fill Cluster spec after apply. This Helm
+        # app uses structured-merge diff, so those fields stay OutOfSync.
+        # Server-side dry-run of cluster.yaml matches live. RespectIgnoreDifferences
+        # strips these paths on apply — do not put git-managed values under them.
+        - group: postgresql.cnpg.io
+          kind: Cluster
+          jqPathExpressions:
+            - .spec.affinity.podAntiAffinityType
+            - .spec.bootstrap.initdb.encoding
+            - .spec.bootstrap.initdb.localeCType
+            - .spec.bootstrap.initdb.localeCollate
+            - .spec.enablePDB
+            - .spec.failoverDelay
+            - .spec.imageName
+            - .spec.logLevel
+            - .spec.maxSyncReplicas
+            - .spec.minSyncReplicas
+            - .spec.monitoring
+            - .spec.plugins[]?.enabled
+            - .spec.postgresGID
+            - .spec.postgresUID
+            - .spec.postgresql
+            - .spec.primaryUpdateMethod
+            - .spec.primaryUpdateStrategy
+            - .spec.probes
+            - .spec.replicationSlots
+            - .spec.smartShutdownTimeout
+            - .spec.startDelay
+            - .spec.stopDelay
+            - .spec.storage.resizeInUseVolumes
+            - .spec.switchoverDelay
   # Helm apps get multi-source + no ServerSideDiff.
   # Kustomize-only apps get single source + ServerSideDiff.
   # Helm without kustomization.yaml drops the directory source.
