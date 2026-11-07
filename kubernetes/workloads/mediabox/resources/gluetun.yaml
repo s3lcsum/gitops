@@ -1,4 +1,6 @@
-# qBittorrent and SABnzbd share this pod network, so their traffic leaves through the VPN.
+# qBittorrent, SABnzbd, and Shelfmark share this pod network, so their traffic
+# leaves through the one NordLynx tunnel. A second Gluetun with the same key
+# would kick this session.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -55,7 +57,7 @@ spec:
                 name: gluetun
           env:
             - name: FIREWALL_INPUT_PORTS
-              value: "8080,8085"
+              value: "8080,8084,8085"
             - name: UPDATER_PERIOD
               value: 480h
             - name: UPDATER_VPN_SERVICE_PROVIDERS
@@ -110,6 +112,88 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
             - name: nas
               mountPath: /mnt/NAS_Shared_Media
+        # Book grabs leave via NordVPN. Completed files land in the CWA inbox;
+        # the library mount is read-only so Shelfmark can mark books already owned.
+        - name: shelfmark
+          image: ghcr.io/calibrain/shelfmark:v1.6.1
+          env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
+            - name: TZ
+              value: Europe/Warsaw
+            - name: DOCKERMODE
+              value: "true"
+            - name: SESSION_COOKIE_SECURE
+              value: "true"
+            - name: AUTH_METHOD
+              value: oidc
+            - name: OIDC_DISCOVERY_URL
+              value: https://auth.dominiksiejak.pl/application/o/shelfmark/.well-known/openid-configuration
+            - name: OIDC_CLIENT_ID
+              value: shelfmark
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: shelfmark
+                  key: OIDC_CLIENT_SECRET
+                  # Missing key must not block qBittorrent/SABnzbd. Pod still
+                  # needs a restart after OpenBao secret/shelfmark appears.
+                  optional: true
+            - name: OIDC_SCOPES
+              value: openid,email,profile,groups
+            - name: OIDC_GROUP_CLAIM
+              value: groups
+            - name: OIDC_ADMIN_GROUP
+              value: admins
+            - name: OIDC_USE_ADMIN_GROUP
+              value: "true"
+            - name: OIDC_AUTO_PROVISION
+              value: "true"
+            - name: OIDC_AUTO_REDIRECT
+              value: "true"
+            - name: DISABLE_LOCAL_AUTH
+              value: "true"
+            - name: CALIBRE_WEB_URL
+              value: https://calibre.dominiksiejak.pl
+            - name: LIBRARY_CHECK_CALIBRE_ENABLED
+              value: "true"
+            - name: CALIBRE_LIBRARY_DB_PATH
+              value: /calibre-library/metadata.db
+          ports:
+            - name: http
+              containerPort: 8084
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 10
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+          volumeMounts:
+            - name: shelfmark
+              mountPath: /config
+            - name: nas
+              mountPath: /books
+              subPath: books/inbox
+            - name: nas
+              mountPath: /calibre-library
+              subPath: books/library
+              readOnly: true
       volumes:
         - name: gluetun-data
           emptyDir: {}
@@ -127,6 +211,9 @@ spec:
         - name: sabnzbd
           persistentVolumeClaim:
             claimName: mediabox-sabnzbd
+        - name: shelfmark
+          persistentVolumeClaim:
+            claimName: mediabox-shelfmark
         - name: local-media
           persistentVolumeClaim:
             claimName: mediabox-local-media
@@ -134,7 +221,7 @@ spec:
           persistentVolumeClaim:
             claimName: mediabox-library
 ---
-# Two Services on :80 — one app each. Pod still listens on 8080/8085.
+# One Service per app, all on :80. Pod listens on 8080, 8084, and 8085.
 apiVersion: v1
 kind: Service
 metadata:
@@ -170,3 +257,21 @@ spec:
     - name: http
       port: 80
       targetPort: 8085
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shelfmark
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: shelfmark
+    app.kubernetes.io/instance: shelfmark
+    app.kubernetes.io/part-of: mediabox
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: gluetun
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8084

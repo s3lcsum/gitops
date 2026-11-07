@@ -7,18 +7,6 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`calibre-gui.dominiksiejak.pl`)
-      kind: Rule
-      middlewares:
-        - name: crowdsec-bouncer
-          namespace: traefik
-        - name: secure-headers
-          namespace: traefik
-        - name: authentik
-          namespace: traefik
-      services:
-        - name: calibre
-          port: 8080
     - match: Host(`calibre.dominiksiejak.pl`)
       kind: Rule
       middlewares:

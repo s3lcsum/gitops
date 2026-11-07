@@ -241,10 +241,10 @@
         href: https://calibre.dominiksiejak.pl
         description: E-book library
 
-    - Calibre Gui:
-        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/calibre.png
-        href: https://calibre-gui.dominiksiejak.pl
-        description: Calibre desktop (KasmVNC)
+    - Shelfmark:
+        icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/lazylibrarian.png
+        href: https://shelfmark.dominiksiejak.pl
+        description: Book search and requests
 
     - Calibre Api:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/calibre-web.png

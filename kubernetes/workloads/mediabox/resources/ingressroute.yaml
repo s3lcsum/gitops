@@ -177,6 +177,27 @@ spec:
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
+  name: shelfmark
+  namespace: mediabox
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`shelfmark.dominiksiejak.pl`)
+      kind: Rule
+      middlewares:
+        - name: crowdsec-bouncer
+          namespace: traefik
+        - name: secure-headers
+          namespace: traefik
+      services:
+        - name: shelfmark
+          port: 80
+  tls: {}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
   name: profilarr
   namespace: mediabox
 spec:
