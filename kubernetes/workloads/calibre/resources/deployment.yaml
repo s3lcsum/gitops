@@ -44,6 +44,11 @@ spec:
               value: "true"
             - name: TRUSTED_PROXY_COUNT
               value: "1"
+            - name: HARDCOVER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: calibre-web-automated
+                  key: HARDCOVER_TOKEN
           ports:
             - name: http
               containerPort: 8083
