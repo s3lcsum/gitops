@@ -3,7 +3,7 @@
 #
 # macOS : brew-based (preserves the original "vibe MacBook" path).
 # Linux : installs the real toolchain needed to work this repo from a cloud VM
-#         (OpenTofu, tflint, pre-commit, uv/uvx, kubectl, helm).
+#         (OpenTofu, tflint, pre-commit, uv/uvx, kubectl, helm, Hugo).
 #
 # Idempotent: every step guards on `command -v` so re-runs are cheap.
 set -euo pipefail
@@ -22,7 +22,8 @@ install_macos() {
 install_linux() {
   export DEBIAN_FRONTEND=noninteractive
   sudo apt-get update -qq
-  sudo apt-get install -y -qq ca-certificates curl gnupg unzip zip python3-pip pipx jq wireguard >/dev/null
+  # iproute2 provides `ip`, which wireguard-up.sh requires to configure wg0.
+  sudo apt-get install -y -qq ca-certificates curl gnupg unzip zip python3-pip pipx jq iproute2 wireguard >/dev/null
   export PATH="$HOME/.local/bin:$PATH"
 
   # uv / uvx (mkdocs material via `make serve/build/lint`)
@@ -33,8 +34,8 @@ install_linux() {
   pipx ensurepath >/dev/null 2>&1 || true
   command -v pre-commit >/dev/null 2>&1 || pipx install pre-commit
 
-  # OpenTofu (pinned via terraform/.opentofu-version)
-  TOFU_VERSION="$(cat "$REPO_ROOT/terraform/.opentofu-version" 2>/dev/null || echo 1.12.5)"
+  # OpenTofu (pinned via tofu/.opentofu-version; terraform/ is retired)
+  TOFU_VERSION="$(cat "$REPO_ROOT/tofu/.opentofu-version" 2>/dev/null || echo 1.12.5)"
   command -v tofu >/dev/null 2>&1 || \
     curl -fsSL "https://github.com/opentofu/opentofu/releases/download/v${TOFU_VERSION}/tofu_${TOFU_VERSION}_linux_amd64.tar.gz" \
       | sudo tar -xz -C /usr/local/bin tofu
@@ -64,6 +65,20 @@ install_linux() {
     sudo install -m 0755 /tmp/linux-amd64/helm /usr/local/bin/helm
     rm -rf /tmp/helm.tgz /tmp/linux-amd64
   }
+
+  # Hugo extended. Website templates use hugo.Data (>= 0.156.0) and toCSS,
+  # which defaults to the LibSass transpiler shipped in the extended edition.
+  HUGO_VERSION=0.169.0
+  hugo_current="$(hugo version 2>/dev/null || true)"
+  case "$hugo_current" in
+    *"v${HUGO_VERSION}"*"extended"*) ;;
+    *)
+      curl -fsSL "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz" -o /tmp/hugo.tgz
+      tar -xzf /tmp/hugo.tgz -C /tmp hugo
+      sudo install -m 0755 /tmp/hugo /usr/local/bin/hugo
+      rm -f /tmp/hugo /tmp/hugo.tgz
+      ;;
+  esac
 
   echo "linux toolchain ready"
 }
