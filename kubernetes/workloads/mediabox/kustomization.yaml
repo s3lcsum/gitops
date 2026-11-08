@@ -5,6 +5,7 @@ resources:
   - resources/namespace.yaml
   - resources/nfs.yaml
   - resources/gluetun.yaml
+  - resources/shelfmark.yaml
   - resources/apps.yaml
   - resources/externalsecret-gluetun.yaml
   - resources/externalsecret-shelfmark.yaml
