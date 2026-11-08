@@ -269,11 +269,12 @@ locals {
     # forward_single: outpost only auths; Traefik proxies to ClusterIP.
     # Admins only — the pod service account is cluster-admin.
     headlamp = {
-      name            = "Headlamp"
-      external_host   = "https://headlamp.dominiksiejak.pl"
-      internal_host   = "http://headlamp.headlamp.svc:80"
-      launch_url      = "https://headlamp.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/headlamp.svg"
+      name          = "Headlamp"
+      external_host = "https://headlamp.dominiksiejak.pl"
+      internal_host = "http://headlamp.headlamp.svc:80"
+      launch_url    = "https://headlamp.dominiksiejak.pl"
+      # Catalog headlamp.svg viewBox is 356×445. Same mark, 500×500 canvas.
+      icon_url        = "https://raw.githubusercontent.com/s3lcsum/gitops/main/tofu/authentik/icons/headlamp.svg"
       skip_path_regex = ""
     }
     # Policy Reporter UI (k8s Traefik IngressRoute + authentik middleware).
