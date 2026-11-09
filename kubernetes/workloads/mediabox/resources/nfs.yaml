@@ -424,6 +424,26 @@ spec:
     path: /volume1/media/k8s/mediabox/sabnzbd
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mediabox-shelfmark
+  labels:
+    app.kubernetes.io/name: shelfmark
+    app.kubernetes.io/part-of: mediabox
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nas-bind
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s/mediabox/shelfmark
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mediabox-sabnzbd
@@ -436,6 +456,23 @@ spec:
     - ReadWriteMany
   storageClassName: nas-bind
   volumeName: mediabox-sabnzbd
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mediabox-shelfmark
+  namespace: mediabox
+  labels:
+    app.kubernetes.io/name: shelfmark
+    app.kubernetes.io/part-of: mediabox
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nas-bind
+  volumeName: mediabox-shelfmark
   resources:
     requests:
       storage: 5Gi

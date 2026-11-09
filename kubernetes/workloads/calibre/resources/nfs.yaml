@@ -1,43 +1,6 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: calibre-config
-  labels:
-    app.kubernetes.io/name: calibre
-    app.kubernetes.io/part-of: calibre
-spec:
-  capacity:
-    storage: 10Gi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: nas-bind
-  mountOptions:
-    - nfsvers=4.1
-  nfs:
-    server: 192.168.89.240
-    path: /volume1/media/k8s/calibre/calibre-config
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: calibre-config
-  namespace: calibre
-  labels:
-    app.kubernetes.io/name: calibre
-    app.kubernetes.io/part-of: calibre
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: nas-bind
-  volumeName: calibre-config
-  resources:
-    requests:
-      storage: 10Gi
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
   name: calibre-cwa-config
   labels:
     app.kubernetes.io/name: calibre-web-automated

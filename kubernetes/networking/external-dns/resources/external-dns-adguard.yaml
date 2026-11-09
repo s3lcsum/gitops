@@ -44,7 +44,9 @@ subjects:
 # dnsrewrite rules for each IngressRoute Host(); classic tofu rewrites stay for non-route names.
 # AdGuard is hostNetwork on the lake node (:3000), not the dead Portainer host.
 # auth/hass/n8n: tunnel-only (tofu/cloudflare CNAME) — bridge skips DNSEndpoint CRs;
-# do not --exclude-domains here or sync will not remove stale AdGuard $dnsrewrite rules.
+# Exception: vpn.dominiksiejak.pl — manual DNSEndpoint for Cloudflare WAN A; LAN = tofu/adguard
+# rewrite → router .1. Exclude below so the CRD is not synced as dnsrewrite → .252.
+# Generally do not widen --exclude-domains or sync will not remove stale $dnsrewrite rules.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -97,6 +99,8 @@ spec:
             - --txt-owner-id=k8s-adguard
             - --txt-prefix=_external-dns.
             - --domain-filter=dominiksiejak.pl
+            # vpn is WAN-only (Cloudflare); LAN clients use tofu/adguard rewrite → router .1
+            - --exclude-domains=vpn.dominiksiejak.pl
             - --managed-record-types=A
             - --managed-record-types=TXT
             - --provider=webhook

@@ -40,10 +40,13 @@ apply: ## Apply all active modules, or one when MODULE=name
 
 auth: ## Write ~/.config/openbao AppRole files from OPENBAO_APPROLE_* env (CI or local)
 	@set -euo pipefail; \
-	test -n "$${OPENBAO_APPROLE_ROLE_ID:-}" && test -n "$${OPENBAO_APPROLE_SECRET_ID:-}"; \
+	if [ -z "$${OPENBAO_APPROLE_ROLE_ID:-}" ] || [ -z "$${OPENBAO_APPROLE_SECRET_ID:-}" ]; then \
+		echo "Set OPENBAO_APPROLE_ROLE_ID and OPENBAO_APPROLE_SECRET_ID (local: files already at ~/.config/openbao/)" >&2; \
+		exit 1; \
+	fi; \
 	umask 077; mkdir -p "$${HOME}/.config/openbao"; \
-	printf '%s' "$$OPENBAO_APPROLE_ROLE_ID" > "$${HOME}/.config/openbao/role_id"; \
-	printf '%s' "$$OPENBAO_APPROLE_SECRET_ID" > "$${HOME}/.config/openbao/secret_id"; \
+	printf '%s' "$${OPENBAO_APPROLE_ROLE_ID}" > "$${HOME}/.config/openbao/role_id"; \
+	printf '%s' "$${OPENBAO_APPROLE_SECRET_ID}" > "$${HOME}/.config/openbao/secret_id"; \
 	chmod 600 "$${HOME}/.config/openbao/role_id" "$${HOME}/.config/openbao/secret_id"
 
 clean: ## Drop Terragrunt caches

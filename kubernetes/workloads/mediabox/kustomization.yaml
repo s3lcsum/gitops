@@ -5,8 +5,10 @@ resources:
   - resources/namespace.yaml
   - resources/nfs.yaml
   - resources/gluetun.yaml
+  - resources/shelfmark.yaml
   - resources/apps.yaml
   - resources/externalsecret-gluetun.yaml
+  - resources/externalsecret-shelfmark.yaml
   - resources/externalsecret-scraparr.yaml
   - resources/externalsecret-jellyfin-sso.yaml
   - resources/servarr-oidc/configmap.yaml

@@ -1,0 +1,31 @@
+{
+  "mcpServers": {
+    "grafana": {
+      "args": [
+        "mcp-grafana"
+      ],
+      "command": "uvx",
+      "env": {
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${env:GRAFANA_SERVICE_ACCOUNT_TOKEN}",
+        "GRAFANA_URL": "https://dreewniak.grafana.net"
+      }
+    },
+    "homeassistant": {
+      "url": "https://hass.dominiksiejak.pl/api/mcp"
+    },
+    "n8n-mcp": {
+      "args": [
+        "-y",
+        "n8n-mcp"
+      ],
+      "command": "npx",
+      "env": {
+        "DISABLE_CONSOLE_OUTPUT": "true",
+        "LOG_LEVEL": "error",
+        "MCP_MODE": "stdio",
+        "N8N_API_KEY": "${env:N8N_API_KEY}",
+        "N8N_API_URL": "https://n8n.dominiksiejak.pl/api/v1"
+      }
+    }
+  }
+}

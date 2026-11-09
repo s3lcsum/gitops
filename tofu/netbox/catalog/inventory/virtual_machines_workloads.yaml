@@ -207,14 +207,14 @@ virtual_machines:
     namespace: calibre
     description: Calibre library UI (NFS books)
 
-  calibre-gui:
-    name: calibre-gui
+  shelfmark:
+    name: shelfmark
     cluster: homelab-lake
     site: lake
     role: application
     platform: container
-    namespace: calibre
-    description: Calibre desktop via KasmVNC
+    namespace: mediabox
+    description: Book search and requests (Gluetun / NordVPN, CWA inbox)
 
   calibre-api:
     name: calibre-api

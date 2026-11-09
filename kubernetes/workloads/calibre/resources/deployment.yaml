@@ -1,89 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: calibre
-  namespace: calibre
-  labels:
-    app.kubernetes.io/name: calibre
-    app.kubernetes.io/instance: calibre
-    app.kubernetes.io/part-of: calibre
-    app.kubernetes.io/managed-by: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
-spec:
-  replicas: 0
-  strategy:
-    type: Recreate
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: calibre
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: calibre
-        app.kubernetes.io/instance: calibre
-        app.kubernetes.io/part-of: calibre
-        app.kubernetes.io/managed-by: argocd
-    spec:
-      priorityClassName: homelab-low
-      tolerations:
-        - key: node-role.kubernetes.io/control-plane
-          operator: Exists
-          effect: NoSchedule
-      containers:
-        - name: calibre
-          image: ghcr.io/linuxserver/calibre:9.17.0
-          env:
-            - name: PUID
-              value: "0"
-            - name: PGID
-              value: "0"
-            - name: TZ
-              value: Europe/Warsaw
-          ports:
-            - name: http
-              containerPort: 8080
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
-            periodSeconds: 30
-            timeoutSeconds: 10
-            failureThreshold: 10
-          volumeMounts:
-            - name: config
-              mountPath: /config
-            - name: books
-              mountPath: /mnt/NAS_Shared_Media/books
-      volumes:
-        - name: config
-          persistentVolumeClaim:
-            claimName: calibre-config
-        - name: books
-          persistentVolumeClaim:
-            claimName: calibre-books
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: calibre
-  namespace: calibre
-  labels:
-    app.kubernetes.io/name: calibre
-    app.kubernetes.io/instance: calibre
-    app.kubernetes.io/part-of: calibre
-    app.kubernetes.io/managed-by: argocd
-spec:
-  selector:
-    app.kubernetes.io/name: calibre
-  ports:
-    - name: http
-      port: 8080
-      targetPort: http
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: calibre-web-automated
   namespace: calibre
   labels:
@@ -94,7 +11,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
@@ -127,6 +44,11 @@ spec:
               value: "true"
             - name: TRUSTED_PROXY_COUNT
               value: "1"
+            - name: HARDCOVER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: calibre-web-automated
+                  key: HARDCOVER_TOKEN
           ports:
             - name: http
               containerPort: 8083

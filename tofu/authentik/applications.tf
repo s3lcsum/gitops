@@ -67,7 +67,7 @@ resource "authentik_provider_oauth2" "oauth2" {
   property_mappings = concat(
     data.authentik_property_mapping_provider_scope.oauth2_scopes.ids,
     lookup(each.value, "mapping", null) != null ? [authentik_property_mapping_provider_scope.custom_claims[each.key].id] : [],
-    each.key == "calibre-web-automated" ? [authentik_property_mapping_provider_scope.calibre_web_groups.id] : [],
+    contains(["calibre-web-automated", "shelfmark"], each.key) ? [authentik_property_mapping_provider_scope.calibre_web_groups.id] : [],
     each.key == "argocd" ? [authentik_property_mapping_provider_scope.argocd_groups.id] : [],
     each.key == "openbao" ? [authentik_property_mapping_provider_scope.openbao_groups.id] : [],
     each.key == "jellyfin" ? [authentik_property_mapping_provider_scope.jellyfin_groups.id] : [],

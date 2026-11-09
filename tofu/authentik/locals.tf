@@ -155,6 +155,16 @@ locals {
         "http://calibre.dominiksiejak.pl/login/generic/authorized",
       ]
     }
+    # Shelfmark native OIDC. Callback path is fixed by the app.
+    # groups scope (applications.tf) maps Authentik group "admins" to Shelfmark admin.
+    shelfmark = {
+      name       = "Shelfmark"
+      launch_url = "https://shelfmark.dominiksiejak.pl"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/lazylibrarian.svg"
+      redirect_uris = [
+        "https://shelfmark.dominiksiejak.pl/api/auth/oidc/callback",
+      ]
+    }
     # Cloudflare Zero Trust Access — generic OIDC IdP.
     # Callback team name must match terraform/cloudflare tunnel_team_name.
     cloudflare = {
@@ -192,17 +202,8 @@ locals {
       icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/victoriametrics.svg"
       skip_path_regex = ""
     }
-    # calibre.dominiksiejak.pl (CWA) is NOT forward-auth'd — CWA handles its own
-    # auth: local users + native OIDC SSO via the "calibre-web-automated" app.
-    # No proxy application here; only calibre-gui is Authentik-gated.
-    calibre-gui = {
-      name            = "Calibre GUI"
-      external_host   = "https://calibre-gui.dominiksiejak.pl"
-      internal_host   = "http://calibre.calibre.svc:8080"
-      launch_url      = "https://calibre-gui.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/calibre.svg"
-      skip_path_regex = ""
-    }
+    # calibre.dominiksiejak.pl (CWA) and shelfmark.dominiksiejak.pl use native
+    # OIDC. No forward-auth proxy for either.
     # Chart Service is disabled. IngressRoute uses api@internal. API entrypoint
     # is host :9080 (UniFi owns :8080). forward_single does not dial this.
     traefik = {
@@ -268,11 +269,12 @@ locals {
     # forward_single: outpost only auths; Traefik proxies to ClusterIP.
     # Admins only — the pod service account is cluster-admin.
     headlamp = {
-      name            = "Headlamp"
-      external_host   = "https://headlamp.dominiksiejak.pl"
-      internal_host   = "http://headlamp.headlamp.svc:80"
-      launch_url      = "https://headlamp.dominiksiejak.pl"
-      icon_url        = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/headlamp.svg"
+      name          = "Headlamp"
+      external_host = "https://headlamp.dominiksiejak.pl"
+      internal_host = "http://headlamp.headlamp.svc:80"
+      launch_url    = "https://headlamp.dominiksiejak.pl"
+      # Catalog headlamp.svg viewBox is 356×445. Same mark, 500×500 canvas.
+      icon_url        = "https://raw.githubusercontent.com/s3lcsum/gitops/main/tofu/authentik/icons/headlamp.svg"
       skip_path_regex = ""
     }
     # Policy Reporter UI (k8s Traefik IngressRoute + authentik middleware).
@@ -355,6 +357,7 @@ locals {
   # Admins still get every app via admin_access.
   brand_user_apps = toset([
     "calibre-web-automated",
+    "shelfmark",
     "homeassistant",
     "jellyfin",
     "seerr",
