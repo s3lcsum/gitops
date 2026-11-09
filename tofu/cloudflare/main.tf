@@ -16,6 +16,8 @@ resource "cloudflare_zone_setting" "ipv6" {
 }
 
 # Zone-wide WAF rule: block requests from countries other than PL, DE, ES.
+# CY is allowed only while http.request.timestamp.sec < 1795478400
+# (2026-11-24T00:00:00Z), so it matches through 2026-11-23 UTC and then drops.
 # Grafana Cloud (prod-us-central-0) token + userinfo calls come from US, so
 # those egress IPs skip the country rule instead of opening all of US.
 # Adopted from the dashboard's "Zone lockdown" custom ruleset (the only custom
@@ -48,10 +50,11 @@ resource "cloudflare_ruleset" "country_allowlist" {
       }
     },
     {
-      ref         = "block-non-allowlisted-countries"
-      action      = "block"
-      expression  = "not ip.geoip.country in {\"PL\" \"DE\" \"ES\"}"
-      description = "Block non-allowlisted countries"
+      ref    = "block-non-allowlisted-countries"
+      action = "block"
+      # 1795478400 = 2026-11-24T00:00:00Z. CY stops matching after 2026-11-23 UTC.
+      expression  = "not ip.geoip.country in {\"PL\" \"DE\" \"ES\"} and not (ip.geoip.country eq \"CY\" and http.request.timestamp.sec lt 1795478400)"
+      description = "Block countries other than PL, DE, ES; CY until 2026-11-24T00:00:00Z"
       enabled     = true
     }
   ]
