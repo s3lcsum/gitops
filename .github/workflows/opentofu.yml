@@ -45,8 +45,21 @@ jobs:
           workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
 
-      - name: OpenBao AppRole
+      - uses: google-github-actions/auth@v2
+        id: gcp-id
+        continue-on-error: true
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: id_token
+          id_token_audience: vault/cicd-terraform
+          id_token_include_email: true
+          create_credentials_file: false
+          export_environment_variables: false
+
+      - name: OpenBao
         env:
+          GCP_ID_TOKEN: ${{ steps.gcp-id.outputs.id_token }}
           OPENBAO_APPROLE_ROLE_ID: ${{ secrets.OPENBAO_APPROLE_ROLE_ID }}
           OPENBAO_APPROLE_SECRET_ID: ${{ secrets.OPENBAO_APPROLE_SECRET_ID }}
         run: make auth

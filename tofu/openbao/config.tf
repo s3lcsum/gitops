@@ -6,7 +6,7 @@ locals {
     vault_addr     = "https://bao.dominiksiejak.pl"
     oidc_client_id = "openbao"
 
-    # Must match tofu/gcp SA github-actions-tofu and config.tf cicd_openbao_* .
+    # Must match tofu/gcp SA github-actions-tofu. Login is auth/jwt (no gcp plugin).
     cicd_gcp_service_account  = "github-actions-tofu@dominiksiejak.iam.gserviceaccount.com"
     cicd_openbao_gcp_role     = "cicd-terraform"
     cicd_openbao_gcp_audience = "vault/cicd-terraform"

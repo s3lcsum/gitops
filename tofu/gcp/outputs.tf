@@ -20,6 +20,7 @@ output "cicd_wif" {
     openbao_gcp_auth = {
       role     = local.cfg.cicd_openbao_gcp_role
       audience = local.cfg.cicd_openbao_gcp_audience
+      path     = "auth/jwt"
     }
   }
 }
