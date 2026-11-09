@@ -45,40 +45,60 @@ runs:
         WG_DNS_SEARCH: ${{ inputs.dns-search }}
       run: |
         set -euo pipefail
-        sudo apt-get update -y
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y wireguard
+        as_root() {
+          if [ "$(id -u)" -eq 0 ]; then
+            "$@"
+          else
+            sudo "$@"
+          fi
+        }
+        if ! command -v wg >/dev/null 2>&1 || ! command -v ip >/dev/null 2>&1; then
+          if command -v apk >/dev/null 2>&1; then
+            as_root apk add --no-cache wireguard-tools iproute2
+          else
+            as_root apt-get update -y
+            as_root env DEBIAN_FRONTEND=noninteractive apt-get install -y wireguard
+          fi
+        fi
         keyfile="$(mktemp)"
         chmod 600 "$keyfile"
         printf '%s\n' "$WG_PRIVATE_KEY" > "$keyfile"
         if ip link show wg0 >/dev/null 2>&1; then
-          sudo ip link delete dev wg0
+          as_root ip link delete dev wg0
         fi
-        sudo ip link add dev wg0 type wireguard
-        sudo ip address add "$WG_ADDRESS" dev wg0
-        sudo wg set wg0 \
+        as_root ip link add dev wg0 type wireguard
+        as_root ip address add "$WG_ADDRESS" dev wg0
+        as_root wg set wg0 \
           private-key "$keyfile" \
           peer "$WG_PUBLIC_KEY" \
           allowed-ips "$WG_ALLOWED_IPS" \
           endpoint "$WG_ENDPOINT" \
           persistent-keepalive "$WG_KEEPALIVE"
-        shred -u "$keyfile"
-        sudo ip link set up dev wg0
+        shred -u "$keyfile" 2>/dev/null || rm -f "$keyfile"
+        as_root ip link set up dev wg0
         IFS=',' read -ra cidrs <<< "$WG_ALLOWED_IPS"
         for cidr in "${cidrs[@]}"; do
           cidr="${cidr#"${cidr%%[![:space:]]*}"}"
           cidr="${cidr%"${cidr##*[![:space:]]}"}"
           [ -n "$cidr" ] || continue
-          sudo ip route replace "$cidr" dev wg0
+          as_root ip route replace "$cidr" dev wg0
         done
         if [ -n "$WG_DNS" ] && [ -n "$WG_DNS_SEARCH" ]; then
-          sudo resolvectl dns wg0 "$WG_DNS"
-          sudo resolvectl domain wg0 "~${WG_DNS_SEARCH}"
-          sudo resolvectl flush-caches
-          ans="$(getent ahostsv4 "auth.${WG_DNS_SEARCH}" | awk '{print $1; exit}')"
+          if command -v resolvectl >/dev/null 2>&1; then
+            as_root resolvectl dns wg0 "$WG_DNS"
+            as_root resolvectl domain wg0 "~${WG_DNS_SEARCH}"
+            as_root resolvectl flush-caches
+            ans="$(getent ahostsv4 "auth.${WG_DNS_SEARCH}" | awk '{print $1; exit}')"
+          else
+            if ! command -v dig >/dev/null 2>&1 && command -v apk >/dev/null 2>&1; then
+              as_root apk add --no-cache bind-tools
+            fi
+            ans="$(dig +short A "auth.${WG_DNS_SEARCH}" @"${WG_DNS}" | awk 'NF {print; exit}')"
+          fi
           echo "auth.${WG_DNS_SEARCH} -> ${ans:-<empty>}"
           case "$ans" in
             192.168.89.*) ;;
             *) echo "auth.${WG_DNS_SEARCH} did not resolve on the LAN" >&2; exit 1 ;;
           esac
         fi
-        sudo wg show wg0
+        as_root wg show wg0 transfer | awk '{print "transfer rx="$2" tx="$3}'

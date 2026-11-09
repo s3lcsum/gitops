@@ -35,7 +35,7 @@ remote_state {
   }
 }
 
-# AppRole: ~/.config/openbao/{role_id,secret_id} when VAULT_TOKEN is unset (local + CI).
+# VAULT_TOKEN (Google ID token login) when set. Otherwise AppRole files.
 generate "vault" {
   path      = "vault_env.tf"
   if_exists = "overwrite_terragrunt"
