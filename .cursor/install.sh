@@ -22,7 +22,7 @@ install_macos() {
 install_linux() {
   export DEBIAN_FRONTEND=noninteractive
   sudo apt-get update -qq
-  sudo apt-get install -y -qq ca-certificates curl gnupg unzip zip python3-pip pipx jq wireguard iproute2 >/dev/null
+  sudo apt-get install -y -qq ca-certificates curl gnupg unzip zip python3-pip pipx jq wireguard iproute2 dnsutils >/dev/null
   export PATH="$HOME/.local/bin:$PATH"
 
   # uv / uvx (mkdocs material via `make serve/build/lint`)
@@ -76,6 +76,26 @@ install_linux() {
     sudo install -m 0755 /tmp/linux-amd64/helm /usr/local/bin/helm
     rm -rf /tmp/helm.tgz /tmp/linux-amd64
   }
+
+  # OpenBao CLI matches the cluster (2.7.2). The real binary lives in libexec;
+  # /usr/local/bin/bao is a wrapper that sets the homelab address and token.
+  sudo mkdir -p /usr/local/libexec
+  BAO_VERSION=2.7.2
+  if ! /usr/local/libexec/bao version 2>/dev/null | grep -q "v${BAO_VERSION}"; then
+    curl -fsSL "https://github.com/openbao/openbao/releases/download/v${BAO_VERSION}/openbao_${BAO_VERSION}_linux_amd64.tar.gz" -o /tmp/bao.tgz
+    tar -xzf /tmp/bao.tgz -C /tmp bao
+    sudo install -m 0755 /tmp/bao /usr/local/libexec/bao
+    rm -f /tmp/bao /tmp/bao.tgz
+  fi
+  sudo install -m 0755 "$SCRIPT_DIR/bao-wrapper.sh" /usr/local/bin/bao
+
+  # Argo CD CLI matches the chart app version (v3.5.6).
+  ARGOCD_VERSION=v3.5.6
+  if ! argocd version --client --short 2>/dev/null | grep -q "v3.5.6"; then
+    curl -fsSL "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64" -o /tmp/argocd
+    sudo install -m 0755 /tmp/argocd /usr/local/bin/argocd
+    rm -f /tmp/argocd
+  fi
 
   # uv and pipx land in ~/.local/bin. Agent shells use the default PATH, which
   # does not include that directory, so expose the binaries from /usr/local/bin.

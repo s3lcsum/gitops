@@ -1,5 +1,5 @@
 {
   "name": "gitops homelab",
   "install": ".cursor/install.sh",
-  "start": "bash .cursor/wireguard-up.sh"
+  "start": "bash .cursor/homelab-up.sh"
 }
