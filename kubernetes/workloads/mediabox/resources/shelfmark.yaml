@@ -1,6 +1,10 @@
 # Own pod on the node WAN. Book grabs do not need the Nord tunnel, and a
 # second NordLynx login with secret/gluetun's key would drop qBittorrent.
-# Completed files land in the CWA inbox. The library mount is read-only.
+# Prowlarr and qBittorrent are other Services in this namespace, both on :80
+# (containers listen on 9696 and 8080). qBittorrent still downloads through
+# Gluetun. Shelfmark tells it to save under /mnt/NAS_Shared_Media/books/downloads,
+# the same path this pod mounts, then copies finished files into /books
+# (CWA inbox). The library mount is read-only.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -77,6 +81,33 @@ spec:
               value: "true"
             - name: CALIBRE_LIBRARY_DB_PATH
               value: /calibre-library/metadata.db
+            - name: INGEST_DIR
+              value: /books
+            - name: PROWLARR_ENABLED
+              value: "true"
+            - name: PROWLARR_URL
+              value: http://prowlarr.mediabox.svc
+            - name: PROWLARR_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: scraparr
+                  key: PROWLARR_API_KEY
+            - name: PROWLARR_TORRENT_CLIENT
+              value: qbittorrent
+            - name: QBITTORRENT_URL
+              value: http://qbittorrent.mediabox.svc
+            - name: QBITTORRENT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: shelfmark-qbittorrent
+                  key: QBITTORRENT_USERNAME
+            - name: QBITTORRENT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: shelfmark-qbittorrent
+                  key: QBITTORRENT_PASSWORD
+            - name: QBITTORRENT_DOWNLOAD_DIR
+              value: /mnt/NAS_Shared_Media/books/downloads
           ports:
             - name: http
               containerPort: 8084
@@ -109,6 +140,11 @@ spec:
             - name: nas
               mountPath: /calibre-library
               subPath: books/library
+              readOnly: true
+            # Same path qBittorrent uses. Read-only: qBittorrent writes it.
+            # Parent mount, not subPath — the Gluetun init creates books/downloads.
+            - name: nas
+              mountPath: /mnt/NAS_Shared_Media
               readOnly: true
       volumes:
         - name: config
