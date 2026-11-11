@@ -35,9 +35,9 @@ spec:
           image: ghcr.io/crocodilestick/calibre-web-automated:v4.0.8
           env:
             - name: PUID
-              value: "0"
+              value: "1026"
             - name: PGID
-              value: "0"
+              value: "100"
             - name: TZ
               value: Europe/Warsaw
             - name: NETWORK_SHARE_MODE
