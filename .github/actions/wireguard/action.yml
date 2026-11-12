@@ -21,13 +21,21 @@ inputs:
     required: false
     default: "25"
   dns:
-    description: LAN resolver (AdGuard). Used only for dns-search.
+    description: LAN resolver (AdGuard) for split-horizon lookups
     required: false
     default: 192.168.89.252
   dns-search:
     description: Domain routed through the LAN resolver once the tunnel is up
     required: false
     default: dominiksiejak.pl
+  dns-probe-host:
+    description: Host that must resolve to 192.168.89.0/24 through the LAN resolver
+    required: false
+    default: argocd.dominiksiejak.pl
+  probe-url:
+    description: Optional URL that must return 2xx once the tunnel is up (proves the egress path)
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -43,6 +51,8 @@ runs:
         WG_KEEPALIVE: ${{ inputs.persistent-keepalive }}
         WG_DNS: ${{ inputs.dns }}
         WG_DNS_SEARCH: ${{ inputs.dns-search }}
+        WG_DNS_PROBE_HOST: ${{ inputs.dns-probe-host }}
+        WG_PROBE_URL: ${{ inputs.probe-url }}
       run: |
         set -euo pipefail
         as_root() {
@@ -51,6 +61,19 @@ runs:
           else
             sudo "$@"
           fi
+        }
+        resolve_ipv4() {
+          local host="$1" ip=""
+          ip="$(getent ahostsv4 "$host" 2>/dev/null | awk 'NF {print $1; exit}')" || true
+          if [ -z "$ip" ]; then
+            if ! command -v dig >/dev/null 2>&1 && command -v apk >/dev/null 2>&1; then
+              as_root apk add --no-cache bind-tools >&2
+            fi
+            if command -v dig >/dev/null 2>&1; then
+              ip="$(dig +short A "$host" | awk 'NF {print; exit}')" || true
+            fi
+          fi
+          printf '%s' "$ip"
         }
         if ! command -v wg >/dev/null 2>&1 || ! command -v ip >/dev/null 2>&1; then
           if command -v apk >/dev/null 2>&1; then
@@ -76,29 +99,61 @@ runs:
           persistent-keepalive "$WG_KEEPALIVE"
         shred -u "$keyfile" 2>/dev/null || rm -f "$keyfile"
         as_root ip link set up dev wg0
+        full_tunnel=0
         IFS=',' read -ra cidrs <<< "$WG_ALLOWED_IPS"
+        for cidr in "${cidrs[@]}"; do
+          cidr="${cidr#"${cidr%%[![:space:]]*}"}"
+          cidr="${cidr%"${cidr##*[![:space:]]}"}"
+          if [ "$cidr" = "0.0.0.0/0" ]; then full_tunnel=1; fi
+        done
+        if [ "$full_tunnel" -eq 1 ]; then
+          # Pin the WireGuard endpoint to the pre-tunnel gateway, then default-route
+          # everything through wg0 so traffic egresses via the home WAN.
+          ep_host="${WG_ENDPOINT%:*}"
+          ep_ip="$(resolve_ipv4 "$ep_host")"
+          [ -n "$ep_ip" ] || { echo "cannot resolve WireGuard endpoint ${ep_host}" >&2; exit 1; }
+          def_gw="$(ip route show default | awk '/^default/ {for(i=1;i<=NF;i++) if($i=="via") {print $(i+1); exit}}')"
+          def_dev="$(ip route show default | awk '/^default/ {for(i=1;i<=NF;i++) if($i=="dev") {print $(i+1); exit}}')"
+          if [ -z "$def_gw" ] || [ -z "$def_dev" ]; then
+            echo "full tunnel requested but no default route to pin ${ep_host}" >&2
+            exit 1
+          fi
+          as_root ip route replace "$ep_ip/32" via "$def_gw" dev "$def_dev"
+          echo "pinned ${ep_host} (${ep_ip}) via ${def_gw} dev ${def_dev}"
+        fi
         for cidr in "${cidrs[@]}"; do
           cidr="${cidr#"${cidr%%[![:space:]]*}"}"
           cidr="${cidr%"${cidr##*[![:space:]]}"}"
           [ -n "$cidr" ] || continue
           as_root ip route replace "$cidr" dev wg0
         done
-        if [ -n "$WG_DNS" ] && [ -n "$WG_DNS_SEARCH" ]; then
+        if [ -n "$WG_DNS" ] && [ -n "$WG_DNS_PROBE_HOST" ]; then
           if command -v resolvectl >/dev/null 2>&1; then
             as_root resolvectl dns wg0 "$WG_DNS"
             as_root resolvectl domain wg0 "~${WG_DNS_SEARCH}"
             as_root resolvectl flush-caches
-            ans="$(getent ahostsv4 "auth.${WG_DNS_SEARCH}" | awk '{print $1; exit}')"
+            ans="$(getent ahostsv4 "$WG_DNS_PROBE_HOST" | awk '{print $1; exit}')" || true
           else
             if ! command -v dig >/dev/null 2>&1 && command -v apk >/dev/null 2>&1; then
               as_root apk add --no-cache bind-tools
             fi
-            ans="$(dig +short A "auth.${WG_DNS_SEARCH}" @"${WG_DNS}" | awk 'NF {print; exit}')"
+            ans="$(dig +short A "$WG_DNS_PROBE_HOST" @"${WG_DNS}" | awk 'NF {print; exit}')" || true
           fi
-          echo "auth.${WG_DNS_SEARCH} -> ${ans:-<empty>}"
+          echo "${WG_DNS_PROBE_HOST} -> ${ans:-<empty>}"
           case "$ans" in
             192.168.89.*) ;;
-            *) echo "auth.${WG_DNS_SEARCH} did not resolve on the LAN" >&2; exit 1 ;;
+            *) echo "${WG_DNS_PROBE_HOST} did not resolve on the LAN" >&2; exit 1 ;;
+          esac
+        fi
+        if [ -n "$WG_PROBE_URL" ]; then
+          if ! command -v curl >/dev/null 2>&1 && command -v apk >/dev/null 2>&1; then
+            as_root apk add --no-cache curl
+          fi
+          code="$(curl -sS -m 20 -o /dev/null -w '%{http_code}' "$WG_PROBE_URL" || true)"
+          echo "probe ${WG_PROBE_URL} -> ${code:-<error>}"
+          case "$code" in
+            2??) ;;
+            *) echo "probe ${WG_PROBE_URL} failed (http ${code:-none})" >&2; exit 1 ;;
           esac
         fi
         as_root wg show wg0 transfer | awk '{print "transfer rx="$2" tx="$3}'

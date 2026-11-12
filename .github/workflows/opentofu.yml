@@ -39,6 +39,8 @@ jobs:
         with:
           private-key: ${{ secrets.WIREGUARD_PRIVATE_KEY }}
           public-key: ${{ secrets.WIREGUARD_PUBLIC_KEY }}
+          allowed-ips: 0.0.0.0/0
+          probe-url: https://auth.dominiksiejak.pl/-/health/live/
 
       - uses: google-github-actions/auth@v2
         with:
