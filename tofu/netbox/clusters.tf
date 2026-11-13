@@ -3,8 +3,6 @@ resource "netbox_cluster_type" "cluster_types" {
 
   name = each.value.name
   slug = try(each.value.slug, null)
-
-  tags = local.common_tags
 }
 
 resource "netbox_cluster" "clusters" {
