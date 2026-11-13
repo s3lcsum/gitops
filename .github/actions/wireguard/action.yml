@@ -132,13 +132,20 @@ runs:
             as_root resolvectl dns wg0 "$WG_DNS"
             as_root resolvectl domain wg0 "~${WG_DNS_SEARCH}"
             as_root resolvectl flush-caches
-            ans="$(getent ahostsv4 "$WG_DNS_PROBE_HOST" | awk '{print $1; exit}')" || true
           else
-            if ! command -v dig >/dev/null 2>&1 && command -v apk >/dev/null 2>&1; then
-              as_root apk add --no-cache bind-tools
+            # BusyBox/musl: no per-link DNS — replace the resolver after wg0 is up.
+            pub_gw="$(ip route show default | awk '/^default/ {for(i=1;i<=NF;i++) if($i=="via") {print $(i+1); exit}}')"
+            pub_dev="$(ip route show default | awk '/^default/ {for(i=1;i<=NF;i++) if($i=="dev") {print $(i+1); exit}}')"
+            if [ -n "$pub_gw" ] && [ -n "$pub_dev" ]; then
+              as_root ip route replace 1.1.1.1/32 via "$pub_gw" dev "$pub_dev"
             fi
-            ans="$(dig +short A "$WG_DNS_PROBE_HOST" @"${WG_DNS}" | awk 'NF {print; exit}')" || true
+            {
+              echo "nameserver ${WG_DNS}"
+              echo "nameserver 1.1.1.1"
+              echo "search ${WG_DNS_SEARCH}"
+            } | as_root tee /etc/resolv.conf >/dev/null
           fi
+          ans="$(getent ahostsv4 "$WG_DNS_PROBE_HOST" | awk '{print $1; exit}')" || true
           echo "${WG_DNS_PROBE_HOST} -> ${ans:-<empty>}"
           case "$ans" in
             192.168.89.*) ;;
