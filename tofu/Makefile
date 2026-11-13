@@ -1,6 +1,7 @@
 # OpenTofu + Terragrunt. Secrets from OpenBao KV mount secret, path <module>.
-# OpenBao: Google ID token for github-actions-tofu (auth/jwt role cicd-terraform),
-# written to ~/.config/openbao/token.env. AppRole files are the fallback.
+# OpenBao login: AppRole env (OPENBAO_APPROLE_* or BAO_*), else Google ID token
+# for github-actions-tofu (CI), else interactive OIDC. Writes
+# ~/.config/openbao/token.env. AppRole files are the fallback.
 # GCP ADC for state. No tfvars.
 
 .PHONY: help auth plan apply clean
@@ -18,7 +19,7 @@ TOFU_ARGS ?=
 help: ## Show targets
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "  \033[1;35m%-14s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo ""
-	@echo "OpenBao:        Google ID token -> ~/.config/openbao/token.env (else AppRole files)"
+	@echo "OpenBao:        AppRole env -> GCP ID token -> interactive OIDC (token.env)"
 	@echo "Secrets:        OpenBao KV secret/<module> → local.secret (ephemeral)"
 	@echo "No tfvars. Nested values = JSON strings in KV."
 	@echo ""
@@ -47,24 +48,25 @@ apply: ## Apply all active modules, or one when MODULE=name
 		cd "$(ROOT)" && terragrunt run --all --non-interactive $(TG_FILTER) $(TG_OPTS) -- apply -auto-approve $(TOFU_ARGS); \
 	fi
 
-auth: ## OpenBao login via Google ID token, else AppRole files from OPENBAO_APPROLE_* env
+auth: ## OpenBao login: AppRole env, else Google ID token, else interactive OIDC
 	@set -euo pipefail; \
-	status=0; \
-	"$(ROOT)/scripts/openbao-gcp-login.sh" || status="$$?"; \
-	if [ "$$status" -eq 0 ]; then \
-		exit 0; \
-	fi; \
-	if [ "$$status" -ne 2 ]; then \
-		echo "openbao: Google ID token login failed; trying AppRole" >&2; \
-	fi; \
-	if [ -z "$${OPENBAO_APPROLE_ROLE_ID:-}" ] || [ -z "$${OPENBAO_APPROLE_SECRET_ID:-}" ]; then \
-		echo "No Google ID token and no AppRole. Set GCP_ID_TOKEN, or OPENBAO_APPROLE_ROLE_ID and OPENBAO_APPROLE_SECRET_ID." >&2; \
-		exit 1; \
-	fi; \
 	umask 077; mkdir -p "$${HOME}/.config/openbao"; \
-	printf '%s' "$${OPENBAO_APPROLE_ROLE_ID}" > "$${HOME}/.config/openbao/role_id"; \
-	printf '%s' "$${OPENBAO_APPROLE_SECRET_ID}" > "$${HOME}/.config/openbao/secret_id"; \
-	chmod 600 "$${HOME}/.config/openbao/role_id" "$${HOME}/.config/openbao/secret_id"
+	role_id="$${OPENBAO_APPROLE_ROLE_ID:-$${BAO_ROLE_ID:-}}"; \
+	secret_id="$${OPENBAO_APPROLE_SECRET_ID:-$${BAO_SECRET_ID:-}}"; \
+	export VAULT_ADDR="$${VAULT_ADDR:-https://bao.dominiksiejak.pl}"; \
+	token=""; \
+	if [ -n "$$role_id" ] && [ -n "$$secret_id" ]; then \
+		echo "openbao: AppRole login" >&2; \
+		token="$$(vault write -field=token auth/approle/login role_id="$$role_id" secret_id="$$secret_id")"; \
+	elif [ -n "$${GCP_ID_TOKEN:-}" ]; then \
+		"$(ROOT)/scripts/openbao-gcp-login.sh"; \
+		exit 0; \
+	else \
+		echo "openbao: OIDC login (browser)" >&2; \
+		token="$$(vault login -method=oidc -token-only)"; \
+	fi; \
+	printf 'VAULT_TOKEN=%s\n' "$$token" > "$${HOME}/.config/openbao/token.env"; \
+	echo "openbao: token -> ~/.config/openbao/token.env"
 
 clean: ## Drop Terragrunt caches
 	@find "$(ROOT)" -type d -name .terragrunt-cache -prune -exec rm -rf {} +

@@ -28,6 +28,19 @@ resource "vault_policy" "eso_read" {
   EOT
 }
 
+resource "vault_policy" "client_read" {
+  name = "client-read"
+
+  policy = <<-EOT
+    path "secret/data/*" {
+      capabilities = ["read", "list"]
+    }
+    path "secret/metadata/*" {
+      capabilities = ["read", "list"]
+    }
+  EOT
+}
+
 resource "vault_policy" "terraform" {
   name = "terraform"
 
