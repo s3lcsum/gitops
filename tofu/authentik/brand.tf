@@ -19,7 +19,7 @@ resource "authentik_stage_identification" "default_authentication" {
   password_stage            = null
   recovery_flow             = authentik_flow.recovery.uuid
   passwordless_flow         = authentik_flow.passwordless.uuid
-  sources                   = []
+  sources                   = [authentik_source_oauth.google.uuid]
   pretend_user_exists       = true
   show_matched_user         = true
   show_source_labels        = false

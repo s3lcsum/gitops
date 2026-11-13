@@ -160,7 +160,7 @@ locals {
     shelfmark = {
       name       = "Shelfmark"
       launch_url = "https://shelfmark.dominiksiejak.pl"
-      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/lazylibrarian.svg"
+      icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/shelfmark.png"
       redirect_uris = [
         "https://shelfmark.dominiksiejak.pl/api/auth/oidc/callback",
       ]
