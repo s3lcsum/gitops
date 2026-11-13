@@ -1,0 +1,5 @@
+# Repo-pinned IaC toolchain. `mise install` provisions OpenTofu + Terragrunt.
+# OpenTofu pin mirrors tofu/.opentofu-version (Terragrunt reads that file too).
+[tools]
+opentofu   = "1.12.5"
+terragrunt = "1.2.1"
