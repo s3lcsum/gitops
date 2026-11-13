@@ -17,25 +17,41 @@ redact() {
   sed -E 's/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/<redacted-jwt>/g; s/s\.[A-Za-z0-9]{8,}/<redacted-token>/g'
 }
 
-id_token="${GCP_ID_TOKEN:-}"
-
-if [ -z "$id_token" ] && [ -n "${GCP_ACCESS_TOKEN:-}" ]; then
+# Mint an ID token for $SA from any OAuth access token that holds
+# iam.serviceAccounts.getOpenIdToken (roles/iam.serviceAccountOpenIdTokenCreator).
+generate_id_token() {
+  local bearer="$1" gen
   gen="$(curl -sS -m 30 \
-    -H "Authorization: Bearer ${GCP_ACCESS_TOKEN}" \
+    -H "Authorization: Bearer ${bearer}" \
     -H "Content-Type: application/json" \
     -d "{\"audience\":\"${AUDIENCE}\",\"includeEmail\":true}" \
     "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${SA}:generateIdToken" || true)"
-  id_token="$(printf '%s' "$gen" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')"
+  printf '%s' "$gen" | sed -n 's/.*"token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p'
+}
+
+id_token="${GCP_ID_TOKEN:-}"
+
+if [ -z "$id_token" ] && [ -n "${GCP_ACCESS_TOKEN:-}" ]; then
+  id_token="$(generate_id_token "$GCP_ACCESS_TOKEN")"
   if [ -z "$id_token" ]; then
     echo "openbao-gcp-login: generateIdToken failed for ${SA}" >&2
-    printf '%s\n' "$gen" | redact >&2
   fi
 fi
 
 if [ -z "$id_token" ] && command -v gcloud >/dev/null 2>&1; then
+  # Workload identity / SA credentials: audience-bound ID token directly.
   id_token="$(gcloud auth print-identity-token --audiences="$AUDIENCE" 2>/dev/null || true)"
   if [ -z "$id_token" ]; then
     id_token="$(gcloud auth print-identity-token --audiences="$AUDIENCE" --impersonate-service-account="$SA" 2>/dev/null || true)"
+  fi
+  # Human operators: gcloud impersonation needs TokenCreator, so fall back to
+  # their access token + OpenIdTokenCreator only (no key, no access token minting).
+  if [ -z "$id_token" ]; then
+    user_access="$(gcloud auth print-access-token 2>/dev/null || true)"
+    if [ -n "$user_access" ]; then
+      id_token="$(generate_id_token "$user_access")"
+      unset user_access
+    fi
   fi
 fi
 
@@ -56,7 +72,7 @@ unset payload
 
 body="$(cat "$tmp")"
 rm -f "$tmp"
-client_token="$(printf '%s' "$body" | sed -n 's/.*"client_token":"\([^"]*\)".*/\1/p')"
+client_token="$(printf '%s' "$body" | sed -n 's/.*"client_token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
 
 if [ -z "$client_token" ]; then
   echo "openbao-gcp-login: auth/${MOUNT} login failed http=${code}" >&2

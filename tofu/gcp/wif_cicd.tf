@@ -69,3 +69,11 @@ resource "google_service_account_iam_member" "cicd_openid_token_self" {
   role               = "roles/iam.serviceAccountOpenIdTokenCreator"
   member             = "serviceAccount:${google_service_account.github_actions_tofu.email}"
 }
+
+# Local operator: same ID-token-only grant so `make auth` works from a
+# workstation without AppRole files. No access tokens and no SA keys.
+resource "google_service_account_iam_member" "cicd_openid_token_local_operator" {
+  service_account_id = google_service_account.github_actions_tofu.name
+  role               = "roles/iam.serviceAccountOpenIdTokenCreator"
+  member             = local.cfg.cicd_local_operator_member
+}
