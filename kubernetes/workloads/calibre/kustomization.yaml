@@ -6,3 +6,18 @@ resources:
   - resources/externalsecret.yaml
   - resources/deployment.yaml
   - resources/ingressroute.yaml
+
+configMapGenerator:
+  - name: cwa-bootstrap
+    files:
+      - cwa-bootstrap.py=bootstrap/cwa-bootstrap.py
+      - cwa_settings.json=bootstrap/cwa_settings.json
+      - app_settings.json=bootstrap/app_settings.json
+      - customize.py.json=bootstrap/customize.py.json
+      - dedrm.base.json=bootstrap/dedrm.base.json
+    options:
+      labels:
+        app.kubernetes.io/name: calibre-web-automated
+        app.kubernetes.io/part-of: calibre
+      annotations:
+        argocd.argoproj.io/sync-wave: "0"
