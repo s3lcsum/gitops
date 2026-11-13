@@ -147,7 +147,7 @@ locals {
     # X-Forwarded-Proto), so both http and https must be allowed; Traefik
     # 301-redirects the http callback to https before it reaches the app.
     calibre-web-automated = {
-      name       = "Calibre-Web Automated"
+      name       = "Calibre"
       launch_url = "https://calibre.dominiksiejak.pl"
       icon_url   = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/calibre.svg"
       redirect_uris = [

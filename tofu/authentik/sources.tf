@@ -1,15 +1,5 @@
-data "authentik_flow" "source_authentication" {
-  slug = "default-source-authentication"
-}
-
-resource "authentik_source_oauth" "google" {
-  name                = "Google"
-  slug                = "google"
-  provider_type       = "google"
-  authentication_flow = data.authentik_flow.source_authentication.id
-  user_matching_mode  = "email_link"
-  enabled             = true
-
-  consumer_key    = local.secret.google_client_id
-  consumer_secret = local.secret.google_client_secret
-}
+# Google OAuth source is disabled: goauthentik/authentik 2026.8.2 has no
+# write-only attributes, so consumer_key/consumer_secret cannot take
+# local.secret (ephemeral) values. Re-enable once the provider supports them
+# (and secret/authentik holds google_client_id + google_client_secret), or
+# manage the source outside OpenTofu.

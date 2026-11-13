@@ -4,7 +4,7 @@ resource "authentik_brand" "default" {
   branding_title                   = "HomeLab Authentik"
   branding_logo                    = "${local.slab_brand_prefix}/logo-horizontal-dark.png"
   branding_favicon                 = "${local.slab_brand_prefix}/mark-icon.png"
-  branding_default_flow_background = ""
+  branding_default_flow_background = "slab/slabi-flow-lilac.jpg"
   branding_custom_css              = file("${path.module}/slab-theme.css")
 
   flow_authentication = "366025e6-d668-4a7f-9c51-0a79f07e329d"
@@ -19,7 +19,7 @@ resource "authentik_stage_identification" "default_authentication" {
   password_stage            = null
   recovery_flow             = authentik_flow.recovery.uuid
   passwordless_flow         = authentik_flow.passwordless.uuid
-  sources                   = [authentik_source_oauth.google.uuid]
+  sources                   = []
   pretend_user_exists       = true
   show_matched_user         = true
   show_source_labels        = false
