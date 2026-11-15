@@ -433,6 +433,12 @@ spec:
             - /bin/sh
             - -c
             - apk add --no-cache sqlite >/dev/null && /bin/sh /policy/apply-bazarr-subtitles.sh
+          # Same optional Secret as the app container: the script only enables
+          # opensubtitlescom when credentials are actually present.
+          envFrom:
+            - secretRef:
+                name: bazarr
+                optional: true
           volumeMounts:
             - name: config
               mountPath: /config
@@ -441,6 +447,12 @@ spec:
       containers:
         - name: bazarr
           image: lscr.io/linuxserver/bazarr:1.6.2
+          # Optional: Secret/bazarr is absent until OpenBao secret/bazarr exists, and
+          # DYNACONF_* overrides config.yaml without the init container rewriting it.
+          envFrom:
+            - secretRef:
+                name: bazarr
+                optional: true
           env:
             - name: PUID
               value: "0"

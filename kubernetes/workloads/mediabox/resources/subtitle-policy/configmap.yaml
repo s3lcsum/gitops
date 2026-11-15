@@ -33,6 +33,33 @@ data:
       SET name='EN PL ES (+CC)', items='${ITEMS}'
       WHERE profileId=3;
     EOF
+    # Providers. subtitulamostv is es-only but is the only working es source, so it stays.
+    # opensubtitlescom raises ConfigurationError and self-throttles for 12h when the
+    # account is missing, so only enable it once credentials arrive from OpenBao.
+    PROVIDERS='napiprojekt subtitulamostv subf2m napisy24'
+    if [ -n "${DYNACONF_OPENSUBTITLESCOM__USERNAME:-}" ] && [ -n "${DYNACONF_OPENSUBTITLESCOM__PASSWORD:-}" ]; then
+      PROVIDERS="opensubtitlescom $PROVIDERS"
+      # Throttles survive restarts in this file, and a ConfigurationError throttle from
+      # the credential-less period would keep the now-configured provider off for 12 more
+      # hours. It is one line holding every provider's transient state, so drop the whole
+      # cache rather than trying to edit one entry out; a real failure just re-throttles.
+      rm -f /config/config/throttled_providers.dat
+    fi
+    if [ -f /config/config/config.yaml ]; then
+      awk -v provs="$PROVIDERS" '
+        BEGIN { n = split(provs, P, " ") }
+        /^  enabled_providers:$/ {
+          print
+          for (i = 1; i <= n; i++) print "  - " P[i]
+          inlist = 1
+          next
+        }
+        inlist && /^  - / { next }
+        { inlist = 0; print }
+      ' /config/config/config.yaml > /config/config/config.yaml.new
+      mv /config/config/config.yaml.new /config/config/config.yaml
+      echo "bazarr subtitle policy: providers = $PROVIDERS"
+    fi
     if [ -f /config/config/config.yaml ]; then
       sed -i 's/^  hi_fallback: .*/  hi_fallback: true/' /config/config/config.yaml
       sed -i 's/^  single_language: .*/  single_language: false/' /config/config/config.yaml
