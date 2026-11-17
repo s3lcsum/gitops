@@ -13,6 +13,7 @@ locals {
       "dsiejak-kobo"    = "192.168.200.25/32"
       "dsiejak-macbook" = "192.168.200.20/32"
       "dsiejak-xgimi"   = "192.168.200.24/32"
+      "dsiejak-kobo"    = "192.168.200.25/32"
       "github-actions"  = "192.168.200.254/32"
       "jsiejak-iphone"  = "192.168.200.31/32"
       "jsiejak-macbook" = "192.168.200.32/32"

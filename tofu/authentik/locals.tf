@@ -141,8 +141,9 @@ locals {
         return {"role": "Viewer"}
       EOF
     }
-    # Calibre-Web Automated (calibre.dominiksiejak.pl) — native OIDC SSO via the
-    # generic OAuth provider in CWA. Callback path is fixed by CWA.
+    # Calibre (calibre.dominiksiejak.pl) — native OIDC SSO via the generic
+    # OAuth provider in CWA. Slug stays calibre-web-automated: CWA's client id
+    # and issuer URL are that slug. Callback path is fixed by CWA.
     # CWA emits the redirect_uri with scheme http (Flask-Dance url_for ignores
     # X-Forwarded-Proto), so both http and https must be allowed; Traefik
     # 301-redirects the http callback to https before it reaches the app.

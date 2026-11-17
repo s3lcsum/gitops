@@ -37,6 +37,12 @@ ip_addresses:
     status: active
     description: WireGuard peer dsiejak-xgimi
 
+  wg-dsiejak-kobo:
+    address: 192.168.200.25/24
+    site: lake
+    status: active
+    description: WireGuard peer dsiejak-kobo
+
   wg-jsiejak-iphone:
     address: 192.168.200.31/24
     site: lake
