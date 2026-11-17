@@ -4,5 +4,6 @@ resources:
   - resources/namespace.yaml
   - resources/nfs.yaml
   - resources/externalsecret.yaml
+  - resources/oauth-roles.yaml
   - resources/deployment.yaml
   - resources/ingressroute.yaml

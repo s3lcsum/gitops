@@ -1,0 +1,86 @@
+# CWA grants OAuth admins ROLE_ADMIN only (the settings menu). Download, edit,
+# and the reader stay off. This runs before /init: admins get every non-guest
+# right, and everyone else gets the default role (download, upload, viewer).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: calibre-oauth-roles
+  namespace: calibre
+  labels:
+    app.kubernetes.io/name: calibre-web-automated
+    app.kubernetes.io/part-of: calibre
+    app.kubernetes.io/managed-by: argocd
+data:
+  patch.py: |
+    #!/usr/bin/env python3
+    """Fix CWA OAuth roles before the app process starts."""
+    import sqlite3
+    from pathlib import Path
+
+    OAUTH = Path("/app/calibre-web-automated/cps/oauth_bb.py")
+    DB = Path("/config/app.db")
+    # download (2) + upload (4) + viewer (256). Not edit, delete, or admin.
+    NORMAL = 2 | 4 | 256
+    # cps.constants.ADMIN_USER_ROLES — every bit except anonymous.
+    ADMIN = 479
+
+    def replace_once(text, old, new, label):
+        if old not in text:
+            if new in text:
+                return text
+            raise SystemExit(f"oauth role patch missing target: {label}")
+        return text.replace(old, new, 1)
+
+    text = OAUTH.read_text()
+    # Short anchors only. A pasted block loses indent inside this ConfigMap.
+    for old, new, label in (
+        (
+            "            user.role = constants.ROLE_ADMIN\n",
+            "            user.role = constants.ADMIN_USER_ROLES\n",
+            "new-admin",
+        ),
+        (
+            "            if should_be_admin and not current_is_admin:\n",
+            "            if should_be_admin:\n",
+            "existing-admin-if",
+        ),
+        (
+            "                user.role |= constants.ROLE_ADMIN\n",
+            "                user.role = constants.ADMIN_USER_ROLES\n",
+            "existing-admin-role",
+        ),
+        (
+            "            elif not should_be_admin and current_is_admin:\n",
+            "            else:\n",
+            "existing-default-if",
+        ),
+        (
+            "                user.role &= ~constants.ROLE_ADMIN\n",
+            "                user.role = config.config_default_role\n",
+            "existing-default-role",
+        ),
+        (
+            'log.warning("OAuth user \'%s\' admin role revoked - not in required group \'%s\' (user groups: %s)"',
+            'log.info("OAuth user \'%s\' set to default role, not in group \'%s\' (groups: %s)"',
+            "existing-default-log",
+        ),
+    ):
+        text = replace_once(text, old, new, label)
+    OAUTH.write_text(text)
+
+    if not DB.exists():
+        raise SystemExit(f"missing {DB}")
+    db = sqlite3.connect(DB, timeout=30)
+    db.execute("UPDATE settings SET config_default_role = ?", (NORMAL,))
+    # Anyone who already has the admin bit (and is not the guest) gets the rest.
+    db.execute(
+        "UPDATE user SET role = ? WHERE (role & 1) = 1 AND (role & 32) = 0 AND role != ?",
+        (ADMIN, ADMIN),
+    )
+    db.commit()
+    print(
+        "oauth roles:",
+        db.execute("SELECT name, role FROM user").fetchall(),
+        "default",
+        db.execute("SELECT config_default_role FROM settings").fetchone()[0],
+    )

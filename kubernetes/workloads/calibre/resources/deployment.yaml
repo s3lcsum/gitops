@@ -33,6 +33,12 @@ spec:
       containers:
         - name: calibre-web-automated
           image: ghcr.io/crocodilestick/calibre-web-automated:v4.0.8
+          # Image grants OAuth admins ROLE_ADMIN only. Patch roles, then s6.
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              python3 /oauth-roles/patch.py
+              exec /init
           env:
             - name: PUID
               value: "1026"
@@ -68,7 +74,13 @@ spec:
             - name: books
               mountPath: /calibre-library
               subPath: library
+            - name: oauth-roles
+              mountPath: /oauth-roles
+              readOnly: true
       volumes:
+        - name: oauth-roles
+          configMap:
+            name: calibre-oauth-roles
         - name: config
           persistentVolumeClaim:
             claimName: calibre-cwa-config
