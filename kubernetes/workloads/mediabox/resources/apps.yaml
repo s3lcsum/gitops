@@ -408,11 +408,15 @@ metadata:
     app.kubernetes.io/managed-by: argocd
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app.kubernetes.io/name: bazarr
   template:
     metadata:
+      annotations:
+        homelab.dominiksiejak.pl/bazarr-subtitle-policy-revision: "2"
       labels:
         app.kubernetes.io/name: bazarr
         app.kubernetes.io/instance: bazarr
