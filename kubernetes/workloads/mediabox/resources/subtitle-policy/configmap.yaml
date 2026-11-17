@@ -13,8 +13,10 @@ data:
       {"id": 2, "language": "en", "audio_exclude": "False", "audio_only_include": "False", "hi": "True", "forced": "False"},
       {"id": 3, "language": "pl", "audio_exclude": "False", "audio_only_include": "False", "hi": "Excluded", "forced": "False"},
       {"id": 4, "language": "pl", "audio_exclude": "False", "audio_only_include": "False", "hi": "True", "forced": "False"},
-      {"id": 5, "language": "es", "audio_exclude": "False", "audio_only_include": "False", "hi": "Excluded", "forced": "False"},
-      {"id": 6, "language": "es", "audio_exclude": "False", "audio_only_include": "False", "hi": "True", "forced": "False"}
+      {"id": 5, "language": "en", "audio_exclude": "False", "audio_only_include": "False", "hi": "False", "forced": "True"},
+      {"id": 6, "language": "pl", "audio_exclude": "False", "audio_only_include": "False", "hi": "False", "forced": "True"},
+      {"id": 7, "language": "en", "audio_exclude": "False", "audio_only_include": "False", "hi": "False", "forced": "False"},
+      {"id": 8, "language": "pl", "audio_exclude": "False", "audio_only_include": "False", "hi": "False", "forced": "False"}
     ]
   apply-bazarr-subtitles.sh: |
     #!/bin/sh
@@ -26,20 +28,28 @@ data:
       exit 0
     fi
     ITEMS=$(tr -d '\n' <"$ITEMS_FILE" | sed "s/'/''/g")
-    sqlite3 -bail -cmd '.timeout 5000' "$DB" <<EOF
+    PROFILE_ID=$(sqlite3 -bail -cmd '.timeout 5000' "$DB" <<EOF
     PRAGMA foreign_keys=ON;
     BEGIN IMMEDIATE;
-    UPDATE table_settings_languages SET enabled=0;
-    UPDATE table_settings_languages SET enabled=1 WHERE code2 IN ('en','pl','es');
-    INSERT INTO table_languages_profiles (profileId, name, items, cutoff)
-      VALUES (3, 'EN PL ES (+CC)', '${ITEMS}', NULL)
-      ON CONFLICT(profileId) DO UPDATE
-      SET name=excluded.name, items=excluded.items, cutoff=excluded.cutoff;
-    UPDATE table_shows SET profileId=3 WHERE profileId IS NOT 3;
-    UPDATE table_movies SET profileId=3 WHERE profileId IS NOT 3;
-    DELETE FROM table_languages_profiles WHERE profileId<>3 AND name IN ('EN','PL');
+    UPDATE table_settings_languages SET enabled = (code2 IN ('en','pl'));
+    -- Preserve the profile configured in Bazarr, including its existing ID and options.
+    INSERT INTO table_languages_profiles (name, items, cutoff)
+      SELECT 'Default (PL + EN)', '${ITEMS}', NULL
+      WHERE NOT EXISTS (
+        SELECT 1 FROM table_languages_profiles WHERE name='Default (PL + EN)'
+      );
+    CREATE TEMP VIEW default_profile AS
+      SELECT MIN(profileId) AS id FROM table_languages_profiles WHERE name='Default (PL + EN)';
+    UPDATE table_shows SET profileId=(SELECT id FROM default_profile)
+      WHERE profileId IS NOT (SELECT id FROM default_profile);
+    UPDATE table_movies SET profileId=(SELECT id FROM default_profile)
+      WHERE profileId IS NOT (SELECT id FROM default_profile);
+    DELETE FROM table_languages_profiles WHERE name IN ('EN','PL');
     COMMIT;
+    SELECT id FROM default_profile;
     EOF
+    )
+    echo "bazarr subtitle policy: assigned Default (PL + EN), profile ID $PROFILE_ID"
     # Providers. subtitulamostv is es-only but is the only working es source, so it stays.
     # opensubtitlescom raises ConfigurationError and self-throttles for 12h when the
     # account is missing, so only enable it once credentials arrive from OpenBao.
@@ -70,8 +80,8 @@ data:
     if [ -f /config/config/config.yaml ]; then
       sed -i 's/^  hi_fallback: .*/  hi_fallback: true/' /config/config/config.yaml
       sed -i 's/^  single_language: .*/  single_language: false/' /config/config/config.yaml
-      sed -i 's/^  serie_default_profile: .*/  serie_default_profile: 3/' /config/config/config.yaml
-      sed -i 's/^  movie_default_profile: .*/  movie_default_profile: 3/' /config/config/config.yaml
+      sed -i "s/^  serie_default_profile: .*/  serie_default_profile: $PROFILE_ID/" /config/config/config.yaml
+      sed -i "s/^  movie_default_profile: .*/  movie_default_profile: $PROFILE_ID/" /config/config/config.yaml
       sed -i 's/^  default_und_audio_lang: .*/  default_und_audio_lang: en/' /config/config/config.yaml
       sed -i 's/^  parse_embedded_audio_track: .*/  parse_embedded_audio_track: true/' /config/config/config.yaml
       sed -i 's/^  use_original_language: .*/  use_original_language: true/' /config/config/config.yaml
