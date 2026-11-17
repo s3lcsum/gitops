@@ -20,6 +20,7 @@ spec:
   # not-ready, cordon). Use JSON6902 add, split by whether the list exists.
   rules:
     - name: taint-non-control-plane-no-taints
+      skipBackgroundRequests: true
       match:
         any:
           - resources:
@@ -46,6 +47,7 @@ spec:
                 value: "true"
                 effect: PreferNoSchedule
     - name: taint-non-control-plane-append
+      skipBackgroundRequests: true
       match:
         any:
           - resources:

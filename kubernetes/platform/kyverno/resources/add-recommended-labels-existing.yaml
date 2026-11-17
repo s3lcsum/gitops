@@ -19,6 +19,7 @@ spec:
   validationFailureAction: Audit
   rules:
     - name: flannel-daemonset
+      skipBackgroundRequests: true
       match:
         any:
           - resources:
@@ -44,6 +45,7 @@ spec:
                   app.kubernetes.io/part-of: flannel
                   app.kubernetes.io/managed-by: Helm
     - name: static-control-plane-pods
+      skipBackgroundRequests: true
       match:
         any:
           - resources:
@@ -73,6 +75,7 @@ spec:
               app.kubernetes.io/part-of: kubernetes
               app.kubernetes.io/managed-by: kubeadm
     - name: dnscheck
+      skipBackgroundRequests: true
       match:
         any:
           - resources:
@@ -96,6 +99,7 @@ spec:
               app.kubernetes.io/part-of: dnscheck
               app.kubernetes.io/managed-by: kyverno
     - name: scaled-down-replicasets
+      skipBackgroundRequests: true
       match:
         any:
           - resources:

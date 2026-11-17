@@ -20,6 +20,7 @@ spec:
   validationFailureAction: Audit
   rules:
     - name: flannel-daemonset
+      skipBackgroundRequests: true
       match:
         any:
           - resources:
@@ -45,6 +46,7 @@ spec:
                   app.kubernetes.io/part-of: flannel
                   app.kubernetes.io/managed-by: Helm
     - name: static-control-plane-pods
+      skipBackgroundRequests: true
       match:
         any:
           - resources:
@@ -69,6 +71,7 @@ spec:
               app.kubernetes.io/part-of: kubernetes
               app.kubernetes.io/managed-by: kubeadm
     - name: dnscheck
+      skipBackgroundRequests: true
       match:
         any:
           - resources:
@@ -94,6 +97,7 @@ spec:
     # Old ReplicaSets stay at replicas 0 after a rollout. The Deployment
     # controller does not rewrite them, so stamp the missing label there.
     - name: scaled-down-replicasets
+      skipBackgroundRequests: true
       match:
         any:
           - resources:
