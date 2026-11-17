@@ -21,7 +21,7 @@
         description: GitOps
 
     - Argo Rollouts:
-        icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/argo.png
+        icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/argo-cd.png
         href: https://rollouts.dominiksiejak.pl
         description: Progressive delivery
 
@@ -242,7 +242,7 @@
         href: https://shelfmark.dominiksiejak.pl
         description: Book search and requests
 
-    - Calibre Api:
+    - Calibre:
         icon: https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/calibre-web.png
         href: https://calibre-api.dominiksiejak.pl
-        description: Calibre OPDS / API
+        description: OPDS / API
