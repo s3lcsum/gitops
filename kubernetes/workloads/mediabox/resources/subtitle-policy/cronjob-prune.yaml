@@ -34,7 +34,7 @@ spec:
               effect: NoSchedule
           containers:
             - name: prune
-              image: alpine:3.21
+              image: alpine:3.24
               env:
                 - name: SUBTITLE_ROOT
                   value: /library

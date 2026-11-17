@@ -211,7 +211,7 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
       containers:
         - name: radarr
-          image: lscr.io/linuxserver/radarr:7.0.0-develop
+          image: lscr.io/linuxserver/radarr:7.0.3-develop
           env:
             - name: PUID
               value: "0"
@@ -428,7 +428,7 @@ spec:
         kubernetes.io/hostname: k8s
       initContainers:
         - name: apply-subtitle-policy
-          image: alpine:3.21
+          image: alpine:3.24
           command:
             - /bin/sh
             - -c
@@ -546,7 +546,7 @@ spec:
         kubernetes.io/hostname: k8s
       initContainers:
         - name: apply-subtitle-policy
-          image: alpine:3.21
+          image: alpine:3.24
           command:
             - /bin/sh
             - -c
@@ -557,7 +557,7 @@ spec:
             - name: subtitle-policy
               mountPath: /policy
         - name: apply-encoding-policy
-          image: alpine:3.21
+          image: alpine:3.24
           command:
             - /bin/sh
             - -c
@@ -570,7 +570,7 @@ spec:
             - name: encoding-policy
               mountPath: /encoding-policy
         - name: fix-intros-permissions
-          image: alpine:3.21
+          image: alpine:3.24
           command:
             - /bin/sh
             - -c
@@ -585,7 +585,7 @@ spec:
               mountPath: /media/intros
               subPath: intros
         - name: init-local-media-dirs
-          image: alpine:3.21
+          image: alpine:3.24
           command:
             - /bin/sh
             - -c
@@ -598,7 +598,7 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
       containers:
         - name: jellyfin
-          image: ghcr.io/linuxserver/jellyfin:12.4ubu2604-ls57
+          image: ghcr.io/linuxserver/jellyfin:12.4ubu2604-ls59
           env:
             - name: PUID
               value: "0"
@@ -713,7 +713,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: seerr
-          image: ghcr.io/seerr-team/seerr:v3.5.1
+          image: ghcr.io/seerr-team/seerr:v3.5.2
           env:
             - name: PUID
               value: "0"

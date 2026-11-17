@@ -39,7 +39,7 @@ spec:
                     operator: Exists
       containers:
         - name: timemachine
-          image: ghcr.io/saihgupr/homeassistanttimemachine:2.3.2
+          image: ghcr.io/saihgupr/homeassistanttimemachine:2.4.3
           env:
             - name: TZ
               value: Europe/Warsaw

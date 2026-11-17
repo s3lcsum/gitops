@@ -102,7 +102,7 @@ spec:
               mountPath: /loki
       containers:
         - name: loki
-          image: mirror.gcr.io/grafana/loki:3.7.9
+          image: mirror.gcr.io/grafana/loki:3.7.10
           args:
             - -config.file=/etc/loki/loki.yaml
           securityContext:

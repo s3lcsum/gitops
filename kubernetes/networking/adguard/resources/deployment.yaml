@@ -39,7 +39,7 @@ spec:
                     operator: Exists
       containers:
         - name: adguard
-          image: mirror.gcr.io/adguard/adguardhome:v0.107.79
+          image: mirror.gcr.io/adguard/adguardhome:v0.107.80
           ports:
             - name: dns-udp
               containerPort: 53

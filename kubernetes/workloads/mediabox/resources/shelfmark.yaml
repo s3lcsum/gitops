@@ -37,7 +37,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: shelfmark
-          image: ghcr.io/calibrain/shelfmark:v1.6.1
+          image: ghcr.io/calibrain/shelfmark:v1.7.0
           env:
             - name: PUID
               value: "0"
