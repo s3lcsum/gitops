@@ -1,0 +1,66 @@
+# OpenBao secret/n8n (db_postgresdb_password; db_postgresdb_user = n8n_user,
+# db_postgresdb_database = n8n_db). Role secret is an ESO copy in the
+# cloudnative-pg ns so the CNPG DatabaseRole can't read across namespaces.
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: n8n-user
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  refreshPolicy: OnChange
+  refreshInterval: 0s
+  secretStoreRef:
+    name: openbao
+    kind: ClusterSecretStore
+  target:
+    name: n8n-user
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      type: kubernetes.io/basic-auth
+      metadata:
+        labels: {}
+        annotations:
+          argocd.argoproj.io/sync-options: Prune=false
+      data:
+        username: n8n_user
+        password: "{{ .password }}"
+  data:
+    - secretKey: password
+      remoteRef:
+        key: n8n
+        property: db_postgresdb_password
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: n8n-user
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  cluster:
+    name: postgres
+  name: n8n_user
+  login: true
+  databaseRoleReclaimPolicy: retain
+  passwordSecret:
+    name: n8n-user
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: n8n-db
+  namespace: cloudnative-pg
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  name: n8n_db
+  owner: n8n_user
+  databaseReclaimPolicy: retain
+  cluster:
+    name: postgres

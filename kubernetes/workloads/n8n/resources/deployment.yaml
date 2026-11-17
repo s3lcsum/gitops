@@ -57,7 +57,7 @@ spec:
               value: "true"
             - name: NODE_FUNCTION_ALLOW_BUILTIN
               value: crypto
-            - name: db_postgresdb_host
+            - name: DB_POSTGRESDB_HOST
               value: postgres-rw.cloudnative-pg.svc
             # RouterOS www-ssl uses an OpenBao-issued cert (192.168.89.1 IP SAN).
             - name: NODE_EXTRA_CA_CERTS

@@ -6,4 +6,5 @@ resources:
   - resources/nfs.yaml
   - resources/deployment.yaml
   - resources/externalsecret.yaml
+  - resources/database.yaml
   - resources/ingressroute.yaml
