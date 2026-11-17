@@ -9,5 +9,6 @@ resources:
   - resources/ingressroute.yaml
 configMapGenerator:
   - name: calibre-author-display
+    namespace: calibre
     files:
       - scripts/author-display.py
