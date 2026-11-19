@@ -23,6 +23,8 @@ spec:
         app.kubernetes.io/part-of: n8n
         app.kubernetes.io/managed-by: argocd
     spec:
+      # Service named n8n injects N8N_PORT=tcp://…:5678; n8n expects a numeric port.
+      enableServiceLinks: false
       priorityClassName: homelab-high
       tolerations:
         - key: node-role.kubernetes.io/control-plane
@@ -32,7 +34,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: n8n
-          image: ghcr.io/n8n-io/n8n:3.2.2
+          image: ghcr.io/n8n-io/n8n:3.3.0
           envFrom:
             - secretRef:
                 name: n8n
