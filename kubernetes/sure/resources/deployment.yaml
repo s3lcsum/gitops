@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/part-of: sure
     app.kubernetes.io/managed-by: argocd
 spec:
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: sure-redis
@@ -28,7 +28,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: valkey
-          image: ghcr.io/valkey-io/valkey:9.1.3
+          image: ghcr.io/valkey-io/valkey:9.2.0
           ports:
             - name: redis
               containerPort: 6379
@@ -72,7 +72,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
@@ -93,7 +93,7 @@ spec:
           effect: NoSchedule
       initContainers:
         - name: db-prepare
-          image: ghcr.io/we-promise/sure:stable@sha256:cd6706f544cd5f9b299a586d719776cf2595b483ea1f1a396137da0d23eafb20
+          image: ghcr.io/we-promise/sure:stable@sha256:002cde609f3af4b69ba2564c2482f3996e1fe29092dd169962b9b6ed943fcb10
           command: ["bash", "-lc"]
           args:
             - |
@@ -117,7 +117,7 @@ spec:
               value: redis://sure-redis:6379/1
       containers:
         - name: sure
-          image: ghcr.io/we-promise/sure:stable@sha256:cd6706f544cd5f9b299a586d719776cf2595b483ea1f1a396137da0d23eafb20
+          image: ghcr.io/we-promise/sure:stable@sha256:002cde609f3af4b69ba2564c2482f3996e1fe29092dd169962b9b6ed943fcb10
           envFrom:
             - secretRef:
                 name: sure
@@ -206,7 +206,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
@@ -227,7 +227,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: sure-worker
-          image: ghcr.io/we-promise/sure:stable@sha256:cd6706f544cd5f9b299a586d719776cf2595b483ea1f1a396137da0d23eafb20
+          image: ghcr.io/we-promise/sure:stable@sha256:002cde609f3af4b69ba2564c2482f3996e1fe29092dd169962b9b6ed943fcb10
           command: ["bash", "-lc"]
           args:
             - bundle exec sidekiq

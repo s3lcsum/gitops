@@ -26,13 +26,13 @@ jobs:
     runs-on: ${{ vars.TOFU_RUNNER || 'ubuntu-latest' }}
     timeout-minutes: 90
     container:
-      image: ghcr.io/s3lcsum/gitops/opentofu-ci:1.12.5-1.2.1
+      image: ghcr.io/s3lcsum/gitops/opentofu-ci:1.13.9-1.2.2
       options: --cap-add=NET_ADMIN --device /dev/net/tun
     defaults:
       run:
         working-directory: tofu
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: ./.github/actions/wireguard
         if: vars.TOFU_RUNNER == ''
@@ -42,12 +42,12 @@ jobs:
           allowed-ips: 0.0.0.0/0
           probe-url: https://auth.dominiksiejak.pl/-/health/live/
 
-      - uses: google-github-actions/auth@v2
+      - uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
 
-      - uses: google-github-actions/auth@v2
+      - uses: google-github-actions/auth@v3
         id: gcp-id
         continue-on-error: true
         with:

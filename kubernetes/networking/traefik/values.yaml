@@ -1,9 +1,9 @@
 # ApplicationSet chart pin.
 repoURL: https://traefik.github.io/charts
 chart: traefik
-version: 42.4.0
+version: 42.4.1
 
-# Overrides for Traefik Helm 41.6.1 (app v3.7.13).
+# Overrides for Traefik Helm 42.4.1 (app v3.7.19).
 # hostNetwork owns :80/:443 after Cilium Gateway is down.
 # The lake LXC has no CAP_SETFCAP, so setcap cannot stamp the binary and a
 # non-root process cannot bind :443 there. Root + NET_BIND_SERVICE can.
@@ -12,7 +12,7 @@ image:
   # Avoid docker.io rate limits; Traefik also publishes to GHCR.
   registry: ghcr.io
   repository: traefik/traefik
-  tag: v3.7.17
+  tag: v3.7.19
 # Chart already sets name, instance, and managed-by. Not part of the selector.
 commonLabels:
   app.kubernetes.io/part-of: traefik

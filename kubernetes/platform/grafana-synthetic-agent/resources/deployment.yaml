@@ -33,7 +33,7 @@ spec:
           effect: PreferNoSchedule
       containers:
         - name: grafana-synthetic-agent
-          image: mirror.gcr.io/grafana/synthetic-monitoring-agent:v0.66.1
+          image: mirror.gcr.io/grafana/synthetic-monitoring-agent:v0.71.0
           command:
             - /bin/sh
             - -c

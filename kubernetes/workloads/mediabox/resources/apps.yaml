@@ -103,7 +103,7 @@ spec:
         kubernetes.io/hostname: k8s
       containers:
         - name: prowlarr
-          image: lscr.io/linuxserver/prowlarr:2.7.0
+          image: lscr.io/linuxserver/prowlarr:3.0.2
           env:
             - name: PUID
               value: "0"
@@ -602,7 +602,7 @@ spec:
               mountPath: /mnt/LOCAL_MEDIA
       containers:
         - name: jellyfin
-          image: ghcr.io/linuxserver/jellyfin:12.4ubu2604-ls59
+          image: ghcr.io/linuxserver/jellyfin:12.4ubu2604-ls60
           env:
             - name: PUID
               value: "0"

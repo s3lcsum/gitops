@@ -85,6 +85,7 @@ spec:
         - name: author-display
           configMap:
             name: calibre-author-display
+            defaultMode: 0555
         - name: oauth-roles
           configMap:
             name: calibre-oauth-roles

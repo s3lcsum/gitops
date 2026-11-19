@@ -83,7 +83,7 @@ spec:
         - operator: Exists
       containers:
         - name: kube-proxy
-          image: registry.k8s.io/kube-proxy:v1.37.1
+          image: registry.k8s.io/kube-proxy:v1.37.2
           imagePullPolicy: IfNotPresent
           command:
             - /usr/local/bin/kube-proxy

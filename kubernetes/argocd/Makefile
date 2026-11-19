@@ -3,7 +3,7 @@
 REPO_NAME ?= argo
 REPO_URL ?= https://argoproj.github.io/argo-helm
 CHART ?= argo-cd
-CHART_VERSION ?= 10.11.6
+CHART_VERSION ?= 10.18.2
 KUBE_CONTEXT ?= k8s@lake
 NAMESPACE ?= argocd
 RELEASE ?= argocd

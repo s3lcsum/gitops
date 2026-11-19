@@ -127,7 +127,7 @@ Portainer is gone. Apps run on Kubernetes. Databases live on CloudNativePG.
 
 ## 🔧 operating it
 
-OpenTofu `1.12.5`. From a module directory:
+OpenTofu `1.13.9`. From a module directory:
 
 ```bash
 cd terraform/<module>
@@ -142,7 +142,7 @@ Argo CD is the deploy path for `kubernetes/`. Bootstrap (only if Argo itself is 
 make -C kubernetes/argocd bootstrap
 ```
 
-Context `k8s@lake`, chart `argo-cd` `10.4.0`. After that, push to `main`.
+Context `k8s@lake`, chart `argo-cd` `10.18.2`. After that, push to `main`.
 
 Secrets:
 

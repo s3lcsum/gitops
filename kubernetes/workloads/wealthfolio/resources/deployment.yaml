@@ -11,7 +11,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
@@ -32,7 +32,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: wealthfolio
-          image: mirror.gcr.io/wealthfolio/wealthfolio:3.13.0
+          image: mirror.gcr.io/wealthfolio/wealthfolio:3.13.1
           envFrom:
             - secretRef:
                 name: wealthfolio

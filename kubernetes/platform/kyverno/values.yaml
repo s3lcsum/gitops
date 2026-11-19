@@ -2,7 +2,7 @@
 repoURL: https://kyverno.github.io/kyverno/
 chart: kyverno
 version: 3.10.0
-# Overrides for kyverno/kyverno 3.9.1 (appVersion v1.19.1).
+# Overrides for kyverno/kyverno 3.10.0 (appVersion v1.20.0).
 # Single-node kubeadm (lake): one replica per controller + control-plane toleration.
 crds:
   install: true

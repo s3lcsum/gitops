@@ -2,7 +2,7 @@
 repoURL: https://charts.external-secrets.io
 chart: external-secrets
 version: 2.15.0
-# Overrides for external-secrets 2.11.0.
+# Overrides for external-secrets 2.15.0.
 # Merged onto every pod template. Chart already sets name, instance, managed-by.
 commonLabels:
   app.kubernetes.io/part-of: external-secrets

@@ -1,8 +1,8 @@
 # Alpine CI image. tofu/terragrunt linux_amd64 need gcompat (glibc on musl). WireGuard: NET_ADMIN + /dev/net/tun.
-ARG TOFU_VERSION=1.12.5
-ARG TG_VERSION=1.2.1
+ARG TOFU_VERSION=1.13.9
+ARG TG_VERSION=1.2.2
 
-FROM alpine:3.21 AS fetch
+FROM alpine:3.24 AS fetch
 ARG TOFU_VERSION
 ARG TG_VERSION
 RUN set -eux; \
@@ -14,7 +14,7 @@ RUN set -eux; \
     chmod +x /out/tofu /out/terragrunt; \
     rm -f /tmp/tofu.zip
 
-FROM alpine:3.21
+FROM alpine:3.24
 
 RUN set -eux; \
     apk add --no-cache \
