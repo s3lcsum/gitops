@@ -1,0 +1,261 @@
+# Based on nfs-subdir-external-provisioner 4.0.18 from https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/.
+# Dynamic claims create directories under /volume1/media/k8s/<namespace>/<pvc>.
+# Local-path is the default StorageClass. Existing exports use static nas-bind PVs.
+---
+# Source: nfs-subdir-external-provisioner/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: nfs
+  labels:
+    chart: nfs-subdir-external-provisioner-4.0.18
+    heritage: Helm
+    app: nfs-subdir-external-provisioner
+    release: nfs
+    app.kubernetes.io/instance: nfs
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nfs-subdir-external-provisioner
+    app.kubernetes.io/part-of: nfs
+  name: nfs-nfs-subdir-external-provisioner
+---
+# Source: nfs-subdir-external-provisioner/templates/storageclass.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  labels:
+    chart: nfs-subdir-external-provisioner-4.0.18
+    heritage: Helm
+    app: nfs-subdir-external-provisioner
+    release: nfs
+    app.kubernetes.io/instance: nfs
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nfs-subdir-external-provisioner
+    app.kubernetes.io/part-of: nfs
+  name: nfs
+  annotations:
+provisioner: cluster.local/nfs-nfs-subdir-external-provisioner
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+parameters:
+  archiveOnDelete: "true"
+  pathPattern: "${.PVC.namespace}/${.PVC.name}"
+mountOptions:
+  - nfsvers=4.1
+---
+# Source: nfs-subdir-external-provisioner/templates/persistentvolume.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-nfs-nfs-subdir-external-provisioner
+  labels:
+    chart: nfs-subdir-external-provisioner-4.0.18
+    heritage: Helm
+    app: nfs-subdir-external-provisioner
+    release: nfs
+    app.kubernetes.io/instance: nfs
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nfs-subdir-external-provisioner
+    app.kubernetes.io/part-of: nfs
+    nfs-subdir-external-provisioner: nfs-nfs-subdir-external-provisioner
+spec:
+  capacity:
+    storage: 10Mi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.89.240
+    path: /volume1/media/k8s
+---
+# Source: nfs-subdir-external-provisioner/templates/persistentvolumeclaim.yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  namespace: nfs
+  name: pvc-nfs-nfs-subdir-external-provisioner
+  labels:
+    chart: nfs-subdir-external-provisioner-4.0.18
+    heritage: Helm
+    app: nfs-subdir-external-provisioner
+    release: nfs
+    app.kubernetes.io/instance: nfs
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nfs-subdir-external-provisioner
+    app.kubernetes.io/part-of: nfs
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  storageClassName: ""
+  selector:
+    matchLabels:
+      nfs-subdir-external-provisioner: nfs-nfs-subdir-external-provisioner
+  resources:
+    requests:
+      storage: 10Mi
+---
+# Source: nfs-subdir-external-provisioner/templates/clusterrole.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  labels:
+    chart: nfs-subdir-external-provisioner-4.0.18
+    heritage: Helm
+    app: nfs-subdir-external-provisioner
+    release: nfs
+    app.kubernetes.io/instance: nfs
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nfs-subdir-external-provisioner
+    app.kubernetes.io/part-of: nfs
+  name: nfs-nfs-subdir-external-provisioner-runner
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "update", "patch"]
+---
+# Source: nfs-subdir-external-provisioner/templates/clusterrolebinding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  labels:
+    chart: nfs-subdir-external-provisioner-4.0.18
+    heritage: Helm
+    app: nfs-subdir-external-provisioner
+    release: nfs
+    app.kubernetes.io/instance: nfs
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nfs-subdir-external-provisioner
+    app.kubernetes.io/part-of: nfs
+  name: run-nfs-nfs-subdir-external-provisioner
+subjects:
+  - kind: ServiceAccount
+    name: nfs-nfs-subdir-external-provisioner
+    namespace: nfs
+roleRef:
+  kind: ClusterRole
+  name: nfs-nfs-subdir-external-provisioner-runner
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: nfs-subdir-external-provisioner/templates/role.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: nfs
+  labels:
+    chart: nfs-subdir-external-provisioner-4.0.18
+    heritage: Helm
+    app: nfs-subdir-external-provisioner
+    release: nfs
+    app.kubernetes.io/instance: nfs
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nfs-subdir-external-provisioner
+    app.kubernetes.io/part-of: nfs
+  name: leader-locking-nfs-nfs-subdir-external-provisioner
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+# Source: nfs-subdir-external-provisioner/templates/rolebinding.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: nfs
+  labels:
+    chart: nfs-subdir-external-provisioner-4.0.18
+    heritage: Helm
+    app: nfs-subdir-external-provisioner
+    release: nfs
+    app.kubernetes.io/instance: nfs
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nfs-subdir-external-provisioner
+    app.kubernetes.io/part-of: nfs
+  name: leader-locking-nfs-nfs-subdir-external-provisioner
+subjects:
+  - kind: ServiceAccount
+    name: nfs-nfs-subdir-external-provisioner
+    namespace: nfs
+roleRef:
+  kind: Role
+  name: leader-locking-nfs-nfs-subdir-external-provisioner
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: nfs-subdir-external-provisioner/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: nfs
+  name: nfs-nfs-subdir-external-provisioner
+  labels:
+    chart: nfs-subdir-external-provisioner-4.0.18
+    heritage: Helm
+    app: nfs-subdir-external-provisioner
+    release: nfs
+    app.kubernetes.io/instance: nfs
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: nfs-subdir-external-provisioner
+    app.kubernetes.io/part-of: nfs
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nfs-subdir-external-provisioner
+      release: nfs
+  template:
+    metadata:
+      annotations:
+      labels:
+        app: nfs-subdir-external-provisioner
+        release: nfs
+        app.kubernetes.io/instance: nfs
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: nfs-subdir-external-provisioner
+        app.kubernetes.io/part-of: nfs
+    spec:
+      serviceAccountName: nfs-nfs-subdir-external-provisioner
+      securityContext:
+        {}
+      priorityClassName: "homelab-critical"
+      containers:
+        - name: nfs-subdir-external-provisioner
+          image: "registry.k8s.io/sig-storage/nfs-subdir-external-provisioner:v4.0.2"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            {}
+          volumeMounts:
+            - name: nfs-subdir-external-provisioner-root
+              mountPath: /persistentvolumes
+          env:
+            - name: PROVISIONER_NAME
+              value: cluster.local/nfs-nfs-subdir-external-provisioner
+            - name: NFS_SERVER
+              value: 192.168.89.240
+            - name: NFS_PATH
+              value: /volume1/media/k8s
+      volumes:
+        - name: nfs-subdir-external-provisioner-root
+          persistentVolumeClaim:
+            claimName: pvc-nfs-nfs-subdir-external-provisioner
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+        operator: Exists

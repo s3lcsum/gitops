@@ -12,8 +12,6 @@ spec:
   syncPolicy:
     applicationsSync: sync
   generators:
-    # Kustomize-only apps (no values.yaml). Exclude Helm apps that also
-    # have kustomization.yaml so Application names stay unique.
     - git:
         repoURL: https://github.com/s3lcsum/gitops.git
         revision: main
@@ -31,7 +29,18 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{index .path.segments 2}}"
-      # Flannel cannot emit pod labels. Kyverno adds them on apply.
+      source:
+        repoURL: https://github.com/s3lcsum/gitops.git
+        targetRevision: main
+        path: "{{ .path.path }}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+      # Flannel's pod labels are supplied by Kyverno on apply.
       # Ignore the injected keys so selfHeal does not strip them and roll the pods.
       ignoreDifferences:
         - group: apps
@@ -51,9 +60,9 @@ spec:
             - .spec.template.metadata.labels."app.kubernetes.io/instance"
             - .spec.template.metadata.labels."app.kubernetes.io/part-of"
             - .spec.template.metadata.labels."app.kubernetes.io/managed-by"
-            # Chart emits `annotations:` with no keys (null). SSA then wipes
+            # Null `annotations:` in desired state can make SSA wipe
             # deprecated.daemonset.template.generation, which kube-controller
-            # writes and Helm never emits. Key-only ignore does not stop that.
+            # writes at runtime. Key-only ignore does not stop that.
             - .metadata.annotations
         # Endpoint controller defaults conditions to {}. Git omits it.
         - group: discovery.k8s.io
@@ -87,53 +96,3 @@ spec:
           kind: CustomResourceDefinition
           jqPathExpressions:
             - .spec.conversion.strategy
-  # Helm apps get multi-source + no ServerSideDiff.
-  # Kustomize-only apps get single source + ServerSideDiff.
-  # Helm without kustomization.yaml drops the directory source.
-  templatePatch: |
-    {{- if .repoURL }}
-    spec:
-      sources:
-        - repoURL: {{ .repoURL | quote }}
-          chart: {{ .chart | quote }}
-          targetRevision: {{ .version | quote }}
-          helm:
-            releaseName: {{ index .path.segments 2 | quote }}
-            # values.yaml carries repoURL/chart/version for this generator.
-            # cert-manager's schema rejects those keys.
-            skipSchemaValidation: true
-            valueFiles:
-              - {{ printf "$values/kubernetes/%s/%s/values.yaml" (index .path.segments 1) (index .path.segments 2) | quote }}
-        - repoURL: https://github.com/s3lcsum/gitops.git
-          targetRevision: main
-          ref: values
-        {{- if eq (printf "%v" (index . "kind")) "Kustomization" }}
-        - repoURL: https://github.com/s3lcsum/gitops.git
-          targetRevision: main
-          path: {{ printf "kubernetes/%s/%s" (index .path.segments 1) (index .path.segments 2) | quote }}
-        {{- end }}
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        # ServerSideDiff stays off — SSD dry-run hits the same webhook merge
-        # bugs on some chart versions. SSA apply is fine.
-        syncOptions:
-          - CreateNamespace=true
-          - ServerSideApply=true
-          - RespectIgnoreDifferences=true
-    {{- else }}
-    spec:
-      source:
-        repoURL: https://github.com/s3lcsum/gitops.git
-        targetRevision: main
-        path: {{ printf "kubernetes/%s/%s" (index .path.segments 1) (index .path.segments 2) | quote }}
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - CreateNamespace=true
-          - ServerSideApply=true
-          - ServerSideDiff=true
-    {{- end }}

@@ -86,7 +86,9 @@ Auth class per host is `scripts/auth_classification.yaml`: `forward-auth`, `nati
 
 ## 📦 apps
 
-Argo CD parents everything under `kubernetes/`. A directory with `values.yaml` (`repoURL` / `chart` / `version`) becomes a Helm Application. No `values.yaml` means a hand-written Application in `kubernetes/argocd/resources/`.
+Argo CD builds each app with Kustomize. The networking, platform, and workloads ApplicationSets discover app directories by their `kustomization.yaml`. Argo CD and Sure have standalone Application definitions in `kubernetes/argocd/resources/`.
+
+Third-party manifests are checked in under each app's `resources/upstream/`. The headers record upstream versions. Review CRD and workload changes when updating them.
 
 | app | job |
 | --- | --- |
@@ -142,7 +144,12 @@ Argo CD is the deploy path for `kubernetes/`. Bootstrap (only if Argo itself is 
 make -C kubernetes/argocd bootstrap
 ```
 
-Context `k8s@lake`, chart `argo-cd` `10.18.2`. After that, push to `main`.
+The bootstrap target defaults to context `k8s@lake` and uses the checked-in manifests.
+
+### Existing cluster cutover to Kustomize
+
+1. From the current Helm-based `main`, create a separate Git change that pins the legacy inputs to the last synced Helm-based commit SHA. In `kubernetes/argocd/resources/application.yaml`, pin the source with `ref: values`. In `applicationset-networking.yaml` and `applicationset-platform.yaml`, pin every Git generator's `revision` and both Git sources' `targetRevision` inside the Helm branch of `templatePatch`. Keep the Argo CD self Application's `resources` source on `main` so it can pick up the migration.
+2. Merge that change and wait for the self Application, both ApplicationSets, and their generated Helm Applications to reflect the pinned Git revisions. Then merge the Kustomize migration separately. The pins keep the old generators and their Applications renderable until Argo reconciles the new definitions, avoiding a gap in app discovery. Verify that the same Application names remain and that the migrated apps sync from their Kustomize paths.
 
 Secrets:
 
@@ -166,6 +173,6 @@ New app data is a static NFS volume on the NAS, pointed at the export that alrea
 - [ ] Real IoT isolation
 - [ ] RouterOS fully driven from this repo (or from NetBox)
 - [x] Home Assistant on the lake node
-- [x] Helm-only apps drop empty `kustomization.yaml`
+- [x] Kubernetes apps use Kustomize sources
 
 ---

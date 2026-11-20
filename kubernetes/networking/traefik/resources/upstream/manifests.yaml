@@ -1,0 +1,379 @@
+# Based on traefik 42.4.1 from https://traefik.github.io/charts.
+# WAN dst-nat and AdGuard target 192.168.89.252. Traefik uses hostNetwork on
+# every node, with no rolling-update surge because ports 80 and 443 are shared.
+# The lake LXC lacks CAP_SETFCAP. Root with NET_BIND_SERVICE can bind those ports.
+---
+# Source: traefik/templates/rbac/serviceaccount.yaml
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: traefik
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+    app.kubernetes.io/version: "v3.7.19"
+    helm.sh/chart: traefik-42.4.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: traefik
+  annotations:
+automountServiceAccountToken: false
+---
+# Source: traefik/templates/provider-file-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traefik-file-provider
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+    app.kubernetes.io/version: "v3.7.19"
+    helm.sh/chart: traefik-42.4.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: traefik
+data:
+  config.yml: |-
+    http:
+      middlewares:
+        opencode-upstream-basic:
+          headers:
+            customRequestHeaders:
+              Authorization: Basic {{ env "OPENCODE_UPSTREAM_BASIC" }}
+---
+# Source: traefik/templates/rbac/clusterrole.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: traefik-traefik
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+    app.kubernetes.io/version: "v3.7.19"
+    helm.sh/chart: traefik-42.4.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: traefik
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - nodes
+      - services
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingressclasses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - traefik.io
+    resources:
+      - ingressroutes
+      - ingressroutetcps
+      - ingressrouteudps
+      - middlewares
+      - middlewaretcps
+      - serverstransports
+      - serverstransporttcps
+      - tlsoptions
+      - tlsstores
+      - traefikservices
+    verbs:
+      - get
+      - list
+      - watch
+---
+# Source: traefik/templates/rbac/clusterrolebinding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: traefik-traefik
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+    app.kubernetes.io/version: "v3.7.19"
+    helm.sh/chart: traefik-42.4.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: traefik
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: traefik-traefik
+subjects:
+  - kind: ServiceAccount
+    name: traefik
+    namespace: traefik
+---
+# Source: traefik/templates/service-metrics.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-metrics
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+    app.kubernetes.io/component: metrics
+    helm.sh/chart: traefik-42.4.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: traefik
+  annotations:
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+  ports:
+  - port: 9100
+    name: metrics
+    targetPort: metrics
+    protocol: TCP
+---
+# Source: traefik/templates/daemonset.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: traefik
+  namespace: traefik
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+    app.kubernetes.io/version: "v3.7.19"
+    helm.sh/chart: traefik-42.4.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: traefik
+  annotations:
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: traefik
+      app.kubernetes.io/instance: traefik-traefik
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+  minReadySeconds: 0
+
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9100"
+        prometheus.io/scrape: "true"
+      labels:
+        app.kubernetes.io/instance: traefik-traefik
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: traefik
+        app.kubernetes.io/part-of: traefik
+        app.kubernetes.io/version: v3.7.19
+        helm.sh/chart: traefik-42.4.1
+    spec:
+      automountServiceAccountToken: true
+      containers:
+      - args:
+        - --entryPoints.kubeapi.address=:6444/tcp
+        - --entryPoints.metrics.address=:9100/tcp
+        - --entryPoints.traefik.address=:9080/tcp
+        - --entryPoints.web.address=:80/tcp
+        - --entryPoints.websecure.address=:443/tcp
+        - --api.dashboard=true
+        - --ping=true
+        - --metrics.prometheus=true
+        - --metrics.prometheus.entrypoint=metrics
+        - --metrics.prometheus.addRoutersLabels=true
+        - --metrics.prometheus.addEntryPointsLabels=true
+        - --metrics.prometheus.addServicesLabels=true
+        - --experimental.plugins.crowdsec-bouncer-traefik-plugin.moduleName=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+        - --experimental.plugins.crowdsec-bouncer-traefik-plugin.version=v1.4.4
+        - --experimental.plugins.traefik-real-ip.moduleName=github.com/zekihan/traefik-real-ip
+        - --experimental.plugins.traefik-real-ip.version=v0.2.0
+        - --providers.kubernetescrd
+        - --providers.kubernetescrd.allowCrossNamespace=true
+        - --providers.kubernetescrd.allowExternalNameServices=true
+        - --providers.kubernetescrd.allowEmptyServices=true
+        - --providers.file.directory=/etc/traefik/dynamic
+        - --providers.file.watch=true
+        - --entryPoints.web.http.redirections.entryPoint.to=:443
+        - --entryPoints.web.http.redirections.entryPoint.scheme=https
+        - --entryPoints.web.http.redirections.entryPoint.permanent=true
+        # Cloudflared runs on the pod CIDR. Trust its forwarded client IP so
+        # Authentik records the client address for the WAN allowlist.
+        - --entryPoints.web.forwardedHeaders.trustedIPs=10.244.0.0/16,127.0.0.1/32
+        - --entryPoints.web.transport.lifeCycle.requestAcceptGraceTimeout=5s
+        - --entryPoints.websecure.http.tls=true
+        - --entryPoints.websecure.forwardedHeaders.trustedIPs=10.244.0.0/16,127.0.0.1/32
+        - --entryPoints.websecure.transport.lifeCycle.requestAcceptGraceTimeout=5s
+        - --log.level=INFO
+        - --accesslog=true
+        - --accesslog.fields.defaultmode=keep
+        - --accesslog.fields.headers.defaultmode=drop
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: USER
+          value: traefik
+        - name: CROWDSEC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              key: CROWDSEC_API_KEY
+              name: crowdsec-lapi
+        - name: OPENCODE_UPSTREAM_BASIC
+          # ESO owns the Secret. Missing it affects the OpenCode middleware.
+          # Restart the DaemonSet after rotation to reload the environment.
+          valueFrom:
+            secretKeyRef:
+              key: OPENCODE_UPSTREAM_BASIC
+              name: opencode-upstream-basic
+              optional: true
+        image: ghcr.io/traefik/traefik:v3.7.19
+        imagePullPolicy: IfNotPresent
+        lifecycle: null
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ping
+            port: 9080
+            scheme: HTTP
+          initialDelaySeconds: 2
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        name: traefik
+        ports:
+        - containerPort: 6444
+          hostPort: 6444
+          name: kubeapi
+          protocol: TCP
+        - containerPort: 9100
+          hostPort: 9100
+          name: metrics
+          protocol: TCP
+        - containerPort: 9080
+          name: traefik
+          protocol: TCP
+        - containerPort: 80
+          name: web
+          protocol: TCP
+        - containerPort: 443
+          name: websecure
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 1
+          httpGet:
+            path: /ping
+            port: 9080
+            scheme: HTTP
+          initialDelaySeconds: 2
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: false
+          runAsUser: 0
+        volumeMounts:
+        - mountPath: /data
+          name: data
+        - mountPath: /tmp
+          name: tmp
+        - mountPath: /etc/crowdsec-bouncer
+          name: crowdsec-lapi
+          readOnly: true
+        - mountPath: /plugins-storage
+          name: plugins
+        - mountPath: /etc/traefik/dynamic
+          name: traefik-extra-config
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      priorityClassName: homelab-critical
+      securityContext:
+        runAsGroup: 0
+        runAsNonRoot: false
+        runAsUser: 0
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: traefik
+      terminationGracePeriodSeconds: 60
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/control-plane
+        operator: Exists
+      - effect: PreferNoSchedule
+        key: homelab.dominiksiejak.pl/worker
+        operator: Exists
+      volumes:
+      - emptyDir: {}
+        name: data
+      - emptyDir: {}
+        name: tmp
+      - name: crowdsec-lapi
+        secret:
+          secretName: crowdsec-lapi
+      - emptyDir: {}
+        name: plugins
+      - configMap:
+          name: traefik-file-provider
+        name: traefik-extra-config
+---
+# Source: traefik/templates/ingressclass.yaml
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  annotations:
+    ingressclass.kubernetes.io/is-default-class: "true"
+  labels:
+    app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-traefik
+    app.kubernetes.io/version: "v3.7.19"
+    helm.sh/chart: traefik-42.4.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: traefik
+  name: traefik
+spec:
+  controller: traefik.io/ingress-controller

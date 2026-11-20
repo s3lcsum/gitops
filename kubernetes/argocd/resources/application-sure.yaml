@@ -1,4 +1,4 @@
-# Kustomize only. No values.yaml → not in the Helm ApplicationSet.
+# Standalone app outside the networking, platform, and workloads ApplicationSets.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

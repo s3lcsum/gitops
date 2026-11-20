@@ -8,24 +8,14 @@ metadata:
     app.kubernetes.io/part-of: argocd
 spec:
   project: default
-  sources:
-    - repoURL: https://argoproj.github.io/argo-helm
-      chart: argo-cd
-      targetRevision: 10.18.2
-      helm:
-        releaseName: argocd
-        valueFiles:
-          - $values/kubernetes/argocd/values.yaml
-    - repoURL: https://github.com/s3lcsum/gitops.git
-      targetRevision: 9a59bd3a7575abda2a6a33a8a596593f783cfdb0
-      ref: values
-    - repoURL: https://github.com/s3lcsum/gitops.git
-      targetRevision: main
-      path: kubernetes/argocd/resources
+  source:
+    repoURL: https://github.com/s3lcsum/gitops.git
+    targetRevision: main
+    path: kubernetes/argocd
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
-  # ESO merges oidc.authentik.clientSecret into this Helm-owned Secret.
+  # ESO merges oidc.authentik.clientSecret into the Argo CD Secret.
   # Live also carries Helm release annotations + ESO reconcile metadata.
   # Omit group. Core/v1 Secret is the default, and an explicit
   # empty group is dropped by the API, so selfHeal never converges.
@@ -45,5 +35,4 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
-      - ServerSideDiff=true
       - RespectIgnoreDifferences=true

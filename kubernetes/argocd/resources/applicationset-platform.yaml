@@ -12,51 +12,11 @@ spec:
   syncPolicy:
     applicationsSync: sync
   generators:
-    # values.yaml is every Helm app. kustomization.yaml joins on values.appName.
-    # kind: Kustomization in the merged params means the directory source stays.
-    - merge:
-        mergeKeys:
-          - values
-        generators:
-          - git:
-              repoURL: https://github.com/s3lcsum/gitops.git
-              revision: 9a59bd3a7575abda2a6a33a8a596593f783cfdb0
-              files:
-                - path: kubernetes/platform/*/values.yaml
-              values:
-                appName: '{{index .path.segments 2}}'
-          - git:
-              repoURL: https://github.com/s3lcsum/gitops.git
-              revision: 9a59bd3a7575abda2a6a33a8a596593f783cfdb0
-              files:
-                - path: kubernetes/platform/*/kustomization.yaml
-              values:
-                appName: '{{index .path.segments 2}}'
-    # Kustomize-only apps (no values.yaml). Exclude Helm apps that also
-    # have kustomization.yaml so Application names stay unique.
     - git:
         repoURL: https://github.com/s3lcsum/gitops.git
-        revision: 9a59bd3a7575abda2a6a33a8a596593f783cfdb0
+        revision: main
         files:
           - path: kubernetes/platform/*/kustomization.yaml
-          - path: kubernetes/platform/argo-rollouts/kustomization.yaml
-            exclude: true
-          - path: kubernetes/platform/cert-manager/kustomization.yaml
-            exclude: true
-          - path: kubernetes/platform/cloudnative-pg/kustomization.yaml
-            exclude: true
-          - path: kubernetes/platform/external-secrets/kustomization.yaml
-            exclude: true
-          - path: kubernetes/platform/flannel/kustomization.yaml
-            exclude: true
-          - path: kubernetes/platform/headlamp/kustomization.yaml
-            exclude: true
-          - path: kubernetes/platform/kyverno/kustomization.yaml
-            exclude: true
-          - path: kubernetes/platform/openbao/kustomization.yaml
-            exclude: true
-          - path: kubernetes/platform/policy-reporter/kustomization.yaml
-            exclude: true
   template:
     metadata:
       name: "{{index .path.segments 2}}"
@@ -69,7 +29,15 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{index .path.segments 2}}"
-      # Flannel cannot emit pod labels. Kyverno adds them on apply.
+      source:
+        repoURL: https://github.com/s3lcsum/gitops.git
+        targetRevision: main
+        path: "{{ .path.path }}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+      # Flannel's pod labels are supplied by Kyverno on apply.
       # Ignore the injected keys so selfHeal does not strip them and roll the pods.
       ignoreDifferences:
         - group: apps
@@ -89,9 +57,9 @@ spec:
             - .spec.template.metadata.labels."app.kubernetes.io/instance"
             - .spec.template.metadata.labels."app.kubernetes.io/part-of"
             - .spec.template.metadata.labels."app.kubernetes.io/managed-by"
-            # Chart emits `annotations:` with no keys (null). SSA then wipes
+            # Null `annotations:` in desired state can make SSA wipe
             # deprecated.daemonset.template.generation, which kube-controller
-            # writes and Helm never emits. Key-only ignore does not stop that.
+            # writes at runtime. Key-only ignore does not stop that.
             - .metadata.annotations
         # Endpoint controller defaults conditions to {}. Git omits it.
         - group: discovery.k8s.io
@@ -125,8 +93,7 @@ spec:
           kind: CustomResourceDefinition
           jqPathExpressions:
             - .spec.conversion.strategy
-        # CNPG webhook + CRD defaults fill Cluster spec after apply. This Helm
-        # app uses structured-merge diff, so those fields stay OutOfSync.
+        # The CNPG webhook and CRDs fill these Cluster fields after apply.
         # Server-side dry-run of cluster.yaml matches live. RespectIgnoreDifferences
         # strips these paths on apply — do not put git-managed values under them.
         - group: postgresql.cnpg.io
@@ -156,53 +123,13 @@ spec:
             - .spec.stopDelay
             - .spec.storage.resizeInUseVolumes
             - .spec.switchoverDelay
-  # Helm apps get multi-source + no ServerSideDiff.
-  # Kustomize-only apps get single source + ServerSideDiff.
-  # Helm without kustomization.yaml drops the directory source.
+  # Keep the apply behavior of the platform apps that already used Kustomize.
   templatePatch: |
-    {{- if .repoURL }}
     spec:
-      sources:
-        - repoURL: {{ .repoURL | quote }}
-          chart: {{ .chart | quote }}
-          targetRevision: {{ .version | quote }}
-          helm:
-            releaseName: {{ index .path.segments 2 | quote }}
-            # values.yaml carries repoURL/chart/version for this generator.
-            # cert-manager's schema rejects those keys.
-            skipSchemaValidation: true
-            valueFiles:
-              - {{ printf "$values/kubernetes/%s/%s/values.yaml" (index .path.segments 1) (index .path.segments 2) | quote }}
-        - repoURL: https://github.com/s3lcsum/gitops.git
-          targetRevision: 9a59bd3a7575abda2a6a33a8a596593f783cfdb0
-          ref: values
-        {{- if eq (printf "%v" (index . "kind")) "Kustomization" }}
-        - repoURL: https://github.com/s3lcsum/gitops.git
-          targetRevision: 9a59bd3a7575abda2a6a33a8a596593f783cfdb0
-          path: {{ printf "kubernetes/%s/%s" (index .path.segments 1) (index .path.segments 2) | quote }}
-        {{- end }}
       syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        # ServerSideDiff stays off — SSD dry-run hits the same webhook merge
-        # bugs on some chart versions. SSA apply is fine.
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+          {{- if not (has (index .path.segments 2) (list "authentik" "grafana-synthetic-agent" "monitoring")) }}
           - RespectIgnoreDifferences=true
-    {{- else }}
-    spec:
-      source:
-        repoURL: https://github.com/s3lcsum/gitops.git
-        targetRevision: main
-        path: {{ printf "kubernetes/%s/%s" (index .path.segments 1) (index .path.segments 2) | quote }}
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - CreateNamespace=true
-          - ServerSideApply=true
-          - ServerSideDiff=true
-    {{- end }}
+          {{- end }}

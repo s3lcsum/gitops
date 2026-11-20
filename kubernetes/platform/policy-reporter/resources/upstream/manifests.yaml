@@ -1,0 +1,757 @@
+# Based on policy-reporter 3.11.2 from https://kyverno.github.io/policy-reporter.
+---
+# Source: policy-reporter/templates/plugins/kyverno/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: policy-reporter-kyverno-plugin
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter-kyverno-plugin
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+automountServiceAccountToken: true
+---
+# Source: policy-reporter/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: policy-reporter
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/component: reporting
+    app.kubernetes.io/part-of: policy-reporter
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+---
+# Source: policy-reporter/templates/ui/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: policy-reporter-ui
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter-ui
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+automountServiceAccountToken: true
+---
+# Source: policy-reporter/templates/cluster-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: policy-reporter-ui-default-cluster
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/component: reporting
+    app.kubernetes.io/part-of: policy-reporter
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+type: Opaque
+data:
+  host: aHR0cDovL3BvbGljeS1yZXBvcnRlcjo4MDgw
+  plugin.kyverno: eyJob3N0IjoiaHR0cDovL3BvbGljeS1yZXBvcnRlci1reXZlcm5vLXBsdWdpbjo4MDgwIiwgIm5hbWUiOiJreXZlcm5vIiwgInVzZXJuYW1lIjoiIiwgInBhc3N3b3JkIjoiIn0=
+  plugin.kyverno.vpol: eyJob3N0IjoiaHR0cDovL3BvbGljeS1yZXBvcnRlci1reXZlcm5vLXBsdWdpbjo4MDgwL3Zwb2wiLCAibmFtZSI6Ikt5dmVybm9WYWxpZGF0aW5nUG9saWN5IiwgInVzZXJuYW1lIjoiIiwgInBhc3N3b3JkIjoiIn0=
+  plugin.kyverno.ivpol: eyJob3N0IjoiaHR0cDovL3BvbGljeS1yZXBvcnRlci1reXZlcm5vLXBsdWdpbjo4MDgwL2l2cG9sIiwgIm5hbWUiOiJLeXZlcm5vSW1hZ2VWYWxpZGF0aW5nUG9saWN5IiwgInVzZXJuYW1lIjoiIiwgInBhc3N3b3JkIjoiIn0=
+---
+# Source: policy-reporter/templates/config-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: policy-reporter-config
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/component: reporting
+    app.kubernetes.io/part-of: policy-reporter
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+type: Opaque
+data:
+  config.yaml: cmVzdDoKICB3YWl0Rm9ySW5pdGlhbFJlcG9ydHM6IGZhbHNlCgptY3A6CiAgZW5hYmxlZDogZmFsc2UKICBwb3J0OiA5MDkwCgpjcmQ6CiAgdGFyZ2V0Q29uZmlnOiBmYWxzZQoKdGFyZ2V0OgogIGxva2k6CiAgICBjb25maWc6CiAgICAgIGhvc3Q6ICIiCiAgICAgIGNlcnRpZmljYXRlOiAiIgogICAgICBza2lwVExTOiBmYWxzZQogICAgICBwYXRoOiAiIgogICAgbmFtZTogCiAgICBzZWNyZXRSZWY6ICIiCiAgICBtb3VudGVkU2VjcmV0OiAiIgogICAgbWluaW11bVNldmVyaXR5OiAiIgogICAgc2tpcEV4aXN0aW5nT25TdGFydHVwOiB0cnVlCgogIGVsYXN0aWNzZWFyY2g6CiAgICBjb25maWc6CiAgICAgIGhvc3Q6ICIiCiAgICAgIGNlcnRpZmljYXRlOiAiIgogICAgICBza2lwVExTOiBmYWxzZQogICAgICB1c2VybmFtZTogIiIKICAgICAgcGFzc3dvcmQ6ICIiCiAgICAgIGFwaUtleTogIiIKICAgICAgaW5kZXg6ICJwb2xpY3ktcmVwb3J0ZXIiCiAgICAgIHJvdGF0aW9uOiAiZGFpbHkiCiAgICAgIHR5cGVsZXNzQXBpOiAiZmFsc2UiCiAgICBuYW1lOiAKICAgIHNlY3JldFJlZjogIiIKICAgIG1vdW50ZWRTZWNyZXQ6ICIiCiAgICBtaW5pbXVtU2V2ZXJpdHk6ICIiCiAgICBza2lwRXhpc3RpbmdPblN0YXJ0dXA6IHRydWUKCiAgc2xhY2s6CiAgICBjb25maWc6CiAgICAgIHdlYmhvb2s6ICIiCiAgICAgIGNoYW5uZWw6ICIiCiAgICAgIGNlcnRpZmljYXRlOiAKICAgICAgc2tpcFRMUzogCiAgICBuYW1lOiAKICAgIHNlY3JldFJlZjogIiIKICAgIG1vdW50ZWRTZWNyZXQ6ICIiCiAgICBtaW5pbXVtU2V2ZXJpdHk6ICIiCiAgICBza2lwRXhpc3RpbmdPblN0YXJ0dXA6IHRydWUKCiAgZGlzY29yZDoKICAgIGNvbmZpZzoKICAgICAgd2ViaG9vazogIiIKICAgICAgY2VydGlmaWNhdGU6ICIiCiAgICAgIHNraXBUTFM6IGZhbHNlCiAgICBuYW1lOiAKICAgIHNlY3JldFJlZjogIiIKICAgIG1vdW50ZWRTZWNyZXQ6ICIiCiAgICBtaW5pbXVtU2V2ZXJpdHk6ICIiCiAgICBza2lwRXhpc3RpbmdPblN0YXJ0dXA6IHRydWUKCiAgdGVhbXM6CiAgICBjb25maWc6CiAgICAgIHdlYmhvb2s6ICIiCiAgICAgIGNlcnRpZmljYXRlOiAiIgogICAgICBza2lwVExTOiBmYWxzZQogICAgbmFtZTogCiAgICBzZWNyZXRSZWY6ICIiCiAgICBtb3VudGVkU2VjcmV0OiAiIgogICAgbWluaW11bVNldmVyaXR5OiAiIgogICAgc2tpcEV4aXN0aW5nT25TdGFydHVwOiB0cnVlCgogIHdlYmhvb2s6CiAgICBjb25maWc6CiAgICAgIHdlYmhvb2s6ICIiCiAgICAgIGNlcnRpZmljYXRlOiAiIgogICAgICBza2lwVExTOiBmYWxzZQogICAgICBrZWVwYWxpdmU6CiAgICAgICAgaW50ZXJ2YWw6ICIwIgogICAgbmFtZTogCiAgICBzZWNyZXRSZWY6ICIiCiAgICBtb3VudGVkU2VjcmV0OiAiIgogICAgbWluaW11bVNldmVyaXR5OiAiIgogICAgc2tpcEV4aXN0aW5nT25TdGFydHVwOiB0cnVlCgogIHRlbGVncmFtOgogICAgY29uZmlnOgogICAgICBjaGF0SWQ6ICIiCiAgICAgIHRva2VuOiAiIgogICAgICB3ZWJob29rOiAKICAgICAgY2VydGlmaWNhdGU6ICIiCiAgICAgIHNraXBUTFM6IGZhbHNlCiAgICBuYW1lOiAKICAgIHNlY3JldFJlZjogIiIKICAgIG1vdW50ZWRTZWNyZXQ6ICIiCiAgICBtaW5pbXVtU2V2ZXJpdHk6ICIiCiAgICBza2lwRXhpc3RpbmdPblN0YXJ0dXA6IHRydWUKCiAgZ29vZ2xlQ2hhdDoKICAgIGNvbmZpZzoKICAgICAgd2ViaG9vazogIiIKICAgICAgY2VydGlmaWNhdGU6ICIiCiAgICAgIHNraXBUTFM6IGZhbHNlCiAgICBuYW1lOiAKICAgIHNlY3JldFJlZjogIiIKICAgIG1vdW50ZWRTZWNyZXQ6ICIiCiAgICBtaW5pbXVtU2V2ZXJpdHk6ICIiCiAgICBza2lwRXhpc3RpbmdPblN0YXJ0dXA6IHRydWUKCiAgamlyYToKICAgIGNvbmZpZzoKICAgICAgaG9zdDogIiIKICAgICAgdXNlcm5hbWU6ICIiCiAgICAgIHBhc3N3b3JkOiAiIgogICAgICBhcGlUb2tlbjogIiIKICAgICAgYXBpVmVyc2lvbjogInYzIgogICAgICBzdW1tYXJ5VGVtcGxhdGU6ICIiCiAgICAgIHByb2plY3RLZXk6ICIiCiAgICAgIGlzc3VlVHlwZTogIiIKICAgICAgY2VydGlmaWNhdGU6ICIiCiAgICAgIHNraXBUTFM6IGZhbHNlCiAgICBuYW1lOiAKICAgIHNlY3JldFJlZjogIiIKICAgIG1vdW50ZWRTZWNyZXQ6ICIiCiAgICBtaW5pbXVtU2V2ZXJpdHk6ICIiCiAgICBza2lwRXhpc3RpbmdPblN0YXJ0dXA6IHRydWUKCiAgYWxlcnRNYW5hZ2VyOgogICAgY29uZmlnOgogICAgICBob3N0OiAiIgogICAgICBjZXJ0aWZpY2F0ZTogIiIKICAgICAgc2tpcFRMUzogZmFsc2UKICAgIG5hbWU6IAogICAgc2VjcmV0UmVmOiAiIgogICAgbW91bnRlZFNlY3JldDogIiIKICAgIG1pbmltdW1TZXZlcml0eTogIiIKICAgIHNraXBFeGlzdGluZ09uU3RhcnR1cDogdHJ1ZQoKICBzMzoKICAgIGNvbmZpZzoKICAgICAgYWNjZXNzS2V5SWQ6IAogICAgICBzZWNyZXRBY2Nlc3NLZXk6ICAKICAgICAgcmVnaW9uOiAKICAgICAgZW5kcG9pbnQ6IAogICAgICBidWNrZXQ6IAogICAgICBidWNrZXRLZXlFbmFibGVkOiBmYWxzZQogICAgICBrbXNLZXlJZDogCiAgICAgIHNlcnZlclNpZGVFbmNyeXB0aW9uOiAKICAgICAgcGF0aFN0eWxlOiBmYWxzZQogICAgICBwcmVmaXg6IAogICAgbmFtZTogCiAgICBzZWNyZXRSZWY6ICIiCiAgICBtb3VudGVkU2VjcmV0OiAiIgogICAgbWluaW11bVNldmVyaXR5OiAiIgogICAgc2tpcEV4aXN0aW5nT25TdGFydHVwOiB0cnVlCgogIGtpbmVzaXM6CiAgICBjb25maWc6CiAgICAgIGFjY2Vzc0tleUlkOiAKICAgICAgc2VjcmV0QWNjZXNzS2V5OiAgCiAgICAgIHJlZ2lvbjogCiAgICAgIGVuZHBvaW50OiAKICAgICAgc3RyZWFtTmFtZTogCiAgICBuYW1lOiAKICAgIHNlY3JldFJlZjogIiIKICAgIG1vdW50ZWRTZWNyZXQ6ICIiCiAgICBtaW5pbXVtU2V2ZXJpdHk6ICIiCiAgICBza2lwRXhpc3RpbmdPblN0YXJ0dXA6IHRydWUKCiAgc2VjdXJpdHlIdWI6CiAgICBjb25maWc6CiAgICAgIGFjY2Vzc0tleUlkOiAiIgogICAgICBzZWNyZXRBY2Nlc3NLZXk6ICAiIgogICAgICByZWdpb246IAogICAgICBlbmRwb2ludDogCiAgICAgIGFjY291bnRJZDogIiIKICAgICAgcHJvZHVjdE5hbWU6IAogICAgICBjb21wYW55TmFtZTogCiAgICAgIGRlbGF5SW5TZWNvbmRzOiAyCiAgICAgIHN5bmNocm9uaXplOiB0cnVlCiAgICBuYW1lOiAKICAgIHNlY3JldFJlZjogIiIKICAgIG1vdW50ZWRTZWNyZXQ6ICIiCiAgICBtaW5pbXVtU2V2ZXJpdHk6ICIiCiAgICBza2lwRXhpc3RpbmdPblN0YXJ0dXA6IHRydWUKCiAgZ2NzOgogICAgY29uZmlnOgogICAgICBjcmVkZW50aWFsczogCiAgICAgIGJ1Y2tldDogCiAgICAgIHByZWZpeDogCiAgICBuYW1lOiAKICAgIHNlY3JldFJlZjogIiIKICAgIG1vdW50ZWRTZWNyZXQ6ICIiCiAgICBtaW5pbXVtU2V2ZXJpdHk6ICIiCiAgICBza2lwRXhpc3RpbmdPblN0YXJ0dXA6IHRydWUKCndvcmtlcjogNQptZXRyaWNzOgogIGN1c3RvbUxhYmVsczogW10KICBlbmFibGVkOiBmYWxzZQogIGZpbHRlcjoge30KICBtb2RlOiBkZXRhaWxlZApzb3VyY2VGaWx0ZXJzOgogIC0gZGlzYWJsZUNsdXN0ZXJSZXBvcnRzOiBmYWxzZQogICAga2luZHM6CiAgICAgIGV4Y2x1ZGU6IFtdCiAgICBzZWxlY3RvcjoKICAgICAgc291cmNlczoKICAgICAgLSBreXZlcm5vCiAgICAgIC0gS3l2ZXJub1ZhbGlkYXRpbmdQb2xpY3kKICAgICAgLSBLeXZlcm5vSW1hZ2VWYWxpZGF0aW5nUG9saWN5CiAgICB1bmNvbnRyb2xsZWRPbmx5OiB0cnVlCgpsZWFkZXJFbGVjdGlvbjoKICBlbmFibGVkOiBmYWxzZQogIHJlbGVhc2VPbkNhbmNlbDogdHJ1ZQogIGxlYXNlRHVyYXRpb246IDE1CiAgcmVuZXdEZWFkbGluZTogMTAKICByZXRyeVBlcmlvZDogMgpyZWRpczoKICBhZGRyZXNzOiAiIgogIGNlcnRpZmljYXRlOiAiIgogIGNsaWVudENlcnQ6ICIiCiAgY2xpZW50S2V5OiAiIgogIGRhdGFiYXNlOiAwCiAgZW5hYmxlZDogZmFsc2UKICBwYXNzd29yZDogIiIKICBwcmVmaXg6IHBvbGljeS1yZXBvcnRlcgogIHNlY3JldFJlZjogIiIKICBza2lwVExTOiBmYWxzZQogIHVzZXJuYW1lOiAiIgoKbG9nZ2luZzoKICBzZXJ2ZXI6IGZhbHNlCiAgZW5jb2Rpbmc6IGNvbnNvbGUKICBsb2dMZXZlbDogMAoKYXBpOgogIGJhc2ljQXV0aDoKICAgIHVzZXJuYW1lOiAKICAgIHBhc3N3b3JkOiAKICAgIHNlY3JldFJlZjogCgpkYXRhYmFzZToKICB0eXBlOiAKICBkYXRhYmFzZTogCiAgdXNlcm5hbWU6IAogIHBhc3N3b3JkOiAKICBob3N0OiAKICBlbmFibGVTU0w6IGZhbHNlCiAgZHNuOiAKICBtYXhPcGVuQ29ubmVjdGlvbnM6IDI1CiAgbWF4SWRsZUNvbm5lY3Rpb25zOiAyNQogIGNvbm5lY3Rpb25NYXhJZGxlVGltZTogMAogIGNvbm5lY3Rpb25NYXhMaWZldGltZTogMAogIHRpbWVvdXQ6IDEwCiAgbWV0cmljczogZmFsc2UKICBzZWNyZXRSZWY6IAogIG1vdW50ZWRTZWNyZXQ6IApwZXJpb2RpY1N5bmM6CiAgZW5hYmxlZDogZmFsc2UKICBpbnRlcnZhbDogMzAKYXV0b01lbW9yeUxpbWl0OgogIGVuYWJsZWQ6IHRydWUKICByYXRpbzogMC45Cg==
+---
+# Source: policy-reporter/templates/plugins/kyverno/config-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: policy-reporter-kyverno-plugin-config
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter-kyverno-plugin
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+type: Opaque
+data:
+  config.yaml: bGVhZGVyRWxlY3Rpb246CiAgZW5hYmxlZDogZmFsc2UKICByZWxlYXNlT25DYW5jZWw6IHRydWUKICBsZWFzZUR1cmF0aW9uOiAxNQogIHJlbmV3RGVhZGxpbmU6IDEwCiAgcmV0cnlQZXJpb2Q6IDIKICBsb2NrTmFtZToga3l2ZXJuby1wbHVnaW4KCmxvZ2dpbmc6CiAgYXBpOiBmYWxzZQogIHNlcnZlcjogZmFsc2UKICBlbmNvZGluZzogY29uc29sZQogIGxvZ0xldmVsOiAwCgpzZXJ2ZXI6CiAgYmFzaWNBdXRoOgogICAgdXNlcm5hbWU6IAogICAgcGFzc3dvcmQ6IAogICAgc2VjcmV0UmVmOiAKCmNvcmU6CiAgaG9zdDogaHR0cDovL3BvbGljeS1yZXBvcnRlcjo4MDgwCmJsb2NrUmVwb3J0czoKICAgIGVuYWJsZWQ6IGZhbHNlCiAgICBldmVudE5hbWVzcGFjZTogZGVmYXVsdAogICAgcG9saWN5UmVwb3J0OgogICAgICBhbm5vdGF0aW9uczogW10KICAgICAgbGFiZWxzOiBbXQogICAgcmVzdWx0czoKICAgICAga2VlcE9ubHlMYXRlc3Q6IGZhbHNlCiAgICAgIG1heFBlclJlcG9ydDogMjAwCiAgICBzb3VyY2U6IEt5dmVybm8gRXZlbnQK
+---
+# Source: policy-reporter/templates/ui/config-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: policy-reporter-ui-config
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter-ui
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+type: Opaque
+data:
+  config.yaml: bG9nZ2luZzoKICBhcGk6IGZhbHNlCiAgc2VydmVyOiBmYWxzZQogIGVuY29kaW5nOiBjb25zb2xlCiAgbG9nTGV2ZWw6IDAKCnNlcnZlcjoKICBwb3J0OiA4MDgwCiAgY29yczogdHJ1ZQogIG92ZXJ3cml0ZUhvc3Q6IHRydWUKICBzZXNzaW9uczoKICAgIHN0b3JhZ2U6IGZpbGVzeXN0ZW0KICAgIHRlbXBEaXI6IC90bXAKCnVpOgogIGRpc3BsYXlNb2RlOiAKICBiYW5uZXI6IAogIGxvZ286CiAgICBwYXRoOiAKICAgIGRpc2FibGVkOiBmYWxzZQoKY3JkczoKICBjdXN0b21Cb2FyZDogZmFsc2UKICBjbHVzdGVyOiBmYWxzZQoKY2x1c3RlcnM6CiAgLSBuYW1lOiBEZWZhdWx0CiAgICBzZWNyZXRSZWY6IHBvbGljeS1yZXBvcnRlci11aS1kZWZhdWx0LWNsdXN0ZXIKCnNvdXJjZXM6CiAgLSBuYW1lOiBreXZlcm5vCiAgICB0eXBlOiByZXN1bHQKICAgIGV4Y2VwdGlvbnM6IGZhbHNlCiAgICBleGNsdWRlczoKICAgICAgcmVzdWx0czoKICAgICAgLSB3YXJuCiAgICAgIC0gZXJyb3IKICAtIG5hbWU6IEt5dmVybm9WYWxpZGF0aW5nUG9saWN5CiAgICB0eXBlOiByZXN1bHQKICAgIGV4Y2VwdGlvbnM6IGZhbHNlCiAgICBleGNsdWRlczoKICAgICAgcmVzdWx0czoKICAgICAgLSB3YXJuCiAgICAgIC0gZXJyb3IKb3BlbklEQ29ubmVjdDoKICAgIGNhbGxiYWNrVXJsOiAiIgogICAgY2VydGlmaWNhdGU6ICIiCiAgICBjbGllbnRJZDogIiIKICAgIGNsaWVudFNlY3JldDogIiIKICAgIGRpc2NvdmVyeVVybDogIiIKICAgIGVuYWJsZWQ6IGZhbHNlCiAgICBncm91cENsYWltOiAiIgogICAgcGtjZTogZmFsc2UKICAgIHNjb3BlczogW10KICAgIHNlY3JldFJlZjogIiIKICAgIHNraXBUTFM6IGZhbHNlCm9hdXRoOgogICAgY2FsbGJhY2tVcmw6ICIiCiAgICBjbGllbnRJZDogIiIKICAgIGNsaWVudFNlY3JldDogIiIKICAgIGVuYWJsZWQ6IGZhbHNlCiAgICBwcm92aWRlcjogIiIKICAgIHNjb3BlczogW10KICAgIHNlY3JldFJlZjogIiIK
+---
+# Source: policy-reporter/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    app.kubernetes.io/name: policy-reporter
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/component: reporting
+    app.kubernetes.io/part-of: policy-reporter
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+  name: policy-reporter
+rules:
+- apiGroups:
+  - 'openreports.io'
+  resources:
+  - reports
+  - reports/status
+  - clusterreports
+  - clusterreports/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - wgpolicyk8s.io
+  resources:
+  - policyreports
+  - policyreports/status
+  - clusterpolicyreports
+  - clusterpolicyreports/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ''
+  resources:
+  - namespaces
+  verbs:
+  - list
+- apiGroups:
+  - policyreporter.kyverno.io
+  resources:
+  - targetconfigs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  verbs:
+  - get
+- apiGroups:
+  - 'batch'
+  resources:
+  - jobs
+  verbs:
+  - get
+- apiGroups:
+  - 'apps'
+  resources:
+  - replicasets
+  verbs:
+  - get
+---
+# Source: policy-reporter/templates/plugins/kyverno/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    app.kubernetes.io/name: policy-reporter-kyverno-plugin
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+  name: policy-reporter-kyverno-plugin
+rules:
+- apiGroups:
+  - policies.kyverno.io
+  resources:
+  - validatingpolicies
+  - validatingpolicies/status
+  - namespacedvalidatingpolicies
+  - namespacedvalidatingpolicies/status
+  - imagevalidatingpolicies
+  - imagevalidatingpolicies/status
+  - namespacedimagevalidatingpolicies
+  - namespacedimagevalidatingpolicies/status
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - kyverno.io
+  resources:
+  - policies
+  - policies/status
+  - clusterpolicies
+  - clusterpolicies/status
+  verbs:
+  - get
+  - list
+---
+# Source: policy-reporter/templates/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/component: reporting
+    app.kubernetes.io/part-of: policy-reporter
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+roleRef:
+  kind: ClusterRole
+  name: policy-reporter
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: "ServiceAccount"
+  name: policy-reporter
+  namespace: policy-reporter
+---
+# Source: policy-reporter/templates/plugins/kyverno/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: policy-reporter-kyverno-plugin
+  labels:
+    app.kubernetes.io/name: policy-reporter-kyverno-plugin
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+roleRef:
+  kind: ClusterRole
+  name: policy-reporter-kyverno-plugin
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: "ServiceAccount"
+  name: policy-reporter-kyverno-plugin
+  namespace: policy-reporter
+---
+# Source: policy-reporter/templates/plugins/kyverno/secret-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-reporter-kyverno-plugin
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+  name: policy-reporter-kyverno-plugin-secret-reader
+  namespace: policy-reporter
+rules:
+- apiGroups: ['']
+  resources:
+  - secrets
+  verbs:
+  - get
+---
+# Source: policy-reporter/templates/secret-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-reporter
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/component: reporting
+    app.kubernetes.io/part-of: policy-reporter
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+  name: policy-reporter-secret-reader
+  namespace: policy-reporter
+rules:
+- apiGroups: ['']
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+---
+# Source: policy-reporter/templates/ui/secret-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/name: policy-reporter-ui
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+  name: policy-reporter-ui-secret-reader
+  namespace: policy-reporter
+rules:
+- apiGroups: ['']
+  resources:
+  - secrets
+  verbs:
+  - get
+---
+# Source: policy-reporter/templates/plugins/kyverno/secret-rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: policy-reporter-kyverno-plugin-secret-reader
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter-kyverno-plugin
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+roleRef:
+  kind: Role
+  name: policy-reporter-kyverno-plugin-secret-reader
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: "ServiceAccount"
+  name: policy-reporter-kyverno-plugin
+  namespace: policy-reporter
+---
+# Source: policy-reporter/templates/secret-rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: policy-reporter-secret-reader
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/component: reporting
+    app.kubernetes.io/part-of: policy-reporter
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+roleRef:
+  kind: Role
+  name: policy-reporter-secret-reader
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: "ServiceAccount"
+  name: policy-reporter
+  namespace: policy-reporter
+---
+# Source: policy-reporter/templates/ui/secret-rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: policy-reporter-ui-secret-reader
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter-ui
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+roleRef:
+  kind: Role
+  name: policy-reporter-ui-secret-reader
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: "ServiceAccount"
+  name: policy-reporter-ui
+  namespace: policy-reporter
+---
+# Source: policy-reporter/templates/plugins/kyverno/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: policy-reporter-kyverno-plugin
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter-kyverno-plugin
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: policy-reporter-kyverno-plugin
+    app.kubernetes.io/instance: policy-reporter
+---
+# Source: policy-reporter/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: policy-reporter
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/component: reporting
+    app.kubernetes.io/part-of: policy-reporter
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: policy-reporter
+    app.kubernetes.io/instance: policy-reporter
+---
+# Source: policy-reporter/templates/ui/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: policy-reporter-ui
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter-ui
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: policy-reporter-ui
+    app.kubernetes.io/instance: policy-reporter
+---
+# Source: policy-reporter/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: policy-reporter
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/component: reporting
+    app.kubernetes.io/part-of: policy-reporter
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+spec:
+  replicas: 0
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: policy-reporter
+      app.kubernetes.io/instance: policy-reporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: policy-reporter
+        app.kubernetes.io/instance: policy-reporter
+        app.kubernetes.io/version: "3.11.2"
+        app.kubernetes.io/part-of: policy-reporter
+        helm.sh/chart: policy-reporter-3.11.2
+        app.kubernetes.io/managed-by: Helm
+      annotations:
+        checksum/secret: "d8ff21f52812bb0d1e09b00554b4c3007b2617af18b57523e15efff4f066e1b3"
+    spec:
+      priorityClassName: homelab-low
+      serviceAccountName: policy-reporter
+      automountServiceAccountToken: true
+      securityContext:
+        fsGroup: 1234
+      containers:
+        - name: policy-reporter
+          image: "ghcr.io/kyverno/policy-reporter:3.11.2"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1234
+            seccompProfile:
+              type: RuntimeDefault
+          args:
+            - --port=8080
+            - --config=/app/config.yaml
+            - --dbfile=/sqlite/database.db
+            - --metrics-enabled=false
+            - --rest-enabled=true
+            - --profile=false
+            - --lease-name=policy-reporter
+            - --template-dir=/app/templates
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+          volumeMounts:
+          - name: sqlite
+            mountPath: /sqlite
+          - name: config-file
+            mountPath: /app/config.yaml
+            subPath: config.yaml
+            readOnly: true
+          - name: tmp
+            mountPath: /tmp
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+      volumes:
+      - name: sqlite
+        emptyDir: {}
+      - name: config-file
+        secret:
+          secretName: policy-reporter-config
+          optional: true
+      - name: tmp
+        emptyDir: {}
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+          operator: Exists
+---
+# Source: policy-reporter/templates/plugins/kyverno/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: policy-reporter-kyverno-plugin
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter-kyverno-plugin
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+spec:
+  replicas: 0
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: policy-reporter-kyverno-plugin
+      app.kubernetes.io/instance: policy-reporter
+  template:
+    metadata:
+      annotations:
+        checksum/secret: "e53f72581bf77af43c6800266dbc7095b52ea8d82d4c1d6b0934ac4b8afbf35c"
+      labels:
+        app.kubernetes.io/name: policy-reporter-kyverno-plugin
+        app.kubernetes.io/instance: policy-reporter
+        app.kubernetes.io/version: "3.11.2"
+        app.kubernetes.io/managed-by: Helm
+        helm.sh/chart: policy-reporter-3.11.2
+        app.kubernetes.io/part-of: policy-reporter
+    spec:
+      priorityClassName: homelab-low
+      serviceAccountName: policy-reporter-kyverno-plugin
+      automountServiceAccountToken: true
+      securityContext:
+        runAsGroup: 1234
+        runAsUser: 1234
+      containers:
+        - name: policy-reporter-kyverno-plugin
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1234
+            seccompProfile:
+              type: RuntimeDefault
+          image: "ghcr.io/kyverno/policy-reporter/kyverno-plugin:0.7.3"
+          imagePullPolicy: IfNotPresent
+          args:
+            - run
+            - --config=/app/config.yaml
+            - --port=8080
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /v1/policies
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /v1/policies
+              port: http
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+          volumeMounts:
+          - name: config-file
+            mountPath: /app/config.yaml
+            subPath: config.yaml
+            readOnly: true
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+      volumes:
+      - name: config-file
+        secret:
+          secretName: policy-reporter-kyverno-plugin-config
+          optional: true
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+          operator: Exists
+---
+# Source: policy-reporter/templates/ui/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: policy-reporter-ui
+  namespace: policy-reporter
+  labels:
+    app.kubernetes.io/name: policy-reporter-ui
+    app.kubernetes.io/instance: policy-reporter
+    app.kubernetes.io/version: "3.11.2"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: policy-reporter-3.11.2
+spec:
+  replicas: 0
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: policy-reporter-ui
+      app.kubernetes.io/instance: policy-reporter
+  template:
+    metadata:
+      annotations:
+        checksum/secret: "6336f6ed67f169b44373082817546712882ec814224c735830132b75fef1d695"
+        checksum/cluster-secret: "09b5d2f04d8cb6708f2e666feb9bc34f4cfd5baac2c3c1234f975dfecf6f2544"
+      labels:
+        app.kubernetes.io/name: policy-reporter-ui
+        app.kubernetes.io/instance: policy-reporter
+        app.kubernetes.io/version: "3.11.2"
+        app.kubernetes.io/managed-by: Helm
+        helm.sh/chart: policy-reporter-3.11.2
+        app.kubernetes.io/part-of: policy-reporter
+    spec:
+      priorityClassName: homelab-low
+      serviceAccountName: policy-reporter-ui
+      automountServiceAccountToken: true
+      securityContext:
+        runAsGroup: 1234
+        runAsUser: 1234
+      containers:
+        - name: policy-reporter-ui
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1234
+            seccompProfile:
+              type: RuntimeDefault
+          image: "ghcr.io/kyverno/policy-reporter-ui:2.9.1"
+          imagePullPolicy: IfNotPresent
+          args:
+            - run
+            - --config=/app/config.yaml
+            - --port=8080
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+          volumeMounts:
+          - name: config-file
+            mountPath: /app/config.yaml
+            subPath: config.yaml
+            readOnly: true
+          - name: tmp
+            mountPath: /tmp
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+      volumes:
+      - name: config-file
+        secret:
+          secretName: policy-reporter-ui-config
+          optional: true
+      - name: tmp
+        emptyDir: {}
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+          operator: Exists
