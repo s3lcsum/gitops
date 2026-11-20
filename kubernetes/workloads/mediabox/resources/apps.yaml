@@ -410,6 +410,7 @@ spec:
   replicas: 1
   strategy:
     type: Recreate
+    rollingUpdate: null
   selector:
     matchLabels:
       app.kubernetes.io/name: bazarr
@@ -458,6 +459,8 @@ spec:
                 name: bazarr
                 optional: true
           env:
+            - name: DYNACONF_SUBF2M__USER_AGENT
+              value: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
             - name: PUID
               value: "0"
             - name: PGID
