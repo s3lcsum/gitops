@@ -17,7 +17,7 @@ spec:
         valueFiles:
           - $values/kubernetes/argocd/values.yaml
     - repoURL: https://github.com/s3lcsum/gitops.git
-      targetRevision: main
+      targetRevision: 9a59bd3a7575abda2a6a33a8a596593f783cfdb0
       ref: values
     - repoURL: https://github.com/s3lcsum/gitops.git
       targetRevision: main

@@ -20,14 +20,14 @@ spec:
         generators:
           - git:
               repoURL: https://github.com/s3lcsum/gitops.git
-              revision: main
+              revision: 9a59bd3a7575abda2a6a33a8a596593f783cfdb0
               files:
                 - path: kubernetes/networking/*/values.yaml
               values:
                 appName: '{{index .path.segments 2}}'
           - git:
               repoURL: https://github.com/s3lcsum/gitops.git
-              revision: main
+              revision: 9a59bd3a7575abda2a6a33a8a596593f783cfdb0
               files:
                 - path: kubernetes/networking/*/kustomization.yaml
               values:
@@ -36,7 +36,7 @@ spec:
     # have kustomization.yaml so Application names stay unique.
     - git:
         repoURL: https://github.com/s3lcsum/gitops.git
-        revision: main
+        revision: 9a59bd3a7575abda2a6a33a8a596593f783cfdb0
         files:
           - path: kubernetes/networking/*/kustomization.yaml
           - path: kubernetes/networking/traefik/kustomization.yaml
@@ -134,11 +134,11 @@ spec:
             valueFiles:
               - {{ printf "$values/kubernetes/%s/%s/values.yaml" (index .path.segments 1) (index .path.segments 2) | quote }}
         - repoURL: https://github.com/s3lcsum/gitops.git
-          targetRevision: main
+          targetRevision: 9a59bd3a7575abda2a6a33a8a596593f783cfdb0
           ref: values
         {{- if eq (printf "%v" (index . "kind")) "Kustomization" }}
         - repoURL: https://github.com/s3lcsum/gitops.git
-          targetRevision: main
+          targetRevision: 9a59bd3a7575abda2a6a33a8a596593f783cfdb0
           path: {{ printf "kubernetes/%s/%s" (index .path.segments 1) (index .path.segments 2) | quote }}
         {{- end }}
       syncPolicy:
